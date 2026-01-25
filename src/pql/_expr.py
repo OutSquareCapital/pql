@@ -235,14 +235,14 @@ class Expr:
         return self.__class__(exp.Count(this=exp.Distinct(expressions=[self.__node__])))
 
     @property
-    def str(self) -> _StringNamespace:
+    def str(self) -> ExprStringNameSpace:
         """Access string operations."""
-        return _StringNamespace(self.__node__)
+        return ExprStringNameSpace(self.__node__)
 
     @property
-    def dt(self) -> _DatetimeNamespace:
+    def dt(self) -> ExprDateTimeNameSpace:
         """Access datetime operations."""
-        return _DatetimeNamespace(self.__node__)
+        return ExprDateTimeNameSpace(self.__node__)
 
     def cast(self, dtype: str) -> Self:
         """Cast to a different data type."""
@@ -273,7 +273,7 @@ class Expr:
         )
 
 
-class _StringNamespace:
+class ExprStringNameSpace:
     """String operations namespace (equivalent to pl.Expr.str)."""
 
     __slots__ = ("__node__",)
@@ -354,7 +354,7 @@ class _StringNamespace:
         return Expr(exp.Substring(**args))
 
 
-class _DatetimeNamespace:
+class ExprDateTimeNameSpace:
     """Datetime operations namespace (equivalent to pl.Expr.dt)."""
 
     __slots__ = ("__node__",)
