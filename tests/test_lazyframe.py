@@ -14,11 +14,6 @@ class TestLazyFrameCreation:
         assert "users" in sql.lower()
         assert "select" in sql.lower()
 
-    def test_from_query(self) -> None:
-        lf = pql.LazyFrame.from_query("SELECT a, b FROM foo WHERE x > 1")
-        sql = lf.sql()
-        assert "foo" in sql.lower()
-
     def test_repr(self) -> None:
         lf = pql.LazyFrame.scan_table("t")
         assert "LazyFrame" in repr(lf)

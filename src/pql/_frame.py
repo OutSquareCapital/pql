@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Iterable, Mapping
+from dataclasses import dataclass
 from typing import Literal, Self
 
 import pyochain as pc
@@ -24,15 +25,6 @@ class LazyFrame:
     def scan_table(cls, name: str) -> Self:
         """Create a LazyFrame from a table name."""
         return cls(exp.select("*").from_(name, dialect="duckdb"))
-
-    @classmethod
-    def from_query(cls, query: str, *, dialect: str = "duckdb") -> Self:
-        """Create a LazyFrame from a SQL query string."""
-        return cls(
-            exp.select("*").from_(
-                exp.Subquery(this=exp.maybe_parse(query, dialect=dialect))
-            )
-        )
 
     # ==================== Transformations ====================
 
@@ -187,14 +179,12 @@ class LazyFrame:
         return f"EXPLAIN {self.sql(dialect=dialect, pretty=False)}"
 
 
+@dataclass(slots=True)
 class GroupBy:
     """GroupBy object for aggregation operations."""
 
-    __slots__ = ("_by", "_lf")
-
-    def __init__(self, lf: LazyFrame, by: tuple[str | Expr, ...]) -> None:
-        self._lf = lf
-        self._by = by
+    _lf: LazyFrame
+    _by: tuple[str | Expr, ...]
 
     def agg(self, *exprs: Expr) -> LazyFrame:
         """Aggregate the grouped data."""
