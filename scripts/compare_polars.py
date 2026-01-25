@@ -359,10 +359,10 @@ def main() -> None:
             ClassComparison.from_classes(pl.LazyFrame, pql.LazyFrame),
             ClassComparison.from_classes(pl.Expr, pql.Expr),
             ClassComparison.from_classes(
-                pl.col("x").str.__class__, pql.Expr.str.__class__, name="Expr.str"
+                pl.col("x").str.__class__, pql.col("x").str.__class__, name="Expr.str"
             ),
             ClassComparison.from_classes(
-                pl.col("x").dt.__class__, pql.Expr.dt.__class__, name="Expr.dt"
+                pl.col("x").dt.__class__, pql.col("x").dt.__class__, name="Expr.dt"
             ),
         )
     ).into(generate_report)
