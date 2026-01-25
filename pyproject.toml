@@ -1,7 +1,5 @@
 [project]
-    dependencies    = [
-    "sqlglot>=28.6.0",
-]
+    dependencies    = ["sqlglot>=28.6.0"]
     description     = "Polars syntax for SQL"
     name            = "pql"
     readme          = "README.md"
@@ -9,6 +7,32 @@
     version         = "0.1.0"
 
 [dependency-groups]
-dev = [
-    "pytest>=9.0.2",
-]
+    dev = ["pytest>=9.0.2"]
+[build-system]
+    build-backend = "uv_build"
+    requires      = ["uv_build>=0.8.15,<0.9.0"]
+[tool.ruff]
+    lint.ignore = [
+        "C417",
+        "COM812",
+        "COM812",
+        "D401",
+        "E501",
+        "FIX002",
+        "PLC0415",
+        "PLR2004",
+        "S101",
+        "S608",
+        "SLF001",
+        "T201",
+        "TC003",
+        "TC006",
+        "TD002",
+        "TD003",
+        "TID252",
+    ]
+    lint.select = ["ALL"]
+    [tool.ruff.format]
+        docstring-code-format = true
+    [tool.ruff.lint.pydocstyle]
+        convention = "google"
