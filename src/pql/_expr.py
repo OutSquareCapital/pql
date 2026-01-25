@@ -43,9 +43,15 @@ def val_to_iter[T](on: str | Expr | Iterable[T]) -> pc.Iter[str | Expr] | pc.Ite
     return pc.Iter.once(on) if isinstance(on, (str, Expr)) else pc.Iter(on)
 
 
-def col(name: str) -> Expr:
-    """Create a column expression (equivalent to pl.col)."""
-    return Expr(exp.column(name))
+class Col:
+    def __call__(self, name: (str)) -> Expr:
+        return Expr(exp.column(name))
+
+    def __getattr__(self, name: str) -> Expr:
+        return self.__call__(name)
+
+
+col: Col = Col()
 
 
 def lit(value: object) -> Expr:

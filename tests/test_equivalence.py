@@ -145,14 +145,14 @@ def _run_pql_on_df(
 
 def _run_pql_on_dfs(
     lf: pql.LazyFrame,
-    dfs: dict[str, pl.DataFrame],
+    dfs: pc.Dict[str, pl.DataFrame],
 ) -> pl.DataFrame:
     """Execute a PQL LazyFrame query on multiple Polars DataFrames using DuckDB."""
     import duckdb
 
     conn = duckdb.connect()
     conn.execute("SET TimeZone = 'UTC'")
-    pc.Dict(dfs).items().iter().for_each_star(conn.register)
+    dfs.items().iter().for_each_star(conn.register)
     return conn.execute(lf.sql(pretty=False)).pl()
 
 
@@ -197,7 +197,7 @@ class TestSelectEquivalence:
         pql_result = _run_pql_on_df(
             pql.LazyFrame.scan_table("df").select(
                 pql.col("name"),
-                (pql.col("salary").mul(1.1)).alias("salary_increase"),
+                pql.col("salary").mul(1.1).alias("salary_increase"),
             ),
             sample_df,
         )
@@ -239,7 +239,7 @@ class TestFilterEquivalence:
     def test_filter_combined_and(self, sample_df: pl.DataFrame) -> None:
         pql_result = _run_pql_on_df(
             pql.LazyFrame.scan_table("df").filter(
-                (pql.col("age").gt(25)).and_(pql.col("salary").ge(55000))
+                pql.col("age").gt(25).and_(pql.col("salary").ge(55000))
             ),
             sample_df,
         )
@@ -269,7 +269,7 @@ class TestFilterEquivalence:
             pql.LazyFrame.scan_table("df").filter(pql.col("is_active").not_()),
             sample_df,
         )
-        polars_result = sample_df.lazy().filter(~pl.col("is_active")).collect()
+        polars_result = sample_df.lazy().filter(pl.col("is_active").not_()).collect()
         _assert_frames_equal(pql_result, polars_result)
 
     def test_filter_is_in(self, sample_df: pl.DataFrame) -> None:
@@ -819,7 +819,7 @@ class TestJoinEquivalence:
                 on="id",
                 how="inner",
             ),
-            {"left_df": left_df, "right_df": right_df},
+            pc.Dict.from_kwargs(left_df=left_df, right_df=right_df),
         )
         polars_result = (
             left_df.lazy().join(right_df.lazy(), on="id", how="inner").collect()
@@ -833,7 +833,7 @@ class TestJoinEquivalence:
                 on="id",
                 how="left",
             ),
-            {"left_df": left_df, "right_df": right_df},
+            pc.Dict.from_kwargs(left_df=left_df, right_df=right_df),
         )
         polars_result = (
             left_df.lazy().join(right_df.lazy(), on="id", how="left").collect()
