@@ -1,0 +1,7 @@
+[project]
+    dependencies    = []
+    description     = "Polars syntax for SQL"
+    name            = "pql"
+    readme          = "README.md"
+    requires-python = ">=3.13"
+    version         = "0.1.0"
