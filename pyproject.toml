@@ -1,5 +1,7 @@
 [project]
-    dependencies    = []
+    dependencies    = [
+    "sqlglot>=28.6.0",
+]
     description     = "Polars syntax for SQL"
     name            = "pql"
     readme          = "README.md"
