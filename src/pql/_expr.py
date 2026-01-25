@@ -10,7 +10,7 @@ if TYPE_CHECKING:
 
 
 def to_node(value: object) -> exp.Expression:
-    """Convert a value to a sqlglot Expression node."""
+    """Convert a value to a sqlglot Expression node (strings are columns)."""
     match value:
         case Expr():
             return value.__node__
@@ -18,6 +18,20 @@ def to_node(value: object) -> exp.Expression:
             return exp.column(value)
         case _:
             return exp.convert(value)
+
+
+def to_value(value: object) -> exp.Expression:
+    """Convert a value to a sqlglot literal Expression (strings are literals)."""
+    match value:
+        case Expr():
+            return value.__node__
+        case _:
+            return exp.convert(value)
+
+
+def values_to_nodes(values: Iterable[object]) -> pc.Iter[exp.Expression]:
+    """Convert multiple values to sqlglot literal nodes."""
+    return pc.Iter(values).map(to_value)
 
 
 def exprs_to_nodes(exprs: Iterable[object]) -> pc.Iter[exp.Expression]:
@@ -52,92 +66,93 @@ class Expr:
 
     # ==================== Arithmetic Operators ====================
 
-    def __add__(self, other: object) -> Self:
+    def add(self, other: object) -> Self:
+        """Add another expression or value."""
         return self.__class__(exp.Add(this=self.__node__, expression=to_node(other)))
 
-    def __radd__(self, other: object) -> Self:
+    def radd(self, other: object) -> Self:
         return self.__class__(exp.Add(this=to_node(other), expression=self.__node__))
 
-    def __sub__(self, other: object) -> Self:
+    def sub(self, other: object) -> Self:
         return self.__class__(exp.Sub(this=self.__node__, expression=to_node(other)))
 
-    def __rsub__(self, other: object) -> Self:
+    def rsub(self, other: object) -> Self:
         return self.__class__(exp.Sub(this=to_node(other), expression=self.__node__))
 
-    def __mul__(self, other: object) -> Self:
+    def mul(self, other: object) -> Self:
         return self.__class__(exp.Mul(this=self.__node__, expression=to_node(other)))
 
-    def __rmul__(self, other: object) -> Self:
+    def rmul(self, other: object) -> Self:
         return self.__class__(exp.Mul(this=to_node(other), expression=self.__node__))
 
-    def __truediv__(self, other: object) -> Self:
+    def truediv(self, other: object) -> Self:
         return self.__class__(exp.Div(this=self.__node__, expression=to_node(other)))
 
-    def __rtruediv__(self, other: object) -> Self:
+    def rtruediv(self, other: object) -> Self:
         return self.__class__(exp.Div(this=to_node(other), expression=self.__node__))
 
-    def __floordiv__(self, other: object) -> Self:
+    def floordiv(self, other: object) -> Self:
         return self.__class__(exp.IntDiv(this=self.__node__, expression=to_node(other)))
 
-    def __rfloordiv__(self, other: object) -> Self:
+    def rfloordiv(self, other: object) -> Self:
         return self.__class__(exp.IntDiv(this=to_node(other), expression=self.__node__))
 
-    def __mod__(self, other: object) -> Self:
+    def mod(self, other: object) -> Self:
         return self.__class__(exp.Mod(this=self.__node__, expression=to_node(other)))
 
-    def __rmod__(self, other: object) -> Self:
+    def rmod(self, other: object) -> Self:
         return self.__class__(exp.Mod(this=to_node(other), expression=self.__node__))
 
-    def __pow__(self, other: object) -> Self:
+    def pow(self, other: object) -> Self:
         return self.__class__(exp.Pow(this=self.__node__, expression=to_node(other)))
 
-    def __rpow__(self, other: object) -> Self:
+    def rpow(self, other: object) -> Self:
         return self.__class__(exp.Pow(this=to_node(other), expression=self.__node__))
 
-    def __neg__(self) -> Self:
+    def neg(self) -> Self:
         return self.__class__(exp.Neg(this=self.__node__))
 
-    def __pos__(self) -> Self:
+    def pos(self) -> Self:
         return self
 
-    def __abs__(self) -> Self:
+    def abs(self) -> Self:
         return self.__class__(exp.Abs(this=self.__node__))
 
     # ==================== Comparison Operators ====================
 
-    def __eq__(self, other: object) -> Self:  # type: ignore[override]
-        return self.__class__(exp.EQ(this=self.__node__, expression=to_node(other)))
+    def eq(self, other: object) -> Self:  # type: ignore[override]
+        return self.__class__(exp.EQ(this=self.__node__, expression=to_value(other)))
 
-    def __ne__(self, other: object) -> Self:  # type: ignore[override]
-        return self.__class__(exp.NEQ(this=self.__node__, expression=to_node(other)))
+    def ne(self, other: object) -> Self:  # type: ignore[override]
+        return self.__class__(exp.NEQ(this=self.__node__, expression=to_value(other)))
 
-    def __lt__(self, other: object) -> Self:
-        return self.__class__(exp.LT(this=self.__node__, expression=to_node(other)))
+    def lt(self, other: object) -> Self:
+        return self.__class__(exp.LT(this=self.__node__, expression=to_value(other)))
 
-    def __le__(self, other: object) -> Self:
-        return self.__class__(exp.LTE(this=self.__node__, expression=to_node(other)))
+    def le(self, other: object) -> Self:
+        return self.__class__(exp.LTE(this=self.__node__, expression=to_value(other)))
 
-    def __gt__(self, other: object) -> Self:
-        return self.__class__(exp.GT(this=self.__node__, expression=to_node(other)))
+    def gt(self, other: object) -> Self:
+        return self.__class__(exp.GT(this=self.__node__, expression=to_value(other)))
 
-    def __ge__(self, other: object) -> Self:
-        return self.__class__(exp.GTE(this=self.__node__, expression=to_node(other)))
+    def ge(self, other: object) -> Self:
+        return self.__class__(exp.GTE(this=self.__node__, expression=to_value(other)))
 
     # ==================== Logical Operators ====================
 
-    def __and__(self, other: object) -> Self:
+    def and_(self, other: object) -> Self:
         return self.__class__(exp.And(this=self.__node__, expression=to_node(other)))
 
-    def __rand__(self, other: object) -> Self:
+    def rand(self, other: object) -> Self:
         return self.__class__(exp.And(this=to_node(other), expression=self.__node__))
 
-    def __or__(self, other: object) -> Self:
+    def or_(self, other: object) -> Self:
         return self.__class__(exp.Or(this=self.__node__, expression=to_node(other)))
 
-    def __ror__(self, other: object) -> Self:
+    def ror(self, other: object) -> Self:
         return self.__class__(exp.Or(this=to_node(other), expression=self.__node__))
 
-    def __invert__(self) -> Self:
+    def not_(self) -> Self:
         return self.__class__(exp.Not(this=self.__node__))
 
     # ==================== Naming ====================
@@ -161,7 +176,7 @@ class Expr:
     def fill_null(self, value: object) -> Self:
         """Fill NULL values with the given value."""
         return self.__class__(
-            exp.Coalesce(this=self.__node__, expressions=[to_node(value)])
+            exp.Coalesce(this=self.__node__, expressions=[to_value(value)])
         )
 
     # ==================== Aggregations ====================
@@ -184,7 +199,12 @@ class Expr:
 
     def count(self) -> Self:
         """Count non-null values."""
-        return self.__class__(exp.Count(this=self.__node__))
+        return self.__class__(
+            exp.Cast(
+                this=exp.Count(this=self.__node__),
+                to=exp.DataType.build("UINT"),
+            )
+        )
 
     def std(self, ddof: int = 1) -> Self:
         """Compute the standard deviation."""
@@ -233,13 +253,13 @@ class Expr:
     def between(self, lower: object, upper: object) -> Self:
         """Check if value is between lower and upper (inclusive)."""
         return self.__class__(
-            exp.Between(this=self.__node__, low=to_node(lower), high=to_node(upper))
+            exp.Between(this=self.__node__, low=to_value(lower), high=to_value(upper))
         )
 
     def is_in(self, values: Iterable[object]) -> Self:
         """Check if value is in an iterable of values."""
         return self.__class__(
-            exp.In(this=self.__node__, expressions=exprs_to_nodes(values).collect())
+            exp.In(this=self.__node__, expressions=values_to_nodes(values).collect())
         )
 
     def is_not_in(self, values: Iterable[object]) -> Self:
@@ -247,7 +267,7 @@ class Expr:
         return self.__class__(
             exp.Not(
                 this=exp.In(
-                    this=self.__node__, expressions=exprs_to_nodes(values).collect()
+                    this=self.__node__, expressions=values_to_nodes(values).collect()
                 )
             )
         )
@@ -342,29 +362,33 @@ class _DatetimeNamespace:
     def __init__(self, node: exp.Expression) -> None:
         self.__node__ = node
 
+    def _to_utc(self) -> exp.Expression:
+        """Convert datetime to UTC timezone."""
+        return exp.AtTimeZone(this=self.__node__, zone=exp.Literal.string("UTC"))
+
     def year(self) -> Expr:
         """Extract the year."""
-        return Expr(exp.Year(this=self.__node__))
+        return Expr(exp.Year(this=self._to_utc()))
 
     def month(self) -> Expr:
         """Extract the month."""
-        return Expr(exp.Month(this=self.__node__))
+        return Expr(exp.Month(this=self._to_utc()))
 
     def day(self) -> Expr:
         """Extract the day."""
-        return Expr(exp.Day(this=self.__node__))
+        return Expr(exp.Day(this=self._to_utc()))
 
     def hour(self) -> Expr:
         """Extract the hour."""
-        return Expr(exp.Hour(this=self.__node__))
+        return Expr(exp.Hour(this=self._to_utc()))
 
     def minute(self) -> Expr:
         """Extract the minute."""
-        return Expr(exp.Minute(this=self.__node__))
+        return Expr(exp.Minute(this=self._to_utc()))
 
     def second(self) -> Expr:
         """Extract the second."""
-        return Expr(exp.Second(this=self.__node__))
+        return Expr(exp.Second(this=self._to_utc()))
 
     def weekday(self) -> Expr:
         """Extract the day of week (0=Monday, 6=Sunday)."""
@@ -377,3 +401,9 @@ class _DatetimeNamespace:
     def date(self) -> Expr:
         """Extract the date part."""
         return Expr(exp.Date(this=self.__node__))
+
+    def convert_time_zone(self, time_zone: str) -> Expr:
+        """Convert to a different timezone."""
+        return Expr(
+            exp.AtTimeZone(this=self.__node__, zone=exp.Literal.string(time_zone))
+        )
