@@ -9,7 +9,7 @@ if TYPE_CHECKING:
     from collections.abc import Iterable
 
 
-def _to_node(value: object) -> exp.Expression:
+def to_node(value: object) -> exp.Expression:
     """Convert a value to a sqlglot Expression node."""
     match value:
         case Expr():
@@ -22,7 +22,7 @@ def _to_node(value: object) -> exp.Expression:
 
 def exprs_to_nodes(exprs: Iterable[Expr | str]) -> pc.Iter[exp.Expression]:
     """Convert multiple expressions to sqlglot nodes."""
-    return pc.Iter(exprs).map(_to_node)
+    return pc.Iter(exprs).map(to_node)
 
 
 def col(name: str) -> Expr:
@@ -49,50 +49,46 @@ class Expr:
     # ==================== Arithmetic Operators ====================
 
     def __add__(self, other: object) -> Self:
-        return self.__class__(exp.Add(this=self.__node__, expression=_to_node(other)))
+        return self.__class__(exp.Add(this=self.__node__, expression=to_node(other)))
 
     def __radd__(self, other: object) -> Self:
-        return self.__class__(exp.Add(this=_to_node(other), expression=self.__node__))
+        return self.__class__(exp.Add(this=to_node(other), expression=self.__node__))
 
     def __sub__(self, other: object) -> Self:
-        return self.__class__(exp.Sub(this=self.__node__, expression=_to_node(other)))
+        return self.__class__(exp.Sub(this=self.__node__, expression=to_node(other)))
 
     def __rsub__(self, other: object) -> Self:
-        return self.__class__(exp.Sub(this=_to_node(other), expression=self.__node__))
+        return self.__class__(exp.Sub(this=to_node(other), expression=self.__node__))
 
     def __mul__(self, other: object) -> Self:
-        return self.__class__(exp.Mul(this=self.__node__, expression=_to_node(other)))
+        return self.__class__(exp.Mul(this=self.__node__, expression=to_node(other)))
 
     def __rmul__(self, other: object) -> Self:
-        return self.__class__(exp.Mul(this=_to_node(other), expression=self.__node__))
+        return self.__class__(exp.Mul(this=to_node(other), expression=self.__node__))
 
     def __truediv__(self, other: object) -> Self:
-        return self.__class__(exp.Div(this=self.__node__, expression=_to_node(other)))
+        return self.__class__(exp.Div(this=self.__node__, expression=to_node(other)))
 
     def __rtruediv__(self, other: object) -> Self:
-        return self.__class__(exp.Div(this=_to_node(other), expression=self.__node__))
+        return self.__class__(exp.Div(this=to_node(other), expression=self.__node__))
 
     def __floordiv__(self, other: object) -> Self:
-        return self.__class__(
-            exp.IntDiv(this=self.__node__, expression=_to_node(other))
-        )
+        return self.__class__(exp.IntDiv(this=self.__node__, expression=to_node(other)))
 
     def __rfloordiv__(self, other: object) -> Self:
-        return self.__class__(
-            exp.IntDiv(this=_to_node(other), expression=self.__node__)
-        )
+        return self.__class__(exp.IntDiv(this=to_node(other), expression=self.__node__))
 
     def __mod__(self, other: object) -> Self:
-        return self.__class__(exp.Mod(this=self.__node__, expression=_to_node(other)))
+        return self.__class__(exp.Mod(this=self.__node__, expression=to_node(other)))
 
     def __rmod__(self, other: object) -> Self:
-        return self.__class__(exp.Mod(this=_to_node(other), expression=self.__node__))
+        return self.__class__(exp.Mod(this=to_node(other), expression=self.__node__))
 
     def __pow__(self, other: object) -> Self:
-        return self.__class__(exp.Pow(this=self.__node__, expression=_to_node(other)))
+        return self.__class__(exp.Pow(this=self.__node__, expression=to_node(other)))
 
     def __rpow__(self, other: object) -> Self:
-        return self.__class__(exp.Pow(this=_to_node(other), expression=self.__node__))
+        return self.__class__(exp.Pow(this=to_node(other), expression=self.__node__))
 
     def __neg__(self) -> Self:
         return self.__class__(exp.Neg(this=self.__node__))
@@ -106,36 +102,36 @@ class Expr:
     # ==================== Comparison Operators ====================
 
     def __eq__(self, other: object) -> Self:  # type: ignore[override]
-        return self.__class__(exp.EQ(this=self.__node__, expression=_to_node(other)))
+        return self.__class__(exp.EQ(this=self.__node__, expression=to_node(other)))
 
     def __ne__(self, other: object) -> Self:  # type: ignore[override]
-        return self.__class__(exp.NEQ(this=self.__node__, expression=_to_node(other)))
+        return self.__class__(exp.NEQ(this=self.__node__, expression=to_node(other)))
 
     def __lt__(self, other: object) -> Self:
-        return self.__class__(exp.LT(this=self.__node__, expression=_to_node(other)))
+        return self.__class__(exp.LT(this=self.__node__, expression=to_node(other)))
 
     def __le__(self, other: object) -> Self:
-        return self.__class__(exp.LTE(this=self.__node__, expression=_to_node(other)))
+        return self.__class__(exp.LTE(this=self.__node__, expression=to_node(other)))
 
     def __gt__(self, other: object) -> Self:
-        return self.__class__(exp.GT(this=self.__node__, expression=_to_node(other)))
+        return self.__class__(exp.GT(this=self.__node__, expression=to_node(other)))
 
     def __ge__(self, other: object) -> Self:
-        return self.__class__(exp.GTE(this=self.__node__, expression=_to_node(other)))
+        return self.__class__(exp.GTE(this=self.__node__, expression=to_node(other)))
 
     # ==================== Logical Operators ====================
 
     def __and__(self, other: object) -> Self:
-        return self.__class__(exp.And(this=self.__node__, expression=_to_node(other)))
+        return self.__class__(exp.And(this=self.__node__, expression=to_node(other)))
 
     def __rand__(self, other: object) -> Self:
-        return self.__class__(exp.And(this=_to_node(other), expression=self.__node__))
+        return self.__class__(exp.And(this=to_node(other), expression=self.__node__))
 
     def __or__(self, other: object) -> Self:
-        return self.__class__(exp.Or(this=self.__node__, expression=_to_node(other)))
+        return self.__class__(exp.Or(this=self.__node__, expression=to_node(other)))
 
     def __ror__(self, other: object) -> Self:
-        return self.__class__(exp.Or(this=_to_node(other), expression=self.__node__))
+        return self.__class__(exp.Or(this=to_node(other), expression=self.__node__))
 
     def __invert__(self) -> Self:
         return self.__class__(exp.Not(this=self.__node__))
@@ -161,7 +157,7 @@ class Expr:
     def fill_null(self, value: object) -> Self:
         """Fill NULL values with the given value."""
         return self.__class__(
-            exp.Coalesce(this=self.__node__, expressions=[_to_node(value)])
+            exp.Coalesce(this=self.__node__, expressions=[to_node(value)])
         )
 
     # ==================== Aggregations ====================
@@ -214,21 +210,15 @@ class Expr:
         """Count unique values."""
         return self.__class__(exp.Count(this=exp.Distinct(expressions=[self.__node__])))
 
-    # ==================== String Namespace ====================
-
     @property
     def str(self) -> _StringNamespace:
         """Access string operations."""
         return _StringNamespace(self.__node__)
 
-    # ==================== Datetime Namespace ====================
-
     @property
     def dt(self) -> _DatetimeNamespace:
         """Access datetime operations."""
         return _DatetimeNamespace(self.__node__)
-
-    # ==================== Utilities ====================
 
     def cast(self, dtype: str) -> Self:
         """Cast to a different data type."""
@@ -239,23 +229,19 @@ class Expr:
     def between(self, lower: object, upper: object) -> Self:
         """Check if value is between lower and upper (inclusive)."""
         return self.__class__(
-            exp.Between(this=self.__node__, low=_to_node(lower), high=_to_node(upper))
+            exp.Between(this=self.__node__, low=to_node(lower), high=to_node(upper))
         )
 
     def is_in(self, values: Iterable[object]) -> Self:
         """Check if value is in a list of values."""
         return self.__class__(
-            exp.In(this=self.__node__, expressions=list(exprs_to_nodes(values)))
+            exp.In(this=self.__node__, expressions=exprs_to_nodes(values))
         )
 
     def is_not_in(self, values: Iterable[object]) -> Self:
         """Check if value is not in a list of values."""
         return self.__class__(
-            exp.Not(
-                this=exp.In(
-                    this=self.__node__, expressions=list(exprs_to_nodes(values))
-                )
-            )
+            exp.Not(this=exp.In(this=self.__node__, expressions=exprs_to_nodes(values)))
         )
 
 
@@ -323,11 +309,11 @@ class _StringNamespace:
 
     def strip_chars_start(self) -> Expr:
         """Strip leading whitespace."""
-        return Expr(exp.LTrim(this=self.__node__))
+        return Expr(exp.Trim(this=self.__node__, position="LEADING"))
 
     def strip_chars_end(self) -> Expr:
         """Strip trailing whitespace."""
-        return Expr(exp.RTrim(this=self.__node__))
+        return Expr(exp.Trim(this=self.__node__, position="TRAILING"))
 
     def slice(self, offset: int, length: int | None = None) -> Expr:
         """Extract a substring."""

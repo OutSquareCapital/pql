@@ -59,8 +59,8 @@ class TestArithmeticOperators:
     def test_floordiv(self) -> None:
         result = col("x") // col("y")
         sql = result.__node__.sql().lower()
-        # DuckDB uses DIV or //
-        assert "div" in sql or "//" in sql
+        # DuckDB uses CAST(x / y AS INT) for integer division
+        assert "div" in sql or "//" in sql or ("cast" in sql and "/" in sql)
 
     def test_rfloordiv(self) -> None:
         result = 100 // col("x")

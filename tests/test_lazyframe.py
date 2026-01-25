@@ -159,11 +159,21 @@ class TestSort:
         sql = lf.sql().lower()
         assert "order by" in sql
 
-    def test_sort_nulls_last(self) -> None:
+    def test_sort_nulls_first(self) -> None:
+        # DuckDB defaults to NULLS LAST for ASC, so setting nulls_last=False
+        # (i.e. nulls_first=True) should emit "NULLS FIRST" explicitly
+        lf = LazyFrame.scan_table("t").sort("x", nulls_last=False)
+        sql = lf.sql().lower()
+        assert "order by" in sql
+        assert "nulls first" in sql
+
+    def test_sort_nulls_last_is_default(self) -> None:
+        # DuckDB defaults to NULLS LAST for ASC, so nulls_last=True
+        # won't emit anything explicit (it's the default behavior)
         lf = LazyFrame.scan_table("t").sort("x", nulls_last=True)
         sql = lf.sql().lower()
         assert "order by" in sql
-        assert "nulls" in sql
+        assert "x asc" in sql
 
 
 class TestLimit:
