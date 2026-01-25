@@ -64,8 +64,6 @@ class Expr:
     def __repr__(self) -> str:
         return f"Expr({self.__node__.sql(dialect='duckdb')})"
 
-    # ==================== Arithmetic Operators ====================
-
     def add(self, other: object) -> Self:
         """Add another expression or value."""
         return self.__class__(exp.Add(this=self.__node__, expression=to_node(other)))
@@ -118,12 +116,10 @@ class Expr:
     def abs(self) -> Self:
         return self.__class__(exp.Abs(this=self.__node__))
 
-    # ==================== Comparison Operators ====================
-
-    def eq(self, other: object) -> Self:  # type: ignore[override]
+    def eq(self, other: object) -> Self:
         return self.__class__(exp.EQ(this=self.__node__, expression=to_value(other)))
 
-    def ne(self, other: object) -> Self:  # type: ignore[override]
+    def ne(self, other: object) -> Self:
         return self.__class__(exp.NEQ(this=self.__node__, expression=to_value(other)))
 
     def lt(self, other: object) -> Self:
@@ -137,8 +133,6 @@ class Expr:
 
     def ge(self, other: object) -> Self:
         return self.__class__(exp.GTE(this=self.__node__, expression=to_value(other)))
-
-    # ==================== Logical Operators ====================
 
     def and_(self, other: object) -> Self:
         return self.__class__(exp.And(this=self.__node__, expression=to_node(other)))
@@ -155,13 +149,9 @@ class Expr:
     def not_(self) -> Self:
         return self.__class__(exp.Not(this=self.__node__))
 
-    # ==================== Naming ====================
-
     def alias(self, name: str) -> Self:
         """Rename the expression."""
         return self.__class__(exp.alias_(self.__node__, name))
-
-    # ==================== Null Handling ====================
 
     def is_null(self) -> Self:
         """Check if the expression is NULL."""

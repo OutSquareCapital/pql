@@ -26,8 +26,6 @@ class LazyFrame:
         """Create a LazyFrame from a table name."""
         return cls(exp.select("*").from_(name, dialect="duckdb"))
 
-    # ==================== Transformations ====================
-
     def select(self, *exprs: Expr | str) -> Self:
         """Select columns or expressions."""
         nodes = exprs_to_nodes(exprs)
@@ -89,7 +87,7 @@ class LazyFrame:
         return self.limit(n)
 
     def tail(self, n: int = 5) -> Self:
-        """Get the last n rows (requires ORDER BY to be meaningful)."""
+        """Get the last n rows."""
         return self.limit(n)
 
     def distinct(self) -> Self:
@@ -167,8 +165,6 @@ class LazyFrame:
             new_ast = self.__ast__.copy().join(subquery, join_type=how, copy=False)
 
         return self.__class__(new_ast)
-
-    # ==================== SQL Output ====================
 
     def sql(self, *, pretty: bool = True) -> str:
         """Generate SQL string."""
