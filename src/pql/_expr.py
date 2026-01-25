@@ -350,6 +350,7 @@ class ExprStringNameSpace:
         return Expr(exp.Substring(**args))
 
 
+# TODO: find a solution for mismatched types
 class ExprDateTimeNameSpace:
     """Datetime operations namespace (equivalent to pl.Expr.dt)."""
 

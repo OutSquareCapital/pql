@@ -4,39 +4,66 @@ from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
 from typing import Literal, Self
 
+import duckdb
+import polars as pl
 import pyochain as pc
 from sqlglot import exp
 
 from ._expr import Expr, exprs_to_nodes, to_node, val_to_iter
 
+type FrameInit = duckdb.DuckDBPyRelation | pl.DataFrame | pl.LazyFrame
+
 
 class LazyFrame:
     """LazyFrame providing Polars-like API for SQL generation."""
 
-    __slots__ = ("__ast__",)
+    __ast__: exp.Select
+    rel: duckdb.DuckDBPyRelation
+    __slots__ = ("__ast__", "rel")
 
-    def __init__(self, ast: exp.Select) -> None:
-        self.__ast__ = ast
+    def __init__(self, data: FrameInit | None = None) -> None:
+        self.__ast__ = exp.select("*").from_(exp.Table(this=exp.Identifier(this="_")))
+
+        match data:
+            case duckdb.DuckDBPyRelation():
+                self.rel = data
+            case pl.DataFrame():
+                self.rel = duckdb.from_arrow(data)
+            case pl.LazyFrame():
+                self.rel = duckdb.query(
+                    self.sql(pretty=False)
+                )  # TODO: check if it works
+            case None:
+                dummy_df = pl.DataFrame({"_": [None]})
+                self.rel = duckdb.from_arrow(dummy_df)
 
     def __repr__(self) -> str:
         return f"LazyFrame(\n{self.sql()}\n)"
 
+    def _new(self, ast: exp.Select) -> Self:
+        instance = self.__class__(self.rel)
+        instance.__ast__ = ast
+        return instance
+
     @classmethod
-    def scan_table(cls, name: str) -> Self:
-        """Create a LazyFrame from a table name."""
-        return cls(exp.select("*").from_(name, dialect="duckdb"))
+    def from_df(cls, df: pl.DataFrame | pl.LazyFrame) -> Self:
+        """Create a LazyFrame from a Polars DataFrame or LazyFrame."""
+        data = df.lazy().collect()
+        return cls(duckdb.from_arrow(data))
+
+    def collect(self) -> pl.DataFrame:
+        """Execute the query and return a Polars DataFrame."""
+        return self.rel.query("_", self.sql(pretty=False)).pl()
 
     def select(self, *exprs: Expr | str) -> Self:
         """Select columns or expressions."""
         nodes = exprs_to_nodes(exprs)
-        return self.__class__(
-            self.__ast__.copy().select(*nodes, append=False, copy=False)
-        )
+        return self._new(self.__ast__.copy().select(*nodes, append=False, copy=False))
 
     def with_columns(self, *exprs: Expr) -> Self:
         """Add or replace columns."""
         nodes = exprs_to_nodes(exprs)
-        return self.__class__(
+        return self._new(
             self.__ast__.copy().select("*", *nodes, append=False, copy=False)
         )
 
@@ -45,7 +72,7 @@ class LazyFrame:
         new_ast = self.__ast__.copy()
         for p in predicates:
             new_ast = new_ast.where(p.__node__, copy=False)
-        return self.__class__(new_ast)
+        return self._new(new_ast)
 
     def group_by(self, *by: str | Expr) -> GroupBy:
         """Group by columns."""
@@ -76,23 +103,23 @@ class LazyFrame:
                 )
             )
         )
-        return self.__class__(self.__ast__.copy().order_by(*order_terms, copy=False))
+        return self._new(self.__ast__.copy().order_by(*order_terms, copy=False))
 
     def limit(self, n: int) -> Self:
         """Limit the number of rows."""
-        return self.__class__(self.__ast__.copy().limit(n, copy=False))
+        return self._new(self.__ast__.copy().limit(n, copy=False))
 
     def head(self, n: int = 5) -> Self:
         """Get the first n rows."""
-        return self.limit(n)
+        return self._new(self.__ast__.copy().limit(n, copy=False))
 
     def tail(self, n: int = 5) -> Self:
         """Get the last n rows."""
-        return self.limit(n)
+        return self._new(self.__ast__.copy().limit(n, copy=False))
 
     def distinct(self) -> Self:
         """Get distinct rows."""
-        return self.__class__(self.__ast__.copy().distinct(copy=False))
+        return self._new(self.__ast__.copy().distinct(copy=False))
 
     def unique(self, subset: str | Iterable[str] | None = None) -> Self:
         """Get unique rows based on subset of columns."""
@@ -104,12 +131,12 @@ class LazyFrame:
             "distinct",
             exp.Distinct(on=exp.Tuple(expressions=exprs_to_nodes(cols).collect())),
         )
-        return self.__class__(new_ast)
+        return self._new(new_ast)
 
     def drop(self, *columns: str) -> Self:
         """Drop columns from the frame."""
         exclude_star = exp.Star(except_=pc.Set(columns).iter().map(exp.column))
-        return self.__class__(
+        return self._new(
             self.__ast__.copy().select(exclude_star, append=False, copy=False)
         )
 
@@ -121,7 +148,7 @@ class LazyFrame:
             .iter()
             .map_star(lambda old, new: exp.alias_(exp.column(old), new))
         )
-        return self.__class__(
+        return self._new(
             self.__ast__.copy().select(*rename_exprs, append=True, copy=False)
         )
 
@@ -164,11 +191,15 @@ class LazyFrame:
         else:
             new_ast = self.__ast__.copy().join(subquery, join_type=how, copy=False)
 
-        return self.__class__(new_ast)
+        return self._new(new_ast)
 
     def sql(self, *, pretty: bool = True) -> str:
         """Generate SQL string."""
-        return self.__ast__.sql(dialect="duckdb", pretty=pretty)
+        ast = self.__ast__.copy()
+        # Ensure SELECT has at least one expression (default to *)
+        if not ast.expressions:
+            ast = ast.select("*", append=False, copy=False)
+        return ast.sql(dialect="duckdb", pretty=pretty)
 
     def explain(self) -> str:
         """Generate EXPLAIN SQL."""
@@ -191,4 +222,4 @@ class GroupBy:
             .select(*by_nodes, *agg_nodes, append=False, copy=False)
             .group_by(*by_nodes, copy=False)
         )
-        return LazyFrame(new_ast)
+        return self._lf._new(new_ast)  # type: ignore[return-value]
