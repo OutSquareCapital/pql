@@ -20,9 +20,13 @@ def to_node(value: object) -> exp.Expression:
             return exp.convert(value)
 
 
-def exprs_to_nodes(exprs: Iterable[Expr | str]) -> pc.Iter[exp.Expression]:
+def exprs_to_nodes(exprs: Iterable[object]) -> pc.Iter[exp.Expression]:
     """Convert multiple expressions to sqlglot nodes."""
     return pc.Iter(exprs).map(to_node)
+
+
+def val_to_iter[T](on: str | Expr | Iterable[T]) -> pc.Iter[str | Expr] | pc.Iter[T]:
+    return pc.Iter.once(on) if isinstance(on, (str, Expr)) else pc.Iter(on)
 
 
 def col(name: str) -> Expr:
@@ -233,15 +237,19 @@ class Expr:
         )
 
     def is_in(self, values: Iterable[object]) -> Self:
-        """Check if value is in a list of values."""
+        """Check if value is in an iterable of values."""
         return self.__class__(
-            exp.In(this=self.__node__, expressions=exprs_to_nodes(values))
+            exp.In(this=self.__node__, expressions=exprs_to_nodes(values).collect())
         )
 
     def is_not_in(self, values: Iterable[object]) -> Self:
-        """Check if value is not in a list of values."""
+        """Check if value is not in an iterable of values."""
         return self.__class__(
-            exp.Not(this=exp.In(this=self.__node__, expressions=exprs_to_nodes(values)))
+            exp.Not(
+                this=exp.In(
+                    this=self.__node__, expressions=exprs_to_nodes(values).collect()
+                )
+            )
         )
 
 

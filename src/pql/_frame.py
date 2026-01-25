@@ -1,11 +1,12 @@
 from __future__ import annotations
 
-from typing import Self
+from collections.abc import Iterable, Mapping
+from typing import Literal, Self
 
 import pyochain as pc
 from sqlglot import exp
 
-from ._expr import Expr, exprs_to_nodes, to_node
+from ._expr import Expr, exprs_to_nodes, to_node, val_to_iter
 
 
 class LazyFrame:
@@ -63,8 +64,8 @@ class LazyFrame:
     def sort(
         self,
         *by: str | Expr,
-        descending: bool | list[bool] = False,
-        nulls_last: bool | list[bool] = False,
+        descending: bool | Iterable[bool] = False,
+        nulls_last: bool | Iterable[bool] = False,
     ) -> Self:
         """Sort by columns."""
         desc_flags = (
@@ -103,29 +104,29 @@ class LazyFrame:
         """Get distinct rows."""
         return self.__class__(self.__ast__.copy().distinct(copy=False))
 
-    def unique(self, subset: str | list[str] | None = None) -> Self:
+    def unique(self, subset: str | Iterable[str] | None = None) -> Self:
         """Get unique rows based on subset of columns."""
         if subset is None:
             return self.distinct()
         cols = [subset] if isinstance(subset, str) else subset
-        # Use DISTINCT ON for DuckDB
-        nodes = exprs_to_nodes(cols)
         new_ast = self.__ast__.copy()
-        new_ast.set("distinct", exp.Distinct(on=exp.Tuple(expressions=nodes)))
+        new_ast.set(
+            "distinct",
+            exp.Distinct(on=exp.Tuple(expressions=exprs_to_nodes(cols).collect())),
+        )
         return self.__class__(new_ast)
 
     def drop(self, *columns: str) -> Self:
         """Drop columns from the frame."""
-        cols_to_drop = pc.Set(columns)
-        exclude_star = exp.Star(except_=[exp.column(c) for c in cols_to_drop])
+        exclude_star = exp.Star(except_=pc.Set(columns).iter().map(exp.column))
         return self.__class__(
             self.__ast__.copy().select(exclude_star, append=False, copy=False)
         )
 
-    def rename(self, mapping: dict[str, str]) -> Self:
+    def rename(self, mapping: Mapping[str, str]) -> Self:
         """Rename columns."""
         rename_exprs = (
-            pc.Dict.from_ref(mapping)
+            pc.Dict(mapping)
             .items()
             .iter()
             .map_star(lambda old, new: exp.alias_(exp.column(old), new))
@@ -137,56 +138,41 @@ class LazyFrame:
     def join(
         self,
         other: LazyFrame,
-        on: str | Expr | list[str] | None = None,
+        on: str | Expr | Iterable[str] | None = None,
         *,
-        left_on: str | Expr | list[str] | None = None,
-        right_on: str | Expr | list[str] | None = None,
-        how: str = "inner",
+        left_on: str | Expr | Iterable[str] | None = None,
+        right_on: str | Expr | Iterable[str] | None = None,
+        how: Literal[
+            "inner", "left", "right", "outer", "cross", "semi", "anti"
+        ] = "inner",
     ) -> Self:
         """Join with another LazyFrame."""
-        join_type_map = pc.Dict.from_kwargs(
-            inner="inner",
-            left="left",
-            right="right",
-            outer="outer",
-            cross="cross",
-            semi="semi",
-            anti="anti",
-        )
-
         subquery = exp.Subquery(this=other.__ast__, alias="_r")
-        join_kw = join_type_map.get_item(how).unwrap()
-
         if on is not None:
-            on_list = [on] if isinstance(on, (str, Expr)) else on
+            on_list = val_to_iter(on)
             new_ast = self.__ast__.copy().join(
                 subquery,
-                using=exprs_to_nodes(on_list),
-                join_type=join_kw,
+                using=exprs_to_nodes(on_list).collect(tuple),
+                join_type=how,
                 copy=False,
             )
         elif left_on is not None and right_on is not None:
-            left_list = [left_on] if isinstance(left_on, (str, Expr)) else left_on
-            right_list = [right_on] if isinstance(right_on, (str, Expr)) else right_on
             on_expr = (
-                pc.Iter(left_list)
-                .zip(right_list)
+                val_to_iter(left_on)
+                .zip(val_to_iter(right_on))
                 .map_star(
                     lambda lc, rc: exp.EQ(this=to_node(lc), expression=to_node(rc))
                 )
-                .fold(
-                    None,
-                    lambda acc, eq: exp.And(this=acc, expression=eq) if acc else eq,
-                )
+                .reduce(lambda acc, eq: exp.And(this=acc, expression=eq))  # type: ignore[arg-type]
             )
             new_ast = self.__ast__.copy().join(
                 subquery,
                 on=on_expr,
-                join_type=join_kw,
+                join_type=how,
                 copy=False,
             )
         else:
-            new_ast = self.__ast__.copy().join(subquery, join_type=join_kw, copy=False)
+            new_ast = self.__ast__.copy().join(subquery, join_type=how, copy=False)
 
         return self.__class__(new_ast)
 
@@ -212,7 +198,7 @@ class GroupBy:
 
     def agg(self, *exprs: Expr) -> LazyFrame:
         """Aggregate the grouped data."""
-        by_nodes = exprs_to_nodes(self._by)
+        by_nodes = exprs_to_nodes(self._by).collect()
         agg_nodes = exprs_to_nodes(exprs)
         new_ast = (
             self._lf.__ast__.copy()
