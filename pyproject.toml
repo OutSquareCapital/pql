@@ -13,6 +13,8 @@
     requires      = ["uv_build>=0.8.15,<0.9.0"]
 [tool.ruff]
     lint.ignore = [
+        "A001",
+        "A004",
         "C417",
         "COM812",
         "COM812",
