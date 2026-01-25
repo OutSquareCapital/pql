@@ -170,13 +170,13 @@ class LazyFrame:
 
     # ==================== SQL Output ====================
 
-    def sql(self, *, dialect: str = "duckdb", pretty: bool = True) -> str:
+    def sql(self, *, pretty: bool = True) -> str:
         """Generate SQL string."""
-        return self.__ast__.sql(dialect=dialect, pretty=pretty)
+        return self.__ast__.sql(dialect="duckdb", pretty=pretty)
 
-    def explain(self, *, dialect: str = "duckdb") -> str:
+    def explain(self) -> str:
         """Generate EXPLAIN SQL."""
-        return f"EXPLAIN {self.sql(dialect=dialect, pretty=False)}"
+        return f"EXPLAIN {self.sql(pretty=False)}"
 
 
 @dataclass(slots=True)

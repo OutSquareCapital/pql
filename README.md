@@ -1,1 +1,1 @@
-# PQL, write polars syntax, create SQL queries
+# PQL, write polars syntax, create SQL queries for DuckDB
