@@ -11,7 +11,9 @@
 
 [dependency-groups]
     dev = [
+    "duckdb>=1.4.3",
     "polars>=1.37.1",
+    "pyarrow>=23.0.0",
     "pytest>=9.0.2",
 ]
 [build-system]
