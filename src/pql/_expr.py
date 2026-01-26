@@ -20,25 +20,6 @@ def to_node(value: object) -> exp.Expression:
             return exp.convert(value)
 
 
-def to_value(value: object) -> exp.Expression:
-    """Convert a value to a sqlglot literal Expression (strings are literals)."""
-    match value:
-        case Expr():
-            return value.__node__
-        case _:
-            return exp.convert(value)
-
-
-def values_to_nodes(values: Iterable[object]) -> pc.Iter[exp.Expression]:
-    """Convert multiple values to sqlglot literal nodes."""
-    return pc.Iter(values).map(to_value)
-
-
-def exprs_to_nodes(exprs: Iterable[object]) -> pc.Iter[exp.Expression]:
-    """Convert multiple expressions to sqlglot nodes."""
-    return pc.Iter(exprs).map(to_node)
-
-
 def val_to_iter[T](on: str | Expr | Iterable[T]) -> pc.Iter[str | Expr] | pc.Iter[T]:
     return pc.Iter.once(on) if isinstance(on, (str, Expr)) else pc.Iter(on)
 
@@ -123,22 +104,22 @@ class Expr:
         return self.__class__(exp.Abs(this=self.__node__))
 
     def eq(self, other: object) -> Self:
-        return self.__class__(exp.EQ(this=self.__node__, expression=to_value(other)))
+        return self.__class__(exp.EQ(this=self.__node__, expression=to_node(other)))
 
     def ne(self, other: object) -> Self:
-        return self.__class__(exp.NEQ(this=self.__node__, expression=to_value(other)))
+        return self.__class__(exp.NEQ(this=self.__node__, expression=to_node(other)))
 
     def lt(self, other: object) -> Self:
-        return self.__class__(exp.LT(this=self.__node__, expression=to_value(other)))
+        return self.__class__(exp.LT(this=self.__node__, expression=to_node(other)))
 
     def le(self, other: object) -> Self:
-        return self.__class__(exp.LTE(this=self.__node__, expression=to_value(other)))
+        return self.__class__(exp.LTE(this=self.__node__, expression=to_node(other)))
 
     def gt(self, other: object) -> Self:
-        return self.__class__(exp.GT(this=self.__node__, expression=to_value(other)))
+        return self.__class__(exp.GT(this=self.__node__, expression=to_node(other)))
 
     def ge(self, other: object) -> Self:
-        return self.__class__(exp.GTE(this=self.__node__, expression=to_value(other)))
+        return self.__class__(exp.GTE(this=self.__node__, expression=to_node(other)))
 
     def and_(self, other: object) -> Self:
         return self.__class__(exp.And(this=self.__node__, expression=to_node(other)))
@@ -172,7 +153,7 @@ class Expr:
     def fill_null(self, value: object) -> Self:
         """Fill NULL values with the given value."""
         return self.__class__(
-            exp.Coalesce(this=self.__node__, expressions=[to_value(value)])
+            exp.Coalesce(this=self.__node__, expressions=[to_node(value)])
         )
 
     # ==================== Aggregations ====================
@@ -249,13 +230,15 @@ class Expr:
     def between(self, lower: object, upper: object) -> Self:
         """Check if value is between lower and upper (inclusive)."""
         return self.__class__(
-            exp.Between(this=self.__node__, low=to_value(lower), high=to_value(upper))
+            exp.Between(this=self.__node__, low=to_node(lower), high=to_node(upper))
         )
 
     def is_in(self, values: Iterable[object]) -> Self:
         """Check if value is in an iterable of values."""
         return self.__class__(
-            exp.In(this=self.__node__, expressions=values_to_nodes(values).collect())
+            exp.In(
+                this=self.__node__, expressions=pc.Iter(values).map(to_node).collect()
+            )
         )
 
     def is_not_in(self, values: Iterable[object]) -> Self:
@@ -263,7 +246,8 @@ class Expr:
         return self.__class__(
             exp.Not(
                 this=exp.In(
-                    this=self.__node__, expressions=values_to_nodes(values).collect()
+                    this=self.__node__,
+                    expressions=pc.Iter(values).map(to_node).collect(),
                 )
             )
         )
@@ -341,12 +325,12 @@ class ExprStringNameSpace:
 
     def slice(self, offset: int, length: int | None = None) -> Expr:
         """Extract a substring."""
-        args: dict[str, exp.Expression] = {
-            "this": self.__node__,
-            "start": exp.Literal.number(offset + 1),  # SQL is 1-indexed
-        }
+        args = pc.Dict.from_kwargs(
+            this=self.__node__,
+            start=exp.Literal.number(offset + 1),
+        )
         if length is not None:
-            args["length"] = exp.Literal.number(length)
+            args.insert("length", exp.Literal.number(length))
         return Expr(exp.Substring(**args))
 
 

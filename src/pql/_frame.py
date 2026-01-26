@@ -9,7 +9,7 @@ import polars as pl
 import pyochain as pc
 from sqlglot import exp
 
-from ._expr import Expr, exprs_to_nodes, to_node
+from ._expr import Expr, to_node
 
 type FrameInit = duckdb.DuckDBPyRelation | pl.DataFrame | pl.LazyFrame | None
 
@@ -32,7 +32,9 @@ class LazyFrame:
     __slots__ = ("__ast__", "rel")
 
     def __init__(self, data: FrameInit = None) -> None:
-        self.__ast__ = exp.select("*").from_(exp.Table(this=exp.Identifier(this="_")))
+        self.__ast__ = exp.select(exp.Star()).from_(
+            exp.Table(this=exp.Identifier(this="_"))
+        )
         self.rel = _data_to_rel(data)
 
     def __repr__(self) -> str:
@@ -49,14 +51,21 @@ class LazyFrame:
 
     def select(self, *exprs: Expr | str) -> Self:
         """Select columns or expressions."""
-        nodes = exprs_to_nodes(exprs)
-        return self._new(self.__ast__.copy().select(*nodes, append=False, copy=False))
+        return self._new(
+            self.__ast__.copy().select(
+                *pc.Iter(exprs).map(to_node).collect(), append=False, copy=False
+            )
+        )
 
     def with_columns(self, *exprs: Expr) -> Self:
         """Add or replace columns."""
-        nodes = exprs_to_nodes(exprs)
         return self._new(
-            self.__ast__.copy().select("*", *nodes, append=False, copy=False)
+            self.__ast__.copy().select(
+                exp.Star(),
+                *pc.Iter(exprs).map(to_node).collect(),
+                append=False,
+                copy=False,
+            )
         )
 
     def filter(self, *predicates: Expr) -> Self:
@@ -77,22 +86,17 @@ class LazyFrame:
         nulls_last: bool | Iterable[bool] = False,
     ) -> Self:
         """Sort by columns."""
-        desc_iter = (
-            pc.Iter.once(descending).cycle().take(len(by))
-            if isinstance(descending, bool)
-            else pc.Iter(descending)
-        )
-        nulls_iter = (
-            pc.Iter.once(nulls_last).cycle().take(len(by))
-            if isinstance(nulls_last, bool)
-            else pc.Iter(nulls_last)
-        )
+
+        def _args_iter(*, arg: bool | Iterable[bool]) -> pc.Iter[bool]:
+            return (
+                pc.Iter.once(arg).cycle().take(len(by))
+                if isinstance(arg, bool)
+                else pc.Iter(arg)
+            )
 
         order_terms = (
             pc.Iter(by)
-            .zip(desc_iter)
-            .zip(nulls_iter)
-            .map(lambda args: (args[0][0], args[0][1], args[1]))
+            .zip(_args_iter(arg=descending), _args_iter(arg=nulls_last))
             .map_star(
                 lambda col, desc, nl: exp.Ordered(
                     this=to_node(col), desc=desc, nulls_first=None if nl else True
@@ -125,15 +129,20 @@ class LazyFrame:
         new_ast = self.__ast__.copy()
         new_ast.set(
             "distinct",
-            exp.Distinct(on=exp.Tuple(expressions=exprs_to_nodes(cols).collect())),
+            exp.Distinct(
+                on=exp.Tuple(expressions=pc.Iter(cols).map(to_node).collect())
+            ),
         )
         return self._new(new_ast)
 
     def drop(self, *columns: str) -> Self:
         """Drop columns from the frame."""
-        exclude_star = exp.Star(except_=pc.Iter(columns).map(exp.column))
         return self._new(
-            self.__ast__.copy().select(exclude_star, append=False, copy=False)
+            self.__ast__.copy().select(
+                exp.Star(except_=pc.Iter(columns).map(exp.column)),
+                append=False,
+                copy=False,
+            )
         )
 
     def rename(self, mapping: Mapping[str, str]) -> Self:
@@ -161,25 +170,27 @@ class LazyFrame:
         suffix: str = "_right",
     ) -> Self:
         """Join with another LazyFrame."""
-        if how == "cross":
-            return self.__class__(self.rel.cross(other.rel))
-        lhs = self.rel.set_alias("lhs")
-        rhs = other.rel.set_alias("rhs")
-        rel = lhs.join(
-            rhs, condition=_build_join_condition(on, left_on, right_on), how=how
-        )
+        match how:
+            case "cross":
+                return self.__class__(self.rel.cross(other.rel))
+            case _:
+                lhs = self.rel.set_alias("lhs")
+                rhs = other.rel.set_alias("rhs")
+                rel = lhs.join(
+                    rhs, condition=_build_join_condition(on, left_on, right_on), how=how
+                )
 
-        return self.__class__(
-            rel
-            if how in {"semi", "anti"}
-            else _apply_join_suffix(rel, lhs.columns, rhs.columns, on, suffix)
-        )
+                return self.__class__(
+                    rel
+                    if how in {"semi", "anti"}
+                    else _apply_join_suffix(rel, lhs.columns, rhs.columns, on, suffix)
+                )
 
     def sql(self, *, pretty: bool = True) -> str:
         """Generate SQL string."""
         ast = self.__ast__.copy()
         if not ast.expressions:
-            ast = ast.select("*", append=False, copy=False)
+            ast = ast.select(exp.Star(), append=False, copy=False)
         return ast.sql(dialect="duckdb", pretty=pretty)
 
 
@@ -195,10 +206,11 @@ def _build_join_condition(
         case (None, str(), str()):
             return f"lhs.{left_on} = rhs.{right_on}"
         case (None, Iterable(), Iterable()):
-            return " AND ".join(
+            return (
                 pc.Iter(left_on)
                 .zip(right_on)
                 .map_star(lambda lk, rk: f"lhs.{lk} = rhs.{rk}")
+                .join(" AND ")
             )
         case _:
             msg = "Join requires 'on' or both 'left_on' and 'right_on'"
@@ -239,11 +251,10 @@ class GroupBy:
 
     def agg(self, *exprs: Expr) -> LazyFrame:
         """Aggregate the grouped data."""
-        by_nodes = exprs_to_nodes(self._by).collect()
-        agg_nodes = exprs_to_nodes(exprs)
-        new_ast = (
+        by_nodes = pc.Iter(self._by).map(to_node).collect()
+        agg_nodes = pc.Iter(exprs).map(to_node).collect()
+        return self._lf._new(  # type: ignore[private-access]
             self._lf.__ast__.copy()
             .select(*by_nodes, *agg_nodes, append=False, copy=False)
             .group_by(*by_nodes, copy=False)
         )
-        return self._lf._new(new_ast)  # type: ignore[private-access]
