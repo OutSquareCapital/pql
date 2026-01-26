@@ -37,7 +37,6 @@ This report shows the API coverage of pql compared to Polars.
 - `drop_nans` (subset: ColumnNameOrSelector | Collection[ColumnNameOrSelector] | None) -> LazyFrame
 - `drop_nulls` (subset: ColumnNameOrSelector | Collection[ColumnNameOrSelector] | None) -> LazyFrame
 - `dtypes` ()
-- `explain` (format: ExplainFormat, optimized: bool, type_coercion: bool, predicate_pushdown: bool, projection_pushdown: bool, simplify_expression: bool, slice_pushdown: bool, comm_subplan_elim: bool, comm_subexpr_elim: bool, cluster_with_columns: bool, collapse_joins: bool, streaming: bool, engine: EngineType, tree_format: bool | None, optimizations: QueryOptFlags) -> str
 - `explode` (columns: ColumnNameOrSelector | Iterable[ColumnNameOrSelector], more_columns: ColumnNameOrSelector, empty_as_null: bool, keep_nulls: bool) -> LazyFrame
 - `fetch` (n_rows: int, kwargs: Any) -> DataFrame
 - `fill_nan` (value: int | float | Expr | None) -> LazyFrame
@@ -83,6 +82,7 @@ This report shows the API coverage of pql compared to Polars.
 - `sink_ndjson` (path: str | Path | IO[bytes] | IO[str] | _SinkDirectory | PartitionBy, maintain_order: bool, storage_options: dict[str, Any] | None, credential_provider: CredentialProviderFunction | Literal['auto'] | None, retries: int, sync_on_close: SyncOnCloseMethod | None, mkdir: bool, lazy: bool, engine: EngineType, optimizations: QueryOptFlags) -> LazyFrame | None
 - `sink_parquet` (path: str | Path | IO[bytes] | _SinkDirectory | PartitionBy, compression: str, compression_level: int | None, statistics: bool | str | dict[str, bool], row_group_size: int | None, data_page_size: int | None, maintain_order: bool, storage_options: dict[str, Any] | None, credential_provider: CredentialProviderFunction | Literal['auto'] | None, retries: int, sync_on_close: SyncOnCloseMethod | None, metadata: ParquetMetadata | None, mkdir: bool, lazy: bool, field_overwrites: ParquetFieldOverwrites | Sequence[ParquetFieldOverwrites] | Mapping[str, ParquetFieldOverwrites] | None, engine: EngineType, optimizations: QueryOptFlags) -> LazyFrame | None
 - `slice` (offset: int, length: int | None) -> LazyFrame
+- `sql` (query: str, table_name: str) -> LazyFrame
 - `std` (ddof: int) -> LazyFrame
 - `sum` () -> LazyFrame
 - `top_k` (k: int, by: IntoExpr | Iterable[IntoExpr], reverse: bool | Sequence[bool]) -> LazyFrame
@@ -104,6 +104,9 @@ This report shows the API coverage of pql compared to Polars.
 - `drop`: Missing params: strict
   - Polars: (columns: ColumnNameOrSelector | Iterable[ColumnNameOrSelector], strict: bool) -> LazyFrame
   - pql: (columns: str) -> Self
+- `explain`: Missing params: cluster_with_columns, collapse_joins, comm_subexpr_elim, comm_subplan_elim, engine, format, optimizations, optimized, predicate_pushdown, projection_pushdown, simplify_expression, slice_pushdown, streaming, tree_format, type_coercion
+  - Polars: (format: ExplainFormat, optimized: bool, type_coercion: bool, predicate_pushdown: bool, projection_pushdown: bool, simplify_expression: bool, slice_pushdown: bool, comm_subplan_elim: bool, comm_subexpr_elim: bool, cluster_with_columns: bool, collapse_joins: bool, streaming: bool, engine: EngineType, tree_format: bool | None, optimizations: QueryOptFlags) -> str
+  - pql: () -> str
 - `filter`: Missing params: constraints
   - Polars: (predicates: IntoExprColumn | Iterable[IntoExprColumn] | bool | list[bool], constraints: Any) -> LazyFrame
   - pql: (predicates: Expr) -> Self
@@ -122,9 +125,6 @@ This report shows the API coverage of pql compared to Polars.
 - `sort`: Missing params: maintain_order, more_by, multithreaded
   - Polars: (by: IntoExpr | Iterable[IntoExpr], more_by: IntoExpr, descending: bool | Sequence[bool], nulls_last: bool | Sequence[bool], maintain_order: bool, multithreaded: bool) -> LazyFrame
   - pql: (by: str | Expr, descending: bool | Iterable[bool], nulls_last: bool | Iterable[bool]) -> Self
-- `sql`: Missing params: query, table_name; Extra params: pretty
-  - Polars: (query: str, table_name: str) -> LazyFrame
-  - pql: (pretty: bool) -> str
 - `unique`: Missing params: keep, maintain_order
   - Polars: (subset: IntoExpr | Collection[IntoExpr] | None, keep: UniqueKeepStrategy, maintain_order: bool) -> LazyFrame
   - pql: (subset: str | Iterable[str] | None) -> Self
