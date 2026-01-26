@@ -12,8 +12,9 @@
         "polars>=1.37.1",
         "pyarrow>=23.0.0",
         "pytest>=9.0.2",
+        "pytest-cov>=7.0.0",
         "ruff>=0.14.14",
-    ]
+]
 [build-system]
     build-backend = "uv_build"
     requires      = ["uv_build>=0.8.15,<0.9.0"]
