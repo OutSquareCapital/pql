@@ -1,5 +1,7 @@
 """Data types Mapping for PQL."""
 
+from __future__ import annotations
+
 from duckdb import sqltypes
 
 DataType = sqltypes.DuckDBPyType
@@ -17,3 +19,6 @@ UInt64 = sqltypes.UBIGINT
 
 String = sqltypes.VARCHAR
 Date = sqltypes.DATE
+Time = sqltypes.TIME
+Datetime = sqltypes.TIMESTAMP
+Timestamp = sqltypes.TIMESTAMP
