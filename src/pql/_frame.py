@@ -9,13 +9,16 @@ from typing import Literal, Self
 import duckdb
 import polars as pl
 import pyochain as pc
+from polars._typing import FrameInitTypes  # pyright: ignore[reportUnknownVariableType]
 
 from ._expr import Expr, to_expr
 
-type FrameInit = duckdb.DuckDBPyRelation | pl.DataFrame | pl.LazyFrame | None
+type FrameInit = (
+    duckdb.DuckDBPyRelation | pl.DataFrame | pl.LazyFrame | None | FrameInitTypes
+)
 
 
-def _data_to_rel(data: FrameInit) -> duckdb.DuckDBPyRelation:
+def _data_to_rel(data: FrameInit) -> duckdb.DuckDBPyRelation:  # pyright: ignore[reportUnknownParameterType]
     match data:
         case duckdb.DuckDBPyRelation():
             return data
@@ -26,8 +29,11 @@ def _data_to_rel(data: FrameInit) -> duckdb.DuckDBPyRelation:
 
             _ = data
             return duckdb.sql(exp.select(exp.Star()).from_("_").sql(dialect="duckdb"))
+
         case None:
             return duckdb.from_arrow(pl.DataFrame({"_": [None]}))
+        case _:  # pyright: ignore[reportUnknownVariableType]
+            return duckdb.from_arrow(pl.DataFrame(data))
 
 
 class LazyFrame:
@@ -36,11 +42,11 @@ class LazyFrame:
     _rel: duckdb.DuckDBPyRelation
     __slots__ = ("_rel",)
 
-    def __init__(self, data: FrameInit = None) -> None:
+    def __init__(self, data: FrameInit = None) -> None:  # pyright: ignore[reportUnknownParameterType]
         self._rel = _data_to_rel(data)
 
     def __repr__(self) -> str:
-        return f"LazyFrame(\n{self._rel}\n)"
+        return f"LazyFrame\n{self._rel}\n"
 
     def __from_lf__(self, rel: duckdb.DuckDBPyRelation) -> Self:
         instance = self.__class__.__new__(self.__class__)
@@ -184,12 +190,40 @@ class LazyFrame:
                     else _apply_join_suffix(rel, lhs.columns, rhs.columns, on, suffix)
                 )
 
-    def sql(self, *, pretty: bool = True) -> str:
+    def explain(self) -> str:
         """Generate SQL string."""
-        import sqlglot
+        kwords = (
+            "SELECT",
+            "FROM",
+            "WHERE",
+            "GROUP BY",
+            "ORDER BY",
+            "HAVING",
+            "JOIN",
+            "LEFT JOIN",
+            "RIGHT JOIN",
+            "INNER JOIN",
+            "FULL JOIN",
+            "ON",
+            "AND",
+            "OR",
+            "LIMIT",
+            "OFFSET",
+        )
+        qry = (
+            pc.Iter(kwords)
+            .fold(
+                self._rel.sql_query(),
+                lambda acc, kw: acc.replace(f" {kw} ", f"\n{kw} "),
+            )
+            .split("\n")
+        )
 
-        return sqlglot.parse_one(self._rel.sql_query()).sql(
-            dialect="duckdb", pretty=pretty
+        return (
+            pc.Iter(qry)
+            .map(lambda line: line.rstrip())
+            .filter(lambda line: bool(line.strip()))
+            .join("\n")
         )
 
 

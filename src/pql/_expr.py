@@ -49,6 +49,11 @@ def lit(value: object) -> Expr:
     return Expr(duckdb.ConstantExpression(value))
 
 
+def all() -> Expr:
+    """Create an expression representing all columns (equivalent to pl.all())."""
+    return Expr(duckdb.StarExpression())
+
+
 class Expr:
     """Expression wrapper providing Polars-like API over DuckDB expressions."""
 
