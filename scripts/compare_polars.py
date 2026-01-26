@@ -361,9 +361,6 @@ def main() -> None:
             ClassComparison.from_classes(
                 pl.col("x").str.__class__, pql.col("x").str.__class__, name="Expr.str"
             ),
-            ClassComparison.from_classes(
-                pl.col("x").dt.__class__, pql.col("x").dt.__class__, name="Expr.dt"
-            ),
         )
     ).into(generate_report)
 

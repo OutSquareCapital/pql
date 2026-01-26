@@ -517,14 +517,6 @@ class LazyFrame:
         """Interpolate null values using linear interpolation."""
         return self
 
-    def clear(self, n: int = 0) -> Self:
-        """Return empty LazyFrame with same schema, or n null rows."""
-        return (
-            self.head(0)
-            if n == 0
-            else self.__from_lf__(self._rel.limit(n).filter("1=0"))
-        )
-
     def top_k(
         self, k: int, *, by: str | Expr | Iterable[str | Expr], reverse: bool = False
     ) -> Self:

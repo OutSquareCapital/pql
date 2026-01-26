@@ -1,4 +1,3 @@
-from datetime import UTC, datetime
 from functools import partial
 
 import polars as pl
@@ -424,18 +423,6 @@ def test_find() -> None:
     )
 
 
-def test_dt_strftime() -> None:
-    df = pl.DataFrame({"ts": [datetime(2024, 1, 15, tzinfo=UTC)]})
-    assert_eq(
-        pql.LazyFrame(df)
-        .select(pql.col("ts").dt.strftime("%Y-%m-%d").alias("formatted"))
-        .collect(),
-        df.lazy()
-        .select(pl.col("ts").dt.strftime("%Y-%m-%d").alias("formatted"))
-        .collect(),
-    )
-
-
 def test_head() -> None:
     """Test string head."""
     df = pl.DataFrame({"text": ["Hello", "World"]})
@@ -545,43 +532,6 @@ def test_to_time() -> None:
     )
 
 
-def test_extract_groups() -> None:
-    """Test str.extract_groups."""
-    df = pl.DataFrame({"text": ["abc123def456"]})
-    assert_eq(
-        pql.LazyFrame(df)
-        .select(pql.col("text").str.extract_groups(r"(\d+)"))
-        .collect(),
-        pl.LazyFrame(df).select(pl.col("text").str.extract_groups(r"(\d+)")).collect(),
-    )
-
-
-def test_to_integer_non_strict() -> None:
-    """Test str.to_integer with strict=False."""
-    df = pl.DataFrame({"text": ["123", "abc"]})
-    assert_eq(
-        pql.LazyFrame(df)
-        .select(pql.col("text").str.to_integer(strict=False).alias("num"))
-        .collect(),
-        pl.LazyFrame(df)
-        .select(pl.col("text").str.to_integer(strict=False).alias("num"))
-        .collect(),
-    )
-
-
-def test_to_integer_with_base() -> None:
-    """Test str.to_integer with base."""
-    df = pl.DataFrame({"text": ["1010", "1111", "1000"]})
-    assert_eq(
-        pql.LazyFrame(df)
-        .select(pql.col("text").str.to_integer(base=2).alias("num"))
-        .collect(),
-        pl.LazyFrame(df)
-        .select(pl.col("text").str.to_integer(base=2).alias("num"))
-        .collect(),
-    )
-
-
 def test_json_path_match() -> None:
     """Test str.json_path_match."""
     df = pl.DataFrame({"json": ['{"a": 1}', '{"a": 2}']})
@@ -617,19 +567,6 @@ def test_to_decimal() -> None:
         .collect(),
         pl.LazyFrame(df)
         .select(pl.col("text").str.to_decimal(scale=10).alias("dec"))
-        .collect(),
-    )
-
-
-def test_to_integer() -> None:
-    """Test str conversion from base."""
-    df = pl.DataFrame({"bin": ["1010", "1111"]})
-    assert_eq(
-        pql.LazyFrame(df)
-        .select(pql.col("bin").str.to_integer(base=2).alias("num"))
-        .collect(),
-        pl.LazyFrame(df)
-        .select(pl.col("bin").str.to_integer(base=2).alias("num"))
         .collect(),
     )
 

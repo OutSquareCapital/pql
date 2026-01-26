@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Callable, Iterable
-from typing import Any, Concatenate, Literal, Self
+from typing import Any, Concatenate, Self
 
 import duckdb
 import pyochain as pc
@@ -348,14 +348,6 @@ class Expr:
         """Get the sign of the value."""
         return self.__class__(duckdb.FunctionExpression("sign", self._expr))
 
-    def arg_max(self) -> Self:
-        """Get the value of self where value is maximum."""
-        return self.__class__(duckdb.FunctionExpression("arg_max", self._expr))
-
-    def arg_min(self) -> Self:
-        """Get the value of self where value is minimum."""
-        return self.__class__(duckdb.FunctionExpression("arg_min", self._expr))
-
     def cum_sum(self) -> Self:
         """Compute cumulative sum."""
         return self.__class__(
@@ -465,62 +457,9 @@ class Expr:
             )
         )
 
-    def sort_by(
-        self,
-        by: Expr | str | Iterable[Expr | str],
-        *,
-        descending: bool = False,
-    ) -> Self:
-        """Sort by another expression."""
-        by_cols = (by,) if isinstance(by, str | Expr) else tuple(by)
-        order = "DESC" if descending else "ASC"
-        order_clause = (
-            pc.Iter(by_cols).map(lambda b: f"{to_expr(b)} {order}").join(", ")
-        )
-        return self.__class__(
-            duckdb.SQLExpression(f"{self._expr} OVER (ORDER BY {order_clause})")
-        )
-
-    def head(self, n: int = 10) -> Self:
-        """Get first n values."""
-        return self.__class__(duckdb.SQLExpression(f"FIRST({self._expr}, {n})"))
-
-    def tail(self, n: int = 10) -> Self:
-        """Get last n values."""
-        return self.__class__(duckdb.SQLExpression(f"LAST({self._expr}, {n})"))
-
-    def sample(self, n: int = 1) -> Self:
-        """Sample n random values."""
-        return self.__class__(
-            duckdb.SQLExpression(f"RESERVOIR_QUANTILE({self._expr}, 0.5, {n})")
-        )
-
     def shuffle(self) -> Self:
         """Shuffle values randomly."""
         return self.__class__(duckdb.SQLExpression(f"{self._expr} ORDER BY RANDOM()"))
-
-    def arg_sort(self, *, descending: bool = False) -> Self:
-        """Get indices that would sort the expression."""
-        order = "DESC" if descending else "ASC"
-        return self.__class__(
-            duckdb.SQLExpression(
-                f"ROW_NUMBER() OVER (ORDER BY {self._expr} {order}) - 1"
-            )
-        )
-
-    def arg_unique(self) -> Self:
-        """Get indices of unique values."""
-        return self.__class__(duckdb.FunctionExpression("row_number"))
-
-    def append(self, other: Expr) -> Self:
-        """Append another expression."""
-        return self.__class__(
-            duckdb.FunctionExpression("list_concat", self._expr, other.expr)
-        )
-
-    def reverse(self) -> Self:
-        """Reverse values."""
-        return self.__class__(duckdb.FunctionExpression("list_reverse", self._expr))
 
     def explode(self) -> Self:
         """Explode list values."""
@@ -543,44 +482,18 @@ class Expr:
         )
 
     def repeat_by(self, by: Expr | int) -> Self:
-        """Repeat values by count."""
+        """Repeat values by count, returning a list."""
         by_expr = by.expr if isinstance(by, Expr) else duckdb.ConstantExpression(by)
         return self.__class__(
-            duckdb.FunctionExpression("array_repeat", self._expr, by_expr)
-        )
-
-    def ewm_mean(
-        self,
-        *,
-        com: float | None = None,
-        span: float | None = None,
-        half_life: float | None = None,
-        alpha: float | None = None,
-    ) -> Self:
-        """Compute exponentially weighted moving average."""
-        if alpha is not None:
-            a = alpha
-        elif com is not None:
-            a = 1.0 / (1.0 + com)
-        elif span is not None:
-            a = 2.0 / (span + 1.0)
-        elif half_life is not None:
-            a = 1.0 - 0.5 ** (1.0 / half_life)
-        else:
-            a = 0.5
-        return self.__class__(
-            duckdb.SQLExpression(
-                f"SUM({self._expr} * POWER({a}, ROW_NUMBER() - 1)) OVER (ROWS UNBOUNDED PRECEDING) / "
-                f"SUM(POWER({a}, ROW_NUMBER() - 1)) OVER (ROWS UNBOUNDED PRECEDING)"
-            )
+            duckdb.SQLExpression(f"list_transform(range({by_expr}), _ -> {self._expr})")
         )
 
     def peak_max(self) -> Self:
         """Check if value is a local maximum."""
         return self.__class__(
             duckdb.SQLExpression(
-                f"{self._expr} > LAG({self._expr}) AND "
-                f"{self._expr} > LEAD({self._expr})"
+                f"{self._expr} > LAG({self._expr}) OVER () AND "
+                f"{self._expr} > LEAD({self._expr}) OVER ()"
             )
         )
 
@@ -588,8 +501,8 @@ class Expr:
         """Check if value is a local minimum."""
         return self.__class__(
             duckdb.SQLExpression(
-                f"{self._expr} < LAG({self._expr}) AND "
-                f"{self._expr} < LEAD({self._expr})"
+                f"{self._expr} < LAG({self._expr}) OVER () AND "
+                f"{self._expr} < LEAD({self._expr}) OVER ()"
             )
         )
 
@@ -619,25 +532,10 @@ class Expr:
             )
         )
 
-    def map_elements(self, function: Callable[[Any], Any]) -> Self:
-        """Map a function over elements (requires UDF registration)."""
-        func_name = getattr(function, "__name__", "udf")
-        return self.__class__(duckdb.FunctionExpression(func_name, self._expr))
-
-    def map_batches(self, function: Callable[[Any], Any]) -> Self:
-        """Map a function over batches (requires UDF registration)."""
-        func_name = getattr(function, "__name__", "udf")
-        return self.__class__(duckdb.FunctionExpression(func_name, self._expr))
-
     @property
     def str(self) -> ExprStringNameSpace:
         """Access string operations."""
         return ExprStringNameSpace(self._expr)
-
-    @property
-    def dt(self) -> ExprDateTimeNameSpace:
-        """Access datetime operations."""
-        return ExprDateTimeNameSpace(self._expr)
 
 
 class ExprStringNameSpace:
@@ -788,10 +686,6 @@ class ExprStringNameSpace:
             )
         )
 
-    def extract_groups(self, pattern: str) -> Expr:
-        """Extract regex groups."""
-        return self.extract_all(pattern)
-
     def count_matches(self, pattern: str, *, literal: bool = False) -> Expr:
         """Count pattern matches."""
         return (
@@ -873,24 +767,6 @@ class ExprStringNameSpace:
                 duckdb.FunctionExpression(
                     "strptime", self._expr, duckdb.ConstantExpression(fmt)
                 ).cast(datatypes.Time)
-            )
-        )
-
-    def to_integer(self, *, base: int = 10, strict: bool = True) -> Expr:
-        """Convert string to integer."""
-        if base == 10:
-            return (
-                Expr(self._expr.cast(datatypes.Int64))
-                if strict
-                else Expr(
-                    duckdb.FunctionExpression(
-                        "try_cast", self._expr, duckdb.ConstantExpression("BIGINT")
-                    )
-                )
-            )
-        return Expr(
-            duckdb.FunctionExpression(
-                "from_base", self._expr, duckdb.ConstantExpression(base)
             )
         )
 
@@ -981,204 +857,18 @@ class ExprStringNameSpace:
         )
 
     def find(self, pattern: str, *, literal: bool = False) -> Expr:
-        """Find position of pattern (0-indexed, returns 0 if not found)."""
-        return (
-            Expr(
+        """Find position of pattern (0-indexed, returns -1 if not found)."""
+        if literal:
+            return Expr(
                 duckdb.FunctionExpression(
                     "instr", self._expr, duckdb.ConstantExpression(pattern)
                 )
                 - duckdb.ConstantExpression(1)
             )
-            if literal
-            else Expr(
-                duckdb.FunctionExpression(
-                    "regexp_matches", self._expr, duckdb.ConstantExpression(pattern)
-                )
+        return Expr(
+            duckdb.SQLExpression(
+                f"CASE WHEN regexp_matches({self._expr}, '{pattern}') "
+                f"THEN instr({self._expr}, regexp_extract({self._expr}, '{pattern}')) - 1 "
+                f"ELSE -1 END"
             )
         )
-
-
-class ExprDateTimeNameSpace:
-    """Datetime operations namespace (equivalent to pl.Expr.dt)."""
-
-    __slots__ = ("_expr",)
-
-    def __init__(self, expr: duckdb.Expression) -> None:
-        self._expr = expr
-
-    def _utc_func(self, func: str) -> Expr:
-        """Apply a function to the UTC-converted timestamp."""
-        return Expr(
-            duckdb.FunctionExpression(
-                func,
-                duckdb.FunctionExpression(
-                    "timezone", duckdb.ConstantExpression("UTC"), self._expr
-                ),
-            )
-        )
-
-    def year(self) -> Expr:
-        """Extract the year."""
-        return self._utc_func("year")
-
-    def month(self) -> Expr:
-        """Extract the month."""
-        return self._utc_func("month")
-
-    def day(self) -> Expr:
-        """Extract the day."""
-        return self._utc_func("day")
-
-    def hour(self) -> Expr:
-        """Extract the hour."""
-        return self._utc_func("hour")
-
-    def minute(self) -> Expr:
-        """Extract the minute."""
-        return Expr(duckdb.FunctionExpression("minute", self._expr))
-
-    def second(self) -> Expr:
-        """Extract the second."""
-        return Expr(duckdb.FunctionExpression("second", self._expr))
-
-    def weekday(self) -> Expr:
-        """Extract the day of week (1=Monday, 7=Sunday)."""
-        return self._utc_func("dayofweek")
-
-    def week(self) -> Expr:
-        """Extract the week number."""
-        return Expr(duckdb.FunctionExpression("week", self._expr))
-
-    def date(self) -> Expr:
-        """Extract the date part."""
-        utc_expr = duckdb.FunctionExpression(
-            "timezone", duckdb.ConstantExpression("UTC"), self._expr
-        )
-        return Expr(utc_expr.cast("DATE"))
-
-    def convert_time_zone(self, time_zone: str) -> Expr:
-        """Convert to a different timezone."""
-        return Expr(
-            duckdb.FunctionExpression(
-                "timezone", duckdb.ConstantExpression(time_zone), self._expr
-            )
-        )
-
-    def quarter(self) -> Expr:
-        """Extract the quarter."""
-        return self._utc_func("quarter")
-
-    def ordinal_day(self) -> Expr:
-        """Extract the day of year."""
-        return self._utc_func("dayofyear")
-
-    def iso_year(self) -> Expr:
-        """Extract the ISO year."""
-        return Expr(duckdb.FunctionExpression("isoyear", self._expr))
-
-    def total_microseconds(self) -> Expr:
-        """Get total microseconds for duration."""
-        return Expr(duckdb.FunctionExpression("epoch_us", self._expr))
-
-    def total_nanoseconds(self) -> Expr:
-        """Get total nanoseconds for duration."""
-        return Expr(duckdb.FunctionExpression("epoch_ns", self._expr))
-
-    def epoch(self, time_unit: Literal["s", "ms", "us", "ns"] = "us") -> Expr:
-        """Get epoch timestamp."""
-        match time_unit:
-            case "s":
-                return Expr(duckdb.FunctionExpression("epoch", self._expr))
-            case "ms":
-                return Expr(duckdb.FunctionExpression("epoch_ms", self._expr))
-            case "us":
-                return Expr(duckdb.FunctionExpression("epoch_us", self._expr))
-            case "ns":
-                return Expr(duckdb.FunctionExpression("epoch_ns", self._expr))
-
-    def is_leap_year(self) -> Expr:
-        """Check if year is a leap year."""
-        year_expr = duckdb.FunctionExpression("year", self._expr)
-        return Expr(
-            (year_expr % duckdb.ConstantExpression(4) == duckdb.ConstantExpression(0))
-            & (
-                (
-                    year_expr % duckdb.ConstantExpression(100)
-                    != duckdb.ConstantExpression(0)
-                )
-                | (
-                    year_expr % duckdb.ConstantExpression(400)
-                    == duckdb.ConstantExpression(0)
-                )
-            )
-        )
-
-    def nanosecond(self) -> Expr:
-        """Extract the nanosecond."""
-        return Expr(duckdb.FunctionExpression("nanosecond", self._expr))
-
-    def millisecond(self) -> Expr:
-        """Extract the millisecond."""
-        return Expr(
-            duckdb.FunctionExpression("epoch_ms", self._expr)
-            % duckdb.ConstantExpression(1000)
-        )
-
-    def microsecond(self) -> Expr:
-        """Extract the microsecond."""
-        return Expr(
-            duckdb.FunctionExpression("epoch_us", self._expr)
-            % duckdb.ConstantExpression(1000000)
-        )
-
-    def timestamp(self, time_unit: Literal["s", "ms", "us", "ns"] = "us") -> Expr:
-        """Get timestamp value."""
-        return self.epoch(time_unit)
-
-    def offset_by(self, by: str) -> Expr:
-        """Offset datetime by interval."""
-        return Expr(self._expr + duckdb.SQLExpression(f"INTERVAL '{by}'"))
-
-    def truncate(self, every: str) -> Expr:
-        """Truncate datetime to given precision."""
-        return Expr(
-            duckdb.FunctionExpression(
-                "date_trunc",
-                duckdb.ConstantExpression(every),
-                duckdb.FunctionExpression(
-                    "timezone", duckdb.ConstantExpression("UTC"), self._expr
-                ),
-            )
-        )
-
-    def strftime(self, fmt: str) -> Expr:
-        """Format datetime as string."""
-        return Expr(
-            duckdb.FunctionExpression(
-                "strftime", self._expr, duckdb.ConstantExpression(fmt)
-            )
-        )
-
-    def dst_offset(self) -> Expr:
-        """Get daylight saving time offset."""
-        return Expr(duckdb.ConstantExpression(0))
-
-    def base_utc_offset(self) -> Expr:
-        """Get base UTC offset."""
-        return Expr(duckdb.ConstantExpression(0))
-
-    def century(self) -> Expr:
-        """Get the century."""
-        return Expr(duckdb.FunctionExpression("century", self._expr))
-
-    def month_start(self) -> Expr:
-        """Get first day of the month."""
-        return Expr(
-            duckdb.FunctionExpression(
-                "date_trunc", duckdb.ConstantExpression("month"), self._expr
-            )
-        )
-
-    def month_end(self) -> Expr:
-        """Get last day of the month."""
-        return Expr(duckdb.FunctionExpression("last_day", self._expr))

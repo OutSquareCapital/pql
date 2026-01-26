@@ -7,11 +7,11 @@ This report shows the API coverage of pql compared to Polars.
 | Class | Coverage | Matched | Missing | Mismatched | Extra |
 |-------|----------|---------|---------|------------|-------|
 | LazyFrame | 35.2% | 31 | 42 | 15 | 1 |
-| Expr | 30.0% | 65 | 130 | 22 | 1 |
-| Expr.str | 46.9% | 23 | 13 | 13 | 0 |
-| Expr.dt | 53.2% | 25 | 18 | 4 | 0 |
+| Expr | 26.7% | 58 | 144 | 15 | 1 |
+| Expr.str | 44.9% | 22 | 15 | 12 | 0 |
 
 ## LazyFrame
+
 
 ### [v] Matched Methods (31)
 
@@ -71,7 +71,7 @@ This report shows the API coverage of pql compared to Polars.
 - `merge_sorted` (other: LazyFrame, key: str) -> LazyFrame
 - `pipe_with_schema` (function: Callable[[LazyFrame, Schema], LazyFrame]) -> LazyFrame
 - `pivot` (on: ColumnNameOrSelector | Sequence[ColumnNameOrSelector], on_columns: Sequence[Any] | pl.Series | pl.DataFrame, index: ColumnNameOrSelector | Sequence[ColumnNameOrSelector] | None, values: ColumnNameOrSelector | Sequence[ColumnNameOrSelector] | None, aggregate_function: PivotAgg | Expr | None, maintain_order: bool, separator: str) -> LazyFrame
-- `profile` (type_coercion: bool, predicate_pushdown: bool, projection_pushdown: bool, simplify_expression: bool, no_optimization: bool, slice_pushdown: bool, comm_subplan_elim: bool, comm_subexpr_elim: bool, cluster_with_columns: bool, collapse_joins: bool, show_plot: bool, truncate_nodes: int, figsize: tuple[int, int], engine: EngineType, optimizations: QueryOptFlags,_kwargs: Any) -> tuple[DataFrame, DataFrame]
+- `profile` (type_coercion: bool, predicate_pushdown: bool, projection_pushdown: bool, simplify_expression: bool, no_optimization: bool, slice_pushdown: bool, comm_subplan_elim: bool, comm_subexpr_elim: bool, cluster_with_columns: bool, collapse_joins: bool, show_plot: bool, truncate_nodes: int, figsize: tuple[int, int], engine: EngineType, optimizations: QueryOptFlags, _kwargs: Any) -> tuple[DataFrame, DataFrame]
 - `remote` (context: pc.ComputeContext | None, plan_type: pc._typing.PlanTypePreference, n_retries: int, engine: pc._typing.Engine, scaling_mode: pc._typing.ScalingMode) -> pc.LazyFrameRemote
 - `remove` (predicates: IntoExprColumn | Iterable[IntoExprColumn] | bool | list[bool] | np.ndarray[Any, Any], constraints: Any) -> LazyFrame
 - `rolling` (index_column: IntoExpr, period: str | timedelta, offset: str | timedelta | None, closed: ClosedInterval, group_by: IntoExpr | Iterable[IntoExpr] | None) -> LazyGroupBy
@@ -79,7 +79,7 @@ This report shows the API coverage of pql compared to Polars.
 - `serialize` (file: IOBase | str | Path | None, format: SerializationFormat) -> bytes | str | None
 - `set_sorted` (column: str | list[str], more_columns: str, descending: bool | list[bool], nulls_last: bool | list[bool]) -> LazyFrame
 - `show` (limit: int | None, ascii_tables: bool | None, decimal_separator: str | None, thousands_separator: str | bool | None, float_precision: int | None, fmt_float: FloatFmt | None, fmt_str_lengths: int | None, fmt_table_cell_list_len: int | None, tbl_cell_alignment: Literal['LEFT', 'CENTER', 'RIGHT'] | None, tbl_cell_numeric_alignment: Literal['LEFT', 'CENTER', 'RIGHT'] | None, tbl_cols: int | None, tbl_column_data_type_inline: bool | None, tbl_dataframe_shape_below: bool | None, tbl_formatting: TableFormatNames | None, tbl_hide_column_data_types: bool | None, tbl_hide_column_names: bool | None, tbl_hide_dtype_separator: bool | None, tbl_hide_dataframe_shape: bool | None, tbl_width_chars: int | None, trim_decimal_zeros: bool | None) -> None
-- `show_graph` (optimized: bool, show: bool, output_path: str | Path | None, raw_output: bool, figsize: tuple[float, float], type_coercion: bool,_type_check: bool, predicate_pushdown: bool, projection_pushdown: bool, simplify_expression: bool, slice_pushdown: bool, comm_subplan_elim: bool, comm_subexpr_elim: bool, cluster_with_columns: bool, collapse_joins: bool, engine: EngineType, plan_stage: PlanStage,_check_order: bool, optimizations: QueryOptFlags) -> str | None
+- `show_graph` (optimized: bool, show: bool, output_path: str | Path | None, raw_output: bool, figsize: tuple[float, float], type_coercion: bool, _type_check: bool, predicate_pushdown: bool, projection_pushdown: bool, simplify_expression: bool, slice_pushdown: bool, comm_subplan_elim: bool, comm_subexpr_elim: bool, cluster_with_columns: bool, collapse_joins: bool, engine: EngineType, plan_stage: PlanStage, _check_order: bool, optimizations: QueryOptFlags) -> str | None
 - `sink_batches` (function: Callable[[DataFrame], bool | None], chunk_size: int | None, maintain_order: bool, lazy: bool, engine: EngineType, optimizations: QueryOptFlags) -> pl.LazyFrame | None
 - `sink_delta` (target: str | Path | deltalake.DeltaTable, mode: Literal['error', 'append', 'overwrite', 'ignore', 'merge'], storage_options: dict[str, str] | None, credential_provider: CredentialProviderFunction | Literal['auto'] | None, delta_write_options: dict[str, Any] | None, delta_merge_options: dict[str, Any] | None, optimizations: QueryOptFlags) -> deltalake.table.TableMerger | None
 - `sink_ipc` (path: str | Path | IO[bytes] | _SinkDirectory | PartitionBy, compression: IpcCompression | None, compat_level: CompatLevel | None, record_batch_size: int | None, maintain_order: bool, storage_options: dict[str, Any] | None, credential_provider: CredentialProviderFunction | Literal['auto'] | None, retries: int, sync_on_close: SyncOnCloseMethod | None, mkdir: bool, lazy: bool, engine: EngineType, optimizations: QueryOptFlags) -> LazyFrame | None
@@ -98,7 +98,7 @@ This report shows the API coverage of pql compared to Polars.
   - Polars: (dtypes: Mapping[ColumnNameOrSelector | PolarsDataType, PolarsDataType | PythonDataType] | PolarsDataType | pl.DataTypeExpr | Schema, strict: bool) -> LazyFrame
   - pql: (dtypes: Mapping[str, datatypes.DataType] | datatypes.DataType) -> Self
 - `collect`: Missing params: _kwargs, background, cluster_with_columns, collapse_joins, comm_subexpr_elim, comm_subplan_elim, engine, no_optimization, optimizations, predicate_pushdown, projection_pushdown, simplify_expression, slice_pushdown, type_coercion
-  - Polars: (type_coercion: bool, predicate_pushdown: bool, projection_pushdown: bool, simplify_expression: bool, slice_pushdown: bool, comm_subplan_elim: bool, comm_subexpr_elim: bool, cluster_with_columns: bool, collapse_joins: bool, no_optimization: bool, engine: EngineType, background: bool, optimizations: QueryOptFlags,_kwargs: Any) -> DataFrame | InProcessQuery
+  - Polars: (type_coercion: bool, predicate_pushdown: bool, projection_pushdown: bool, simplify_expression: bool, slice_pushdown: bool, comm_subplan_elim: bool, comm_subexpr_elim: bool, cluster_with_columns: bool, collapse_joins: bool, no_optimization: bool, engine: EngineType, background: bool, optimizations: QueryOptFlags, _kwargs: Any) -> DataFrame | InProcessQuery
   - pql: () -> pl.DataFrame
 - `drop`: Missing params: strict
   - Polars: (columns: ColumnNameOrSelector | Iterable[ColumnNameOrSelector], strict: bool) -> LazyFrame
@@ -146,7 +146,8 @@ This report shows the API coverage of pql compared to Polars.
 
 ## Expr
 
-### [v] Matched Methods (65)
+
+### [v] Matched Methods (58)
 
 - `abs`
 - `add`
@@ -155,9 +156,6 @@ This report shows the API coverage of pql compared to Polars.
 - `arccos`
 - `arcsin`
 - `arctan`
-- `arg_max`
-- `arg_min`
-- `arg_unique`
 - `cbrt`
 - `ceil`
 - `clip`
@@ -165,7 +163,6 @@ This report shows the API coverage of pql compared to Polars.
 - `cosh`
 - `cum_count`
 - `degrees`
-- `dt`
 - `eq`
 - `exp`
 - `fill_nan`
@@ -174,7 +171,6 @@ This report shows the API coverage of pql compared to Polars.
 - `floordiv`
 - `ge`
 - `gt`
-- `head`
 - `is_duplicated`
 - `is_finite`
 - `is_first_distinct`
@@ -201,7 +197,6 @@ This report shows the API coverage of pql compared to Polars.
 - `pipe`
 - `radians`
 - `repeat_by`
-- `reverse`
 - `round`
 - `sign`
 - `sin`
@@ -209,21 +204,25 @@ This report shows the API coverage of pql compared to Polars.
 - `sqrt`
 - `str`
 - `sub`
-- `tail`
 - `tan`
 - `tanh`
 - `truediv`
 
-### [x] Missing Methods (130)
+### [x] Missing Methods (144)
 
 - `agg_groups` () -> Expr
 - `all` (ignore_nulls: bool) -> Expr
 - `any` (ignore_nulls: bool) -> Expr
+- `append` (other: IntoExpr, upcast: bool) -> Expr
 - `approx_n_unique` () -> Expr
 - `arccosh` () -> Expr
 - `arcsinh` () -> Expr
 - `arctanh` () -> Expr
+- `arg_max` () -> Expr
+- `arg_min` () -> Expr
+- `arg_sort` (descending: bool, nulls_last: bool) -> Expr
 - `arg_true` () -> Expr
+- `arg_unique` () -> Expr
 - `arr` ()
 - `bin` ()
 - `bitwise_and` () -> Expr
@@ -247,8 +246,10 @@ This report shows the API coverage of pql compared to Polars.
 - `dot` (other: Expr | str) -> Expr
 - `drop_nans` () -> Expr
 - `drop_nulls` () -> Expr
+- `dt` ()
 - `entropy` (base: float, normalize: bool) -> Expr
 - `eq_missing` (other: Any) -> Expr
+- `ewm_mean` (com: float | None, span: float | None, half_life: float | None, alpha: float | None, adjust: bool, min_samples: int, ignore_nulls: bool) -> Expr
 - `ewm_mean_by` (by: str | IntoExpr, half_life: str | timedelta) -> Expr
 - `ewm_std` (com: float | None, span: float | None, half_life: float | None, alpha: float | None, adjust: bool, bias: bool, min_samples: int, ignore_nulls: bool) -> Expr
 - `ewm_var` (com: float | None, span: float | None, half_life: float | None, alpha: float | None, adjust: bool, bias: bool, min_samples: int, ignore_nulls: bool) -> Expr
@@ -262,6 +263,7 @@ This report shows the API coverage of pql compared to Polars.
 - `gather_every` (n: int, offset: int) -> Expr
 - `get` (index: int | Expr, null_on_oob: bool) -> Expr
 - `has_nulls` () -> Expr
+- `head` (n: int | Expr) -> Expr
 - `hist` (bins: IntoExpr | None, bin_count: int | None, include_category: bool, include_breakpoint: bool) -> Expr
 - `implode` () -> Expr
 - `index_of` (element: IntoExpr) -> Expr
@@ -276,6 +278,8 @@ This report shows the API coverage of pql compared to Polars.
 - `limit` (n: int | Expr) -> Expr
 - `list` ()
 - `lower_bound` () -> Expr
+- `map_batches` (function: Callable[[Series], Series | Any], return_dtype: PolarsDataType | pl.DataTypeExpr | None, agg_list: bool, is_elementwise: bool, returns_scalar: bool) -> Expr
+- `map_elements` (function: Callable[[Any], Any], return_dtype: PolarsDataType | pl.DataTypeExpr | None, skip_nulls: bool, pass_name: bool, strategy: MapElementsStrategy, returns_scalar: bool) -> Expr
 - `max` () -> Expr
 - `max_by` (by: IntoExpr) -> Expr
 - `mean` () -> Expr
@@ -301,6 +305,7 @@ This report shows the API coverage of pql compared to Polars.
 - `reinterpret` (signed: bool) -> Expr
 - `replace_strict` (old: IntoExpr | Sequence[Any] | Mapping[Any, Any], new: IntoExpr | Sequence[Any] | NoDefault, default: IntoExpr | NoDefault, return_dtype: PolarsDataType | pl.DataTypeExpr | None) -> Expr
 - `reshape` (dimensions: tuple[int, ...]) -> Expr
+- `reverse` () -> Expr
 - `rle` () -> Expr
 - `rle_id` () -> Expr
 - `rolling` (index_column: IntoExprColumn, period: str | timedelta, offset: str | timedelta | None, closed: ClosedInterval) -> Expr
@@ -326,6 +331,7 @@ This report shows the API coverage of pql compared to Polars.
 - `rolling_var` (window_size: int, weights: list[float] | None, min_samples: int | None, center: bool, ddof: int) -> Expr
 - `rolling_var_by` (by: IntoExpr, window_size: timedelta | str, min_samples: int, closed: ClosedInterval, ddof: int) -> Expr
 - `round_sig_figs` (digits: int) -> Expr
+- `sample` (n: int | IntoExprColumn | None, fraction: float | IntoExprColumn | None, with_replacement: bool, shuffle: bool, seed: int | None) -> Expr
 - `search_sorted` (element: IntoExpr | np.ndarray[Any, Any], side: SearchSortedSide, descending: bool) -> Expr
 - `set_sorted` (descending: bool) -> Expr
 - `shift` (n: int | IntoExprColumn, fill_value: IntoExpr | None) -> Expr
@@ -333,9 +339,11 @@ This report shows the API coverage of pql compared to Polars.
 - `skew` (bias: bool) -> Expr
 - `slice` (offset: int | Expr, length: int | Expr | None) -> Expr
 - `sort` (descending: bool, nulls_last: bool) -> Expr
+- `sort_by` (by: IntoExpr | Iterable[IntoExpr], more_by: IntoExpr, descending: bool | Sequence[bool], nulls_last: bool | Sequence[bool], multithreaded: bool, maintain_order: bool) -> Expr
 - `std` (ddof: int) -> Expr
 - `struct` ()
 - `sum` () -> Expr
+- `tail` (n: int | Expr) -> Expr
 - `to_physical` () -> Expr
 - `top_k` (k: int | IntoExprColumn) -> Expr
 - `top_k_by` (by: IntoExpr | Iterable[IntoExpr], k: int | IntoExprColumn, reverse: bool | Sequence[bool]) -> Expr
@@ -347,14 +355,8 @@ This report shows the API coverage of pql compared to Polars.
 - `where` (predicate: Expr) -> Expr
 - `xor` (other: Any) -> Expr
 
-### [!] Signature Mismatches (22)
+### [!] Signature Mismatches (15)
 
-- `append`: Missing params: upcast
-  - Polars: (other: IntoExpr, upcast: bool) -> Expr
-  - pql: (other: Expr) -> Self
-- `arg_sort`: Missing params: nulls_last
-  - Polars: (descending: bool, nulls_last: bool) -> Expr
-  - pql: (descending: bool) -> Self
 - `backward_fill`: Missing params: limit
   - Polars: (limit: int | None) -> Expr
   - pql: () -> Self
@@ -373,9 +375,6 @@ This report shows the API coverage of pql compared to Polars.
 - `cum_sum`: Missing params: reverse
   - Polars: (reverse: bool) -> Expr
   - pql: () -> Self
-- `ewm_mean`: Missing params: adjust, ignore_nulls, min_samples
-  - Polars: (com: float | None, span: float | None, half_life: float | None, alpha: float | None, adjust: bool, min_samples: int, ignore_nulls: bool) -> Expr
-  - pql: (com: float | None, span: float | None, half_life: float | None, alpha: float | None) -> Self
 - `explode`: Missing params: empty_as_null, keep_nulls
   - Polars: (empty_as_null: bool, keep_nulls: bool) -> Expr
   - pql: () -> Self
@@ -394,27 +393,15 @@ This report shows the API coverage of pql compared to Polars.
 - `is_in`: Missing params: nulls_equal, other; Extra params: values
   - Polars: (other: Expr | Collection[Any] | Series, nulls_equal: bool) -> Expr
   - pql: (values: Iterable[object]) -> Self
-- `map_batches`: Missing params: agg_list, is_elementwise, return_dtype, returns_scalar
-  - Polars: (function: Callable[[Series], Series | Any], return_dtype: PolarsDataType | pl.DataTypeExpr | None, agg_list: bool, is_elementwise: bool, returns_scalar: bool) -> Expr
-  - pql: (function: Callable[[Any], Any]) -> Self
-- `map_elements`: Missing params: pass_name, return_dtype, returns_scalar, skip_nulls, strategy
-  - Polars: (function: Callable[[Any], Any], return_dtype: PolarsDataType | pl.DataTypeExpr | None, skip_nulls: bool, pass_name: bool, strategy: MapElementsStrategy, returns_scalar: bool) -> Expr
-  - pql: (function: Callable[[Any], Any]) -> Self
 - `pow`: Missing params: exponent; Extra params: other
   - Polars: (exponent: IntoExprColumn | int | float) -> Expr
   - pql: (other: object) -> Self
 - `replace`: Missing params: default, return_dtype
   - Polars: (old: IntoExpr | Sequence[Any] | Mapping[Any, Any], new: IntoExpr | Sequence[Any] | NoDefault, default: IntoExpr | NoDefault, return_dtype: PolarsDataType | None) -> Expr
   - pql: (old: object | Iterable[object], new: object | Iterable[object]) -> Self
-- `sample`: Missing params: fraction, seed, shuffle, with_replacement
-  - Polars: (n: int | IntoExprColumn | None, fraction: float | IntoExprColumn | None, with_replacement: bool, shuffle: bool, seed: int | None) -> Expr
-  - pql: (n: int) -> Self
 - `shuffle`: Missing params: seed
   - Polars: (seed: int | None) -> Expr
   - pql: () -> Self
-- `sort_by`: Missing params: maintain_order, more_by, multithreaded, nulls_last
-  - Polars: (by: IntoExpr | Iterable[IntoExpr], more_by: IntoExpr, descending: bool | Sequence[bool], nulls_last: bool | Sequence[bool], multithreaded: bool, maintain_order: bool) -> Expr
-  - pql: (by: Expr | str | Iterable[Expr | str], descending: bool) -> Self
 
 ### [+] Extra Methods (pql-only) (1)
 
@@ -422,13 +409,13 @@ This report shows the API coverage of pql compared to Polars.
 
 ## Expr.str
 
-### [v] Matched Methods (23)
+
+### [v] Matched Methods (22)
 
 - `count_matches`
 - `ends_with`
 - `extract`
 - `extract_all`
-- `extract_groups`
 - `head`
 - `len_bytes`
 - `len_chars`
@@ -448,7 +435,7 @@ This report shows the API coverage of pql compared to Polars.
 - `to_uppercase`
 - `zfill`
 
-### [x] Missing Methods (13)
+### [x] Missing Methods (15)
 
 - `concat` (delimiter: str | None, ignore_nulls: bool) -> Expr
 - `contains_any` (patterns: IntoExpr, ascii_case_insensitive: bool) -> Expr
@@ -456,6 +443,7 @@ This report shows the API coverage of pql compared to Polars.
 - `encode` (encoding: TransferEncoding) -> Expr
 - `escape_regex` () -> Expr
 - `explode` () -> Expr
+- `extract_groups` (pattern: str) -> Expr
 - `extract_many` (patterns: IntoExpr, ascii_case_insensitive: bool, overlapping: bool, leftmost: bool) -> Expr
 - `find_many` (patterns: IntoExpr, ascii_case_insensitive: bool, overlapping: bool, leftmost: bool) -> Expr
 - `join` (delimiter: str, ignore_nulls: bool) -> Expr
@@ -463,8 +451,9 @@ This report shows the API coverage of pql compared to Polars.
 - `split_exact` (by: IntoExpr, n: int, inclusive: bool) -> Expr
 - `splitn` (by: IntoExpr, n: int) -> Expr
 - `strptime` (dtype: PolarsTemporalType, format: str | None, strict: bool, exact: bool, cache: bool, ambiguous: Ambiguous | Expr) -> Expr
+- `to_integer` (base: int | IntoExprColumn, dtype: PolarsIntegerType, strict: bool) -> Expr
 
-### [!] Signature Mismatches (13)
+### [!] Signature Mismatches (12)
 
 - `contains`: Missing params: strict
   - Polars: (pattern: str | Expr, literal: bool, strict: bool) -> Expr
@@ -499,75 +488,6 @@ This report shows the API coverage of pql compared to Polars.
 - `to_datetime`: Missing params: ambiguous, cache, exact, format, strict; Extra params: fmt
   - Polars: (format: str | None, time_unit: TimeUnit | None, time_zone: str | None, strict: bool, exact: bool, cache: bool, ambiguous: Ambiguous | Expr) -> Expr
   - pql: (fmt: str | None, time_unit: str, time_zone: str | None) -> Expr
-- `to_integer`: Missing params: dtype
-  - Polars: (base: int | IntoExprColumn, dtype: PolarsIntegerType, strict: bool) -> Expr
-  - pql: (base: int, strict: bool) -> Expr
 - `to_time`: Missing params: cache, format, strict; Extra params: fmt
   - Polars: (format: str | None, strict: bool, cache: bool) -> Expr
   - pql: (fmt: str | None) -> Expr
-
-## Expr.dt
-
-### [v] Matched Methods (25)
-
-- `base_utc_offset`
-- `century`
-- `convert_time_zone`
-- `date`
-- `day`
-- `dst_offset`
-- `epoch`
-- `hour`
-- `is_leap_year`
-- `iso_year`
-- `microsecond`
-- `millisecond`
-- `minute`
-- `month`
-- `month_end`
-- `month_start`
-- `nanosecond`
-- `offset_by`
-- `ordinal_day`
-- `quarter`
-- `timestamp`
-- `truncate`
-- `week`
-- `weekday`
-- `year`
-
-### [x] Missing Methods (18)
-
-- `add_business_days` (n: int | IntoExpr, week_mask: Iterable[bool], holidays: Iterable[dt.date], roll: Roll) -> Expr
-- `cast_time_unit` (time_unit: TimeUnit) -> Expr
-- `combine` (time: dt.time | Expr, time_unit: TimeUnit) -> Expr
-- `datetime` () -> Expr
-- `days_in_month` () -> Expr
-- `is_business_day` (week_mask: Iterable[bool], holidays: Iterable[dt.date]) -> Expr
-- `millennium` () -> Expr
-- `replace` (year: int | IntoExpr | None, month: int | IntoExpr | None, day: int | IntoExpr | None, hour: int | IntoExpr | None, minute: int | IntoExpr | None, second: int | IntoExpr | None, microsecond: int | IntoExpr | None, ambiguous: Ambiguous | Expr) -> Expr
-- `replace_time_zone` (time_zone: str | None, ambiguous: Ambiguous | Expr, non_existent: NonExistent) -> Expr
-- `round` (every: str | dt.timedelta | IntoExprColumn) -> Expr
-- `time` () -> Expr
-- `to_string` (format: str | None) -> Expr
-- `total_days` (fractional: bool) -> Expr
-- `total_hours` (fractional: bool) -> Expr
-- `total_milliseconds` (fractional: bool) -> Expr
-- `total_minutes` (fractional: bool) -> Expr
-- `total_seconds` (fractional: bool) -> Expr
-- `with_time_unit` (time_unit: TimeUnit) -> Expr
-
-### [!] Signature Mismatches (4)
-
-- `second`: Missing params: fractional
-  - Polars: (fractional: bool) -> Expr
-  - pql: () -> Expr
-- `strftime`: Missing params: format; Extra params: fmt
-  - Polars: (format: str) -> Expr
-  - pql: (fmt: str) -> Expr
-- `total_microseconds`: Missing params: fractional
-  - Polars: (fractional: bool) -> Expr
-  - pql: () -> Expr
-- `total_nanoseconds`: Missing params: fractional
-  - Polars: (fractional: bool) -> Expr
-  - pql: () -> Expr
