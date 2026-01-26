@@ -30,12 +30,9 @@ class LazyFrame:
             case pl.DataFrame():
                 self.rel = duckdb.from_arrow(data)
             case pl.LazyFrame():
-                self.rel = duckdb.query(
-                    self.sql(pretty=False)
-                )  # TODO: check if it works
+                self.rel = duckdb.query(self.sql(pretty=False))
             case None:
-                dummy_df = pl.DataFrame({"_": [None]})
-                self.rel = duckdb.from_arrow(dummy_df)
+                self.rel = duckdb.from_arrow(pl.DataFrame({"_": [None]}))
 
     def __repr__(self) -> str:
         return f"LazyFrame(\n{self.sql()}\n)"
@@ -44,12 +41,6 @@ class LazyFrame:
         instance = self.__class__(self.rel)
         instance.__ast__ = ast
         return instance
-
-    @classmethod
-    def from_df(cls, df: pl.DataFrame | pl.LazyFrame) -> Self:
-        """Create a LazyFrame from a Polars DataFrame or LazyFrame."""
-        data = df.lazy().collect()
-        return cls(duckdb.from_arrow(data))
 
     def collect(self) -> pl.DataFrame:
         """Execute the query and return a Polars DataFrame."""
@@ -196,14 +187,9 @@ class LazyFrame:
     def sql(self, *, pretty: bool = True) -> str:
         """Generate SQL string."""
         ast = self.__ast__.copy()
-        # Ensure SELECT has at least one expression (default to *)
         if not ast.expressions:
             ast = ast.select("*", append=False, copy=False)
         return ast.sql(dialect="duckdb", pretty=pretty)
-
-    def explain(self) -> str:
-        """Generate EXPLAIN SQL."""
-        return f"EXPLAIN {self.sql(pretty=False)}"
 
 
 @dataclass(slots=True)
@@ -222,4 +208,4 @@ class GroupBy:
             .select(*by_nodes, *agg_nodes, append=False, copy=False)
             .group_by(*by_nodes, copy=False)
         )
-        return self._lf._new(new_ast)  # type: ignore[return-value]
+        return self._lf._new(new_ast)  # type: ignore[private-access]

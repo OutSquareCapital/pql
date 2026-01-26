@@ -186,21 +186,19 @@ class TestSelectEquivalence:
     """Tests for select operation equivalence."""
 
     def test_select_single_column(self, sample_df: pl.DataFrame) -> None:
-        pql_result = pql.LazyFrame.from_df(sample_df).select("name").collect()
+        pql_result = pql.LazyFrame(sample_df).select("name").collect()
         polars_result = sample_df.lazy().select("name").collect()
         _assert_frames_equal(pql_result, polars_result)
 
     def test_select_multiple_columns(self, sample_df: pl.DataFrame) -> None:
-        pql_result = (
-            pql.LazyFrame.from_df(sample_df).select("name", "age", "salary").collect()
-        )
+        pql_result = pql.LazyFrame(sample_df).select("name", "age", "salary").collect()
 
         polars_result = sample_df.lazy().select("name", "age", "salary").collect()
         _assert_frames_equal(pql_result, polars_result)
 
     def test_select_with_expression(self, sample_df: pl.DataFrame) -> None:
         pql_result = (
-            pql.LazyFrame.from_df(sample_df)
+            pql.LazyFrame(sample_df)
             .select(
                 pql.col("name"), pql.col("salary").mul(1.1).alias("salary_increase")
             )
@@ -222,15 +220,13 @@ class TestFilterEquivalence:
     """Tests for filter operation equivalence."""
 
     def test_filter_gt(self, sample_df: pl.DataFrame) -> None:
-        pql_result = (
-            pql.LazyFrame.from_df(sample_df).filter(pql.col("age").gt(25)).collect()
-        )
+        pql_result = pql.LazyFrame(sample_df).filter(pql.col("age").gt(25)).collect()
         polars_result = sample_df.lazy().filter(pl.col("age").gt(25)).collect()
         _assert_frames_equal(pql_result, polars_result)
 
     def test_filter_eq_string(self, sample_df: pl.DataFrame) -> None:
         pql_result = (
-            pql.LazyFrame.from_df(sample_df)
+            pql.LazyFrame(sample_df)
             .filter(pql.col("department").eq("Engineering"))
             .collect()
         )
@@ -241,7 +237,7 @@ class TestFilterEquivalence:
 
     def test_filter_combined_and(self, sample_df: pl.DataFrame) -> None:
         pql_result = (
-            pql.LazyFrame.from_df(sample_df)
+            pql.LazyFrame(sample_df)
             .filter(pql.col("age").gt(25).and_(pql.col("salary").ge(55000)))
             .collect()
         )
@@ -254,7 +250,7 @@ class TestFilterEquivalence:
 
     def test_filter_combined_or(self, sample_df: pl.DataFrame) -> None:
         pql_result = (
-            pql.LazyFrame.from_df(sample_df)
+            pql.LazyFrame(sample_df)
             .filter((pql.col("age").lt(25)).or_(pql.col("salary").gt(70000)))
             .collect()
         )
@@ -267,16 +263,14 @@ class TestFilterEquivalence:
 
     def test_filter_not(self, sample_df: pl.DataFrame) -> None:
         pql_result = (
-            pql.LazyFrame.from_df(sample_df)
-            .filter(pql.col("is_active").not_())
-            .collect()
+            pql.LazyFrame(sample_df).filter(pql.col("is_active").not_()).collect()
         )
         polars_result = sample_df.lazy().filter(pl.col("is_active").not_()).collect()
         _assert_frames_equal(pql_result, polars_result)
 
     def test_filter_is_in(self, sample_df: pl.DataFrame) -> None:
         pql_result = (
-            pql.LazyFrame.from_df(sample_df)
+            pql.LazyFrame(sample_df)
             .filter(pql.col("name").is_in(["Alice", "Bob", "Charlie"]))
             .collect()
         )
@@ -289,9 +283,7 @@ class TestFilterEquivalence:
 
     def test_filter_between(self, sample_df: pl.DataFrame) -> None:
         pql_result = (
-            pql.LazyFrame.from_df(sample_df)
-            .filter(pql.col("age").between(25, 30))
-            .collect()
+            pql.LazyFrame(sample_df).filter(pql.col("age").between(25, 30)).collect()
         )
         polars_result = (
             sample_df.lazy().filter(pl.col("age").is_between(25, 30)).collect()
@@ -305,7 +297,7 @@ class TestNullHandlingEquivalence:
 
     def test_filter_is_null(self, sample_df_with_nulls: pl.DataFrame) -> None:
         pql_result = (
-            pql.LazyFrame.from_df(sample_df_with_nulls)
+            pql.LazyFrame(sample_df_with_nulls)
             .filter(pql.col("value").is_null())
             .collect()
         )
@@ -316,7 +308,7 @@ class TestNullHandlingEquivalence:
 
     def test_filter_is_not_null(self, sample_df_with_nulls: pl.DataFrame) -> None:
         pql_result = (
-            pql.LazyFrame.from_df(sample_df_with_nulls)
+            pql.LazyFrame(sample_df_with_nulls)
             .filter(pql.col("value").is_not_null())
             .collect()
         )
@@ -327,7 +319,7 @@ class TestNullHandlingEquivalence:
 
     def test_fill_null(self, sample_df_with_nulls: pl.DataFrame) -> None:
         pql_result = (
-            pql.LazyFrame.from_df(sample_df_with_nulls)
+            pql.LazyFrame(sample_df_with_nulls)
             .select(
                 pql.col("id"),
                 pql.col("value").fill_null(0.0).alias("value"),
@@ -351,7 +343,7 @@ class TestAggregationEquivalence:
 
     def test_group_by_sum(self, orders_df: pl.DataFrame) -> None:
         pql_result = (
-            pql.LazyFrame.from_df(orders_df)
+            pql.LazyFrame(orders_df)
             .group_by("customer_id")
             .agg(pql.col("amount").sum().alias("total_amount"))
             .collect()
@@ -366,7 +358,7 @@ class TestAggregationEquivalence:
 
     def test_group_by_mean(self, orders_df: pl.DataFrame) -> None:
         pql_result = (
-            pql.LazyFrame.from_df(orders_df)
+            pql.LazyFrame(orders_df)
             .group_by("customer_id")
             .agg(pql.col("amount").mean().alias("avg_amount"))
             .collect()
@@ -381,7 +373,7 @@ class TestAggregationEquivalence:
 
     def test_group_by_count(self, orders_df: pl.DataFrame) -> None:
         pql_result = (
-            pql.LazyFrame.from_df(orders_df)
+            pql.LazyFrame(orders_df)
             .group_by("customer_id")
             .agg(pql.col("order_id").count().alias("order_count"))
             .collect()
@@ -396,7 +388,7 @@ class TestAggregationEquivalence:
 
     def test_group_by_min_max(self, orders_df: pl.DataFrame) -> None:
         pql_result = (
-            pql.LazyFrame.from_df(orders_df)
+            pql.LazyFrame(orders_df)
             .group_by("customer_id")
             .agg(
                 pql.col("amount").min().alias("min_amount"),
@@ -417,7 +409,7 @@ class TestAggregationEquivalence:
 
     def test_group_by_multiple_columns(self, orders_df: pl.DataFrame) -> None:
         pql_result = (
-            pql.LazyFrame.from_df(orders_df)
+            pql.LazyFrame(orders_df)
             .group_by("customer_id", "status")
             .agg(pql.col("amount").sum().alias("total_amount"))
             .collect()
@@ -436,20 +428,18 @@ class TestSortEquivalence:
     """Tests for sort operation equivalence."""
 
     def test_sort_ascending(self, sample_df: pl.DataFrame) -> None:
-        pql_result = pql.LazyFrame.from_df(sample_df).sort("age").collect()
+        pql_result = pql.LazyFrame(sample_df).sort("age").collect()
         polars_result = sample_df.lazy().sort("age").collect()
         _assert_frames_equal(pql_result, polars_result)
 
     def test_sort_descending(self, sample_df: pl.DataFrame) -> None:
-        pql_result = (
-            pql.LazyFrame.from_df(sample_df).sort("salary", descending=True).collect()
-        )
+        pql_result = pql.LazyFrame(sample_df).sort("salary", descending=True).collect()
         polars_result = sample_df.lazy().sort("salary", descending=True).collect()
         _assert_frames_equal(pql_result, polars_result)
 
     def test_sort_multiple_columns(self, sample_df: pl.DataFrame) -> None:
         pql_result = (
-            pql.LazyFrame.from_df(sample_df)
+            pql.LazyFrame(sample_df)
             .sort("department", "age", descending=[False, True])
             .collect()
         )
@@ -466,12 +456,12 @@ class TestLimitEquivalence:
     """Tests for limit operation equivalence."""
 
     def test_limit(self, sample_df: pl.DataFrame) -> None:
-        pql_result = pql.LazyFrame.from_df(sample_df).sort("id").limit(3).collect()
+        pql_result = pql.LazyFrame(sample_df).sort("id").limit(3).collect()
         polars_result = sample_df.lazy().sort("id").limit(3).collect()
         _assert_frames_equal(pql_result, polars_result)
 
     def test_head(self, sample_df: pl.DataFrame) -> None:
-        pql_result = pql.LazyFrame.from_df(sample_df).sort("id").head(2).collect()
+        pql_result = pql.LazyFrame(sample_df).sort("id").head(2).collect()
         polars_result = sample_df.lazy().sort("id").head(2).collect()
         _assert_frames_equal(pql_result, polars_result)
 
@@ -482,7 +472,7 @@ class TestArithmeticEquivalence:
 
     def test_add(self, sample_df: pl.DataFrame) -> None:
         pql_result = (
-            pql.LazyFrame.from_df(sample_df)
+            pql.LazyFrame(sample_df)
             .select(
                 pql.col("id"),
                 (pql.col("age").add(10)).alias("age_plus_10"),
@@ -501,7 +491,7 @@ class TestArithmeticEquivalence:
 
     def test_multiply(self, sample_df: pl.DataFrame) -> None:
         pql_result = (
-            pql.LazyFrame.from_df(sample_df)
+            pql.LazyFrame(sample_df)
             .select(
                 pql.col("id"),
                 pql.col("salary").mul(2).alias("double_salary"),
@@ -520,7 +510,7 @@ class TestArithmeticEquivalence:
 
     def test_divide(self, sample_df: pl.DataFrame) -> None:
         pql_result = (
-            pql.LazyFrame.from_df(sample_df)
+            pql.LazyFrame(sample_df)
             .select(
                 pql.col("id"),
                 pql.col("salary").truediv(1000).alias("salary_k"),
@@ -539,7 +529,7 @@ class TestArithmeticEquivalence:
 
     def test_mod(self, sample_df: pl.DataFrame) -> None:
         pql_result = (
-            pql.LazyFrame.from_df(sample_df)
+            pql.LazyFrame(sample_df)
             .select(
                 pql.col("id"),
                 pql.col("age").mod(10).alias("age_mod_10"),
@@ -559,7 +549,7 @@ class TestArithmeticEquivalence:
     def test_abs(self) -> None:
         abs_df = pl.DataFrame({"x": [-5, -3, 0, 3, 5]})
         pql_result = (
-            pql.LazyFrame.from_df(abs_df)
+            pql.LazyFrame(abs_df)
             .select(
                 pql.col("x"),
                 pql.col("x").abs().alias("abs_x"),
@@ -583,7 +573,7 @@ class TestStringEquivalence:
 
     def test_to_uppercase(self, sample_df_strings: pl.DataFrame) -> None:
         pql_result = (
-            pql.LazyFrame.from_df(sample_df_strings)
+            pql.LazyFrame(sample_df_strings)
             .select(
                 pql.col("text"),
                 pql.col("text").str.to_uppercase().alias("upper"),
@@ -602,7 +592,7 @@ class TestStringEquivalence:
 
     def test_to_lowercase(self, sample_df_strings: pl.DataFrame) -> None:
         pql_result = (
-            pql.LazyFrame.from_df(sample_df_strings)
+            pql.LazyFrame(sample_df_strings)
             .select(
                 pql.col("text"),
                 pql.col("text").str.to_lowercase().alias("lower"),
@@ -621,7 +611,7 @@ class TestStringEquivalence:
 
     def test_len_chars(self, sample_df_strings: pl.DataFrame) -> None:
         pql_result = (
-            pql.LazyFrame.from_df(sample_df_strings)
+            pql.LazyFrame(sample_df_strings)
             .select(
                 pql.col("text"),
                 pql.col("text").str.len_chars().alias("length"),
@@ -642,7 +632,7 @@ class TestStringEquivalence:
 
     def test_contains_literal(self, sample_df_strings: pl.DataFrame) -> None:
         pql_result = (
-            pql.LazyFrame.from_df(sample_df_strings)
+            pql.LazyFrame(sample_df_strings)
             .select(
                 pql.col("text"),
                 pql.col("text").str.contains("lo", literal=True).alias("contains_lo"),
@@ -661,7 +651,7 @@ class TestStringEquivalence:
 
     def test_starts_with(self, sample_df_strings: pl.DataFrame) -> None:
         pql_result = (
-            pql.LazyFrame.from_df(sample_df_strings)
+            pql.LazyFrame(sample_df_strings)
             .select(
                 pql.col("text"),
                 pql.col("text").str.starts_with("Hello").alias("starts_hello"),
@@ -680,7 +670,7 @@ class TestStringEquivalence:
 
     def test_ends_with(self, sample_df_strings: pl.DataFrame) -> None:
         pql_result = (
-            pql.LazyFrame.from_df(sample_df_strings)
+            pql.LazyFrame(sample_df_strings)
             .select(
                 pql.col("text"),
                 pql.col("text").str.ends_with("suffix").alias("ends_suffix"),
@@ -699,7 +689,7 @@ class TestStringEquivalence:
 
     def test_replace(self, sample_df_strings: pl.DataFrame) -> None:
         pql_result = (
-            pql.LazyFrame.from_df(sample_df_strings)
+            pql.LazyFrame(sample_df_strings)
             .select(
                 pql.col("text"),
                 pql.col("text").str.replace("Hello", "Hi").alias("replaced"),
@@ -720,7 +710,7 @@ class TestStringEquivalence:
 
     def test_strip(self, sample_df_strings: pl.DataFrame) -> None:
         pql_result = (
-            pql.LazyFrame.from_df(sample_df_strings)
+            pql.LazyFrame(sample_df_strings)
             .select(
                 pql.col("text"),
                 pql.col("text").str.strip_chars().alias("stripped"),
@@ -744,7 +734,7 @@ class TestDatetimeEquivalence:
 
     def test_year(self, sample_df_dates: pl.DataFrame) -> None:
         pql_result = (
-            pql.LazyFrame.from_df(sample_df_dates)
+            pql.LazyFrame(sample_df_dates)
             .select(
                 pql.col("ts").dt.year().alias("year"),
             )
@@ -761,7 +751,7 @@ class TestDatetimeEquivalence:
 
     def test_month(self, sample_df_dates: pl.DataFrame) -> None:
         pql_result = (
-            pql.LazyFrame.from_df(sample_df_dates)
+            pql.LazyFrame(sample_df_dates)
             .select(
                 pql.col("ts").dt.month().alias("month"),
             )
@@ -778,7 +768,7 @@ class TestDatetimeEquivalence:
 
     def test_day(self, sample_df_dates: pl.DataFrame) -> None:
         pql_result = (
-            pql.LazyFrame.from_df(sample_df_dates)
+            pql.LazyFrame(sample_df_dates)
             .select(
                 pql.col("ts").dt.day().alias("day"),
             )
@@ -795,7 +785,7 @@ class TestDatetimeEquivalence:
 
     def test_hour(self, sample_df_dates: pl.DataFrame) -> None:
         pql_result = (
-            pql.LazyFrame.from_df(sample_df_dates)
+            pql.LazyFrame(sample_df_dates)
             .select(
                 pql.col("ts").dt.hour().alias("hour"),
             )
@@ -818,7 +808,7 @@ class TestComplexPipelineEquivalence:
     def test_filter_group_sort_limit(self, orders_df: pl.DataFrame) -> None:
         """Test a complete analytical pipeline."""
         pql_result = (
-            pql.LazyFrame.from_df(orders_df)
+            pql.LazyFrame(orders_df)
             .filter(pql.col("status").eq("completed"))
             .group_by("customer_id")
             .agg(
@@ -846,7 +836,7 @@ class TestComplexPipelineEquivalence:
     def test_with_columns_filter(self, sample_df: pl.DataFrame) -> None:
         """Test with_columns followed by filter."""
         pql_result = (
-            pql.LazyFrame.from_df(sample_df)
+            pql.LazyFrame(sample_df)
             .select(
                 pql.col("name"),
                 pql.col("salary"),
@@ -879,8 +869,6 @@ class TestDistinctEquivalence:
                 "b": ["x", "x", "y", "z", "z"],
             }
         )
-        pql_result = (
-            pql.LazyFrame.from_df(distinct_df).distinct().sort("a", "b").collect()
-        )
+        pql_result = pql.LazyFrame(distinct_df).distinct().sort("a", "b").collect()
         polars_result = distinct_df.lazy().unique().sort("a", "b").collect()
         _assert_frames_equal(pql_result, polars_result)

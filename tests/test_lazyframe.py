@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import polars as pl
+
 import pql
 
 
@@ -16,6 +18,13 @@ class TestLazyFrameCreation:
     def test_repr(self) -> None:
         lf = pql.LazyFrame()
         assert "LazyFrame" in repr(lf)
+
+    def test_from_lazyframe(self) -> None:
+        data = {"x": [1, 2, 3], "y": ["a", "b", "c"], "z": [True, False, True]}
+        df = pql.LazyFrame(pl.DataFrame(data).lazy().select("x", "y")).collect()  # noqa: PD901
+        assert "x" in df.columns
+        assert "y" in df.columns
+        assert "z" not in df.columns
 
 
 class TestSelect:
@@ -314,6 +323,3 @@ class TestSqlOutput:
         sql_compact = lf.sql(pretty=False)
         # Pretty should have more newlines
         assert sql_pretty.count("\n") >= sql_compact.count("\n")
-
-    def test_explain(self) -> None:
-        assert "EXPLAIN" in pql.LazyFrame().explain()
