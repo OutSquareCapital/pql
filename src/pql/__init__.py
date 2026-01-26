@@ -1,7 +1,7 @@
 """PQL - Polars Query Language over DuckDB."""
 
 from ._expr import Expr, all, col, lit
-from ._frame import GroupBy, LazyFrame
+from ._frame import LazyFrame
 from .datatypes import (
     Boolean,
     Float32,
@@ -22,7 +22,6 @@ __all__ = [
     "Expr",
     "Float32",
     "Float64",
-    "GroupBy",
     "Int8",
     "Int16",
     "Int32",
