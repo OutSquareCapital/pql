@@ -359,6 +359,11 @@ def main() -> None:
             ClassComparison.from_classes(pl.LazyFrame, pql.LazyFrame),
             ClassComparison.from_classes(pl.Expr, pql.Expr),
             ClassComparison.from_classes(
+                pl.LazyFrame().group_by("x").__class__,
+                pql.LazyFrame().group_by("x").__class__,
+                name="GroupBy",
+            ),
+            ClassComparison.from_classes(
                 pl.col("x").str.__class__, pql.col("x").str.__class__, name="Expr.str"
             ),
             ClassComparison.from_classes(
