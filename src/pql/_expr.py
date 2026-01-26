@@ -365,19 +365,39 @@ class ExprDateTimeNameSpace:
 
     def year(self) -> Expr:
         """Extract the year."""
-        return Expr(exp.Year(this=self._to_utc()))
+        return Expr(
+            exp.Cast(
+                this=exp.Year(this=self._to_utc()),
+                to=exp.DataType.build(exp.DataType.Type.INT),
+            )
+        )
 
     def month(self) -> Expr:
         """Extract the month."""
-        return Expr(exp.Month(this=self._to_utc()))
+        return Expr(
+            exp.Cast(
+                this=exp.Month(this=self._to_utc()),
+                to=exp.DataType.build(exp.DataType.Type.TINYINT),
+            )
+        )
 
     def day(self) -> Expr:
         """Extract the day."""
-        return Expr(exp.Day(this=self._to_utc()))
+        return Expr(
+            exp.Cast(
+                this=exp.Day(this=self._to_utc()),
+                to=exp.DataType.build(exp.DataType.Type.TINYINT),
+            )
+        )
 
     def hour(self) -> Expr:
         """Extract the hour."""
-        return Expr(exp.Hour(this=self._to_utc()))
+        return Expr(
+            exp.Cast(
+                this=exp.Hour(this=self._to_utc()),
+                to=exp.DataType.build(exp.DataType.Type.TINYINT),
+            )
+        )
 
     def minute(self) -> Expr:
         """Extract the minute."""

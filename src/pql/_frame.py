@@ -9,9 +9,19 @@ import polars as pl
 import pyochain as pc
 from sqlglot import exp
 
-from ._expr import Expr, exprs_to_nodes, to_node, val_to_iter
+from ._expr import Expr, exprs_to_nodes, to_node
 
-type FrameInit = duckdb.DuckDBPyRelation | pl.DataFrame | pl.LazyFrame
+type FrameInit = duckdb.DuckDBPyRelation | pl.DataFrame | pl.LazyFrame | None
+
+
+def _data_to_rel(data: FrameInit) -> duckdb.DuckDBPyRelation:
+    match data:
+        case duckdb.DuckDBPyRelation():
+            return data
+        case pl.DataFrame() | pl.LazyFrame():
+            return duckdb.from_arrow(data.lazy().collect())
+        case None:
+            return duckdb.from_arrow(pl.DataFrame({"_": [None]}))
 
 
 class LazyFrame:
@@ -21,18 +31,9 @@ class LazyFrame:
     rel: duckdb.DuckDBPyRelation
     __slots__ = ("__ast__", "rel")
 
-    def __init__(self, data: FrameInit | None = None) -> None:
+    def __init__(self, data: FrameInit = None) -> None:
         self.__ast__ = exp.select("*").from_(exp.Table(this=exp.Identifier(this="_")))
-
-        match data:
-            case duckdb.DuckDBPyRelation():
-                self.rel = data
-            case pl.DataFrame():
-                self.rel = duckdb.from_arrow(data)
-            case pl.LazyFrame():
-                self.rel = duckdb.query(self.sql(pretty=False))
-            case None:
-                self.rel = duckdb.from_arrow(pl.DataFrame({"_": [None]}))
+        self.rel = _data_to_rel(data)
 
     def __repr__(self) -> str:
         return f"LazyFrame(\n{self.sql()}\n)"
@@ -76,17 +77,21 @@ class LazyFrame:
         nulls_last: bool | Iterable[bool] = False,
     ) -> Self:
         """Sort by columns."""
-        desc_flags = (
-            [descending] * len(by) if isinstance(descending, bool) else descending
+        desc_iter = (
+            pc.Iter.once(descending).cycle().take(len(by))
+            if isinstance(descending, bool)
+            else pc.Iter(descending)
         )
-        nulls_flags = (
-            [nulls_last] * len(by) if isinstance(nulls_last, bool) else nulls_last
+        nulls_iter = (
+            pc.Iter.once(nulls_last).cycle().take(len(by))
+            if isinstance(nulls_last, bool)
+            else pc.Iter(nulls_last)
         )
 
         order_terms = (
             pc.Iter(by)
-            .zip(desc_flags)
-            .zip(nulls_flags)
+            .zip(desc_iter)
+            .zip(nulls_iter)
             .map(lambda args: (args[0][0], args[0][1], args[1]))
             .map_star(
                 lambda col, desc, nl: exp.Ordered(
@@ -116,7 +121,7 @@ class LazyFrame:
         """Get unique rows based on subset of columns."""
         if subset is None:
             return self.distinct()
-        cols = [subset] if isinstance(subset, str) else subset
+        cols = pc.Iter.once(subset) if isinstance(subset, str) else pc.Iter(subset)
         new_ast = self.__ast__.copy()
         new_ast.set(
             "distinct",
@@ -126,7 +131,7 @@ class LazyFrame:
 
     def drop(self, *columns: str) -> Self:
         """Drop columns from the frame."""
-        exclude_star = exp.Star(except_=pc.Set(columns).iter().map(exp.column))
+        exclude_star = exp.Star(except_=pc.Iter(columns).map(exp.column))
         return self._new(
             self.__ast__.copy().select(exclude_star, append=False, copy=False)
         )
@@ -143,7 +148,7 @@ class LazyFrame:
             self.__ast__.copy().select(*rename_exprs, append=True, copy=False)
         )
 
-    def join(
+    def join(  # noqa: PLR0913
         self,
         other: LazyFrame,
         on: str | Expr | Iterable[str] | None = None,
@@ -153,36 +158,22 @@ class LazyFrame:
         how: Literal[
             "inner", "left", "right", "outer", "cross", "semi", "anti"
         ] = "inner",
+        suffix: str = "_right",
     ) -> Self:
         """Join with another LazyFrame."""
-        subquery = exp.Subquery(this=other.__ast__, alias="_r")
-        if on is not None:
-            on_list = val_to_iter(on)
-            new_ast = self.__ast__.copy().join(
-                subquery,
-                using=exprs_to_nodes(on_list).collect(tuple),
-                join_type=how,
-                copy=False,
-            )
-        elif left_on is not None and right_on is not None:
-            on_expr = (
-                val_to_iter(left_on)
-                .zip(val_to_iter(right_on))
-                .map_star(
-                    lambda lc, rc: exp.EQ(this=to_node(lc), expression=to_node(rc))
-                )
-                .reduce(lambda acc, eq: exp.And(this=acc, expression=eq))  # type: ignore[arg-type]
-            )
-            new_ast = self.__ast__.copy().join(
-                subquery,
-                on=on_expr,
-                join_type=how,
-                copy=False,
-            )
-        else:
-            new_ast = self.__ast__.copy().join(subquery, join_type=how, copy=False)
+        if how == "cross":
+            return self.__class__(self.rel.cross(other.rel))
+        lhs = self.rel.set_alias("lhs")
+        rhs = other.rel.set_alias("rhs")
+        rel = lhs.join(
+            rhs, condition=_build_join_condition(on, left_on, right_on), how=how
+        )
 
-        return self._new(new_ast)
+        return self.__class__(
+            rel
+            if how in {"semi", "anti"}
+            else _apply_join_suffix(rel, lhs.columns, rhs.columns, on, suffix)
+        )
 
     def sql(self, *, pretty: bool = True) -> str:
         """Generate SQL string."""
@@ -190,6 +181,53 @@ class LazyFrame:
         if not ast.expressions:
             ast = ast.select("*", append=False, copy=False)
         return ast.sql(dialect="duckdb", pretty=pretty)
+
+
+def _build_join_condition(
+    on: str | Expr | Iterable[str] | None,
+    left_on: str | Expr | Iterable[str] | None,
+    right_on: str | Expr | Iterable[str] | None,
+) -> str:
+    """Build DuckDB join condition string."""
+    match (on, left_on, right_on):
+        case (str(), _, _):
+            return on
+        case (None, str(), str()):
+            return f"lhs.{left_on} = rhs.{right_on}"
+        case (None, Iterable(), Iterable()):
+            return " AND ".join(
+                pc.Iter(left_on)
+                .zip(right_on)
+                .map_star(lambda lk, rk: f"lhs.{lk} = rhs.{rk}")
+            )
+        case _:
+            msg = "Join requires 'on' or both 'left_on' and 'right_on'"
+            raise ValueError(msg)
+
+
+def _apply_join_suffix(
+    rel: duckdb.DuckDBPyRelation,
+    lhs_cols: Iterable[str],
+    rhs_cols: Iterable[str],
+    on: str | Expr | Iterable[str] | None,
+    suffix: str,
+) -> duckdb.DuckDBPyRelation:
+    """Apply suffix to duplicate columns from right side."""
+    join_keys = pc.Set((on,) if isinstance(on, str) else ())
+    lhs_set = pc.Set(lhs_cols)
+
+    def _col_expr(name: str) -> duckdb.Expression:
+        col = duckdb.ColumnExpression(f"rhs.{name}")
+        return (
+            col.alias(f"{name}{suffix}")
+            if name in lhs_set and name not in join_keys
+            else col
+        )
+
+    return rel.select(
+        *pc.Iter(lhs_cols).map(lambda c: duckdb.ColumnExpression(f"lhs.{c}")),
+        *pc.Iter(rhs_cols).filter(lambda c: c not in join_keys).map(_col_expr),
+    )
 
 
 @dataclass(slots=True)
