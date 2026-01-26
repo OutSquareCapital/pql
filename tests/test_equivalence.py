@@ -129,29 +129,12 @@ def right_df() -> pl.DataFrame:
     )
 
 
-def _assert_frames_equal(
-    actual: pl.DataFrame,
-    expected: pl.DataFrame,
-    *,
-    check_row_order: bool = True,
-    check_column_order: bool = True,
-) -> None:
-    """Assert that two DataFrames are equal."""
-    if not check_column_order:
-        actual = actual.select(sorted(actual.columns))
-        expected = expected.select(sorted(expected.columns))
-    if not check_row_order:
-        actual = actual.sort(actual.columns)
-        expected = expected.sort(expected.columns)
-    assert_frame_equal(actual, expected, check_exact=False)
-
-
 # ==================== Join Tests ====================
 class TestJoinEquivalence:
     """Tests for join operation equivalence."""
 
     def test_inner_join(self, left_df: pl.DataFrame, right_df: pl.DataFrame) -> None:
-        _assert_frames_equal(
+        assert_frame_equal(
             pql.LazyFrame(left_df)
             .join(
                 pql.LazyFrame(right_df),
@@ -164,7 +147,7 @@ class TestJoinEquivalence:
         )
 
     def test_left_join(self, left_df: pl.DataFrame, right_df: pl.DataFrame) -> None:
-        _assert_frames_equal(
+        assert_frame_equal(
             pql.LazyFrame(left_df)
             .join(
                 pql.LazyFrame(right_df),
@@ -182,19 +165,19 @@ class TestSelectEquivalence:
     """Tests for select operation equivalence."""
 
     def test_select_single_column(self, sample_df: pl.DataFrame) -> None:
-        _assert_frames_equal(
+        assert_frame_equal(
             pql.LazyFrame(sample_df).select("name").collect(),
             sample_df.lazy().select("name").collect(),
         )
 
     def test_select_multiple_columns(self, sample_df: pl.DataFrame) -> None:
-        _assert_frames_equal(
+        assert_frame_equal(
             pql.LazyFrame(sample_df).select("name", "age", "salary").collect(),
             sample_df.lazy().select("name", "age", "salary").collect(),
         )
 
     def test_select_with_expression(self, sample_df: pl.DataFrame) -> None:
-        _assert_frames_equal(
+        assert_frame_equal(
             pql.LazyFrame(sample_df)
             .select(
                 pql.col("name"), pql.col("salary").mul(1.1).alias("salary_increase")
@@ -214,13 +197,13 @@ class TestFilterEquivalence:
     """Tests for filter operation equivalence."""
 
     def test_filter_gt(self, sample_df: pl.DataFrame) -> None:
-        _assert_frames_equal(
+        assert_frame_equal(
             pql.LazyFrame(sample_df).filter(pql.col("age").gt(25)).collect(),
             sample_df.lazy().filter(pl.col("age").gt(25)).collect(),
         )
 
     def test_filter_eq_string(self, sample_df: pl.DataFrame) -> None:
-        _assert_frames_equal(
+        assert_frame_equal(
             pql.LazyFrame(sample_df)
             .filter(pql.col("department").eq("Engineering"))
             .collect(),
@@ -228,7 +211,7 @@ class TestFilterEquivalence:
         )
 
     def test_filter_combined_and(self, sample_df: pl.DataFrame) -> None:
-        _assert_frames_equal(
+        assert_frame_equal(
             pql.LazyFrame(sample_df)
             .filter(pql.col("age").gt(25).and_(pql.col("salary").ge(55000)))
             .collect(),
@@ -238,7 +221,7 @@ class TestFilterEquivalence:
         )
 
     def test_filter_combined_or(self, sample_df: pl.DataFrame) -> None:
-        _assert_frames_equal(
+        assert_frame_equal(
             pql.LazyFrame(sample_df)
             .filter((pql.col("age").lt(25)).or_(pql.col("salary").gt(70000)))
             .collect(),
@@ -248,13 +231,13 @@ class TestFilterEquivalence:
         )
 
     def test_filter_not(self, sample_df: pl.DataFrame) -> None:
-        _assert_frames_equal(
+        assert_frame_equal(
             pql.LazyFrame(sample_df).filter(pql.col("is_active").not_()).collect(),
             sample_df.lazy().filter(pl.col("is_active").not_()).collect(),
         )
 
     def test_filter_is_in(self, sample_df: pl.DataFrame) -> None:
-        _assert_frames_equal(
+        assert_frame_equal(
             pql.LazyFrame(sample_df)
             .filter(pql.col("name").is_in(["Alice", "Bob", "Charlie"]))
             .collect(),
@@ -264,7 +247,7 @@ class TestFilterEquivalence:
         )
 
     def test_filter_between(self, sample_df: pl.DataFrame) -> None:
-        _assert_frames_equal(
+        assert_frame_equal(
             pql.LazyFrame(sample_df).filter(pql.col("age").between(25, 30)).collect(),
             sample_df.lazy().filter(pl.col("age").is_between(25, 30)).collect(),
         )
@@ -275,7 +258,7 @@ class TestNullHandlingEquivalence:
     """Tests for null handling equivalence."""
 
     def test_filter_is_null(self, sample_df_with_nulls: pl.DataFrame) -> None:
-        _assert_frames_equal(
+        assert_frame_equal(
             pql.LazyFrame(sample_df_with_nulls)
             .filter(pql.col("value").is_null())
             .collect(),
@@ -283,7 +266,7 @@ class TestNullHandlingEquivalence:
         )
 
     def test_filter_is_not_null(self, sample_df_with_nulls: pl.DataFrame) -> None:
-        _assert_frames_equal(
+        assert_frame_equal(
             pql.LazyFrame(sample_df_with_nulls)
             .filter(pql.col("value").is_not_null())
             .collect(),
@@ -291,7 +274,7 @@ class TestNullHandlingEquivalence:
         )
 
     def test_fill_null(self, sample_df_with_nulls: pl.DataFrame) -> None:
-        _assert_frames_equal(
+        assert_frame_equal(
             pql.LazyFrame(sample_df_with_nulls)
             .select(
                 pql.col("id"),
@@ -312,7 +295,7 @@ class TestAggregationEquivalence:
     """Tests for aggregation equivalence."""
 
     def test_group_by_sum(self, orders_df: pl.DataFrame) -> None:
-        _assert_frames_equal(
+        assert_frame_equal(
             pql.LazyFrame(orders_df)
             .group_by("customer_id")
             .agg(pql.col("amount").sum().alias("total_amount"))
@@ -325,7 +308,7 @@ class TestAggregationEquivalence:
         )
 
     def test_group_by_mean(self, orders_df: pl.DataFrame) -> None:
-        _assert_frames_equal(
+        assert_frame_equal(
             pql.LazyFrame(orders_df)
             .group_by("customer_id")
             .agg(pql.col("amount").mean().alias("avg_amount"))
@@ -338,7 +321,7 @@ class TestAggregationEquivalence:
         )
 
     def test_group_by_count(self, orders_df: pl.DataFrame) -> None:
-        _assert_frames_equal(
+        assert_frame_equal(
             pql.LazyFrame(orders_df)
             .group_by("customer_id")
             .agg(pql.col("order_id").count().alias("order_count"))
@@ -351,7 +334,7 @@ class TestAggregationEquivalence:
         )
 
     def test_group_by_min_max(self, orders_df: pl.DataFrame) -> None:
-        _assert_frames_equal(
+        assert_frame_equal(
             pql.LazyFrame(orders_df)
             .group_by("customer_id")
             .agg(
@@ -370,7 +353,7 @@ class TestAggregationEquivalence:
         )
 
     def test_group_by_multiple_columns(self, orders_df: pl.DataFrame) -> None:
-        _assert_frames_equal(
+        assert_frame_equal(
             pql.LazyFrame(orders_df)
             .group_by("customer_id", "status")
             .agg(pql.col("amount").sum().alias("total_amount"))
@@ -388,19 +371,19 @@ class TestSortEquivalence:
     """Tests for sort operation equivalence."""
 
     def test_sort_ascending(self, sample_df: pl.DataFrame) -> None:
-        _assert_frames_equal(
+        assert_frame_equal(
             pql.LazyFrame(sample_df).sort("age").collect(),
             sample_df.lazy().sort("age").collect(),
         )
 
     def test_sort_descending(self, sample_df: pl.DataFrame) -> None:
-        _assert_frames_equal(
+        assert_frame_equal(
             pql.LazyFrame(sample_df).sort("salary", descending=True).collect(),
             sample_df.lazy().sort("salary", descending=True).collect(),
         )
 
     def test_sort_multiple_columns(self, sample_df: pl.DataFrame) -> None:
-        _assert_frames_equal(
+        assert_frame_equal(
             pql.LazyFrame(sample_df)
             .sort("department", "age", descending=[False, True])
             .collect(),
@@ -415,13 +398,13 @@ class TestLimitEquivalence:
     """Tests for limit operation equivalence."""
 
     def test_limit(self, sample_df: pl.DataFrame) -> None:
-        _assert_frames_equal(
+        assert_frame_equal(
             pql.LazyFrame(sample_df).sort("id").limit(3).collect(),
             sample_df.lazy().sort("id").limit(3).collect(),
         )
 
     def test_head(self, sample_df: pl.DataFrame) -> None:
-        _assert_frames_equal(
+        assert_frame_equal(
             pql.LazyFrame(sample_df).sort("id").head(2).collect(),
             sample_df.lazy().sort("id").head(2).collect(),
         )
@@ -432,23 +415,23 @@ class TestArithmeticEquivalence:
     """Tests for arithmetic operation equivalence."""
 
     def test_add(self, sample_df: pl.DataFrame) -> None:
-        _assert_frames_equal(
+        assert_frame_equal(
             pql.LazyFrame(sample_df)
             .select(
                 pql.col("id"),
-                (pql.col("age").add(10)).alias("age_plus_10"),
+                pql.col("age").add(10).alias("age_plus_10"),
             )
             .collect(),
             sample_df.lazy()
             .select(
                 pl.col("id"),
-                (pl.col("age") + 10).alias("age_plus_10"),
+                pl.col("age").add(10).alias("age_plus_10"),
             )
             .collect(),
         )
 
     def test_multiply(self, sample_df: pl.DataFrame) -> None:
-        _assert_frames_equal(
+        assert_frame_equal(
             pql.LazyFrame(sample_df)
             .select(
                 pql.col("id"),
@@ -458,13 +441,13 @@ class TestArithmeticEquivalence:
             sample_df.lazy()
             .select(
                 pl.col("id"),
-                (pl.col("salary").mul(2)).alias("double_salary"),
+                pl.col("salary").mul(2).alias("double_salary"),
             )
             .collect(),
         )
 
     def test_divide(self, sample_df: pl.DataFrame) -> None:
-        _assert_frames_equal(
+        assert_frame_equal(
             pql.LazyFrame(sample_df)
             .select(
                 pql.col("id"),
@@ -474,13 +457,13 @@ class TestArithmeticEquivalence:
             sample_df.lazy()
             .select(
                 pl.col("id"),
-                (pl.col("salary").truediv(1000)).alias("salary_k"),
+                pl.col("salary").truediv(1000).alias("salary_k"),
             )
             .collect(),
         )
 
     def test_mod(self, sample_df: pl.DataFrame) -> None:
-        _assert_frames_equal(
+        assert_frame_equal(
             pql.LazyFrame(sample_df)
             .select(
                 pql.col("id"),
@@ -490,14 +473,14 @@ class TestArithmeticEquivalence:
             sample_df.lazy()
             .select(
                 pl.col("id"),
-                (pl.col("age").mod(10)).alias("age_mod_10"),
+                pl.col("age").mod(10).alias("age_mod_10"),
             )
             .collect(),
         )
 
     def test_abs(self) -> None:
         abs_df = pl.DataFrame({"x": [-5, -3, 0, 3, 5]})
-        _assert_frames_equal(
+        assert_frame_equal(
             pql.LazyFrame(abs_df)
             .select(
                 pql.col("x"),
@@ -518,7 +501,7 @@ class TestStringEquivalence:
     """Tests for string operation equivalence."""
 
     def test_to_uppercase(self, sample_df_strings: pl.DataFrame) -> None:
-        _assert_frames_equal(
+        assert_frame_equal(
             pql.LazyFrame(sample_df_strings)
             .select(
                 pql.col("text"),
@@ -534,7 +517,7 @@ class TestStringEquivalence:
         )
 
     def test_to_lowercase(self, sample_df_strings: pl.DataFrame) -> None:
-        _assert_frames_equal(
+        assert_frame_equal(
             pql.LazyFrame(sample_df_strings)
             .select(
                 pql.col("text"),
@@ -550,7 +533,7 @@ class TestStringEquivalence:
         )
 
     def test_len_chars(self, sample_df_strings: pl.DataFrame) -> None:
-        _assert_frames_equal(
+        assert_frame_equal(
             pql.LazyFrame(sample_df_strings)
             .select(
                 pql.col("text"),
@@ -567,7 +550,7 @@ class TestStringEquivalence:
         )
 
     def test_contains_literal(self, sample_df_strings: pl.DataFrame) -> None:
-        _assert_frames_equal(
+        assert_frame_equal(
             pql.LazyFrame(sample_df_strings)
             .select(
                 pql.col("text"),
@@ -583,7 +566,7 @@ class TestStringEquivalence:
         )
 
     def test_starts_with(self, sample_df_strings: pl.DataFrame) -> None:
-        _assert_frames_equal(
+        assert_frame_equal(
             pql.LazyFrame(sample_df_strings)
             .select(
                 pql.col("text"),
@@ -599,7 +582,7 @@ class TestStringEquivalence:
         )
 
     def test_ends_with(self, sample_df_strings: pl.DataFrame) -> None:
-        _assert_frames_equal(
+        assert_frame_equal(
             pql.LazyFrame(sample_df_strings)
             .select(
                 pql.col("text"),
@@ -615,7 +598,7 @@ class TestStringEquivalence:
         )
 
     def test_replace(self, sample_df_strings: pl.DataFrame) -> None:
-        _assert_frames_equal(
+        assert_frame_equal(
             pql.LazyFrame(sample_df_strings)
             .select(
                 pql.col("text"),
@@ -633,7 +616,7 @@ class TestStringEquivalence:
         )
 
     def test_strip(self, sample_df_strings: pl.DataFrame) -> None:
-        _assert_frames_equal(
+        assert_frame_equal(
             pql.LazyFrame(sample_df_strings)
             .select(
                 pql.col("text"),
@@ -654,7 +637,7 @@ class TestDatetimeEquivalence:
     """Tests for datetime operation equivalence."""
 
     def test_year(self, sample_df_dates: pl.DataFrame) -> None:
-        _assert_frames_equal(
+        assert_frame_equal(
             pql.LazyFrame(sample_df_dates)
             .select(
                 pql.col("ts").dt.year().alias("year"),
@@ -668,7 +651,7 @@ class TestDatetimeEquivalence:
         )
 
     def test_month(self, sample_df_dates: pl.DataFrame) -> None:
-        _assert_frames_equal(
+        assert_frame_equal(
             pql.LazyFrame(sample_df_dates)
             .select(
                 pql.col("ts").dt.month().alias("month"),
@@ -682,7 +665,7 @@ class TestDatetimeEquivalence:
         )
 
     def test_day(self, sample_df_dates: pl.DataFrame) -> None:
-        _assert_frames_equal(
+        assert_frame_equal(
             pql.LazyFrame(sample_df_dates)
             .select(
                 pql.col("ts").dt.day().alias("day"),
@@ -696,7 +679,7 @@ class TestDatetimeEquivalence:
         )
 
     def test_hour(self, sample_df_dates: pl.DataFrame) -> None:
-        _assert_frames_equal(
+        assert_frame_equal(
             pql.LazyFrame(sample_df_dates)
             .select(
                 pql.col("ts").dt.hour().alias("hour"),
@@ -716,7 +699,7 @@ class TestComplexPipelineEquivalence:
 
     def test_filter_group_sort_limit(self, orders_df: pl.DataFrame) -> None:
         """Test a complete analytical pipeline."""
-        _assert_frames_equal(
+        assert_frame_equal(
             pql.LazyFrame(orders_df)
             .filter(pql.col("status").eq("completed"))
             .group_by("customer_id")
@@ -742,12 +725,12 @@ class TestComplexPipelineEquivalence:
 
     def test_with_columns_filter(self, sample_df: pl.DataFrame) -> None:
         """Test with_columns followed by filter."""
-        _assert_frames_equal(
+        assert_frame_equal(
             pql.LazyFrame(sample_df)
             .select(
                 pql.col("name"),
                 pql.col("salary"),
-                (pql.col("salary").mul(12)).alias("annual_salary"),
+                pql.col("salary").mul(12).alias("annual_salary"),
             )
             .filter(pql.col("annual_salary").gt(600000))
             .collect(),
@@ -755,7 +738,7 @@ class TestComplexPipelineEquivalence:
             .select(
                 pl.col("name"),
                 pl.col("salary"),
-                (pl.col("salary").mul(12)).alias("annual_salary"),
+                pl.col("salary").mul(12).alias("annual_salary"),
             )
             .filter(pl.col("annual_salary").gt(600000))
             .collect(),
@@ -773,7 +756,207 @@ class TestDistinctEquivalence:
                 "b": ["x", "x", "y", "z", "z"],
             }
         )
-        _assert_frames_equal(
+        assert_frame_equal(
             pql.LazyFrame(distinct_df).distinct().sort("a", "b").collect(),
             distinct_df.lazy().unique().sort("a", "b").collect(),
+        )
+
+
+# ==================== Advanced Aggregation Tests ====================
+class TestAdvancedAggregationEquivalence:
+    """Tests for advanced aggregation operations equivalence."""
+
+    def test_std(self, orders_df: pl.DataFrame) -> None:
+        assert_frame_equal(
+            pql.LazyFrame(orders_df)
+            .group_by("customer_id")
+            .agg(pql.col("amount").std().alias("std_amount"))
+            .collect(),
+            orders_df.lazy()
+            .group_by("customer_id")
+            .agg(pl.col("amount").std().alias("std_amount"))
+            .collect(),
+            check_row_order=False,
+        )
+
+    def test_var(self, orders_df: pl.DataFrame) -> None:
+        assert_frame_equal(
+            pql.LazyFrame(orders_df)
+            .group_by("customer_id")
+            .agg(pql.col("amount").var().alias("var_amount"))
+            .collect(),
+            orders_df.lazy()
+            .group_by("customer_id")
+            .agg(pl.col("amount").var().alias("var_amount"))
+            .collect(),
+            check_row_order=False,
+        )
+
+    def test_first(self, sample_df: pl.DataFrame) -> None:
+        assert_frame_equal(
+            pql.LazyFrame(sample_df)
+            .group_by("department")
+            .agg(pql.col("name").first().alias("first_name"))
+            .collect(),
+            sample_df.lazy()
+            .group_by("department")
+            .agg(pl.col("name").first().alias("first_name"))
+            .collect(),
+            check_row_order=False,
+        )
+
+    def test_last(self, sample_df: pl.DataFrame) -> None:
+        assert_frame_equal(
+            pql.LazyFrame(sample_df)
+            .group_by("department")
+            .agg(pql.col("name").last().alias("last_name"))
+            .collect(),
+            sample_df.lazy()
+            .group_by("department")
+            .agg(pl.col("name").last().alias("last_name"))
+            .collect(),
+            check_row_order=False,
+        )
+
+    def test_n_unique(self, sample_df: pl.DataFrame) -> None:
+        assert_frame_equal(
+            pql.LazyFrame(sample_df)
+            .group_by("department")
+            .agg(pql.col("name").n_unique().alias("unique_names"))
+            .collect(),
+            sample_df.lazy()
+            .group_by("department")
+            .agg(pl.col("name").n_unique().alias("unique_names"))
+            .collect(),
+            check_row_order=False,
+        )
+
+
+# ==================== Advanced String Tests ====================
+class TestAdvancedStringEquivalence:
+    """Tests for advanced string operations equivalence."""
+
+    def test_strip_chars_start(self, sample_df_strings: pl.DataFrame) -> None:
+        assert_frame_equal(
+            pql.LazyFrame(sample_df_strings)
+            .select(
+                pql.col("text"),
+                pql.col("text").str.strip_chars_start().alias("lstripped"),
+            )
+            .collect(),
+            sample_df_strings.lazy()
+            .select(
+                pl.col("text"),
+                pl.col("text").str.strip_chars_start().alias("lstripped"),
+            )
+            .collect(),
+        )
+
+    def test_strip_chars_end(self, sample_df_strings: pl.DataFrame) -> None:
+        assert_frame_equal(
+            pql.LazyFrame(sample_df_strings)
+            .select(
+                pql.col("text"),
+                pql.col("text").str.strip_chars_end().alias("rstripped"),
+            )
+            .collect(),
+            sample_df_strings.lazy()
+            .select(
+                pl.col("text"),
+                pl.col("text").str.strip_chars_end().alias("rstripped"),
+            )
+            .collect(),
+        )
+
+    def test_slice(self, sample_df_strings: pl.DataFrame) -> None:
+        assert_frame_equal(
+            pql.LazyFrame(sample_df_strings)
+            .select(
+                pql.col("text"),
+                pql.col("text").str.slice(0, 5).alias("sliced"),
+            )
+            .collect(),
+            sample_df_strings.lazy()
+            .select(
+                pl.col("text"),
+                pl.col("text").str.slice(0, 5).alias("sliced"),
+            )
+            .collect(),
+        )
+
+
+# ==================== Advanced Datetime Tests ====================
+class TestAdvancedDatetimeEquivalence:
+    """Tests for advanced datetime operations equivalence."""
+
+    def test_minute(self, sample_df_dates: pl.DataFrame) -> None:
+        assert_frame_equal(
+            pql.LazyFrame(sample_df_dates)
+            .select(
+                pql.col("ts").dt.minute().alias("minute"),
+            )
+            .collect()
+            .cast({"minute": pl.Int8}),
+            sample_df_dates.lazy()
+            .select(
+                pl.col("ts").dt.minute().alias("minute"),
+            )
+            .collect(),
+        )
+
+    def test_second(self, sample_df_dates: pl.DataFrame) -> None:
+        assert_frame_equal(
+            pql.LazyFrame(sample_df_dates)
+            .select(
+                pql.col("ts").dt.second().alias("second"),
+            )
+            .collect()
+            .cast({"second": pl.Int8}),
+            sample_df_dates.lazy()
+            .select(
+                pl.col("ts").dt.second().alias("second"),
+            )
+            .collect(),
+        )
+
+    def test_weekday(self, sample_df_dates: pl.DataFrame) -> None:
+        assert_frame_equal(
+            pql.LazyFrame(sample_df_dates)
+            .select(
+                pql.col("ts").dt.weekday().alias("weekday"),
+            )
+            .collect(),
+            sample_df_dates.lazy()
+            .select(
+                pl.col("ts").dt.weekday().alias("weekday"),
+            )
+            .collect(),
+        )
+
+    def test_week(self, sample_df_dates: pl.DataFrame) -> None:
+        assert_frame_equal(
+            pql.LazyFrame(sample_df_dates)
+            .select(
+                pql.col("ts").dt.week().alias("week"),
+            )
+            .collect(),
+            sample_df_dates.lazy()
+            .select(
+                pl.col("ts").dt.week().alias("week"),
+            )
+            .collect(),
+        )
+
+    def test_date(self, sample_df_dates: pl.DataFrame) -> None:
+        assert_frame_equal(
+            pql.LazyFrame(sample_df_dates)
+            .select(
+                pql.col("ts").dt.date().alias("date_only"),
+            )
+            .collect(),
+            sample_df_dates.lazy()
+            .select(
+                pl.col("ts").dt.date().alias("date_only"),
+            )
+            .collect(),
         )

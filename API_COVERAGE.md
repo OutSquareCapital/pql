@@ -6,8 +6,8 @@ This report shows the API coverage of pql compared to Polars.
 
 | Class | Coverage | Matched | Missing | Mismatched | Extra |
 |-------|----------|---------|---------|------------|-------|
-| LazyFrame | 3.4% | 3 | 74 | 11 | 1 |
-| Expr | 12.9% | 28 | 181 | 8 | 12 |
+| LazyFrame | 3.4% | 3 | 74 | 11 | 2 |
+| Expr | 13.8% | 30 | 181 | 6 | 13 |
 | Expr.str | 12.2% | 6 | 38 | 5 | 0 |
 | Expr.dt | 19.1% | 9 | 37 | 1 | 0 |
 
@@ -132,17 +132,19 @@ This report shows the API coverage of pql compared to Polars.
   - Polars: (exprs: IntoExpr | Iterable[IntoExpr], named_exprs: IntoExpr) -> LazyFrame
   - pql: (exprs: Expr) -> Self
 
-### [+] Extra Methods (pql-only) (1)
+### [+] Extra Methods (pql-only) (2)
 
 - `distinct`
+- `relation`
 
 ## Expr
 
-### [v] Matched Methods (28)
+### [v] Matched Methods (30)
 
 - `abs`
 - `add`
 - `alias`
+- `and_`
 - `count`
 - `dt`
 - `eq`
@@ -162,6 +164,7 @@ This report shows the API coverage of pql compared to Polars.
 - `ne`
 - `neg`
 - `not_`
+- `or_`
 - `std`
 - `str`
 - `sub`
@@ -353,14 +356,11 @@ This report shows the API coverage of pql compared to Polars.
 - `where` (predicate: Expr) -> Expr
 - `xor` (other: Any) -> Expr
 
-### [!] Signature Mismatches (8)
+### [!] Signature Mismatches (6)
 
-- `and_`: Missing params: others; Extra params: other
-  - Polars: (others: Any) -> Expr
-  - pql: (other: object) -> Self
 - `cast`: Missing params: strict, wrap_numerical
   - Polars: (dtype: PolarsDataType | pl.DataTypeExpr | type[Any], strict: bool, wrap_numerical: bool) -> Expr
-  - pql: (dtype: str) -> Self
+  - pql: (dtype: datatypes.DataType) -> Self
 - `fill_null`: Missing params: limit, strategy
   - Polars: (value: Any | Expr | None, strategy: FillNullStrategy | None, limit: int | None) -> Expr
   - pql: (value: object) -> Self
@@ -373,16 +373,14 @@ This report shows the API coverage of pql compared to Polars.
 - `last`: Missing params: ignore_nulls
   - Polars: (ignore_nulls: bool) -> Expr
   - pql: () -> Self
-- `or_`: Missing params: others; Extra params: other
-  - Polars: (others: Any) -> Expr
-  - pql: (other: object) -> Self
 - `pow`: Missing params: exponent; Extra params: other
   - Polars: (exponent: IntoExprColumn | int | float) -> Expr
   - pql: (other: object) -> Self
 
-### [+] Extra Methods (pql-only) (12)
+### [+] Extra Methods (pql-only) (13)
 
 - `between`
+- `expr`
 - `is_not_in`
 - `pos`
 - `radd`

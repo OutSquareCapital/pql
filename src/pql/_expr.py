@@ -1,32 +1,41 @@
+"""Expression wrapper providing Polars-like API over DuckDB native expressions."""
+
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Self
+from typing import TYPE_CHECKING, Any, Self
 
+import duckdb
 import pyochain as pc
-from sqlglot import exp
+
+from . import datatypes
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
 
 
-def to_node(value: object) -> exp.Expression:
-    """Convert a value to a sqlglot Expression node (strings are columns)."""
+def to_expr(value: object) -> duckdb.Expression:
+    """Convert a value to a DuckDB Expression (strings become columns for select/group_by)."""
     match value:
         case Expr():
-            return value.__node__
+            return value.expr
         case str():
-            return exp.column(value)
+            return duckdb.ColumnExpression(value)
         case _:
-            return exp.convert(value)
+            return duckdb.ConstantExpression(value)
 
 
-def val_to_iter[T](on: str | Expr | Iterable[T]) -> pc.Iter[str | Expr] | pc.Iter[T]:
-    return pc.Iter.once(on) if isinstance(on, (str, Expr)) else pc.Iter(on)
+def _to_value(value: object) -> duckdb.Expression:
+    """Convert a value to a DuckDB Expression (strings become constants for comparisons)."""
+    match value:
+        case Expr():
+            return value.expr
+        case _:
+            return duckdb.ConstantExpression(value)
 
 
 class Col:
-    def __call__(self, name: (str)) -> Expr:
-        return Expr(exp.column(name))
+    def __call__(self, name: str) -> Expr:
+        return Expr(duckdb.ColumnExpression(name))
 
     def __getattr__(self, name: str) -> Expr:
         return self.__call__(name)
@@ -37,254 +46,231 @@ col: Col = Col()
 
 def lit(value: object) -> Expr:
     """Create a literal expression (equivalent to pl.lit)."""
-    return Expr(exp.convert(value))
+    return Expr(duckdb.ConstantExpression(value))
 
 
 class Expr:
-    """Expression wrapper providing Polars-like API over sqlglot."""
+    """Expression wrapper providing Polars-like API over DuckDB expressions."""
 
-    __slots__ = ("__node__",)
+    __slots__ = ("_expr",)
 
-    def __init__(self, node: exp.Expression) -> None:
-        self.__node__ = node
+    def __init__(self, expr: duckdb.Expression) -> None:
+        self._expr = expr
 
     def __repr__(self) -> str:
-        return f"Expr({self.__node__.sql(dialect='duckdb')})"
+        return f"Expr({self._expr})"
+
+    @property
+    def expr(self) -> duckdb.Expression:
+        """Get the underlying DuckDB expression."""
+        return self._expr
 
     def add(self, other: object) -> Self:
         """Add another expression or value."""
-        return self.__class__(exp.Add(this=self.__node__, expression=to_node(other)))
+        return self.__class__(self._expr + _to_value(other))
 
     def radd(self, other: object) -> Self:
-        return self.__class__(exp.Add(this=to_node(other), expression=self.__node__))
+        return self.__class__(_to_value(other) + self._expr)
 
     def sub(self, other: object) -> Self:
-        return self.__class__(exp.Sub(this=self.__node__, expression=to_node(other)))
+        return self.__class__(self._expr - _to_value(other))
 
     def rsub(self, other: object) -> Self:
-        return self.__class__(exp.Sub(this=to_node(other), expression=self.__node__))
+        return self.__class__(_to_value(other) - self._expr)
 
     def mul(self, other: object) -> Self:
-        return self.__class__(exp.Mul(this=self.__node__, expression=to_node(other)))
+        return self.__class__(self._expr * _to_value(other))
 
     def rmul(self, other: object) -> Self:
-        return self.__class__(exp.Mul(this=to_node(other), expression=self.__node__))
+        return self.__class__(_to_value(other) * self._expr)
 
     def truediv(self, other: object) -> Self:
-        return self.__class__(exp.Div(this=self.__node__, expression=to_node(other)))
+        return self.__class__(self._expr / _to_value(other))
 
     def rtruediv(self, other: object) -> Self:
-        return self.__class__(exp.Div(this=to_node(other), expression=self.__node__))
+        return self.__class__(_to_value(other) / self._expr)
 
     def floordiv(self, other: object) -> Self:
-        return self.__class__(exp.IntDiv(this=self.__node__, expression=to_node(other)))
+        return self.__class__(self._expr // _to_value(other))
 
     def rfloordiv(self, other: object) -> Self:
-        return self.__class__(exp.IntDiv(this=to_node(other), expression=self.__node__))
+        return self.__class__(_to_value(other) // self._expr)
 
     def mod(self, other: object) -> Self:
-        return self.__class__(exp.Mod(this=self.__node__, expression=to_node(other)))
+        return self.__class__(self._expr % _to_value(other))
 
     def rmod(self, other: object) -> Self:
-        return self.__class__(exp.Mod(this=to_node(other), expression=self.__node__))
+        return self.__class__(_to_value(other) % self._expr)
 
     def pow(self, other: object) -> Self:
-        return self.__class__(exp.Pow(this=self.__node__, expression=to_node(other)))
+        return self.__class__(self._expr ** _to_value(other))
 
     def rpow(self, other: object) -> Self:
-        return self.__class__(exp.Pow(this=to_node(other), expression=self.__node__))
+        return self.__class__(_to_value(other) ** self._expr)
 
     def neg(self) -> Self:
-        return self.__class__(exp.Neg(this=self.__node__))
+        return self.__class__(-self._expr)
 
     def pos(self) -> Self:
         return self
 
     def abs(self) -> Self:
-        return self.__class__(exp.Abs(this=self.__node__))
+        return self.__class__(duckdb.FunctionExpression("abs", self._expr))
 
     def eq(self, other: object) -> Self:
-        return self.__class__(exp.EQ(this=self.__node__, expression=to_node(other)))
+        return self.__class__(self._expr == _to_value(other))
 
     def ne(self, other: object) -> Self:
-        return self.__class__(exp.NEQ(this=self.__node__, expression=to_node(other)))
+        return self.__class__(self._expr != _to_value(other))
 
     def lt(self, other: object) -> Self:
-        return self.__class__(exp.LT(this=self.__node__, expression=to_node(other)))
+        return self.__class__(self._expr < _to_value(other))
 
     def le(self, other: object) -> Self:
-        return self.__class__(exp.LTE(this=self.__node__, expression=to_node(other)))
+        return self.__class__(self._expr <= _to_value(other))
 
     def gt(self, other: object) -> Self:
-        return self.__class__(exp.GT(this=self.__node__, expression=to_node(other)))
+        return self.__class__(self._expr > _to_value(other))
 
     def ge(self, other: object) -> Self:
-        return self.__class__(exp.GTE(this=self.__node__, expression=to_node(other)))
+        return self.__class__(self._expr >= _to_value(other))
 
-    def and_(self, other: object) -> Self:
-        return self.__class__(exp.And(this=self.__node__, expression=to_node(other)))
+    def and_(self, others: Any) -> Self:  # noqa: ANN401
+        return self.__class__(self._expr & _to_value(others))
 
-    def rand(self, other: object) -> Self:
-        return self.__class__(exp.And(this=to_node(other), expression=self.__node__))
+    def rand(self, others: Any) -> Self:  # noqa: ANN401
+        return self.__class__(_to_value(others) & self._expr)
 
-    def or_(self, other: object) -> Self:
-        return self.__class__(exp.Or(this=self.__node__, expression=to_node(other)))
+    def or_(self, others: Any) -> Self:  # noqa: ANN401
+        return self.__class__(self._expr | _to_value(others))
 
-    def ror(self, other: object) -> Self:
-        return self.__class__(exp.Or(this=to_node(other), expression=self.__node__))
+    def ror(self, others: Any) -> Self:  # noqa: ANN401
+        return self.__class__(_to_value(others) | self._expr)
 
     def not_(self) -> Self:
-        return self.__class__(exp.Not(this=self.__node__))
+        return self.__class__(~self._expr)
 
     def alias(self, name: str) -> Self:
         """Rename the expression."""
-        return self.__class__(exp.alias_(self.__node__, name))
+        return self.__class__(self._expr.alias(name))
 
     def is_null(self) -> Self:
         """Check if the expression is NULL."""
-        return self.__class__(exp.Is(this=self.__node__, expression=exp.Null()))
+        return self.__class__(self._expr.isnull())
 
     def is_not_null(self) -> Self:
         """Check if the expression is not NULL."""
-        return self.__class__(
-            exp.Not(this=exp.Is(this=self.__node__, expression=exp.Null()))
-        )
+        return self.__class__(self._expr.isnotnull())
 
     def fill_null(self, value: object) -> Self:
         """Fill NULL values with the given value."""
-        return self.__class__(
-            exp.Coalesce(this=self.__node__, expressions=[to_node(value)])
-        )
+        return self.__class__(duckdb.CoalesceOperator(self._expr, to_expr(value)))
 
-    # ==================== Aggregations ====================
+    def cast(self, dtype: datatypes.DataType) -> Self:
+        """Cast to a different data type."""
+        return self.__class__(self._expr.cast(dtype))
+
+    def between(self, lower: object, upper: object) -> Self:
+        """Check if value is between lower and upper (inclusive)."""
+        return self.__class__(self._expr.between(_to_value(lower), _to_value(upper)))
+
+    def is_in(self, values: Iterable[object]) -> Self:
+        """Check if value is in an iterable of values."""
+        return self.__class__(self._expr.isin(*pc.Iter(values).map(_to_value)))
+
+    def is_not_in(self, values: Iterable[object]) -> Self:
+        """Check if value is not in an iterable of values."""
+        return self.__class__(~self._expr.isin(*pc.Iter(values).map(_to_value)))
 
     def sum(self) -> Self:
         """Compute the sum."""
-        return self.__class__(exp.Sum(this=self.__node__))
+        return self.__class__(duckdb.FunctionExpression("sum", self._expr))
 
     def mean(self) -> Self:
         """Compute the mean (average)."""
-        return self.__class__(exp.Avg(this=self.__node__))
+        return self.__class__(duckdb.FunctionExpression("avg", self._expr))
 
     def min(self) -> Self:
         """Compute the minimum."""
-        return self.__class__(exp.Min(this=self.__node__))
+        return self.__class__(duckdb.FunctionExpression("min", self._expr))
 
     def max(self) -> Self:
         """Compute the maximum."""
-        return self.__class__(exp.Max(this=self.__node__))
+        return self.__class__(duckdb.FunctionExpression("max", self._expr))
 
     def count(self) -> Self:
         """Count non-null values."""
         return self.__class__(
-            exp.Cast(
-                this=exp.Count(this=self.__node__),
-                to=exp.DataType.build("UINT"),
-            )
+            duckdb.FunctionExpression("count", self._expr).cast(datatypes.UInt32)
         )
 
     def std(self, ddof: int = 1) -> Self:
         """Compute the standard deviation."""
-        return self.__class__(
-            exp.Stddev(this=self.__node__)
-            if ddof == 1
-            else exp.StddevPop(this=self.__node__)
-        )
+        func = "stddev_samp" if ddof == 1 else "stddev_pop"
+        return self.__class__(duckdb.FunctionExpression(func, self._expr))
 
     def var(self, ddof: int = 1) -> Self:
         """Compute the variance."""
-        return self.__class__(
-            exp.Variance(this=self.__node__)
-            if ddof == 1
-            else exp.VariancePop(this=self.__node__)
-        )
+        func = "var_samp" if ddof == 1 else "var_pop"
+        return self.__class__(duckdb.FunctionExpression(func, self._expr))
 
     def first(self) -> Self:
         """Get the first value."""
-        return self.__class__(exp.First(this=self.__node__))
+        return self.__class__(duckdb.FunctionExpression("first", self._expr))
 
     def last(self) -> Self:
         """Get the last value."""
-        return self.__class__(exp.Last(this=self.__node__))
+        return self.__class__(duckdb.FunctionExpression("last", self._expr))
 
     def n_unique(self) -> Self:
         """Count unique values."""
-        return self.__class__(exp.Count(this=exp.Distinct(expressions=[self.__node__])))
+        return self.__class__(
+            duckdb.SQLExpression(f"COUNT(DISTINCT {self._expr})").cast(datatypes.UInt32)
+        )
 
     @property
     def str(self) -> ExprStringNameSpace:
         """Access string operations."""
-        return ExprStringNameSpace(self.__node__)
+        return ExprStringNameSpace(self._expr)
 
     @property
     def dt(self) -> ExprDateTimeNameSpace:
         """Access datetime operations."""
-        return ExprDateTimeNameSpace(self.__node__)
-
-    def cast(self, dtype: str) -> Self:
-        """Cast to a different data type."""
-        return self.__class__(
-            exp.Cast(this=self.__node__, to=exp.DataType.build(dtype))
-        )
-
-    def between(self, lower: object, upper: object) -> Self:
-        """Check if value is between lower and upper (inclusive)."""
-        return self.__class__(
-            exp.Between(this=self.__node__, low=to_node(lower), high=to_node(upper))
-        )
-
-    def is_in(self, values: Iterable[object]) -> Self:
-        """Check if value is in an iterable of values."""
-        return self.__class__(
-            exp.In(
-                this=self.__node__, expressions=pc.Iter(values).map(to_node).collect()
-            )
-        )
-
-    def is_not_in(self, values: Iterable[object]) -> Self:
-        """Check if value is not in an iterable of values."""
-        return self.__class__(
-            exp.Not(
-                this=exp.In(
-                    this=self.__node__,
-                    expressions=pc.Iter(values).map(to_node).collect(),
-                )
-            )
-        )
+        return ExprDateTimeNameSpace(self._expr)
 
 
 class ExprStringNameSpace:
     """String operations namespace (equivalent to pl.Expr.str)."""
 
-    __slots__ = ("__node__",)
+    __slots__ = ("_expr",)
 
-    def __init__(self, node: exp.Expression) -> None:
-        self.__node__ = node
+    def __init__(self, expr: duckdb.Expression) -> None:
+        self._expr = expr
 
     def to_uppercase(self) -> Expr:
         """Convert to uppercase."""
-        return Expr(exp.Upper(this=self.__node__))
+        return Expr(duckdb.FunctionExpression("upper", self._expr))
 
     def to_lowercase(self) -> Expr:
         """Convert to lowercase."""
-        return Expr(exp.Lower(this=self.__node__))
+        return Expr(duckdb.FunctionExpression("lower", self._expr))
 
     def len_chars(self) -> Expr:
         """Get the length in characters."""
-        return Expr(exp.Length(this=self.__node__))
+        return Expr(duckdb.FunctionExpression("length", self._expr))
 
     def contains(self, pattern: str, *, literal: bool = True) -> Expr:
         """Check if string contains a pattern."""
         return (
             Expr(
-                exp.Like(
-                    this=self.__node__, expression=exp.Literal.string(f"%{pattern}%")
+                duckdb.FunctionExpression(
+                    "contains", self._expr, duckdb.ConstantExpression(pattern)
                 )
             )
             if literal
             else Expr(
-                exp.RegexpLike(
-                    this=self.__node__, expression=exp.Literal.string(pattern)
+                duckdb.FunctionExpression(
+                    "regexp_matches", self._expr, duckdb.ConstantExpression(pattern)
                 )
             )
         )
@@ -292,119 +278,126 @@ class ExprStringNameSpace:
     def starts_with(self, prefix: str) -> Expr:
         """Check if string starts with prefix."""
         return Expr(
-            exp.Like(this=self.__node__, expression=exp.Literal.string(f"{prefix}%"))
+            duckdb.FunctionExpression(
+                "starts_with", self._expr, duckdb.ConstantExpression(prefix)
+            )
         )
 
     def ends_with(self, suffix: str) -> Expr:
         """Check if string ends with suffix."""
         return Expr(
-            exp.Like(this=self.__node__, expression=exp.Literal.string(f"%{suffix}"))
+            duckdb.FunctionExpression(
+                "ends_with", self._expr, duckdb.ConstantExpression(suffix)
+            )
         )
 
     def replace(self, pattern: str, replacement: str) -> Expr:
         """Replace occurrences of pattern with replacement."""
         return Expr(
-            exp.Replace(
-                this=self.__node__,
-                expression=exp.Literal.string(pattern),
-                replacement=exp.Literal.string(replacement),
+            duckdb.FunctionExpression(
+                "replace",
+                self._expr,
+                duckdb.ConstantExpression(pattern),
+                duckdb.ConstantExpression(replacement),
             )
         )
 
     def strip_chars(self) -> Expr:
         """Strip leading and trailing whitespace."""
-        return Expr(exp.Trim(this=self.__node__))
+        return Expr(duckdb.FunctionExpression("trim", self._expr))
 
     def strip_chars_start(self) -> Expr:
         """Strip leading whitespace."""
-        return Expr(exp.Trim(this=self.__node__, position="LEADING"))
+        return Expr(duckdb.FunctionExpression("ltrim", self._expr))
 
     def strip_chars_end(self) -> Expr:
         """Strip trailing whitespace."""
-        return Expr(exp.Trim(this=self.__node__, position="TRAILING"))
+        return Expr(duckdb.FunctionExpression("rtrim", self._expr))
 
     def slice(self, offset: int, length: int | None = None) -> Expr:
         """Extract a substring."""
-        args = pc.Dict.from_kwargs(
-            this=self.__node__,
-            start=exp.Literal.number(offset + 1),
+        args: tuple[duckdb.Expression, ...] = (
+            (self._expr, duckdb.ConstantExpression(str(offset + 1)))
+            if length is None
+            else (
+                self._expr,
+                duckdb.ConstantExpression(str(offset + 1)),
+                duckdb.ConstantExpression(str(length)),
+            )
         )
-        if length is not None:
-            args.insert("length", exp.Literal.number(length))
-        return Expr(exp.Substring(**args))
+        return Expr(duckdb.FunctionExpression("substring", *args))
 
 
-# TODO: find a solution for mismatched types
 class ExprDateTimeNameSpace:
     """Datetime operations namespace (equivalent to pl.Expr.dt)."""
 
-    __slots__ = ("__node__",)
+    __slots__ = ("_expr",)
 
-    def __init__(self, node: exp.Expression) -> None:
-        self.__node__ = node
+    def __init__(self, expr: duckdb.Expression) -> None:
+        self._expr = expr
 
-    def _to_utc(self) -> exp.Expression:
+    def _to_utc(self) -> duckdb.Expression:
         """Convert datetime to UTC timezone."""
-        return exp.AtTimeZone(this=self.__node__, zone=exp.Literal.string("UTC"))
+        return duckdb.FunctionExpression(
+            "timezone", duckdb.ConstantExpression("UTC"), self._expr
+        )
 
     def year(self) -> Expr:
         """Extract the year."""
         return Expr(
-            exp.Cast(
-                this=exp.Year(this=self._to_utc()),
-                to=exp.DataType.build(exp.DataType.Type.INT),
-            )
+            duckdb.FunctionExpression("year", self._to_utc()).cast(datatypes.Int32)
         )
 
     def month(self) -> Expr:
         """Extract the month."""
         return Expr(
-            exp.Cast(
-                this=exp.Month(this=self._to_utc()),
-                to=exp.DataType.build(exp.DataType.Type.TINYINT),
-            )
+            duckdb.FunctionExpression("month", self._to_utc()).cast(datatypes.Int8)
         )
 
     def day(self) -> Expr:
         """Extract the day."""
         return Expr(
-            exp.Cast(
-                this=exp.Day(this=self._to_utc()),
-                to=exp.DataType.build(exp.DataType.Type.TINYINT),
-            )
+            duckdb.FunctionExpression("day", self._to_utc()).cast(datatypes.Int8)
         )
 
     def hour(self) -> Expr:
         """Extract the hour."""
         return Expr(
-            exp.Cast(
-                this=exp.Hour(this=self._to_utc()),
-                to=exp.DataType.build(exp.DataType.Type.TINYINT),
-            )
+            duckdb.FunctionExpression("hour", self._to_utc()).cast(datatypes.Int8)
         )
 
     def minute(self) -> Expr:
         """Extract the minute."""
-        return Expr(exp.Minute(this=self._to_utc()))
+        return Expr(
+            duckdb.FunctionExpression("minute", self._to_utc()).cast(datatypes.Int32)
+        )
 
     def second(self) -> Expr:
         """Extract the second."""
-        return Expr(exp.Second(this=self._to_utc()))
+        return Expr(
+            duckdb.FunctionExpression("second", self._to_utc()).cast(datatypes.Int32)
+        )
 
     def weekday(self) -> Expr:
-        """Extract the day of week (0=Monday, 6=Sunday)."""
-        return Expr(exp.DayOfWeek(this=self.__node__))
+        """Extract the day of week (1=Monday, 7=Sunday)."""
+        return Expr(
+            duckdb.FunctionExpression(
+                "dayofweek", self._to_utc().cast(datatypes.Date)
+            ).cast(datatypes.Int8)
+        )
 
     def week(self) -> Expr:
         """Extract the week number."""
-        return Expr(exp.Week(this=self.__node__))
+        return Expr(duckdb.FunctionExpression("week", self._expr).cast(datatypes.Int8))
 
     def date(self) -> Expr:
         """Extract the date part."""
-        return Expr(exp.Date(this=self.__node__))
+        return Expr(self._to_utc().cast(datatypes.Date))
 
     def convert_time_zone(self, time_zone: str) -> Expr:
         """Convert to a different timezone."""
         return Expr(
-            exp.AtTimeZone(this=self.__node__, zone=exp.Literal.string(time_zone))
+            duckdb.FunctionExpression(
+                "timezone", duckdb.ConstantExpression(time_zone), self._expr
+            )
         )

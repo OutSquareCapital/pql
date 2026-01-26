@@ -1,3 +1,5 @@
+"""LazyFrame providing Polars-like API over DuckDB relations."""
+
 from __future__ import annotations
 
 from collections.abc import Iterable, Mapping
@@ -7,9 +9,8 @@ from typing import Literal, Self
 import duckdb
 import polars as pl
 import pyochain as pc
-from sqlglot import exp
 
-from ._expr import Expr, to_node
+from ._expr import Expr, to_expr
 
 type FrameInit = duckdb.DuckDBPyRelation | pl.DataFrame | pl.LazyFrame | None
 
@@ -18,62 +19,61 @@ def _data_to_rel(data: FrameInit) -> duckdb.DuckDBPyRelation:
     match data:
         case duckdb.DuckDBPyRelation():
             return data
-        case pl.DataFrame() | pl.LazyFrame():
-            return duckdb.from_arrow(data.lazy().collect())
+        case pl.DataFrame():
+            return duckdb.from_arrow(data)
+        case pl.LazyFrame():
+            from sqlglot import exp
+
+            _ = data
+            return duckdb.sql(exp.select(exp.Star()).from_("_").sql(dialect="duckdb"))
         case None:
             return duckdb.from_arrow(pl.DataFrame({"_": [None]}))
 
 
 class LazyFrame:
-    """LazyFrame providing Polars-like API for SQL generation."""
+    """LazyFrame providing Polars-like API over DuckDB relations."""
 
-    __ast__: exp.Select
-    rel: duckdb.DuckDBPyRelation
-    __slots__ = ("__ast__", "rel")
+    _rel: duckdb.DuckDBPyRelation
+    __slots__ = ("_rel",)
 
     def __init__(self, data: FrameInit = None) -> None:
-        self.__ast__ = exp.select(exp.Star()).from_(
-            exp.Table(this=exp.Identifier(this="_"))
-        )
-        self.rel = _data_to_rel(data)
+        self._rel = _data_to_rel(data)
 
     def __repr__(self) -> str:
-        return f"LazyFrame(\n{self.sql()}\n)"
+        return f"LazyFrame(\n{self._rel}\n)"
 
-    def _new(self, ast: exp.Select) -> Self:
-        instance = self.__class__(self.rel)
-        instance.__ast__ = ast
+    def __from_lf__(self, rel: duckdb.DuckDBPyRelation) -> Self:
+        instance = self.__class__.__new__(self.__class__)
+        instance._rel = rel
         return instance
+
+    @property
+    def relation(self) -> duckdb.DuckDBPyRelation:
+        """Get the underlying DuckDB relation."""
+        return self._rel
 
     def collect(self) -> pl.DataFrame:
         """Execute the query and return a Polars DataFrame."""
-        return self.rel.query("_", self.sql(pretty=False)).pl()
+        return self._rel.pl()
 
     def select(self, *exprs: Expr | str) -> Self:
         """Select columns or expressions."""
-        return self._new(
-            self.__ast__.copy().select(
-                *pc.Iter(exprs).map(to_node).collect(), append=False, copy=False
-            )
-        )
+        return self.__from_lf__(self._rel.select(*pc.Iter(exprs).map(to_expr)))
 
     def with_columns(self, *exprs: Expr) -> Self:
         """Add or replace columns."""
-        return self._new(
-            self.__ast__.copy().select(
-                exp.Star(),
-                *pc.Iter(exprs).map(to_node).collect(),
-                append=False,
-                copy=False,
+        return self.__from_lf__(
+            self._rel.select(
+                duckdb.StarExpression(),
+                *pc.Iter(exprs).map(lambda e: e.expr),
             )
         )
 
     def filter(self, *predicates: Expr) -> Self:
         """Filter rows based on predicates."""
-        new_ast = self.__ast__.copy()
-        for p in predicates:
-            new_ast = new_ast.where(p.__node__, copy=False)
-        return self._new(new_ast)
+        return pc.Iter(predicates).fold(
+            self, lambda lf, p: lf.__from_lf__(lf._rel.filter(p.expr))
+        )
 
     def group_by(self, *by: str | Expr) -> GroupBy:
         """Group by columns."""
@@ -94,68 +94,66 @@ class LazyFrame:
                 else pc.Iter(arg)
             )
 
-        order_terms = (
-            pc.Iter(by)
-            .zip(_args_iter(arg=descending), _args_iter(arg=nulls_last))
-            .map_star(
-                lambda col, desc, nl: exp.Ordered(
-                    this=to_node(col), desc=desc, nulls_first=None if nl else True
+        def _make_order(col: str | Expr, desc: bool, nl: bool) -> duckdb.Expression:  # noqa: FBT001
+            expr = to_expr(col)
+            return (
+                expr.desc().nulls_last()
+                if desc and nl
+                else (
+                    expr.desc().nulls_first()
+                    if desc
+                    else (expr.asc().nulls_last() if nl else expr.asc())
                 )
             )
+
+        order_exprs = (
+            pc.Iter(by)
+            .zip(_args_iter(arg=descending), _args_iter(arg=nulls_last))
+            .map_star(_make_order)
         )
-        return self._new(self.__ast__.copy().order_by(*order_terms, copy=False))
+        return self.__from_lf__(self._rel.sort(*order_exprs))
 
     def limit(self, n: int) -> Self:
         """Limit the number of rows."""
-        return self._new(self.__ast__.copy().limit(n, copy=False))
+        return self.__from_lf__(self._rel.limit(n))
 
     def head(self, n: int = 5) -> Self:
         """Get the first n rows."""
-        return self._new(self.__ast__.copy().limit(n, copy=False))
+        return self.limit(n)
 
     def tail(self, n: int = 5) -> Self:
         """Get the last n rows."""
-        return self._new(self.__ast__.copy().limit(n, copy=False))
+        return self.__from_lf__(
+            self._rel.limit(n, offset=self._rel.count("*").fetchone()[0] - n)
+        )
 
     def distinct(self) -> Self:
         """Get distinct rows."""
-        return self._new(self.__ast__.copy().distinct(copy=False))
+        return self.__from_lf__(self._rel.distinct())
 
     def unique(self, subset: str | Iterable[str] | None = None) -> Self:
         """Get unique rows based on subset of columns."""
         if subset is None:
             return self.distinct()
         cols = pc.Iter.once(subset) if isinstance(subset, str) else pc.Iter(subset)
-        new_ast = self.__ast__.copy()
-        new_ast.set(
-            "distinct",
-            exp.Distinct(
-                on=exp.Tuple(expressions=pc.Iter(cols).map(to_node).collect())
-            ),
-        )
-        return self._new(new_ast)
+        return self.__from_lf__(self._rel.distinct(*cols.map(duckdb.ColumnExpression)))
 
     def drop(self, *columns: str) -> Self:
         """Drop columns from the frame."""
-        return self._new(
-            self.__ast__.copy().select(
-                exp.Star(except_=pc.Iter(columns).map(exp.column)),
-                append=False,
-                copy=False,
-            )
+        return self.__from_lf__(
+            self._rel.select(duckdb.StarExpression(exclude=columns))
         )
 
     def rename(self, mapping: Mapping[str, str]) -> Self:
         """Rename columns."""
-        rename_exprs = (
-            pc.Dict(mapping)
-            .items()
-            .iter()
-            .map_star(lambda old, new: exp.alias_(exp.column(old), new))
+        rename_map = pc.Dict(mapping)
+
+        exprs = pc.Iter(self._rel.columns).map(
+            lambda c: duckdb.ColumnExpression(c).alias(
+                rename_map.get_item(c).unwrap_or(c)
+            )
         )
-        return self._new(
-            self.__ast__.copy().select(*rename_exprs, append=True, copy=False)
-        )
+        return self.__from_lf__(self._rel.select(*exprs))
 
     def join(  # noqa: PLR0913
         self,
@@ -172,15 +170,15 @@ class LazyFrame:
         """Join with another LazyFrame."""
         match how:
             case "cross":
-                return self.__class__(self.rel.cross(other.rel))
+                return self.__from_lf__(self._rel.cross(other._rel))
             case _:
-                lhs = self.rel.set_alias("lhs")
-                rhs = other.rel.set_alias("rhs")
+                lhs = self._rel.set_alias("lhs")
+                rhs = other._rel.set_alias("rhs")
                 rel = lhs.join(
                     rhs, condition=_build_join_condition(on, left_on, right_on), how=how
                 )
 
-                return self.__class__(
+                return self.__from_lf__(
                     rel
                     if how in {"semi", "anti"}
                     else _apply_join_suffix(rel, lhs.columns, rhs.columns, on, suffix)
@@ -188,10 +186,11 @@ class LazyFrame:
 
     def sql(self, *, pretty: bool = True) -> str:
         """Generate SQL string."""
-        ast = self.__ast__.copy()
-        if not ast.expressions:
-            ast = ast.select(exp.Star(), append=False, copy=False)
-        return ast.sql(dialect="duckdb", pretty=pretty)
+        import sqlglot
+
+        return sqlglot.parse_one(self._rel.sql_query()).sql(
+            dialect="duckdb", pretty=pretty
+        )
 
 
 def _build_join_condition(
@@ -251,10 +250,15 @@ class GroupBy:
 
     def agg(self, *exprs: Expr) -> LazyFrame:
         """Aggregate the grouped data."""
-        by_nodes = pc.Iter(self._by).map(to_node).collect()
-        agg_nodes = pc.Iter(exprs).map(to_node).collect()
-        return self._lf._new(  # type: ignore[private-access]
-            self._lf.__ast__.copy()
-            .select(*by_nodes, *agg_nodes, append=False, copy=False)
-            .group_by(*by_nodes, copy=False)
+        by_strs = (
+            pc.Iter(self._by)
+            .map(lambda b: b if isinstance(b, str) else str(b.expr))
+            .join(", ")
         )
+        all_exprs = pc.Seq(
+            (
+                *pc.Iter(self._by).map(to_expr),
+                *pc.Iter(exprs).map(lambda e: e.expr),
+            )
+        )
+        return self._lf.__from_lf__(self._lf.relation.aggregate(all_exprs, by_strs))
