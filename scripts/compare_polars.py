@@ -234,7 +234,7 @@ class ClassComparison:
                 .map(
                     lambda name: ComparisonResult.from_method(polars_cls, pql_cls, name)
                 )
-                .collect()
+                .sort(key=lambda r: r.method_name)
             ),
         )
 
