@@ -6,46 +6,38 @@ This report shows the API coverage of pql compared to Polars.
 
 | Class | Coverage | Matched | Missing | Mismatched | Extra |
 |-------|----------|---------|---------|------------|-------|
-| LazyFrame | 34.1% | 30 | 43 | 15 | 1 |
-| Expr | 26.7% | 58 | 144 | 15 | 1 |
-| Expr.str | 44.9% | 22 | 15 | 12 | 0 |
+| LazyFrame | 25.0% | 22 | 44 | 22 | 1 |
+| Expr | 15.7% | 34 | 157 | 26 | 1 |
+| Expr.str | 14.3% | 7 | 23 | 19 | 0 |
 
 ## LazyFrame
 
-### [v] Matched Methods (30)
+### [v] Matched Methods (22)
 
-- `bottom_k`
 - `clone`
 - `collect_schema`
 - `columns`
 - `count`
-- `drop_nans`
-- `drop_nulls`
 - `dtypes`
-- `fill_nan`
 - `first`
 - `gather_every`
 - `head`
-- `interpolate`
 - `limit`
 - `max`
 - `mean`
 - `median`
 - `min`
 - `null_count`
-- `pipe`
 - `reverse`
 - `schema`
-- `shift`
 - `std`
 - `sum`
-- `top_k`
 - `var`
 - `width`
 - `with_row_count`
 - `with_row_index`
 
-### [x] Missing Methods (43)
+### [x] Missing Methods (44)
 
 - `approx_n_unique` () -> LazyFrame
 - `cache` () -> LazyFrame
@@ -59,6 +51,7 @@ This report shows the API coverage of pql compared to Polars.
 - `group_by` (by: IntoExpr | Iterable[IntoExpr], maintain_order: bool, named_by: IntoExpr) -> LazyGroupBy
 - `group_by_dynamic` (index_column: IntoExpr, every: str | timedelta, period: str | timedelta | None, offset: str | timedelta | None, include_boundaries: bool, closed: ClosedInterval, label: Label, group_by: IntoExpr | Iterable[IntoExpr] | None, start_by: StartBy) -> LazyGroupBy
 - `inspect` (fmt: str) -> LazyFrame
+- `interpolate` () -> LazyFrame
 - `join` (other: LazyFrame, on: str | Expr | Sequence[str | Expr] | None, how: JoinStrategy, left_on: str | Expr | Sequence[str | Expr] | None, right_on: str | Expr | Sequence[str | Expr] | None, suffix: str, validate: JoinValidation, nulls_equal: bool, coalesce: bool | None, maintain_order: MaintainOrderJoin | None, allow_parallel: bool, force_parallel: bool) -> LazyFrame
 - `join_asof` (other: LazyFrame, left_on: str | None | Expr, right_on: str | None | Expr, on: str | None | Expr, by_left: str | Sequence[str] | None, by_right: str | Sequence[str] | None, by: str | Sequence[str] | None, strategy: AsofJoinStrategy, suffix: str, tolerance: str | int | float | timedelta | None, allow_parallel: bool, force_parallel: bool, coalesce: bool, allow_exact_matches: bool, check_sortedness: bool) -> LazyFrame
 - `join_where` (other: LazyFrame, predicates: Expr | Iterable[Expr], suffix: str) -> LazyFrame
@@ -91,53 +84,74 @@ This report shows the API coverage of pql compared to Polars.
 - `with_columns_seq` (exprs: IntoExpr | Iterable[IntoExpr], named_exprs: IntoExpr) -> LazyFrame
 - `with_context` (other: Self | list[Self]) -> LazyFrame
 
-### [!] Signature Mismatches (15)
+### [!] Signature Mismatches (22)
 
-- `cast`: Missing params: strict
+- `bottom_k`
+  - Polars: (k: int, by: IntoExpr | Iterable[IntoExpr], reverse: bool | Sequence[bool]) -> LazyFrame
+  - pql: (k: int, by: IntoExpr | Iterable[IntoExpr], reverse: bool) -> Self
+- `cast`
   - Polars: (dtypes: Mapping[ColumnNameOrSelector | PolarsDataType, PolarsDataType | PythonDataType] | PolarsDataType | pl.DataTypeExpr | Schema, strict: bool) -> LazyFrame
   - pql: (dtypes: Mapping[str, datatypes.DataType] | datatypes.DataType) -> Self
-- `collect`: Missing params: _kwargs, background, cluster_with_columns, collapse_joins, comm_subexpr_elim, comm_subplan_elim, engine, no_optimization, optimizations, predicate_pushdown, projection_pushdown, simplify_expression, slice_pushdown, type_coercion
+- `collect`
   - Polars: (type_coercion: bool, predicate_pushdown: bool, projection_pushdown: bool, simplify_expression: bool, slice_pushdown: bool, comm_subplan_elim: bool, comm_subexpr_elim: bool, cluster_with_columns: bool, collapse_joins: bool, no_optimization: bool, engine: EngineType, background: bool, optimizations: QueryOptFlags,_kwargs: Any) -> DataFrame | InProcessQuery
   - pql: () -> pl.DataFrame
-- `drop`: Missing params: strict
+- `drop`
   - Polars: (columns: ColumnNameOrSelector | Iterable[ColumnNameOrSelector], strict: bool) -> LazyFrame
   - pql: (columns: str) -> Self
-- `explain`: Missing params: cluster_with_columns, collapse_joins, comm_subexpr_elim, comm_subplan_elim, engine, format, optimizations, optimized, predicate_pushdown, projection_pushdown, simplify_expression, slice_pushdown, streaming, tree_format, type_coercion
+- `drop_nans`
+  - Polars: (subset: ColumnNameOrSelector | Collection[ColumnNameOrSelector] | None) -> LazyFrame
+  - pql: (subset: str | Iterable[str] | None) -> Self
+- `drop_nulls`
+  - Polars: (subset: ColumnNameOrSelector | Collection[ColumnNameOrSelector] | None) -> LazyFrame
+  - pql: (subset: str | Iterable[str] | None) -> Self
+- `explain`
   - Polars: (format: ExplainFormat, optimized: bool, type_coercion: bool, predicate_pushdown: bool, projection_pushdown: bool, simplify_expression: bool, slice_pushdown: bool, comm_subplan_elim: bool, comm_subexpr_elim: bool, cluster_with_columns: bool, collapse_joins: bool, streaming: bool, engine: EngineType, tree_format: bool | None, optimizations: QueryOptFlags) -> str
   - pql: () -> str
-- `fill_null`: Missing params: limit, matches_supertype
+- `fill_nan`
+  - Polars: (value: int | float | Expr | None) -> LazyFrame
+  - pql: (value: float | Expr | None) -> Self
+- `fill_null`
   - Polars: (value: Any | Expr | None, strategy: FillNullStrategy | None, limit: int | None, matches_supertype: bool) -> LazyFrame
-  - pql: (value: object | Expr | None, strategy: Literal['forward', 'backward'] | None) -> Self
-- `filter`: Missing params: constraints
+  - pql: (value: IntoExpr, strategy: Literal['forward', 'backward'] | None) -> Self
+- `filter`
   - Polars: (predicates: IntoExprColumn | Iterable[IntoExprColumn] | bool | list[bool], constraints: Any) -> LazyFrame
   - pql: (predicates: Expr) -> Self
-- `quantile`: Missing params: interpolation
+- `pipe`
+  - Polars: (function: Callable[Concatenate[LazyFrame, P], T], args: P.args, kwargs: P.kwargs) -> T
+  - pql: (function: Callable[Concatenate[Self, P], T], args: P.args, kwargs: P.kwargs) -> T
+- `quantile`
   - Polars: (quantile: float | Expr, interpolation: QuantileMethod) -> LazyFrame
   - pql: (quantile: float) -> Self
-- `rename`: Missing params: strict
+- `rename`
   - Polars: (mapping: Mapping[str, str] | Callable[[str], str], strict: bool) -> LazyFrame
   - pql: (mapping: Mapping[str, str]) -> Self
-- `select`: Missing params: named_exprs
+- `select`
   - Polars: (exprs: IntoExpr | Iterable[IntoExpr], named_exprs: IntoExpr) -> LazyFrame
-  - pql: (exprs: Expr | str) -> Self
-- `sink_csv`: Missing params: batch_size, credential_provider, date_format, datetime_format, decimal_comma, engine, float_precision, float_scientific, include_bom, lazy, line_terminator, maintain_order, mkdir, null_value, optimizations, quote_char, quote_style, retries, storage_options, sync_on_close, time_format
+  - pql: (exprs: IntoExpr | Iterable[IntoExpr]) -> Self
+- `shift`
+  - Polars: (n: int | IntoExprColumn, fill_value: IntoExpr | None) -> LazyFrame
+  - pql: (n: int, fill_value: IntoExpr | None) -> Self
+- `sink_csv`
   - Polars: (path: str | Path | IO[bytes] | IO[str] | _SinkDirectory | PartitionBy, include_bom: bool, include_header: bool, separator: str, line_terminator: str, quote_char: str, batch_size: int, datetime_format: str | None, date_format: str | None, time_format: str | None, float_scientific: bool | None, float_precision: int | None, decimal_comma: bool, null_value: str | None, quote_style: CsvQuoteStyle | None, maintain_order: bool, storage_options: dict[str, Any] | None, credential_provider: CredentialProviderFunction | Literal['auto'] | None, retries: int, sync_on_close: SyncOnCloseMethod | None, mkdir: bool, lazy: bool, engine: EngineType, optimizations: QueryOptFlags) -> LazyFrame | None
   - pql: (path: str | Path, separator: str, include_header: bool) -> None
-- `sink_ndjson`: Missing params: credential_provider, engine, lazy, maintain_order, mkdir, optimizations, retries, storage_options, sync_on_close
+- `sink_ndjson`
   - Polars: (path: str | Path | IO[bytes] | IO[str] | _SinkDirectory | PartitionBy, maintain_order: bool, storage_options: dict[str, Any] | None, credential_provider: CredentialProviderFunction | Literal['auto'] | None, retries: int, sync_on_close: SyncOnCloseMethod | None, mkdir: bool, lazy: bool, engine: EngineType, optimizations: QueryOptFlags) -> LazyFrame | None
   - pql: (path: str | Path) -> None
-- `sink_parquet`: Missing params: compression_level, credential_provider, data_page_size, engine, field_overwrites, lazy, maintain_order, metadata, mkdir, optimizations, retries, row_group_size, statistics, storage_options, sync_on_close
+- `sink_parquet`
   - Polars: (path: str | Path | IO[bytes] | _SinkDirectory | PartitionBy, compression: str, compression_level: int | None, statistics: bool | str | dict[str, bool], row_group_size: int | None, data_page_size: int | None, maintain_order: bool, storage_options: dict[str, Any] | None, credential_provider: CredentialProviderFunction | Literal['auto'] | None, retries: int, sync_on_close: SyncOnCloseMethod | None, metadata: ParquetMetadata | None, mkdir: bool, lazy: bool, field_overwrites: ParquetFieldOverwrites | Sequence[ParquetFieldOverwrites] | Mapping[str, ParquetFieldOverwrites] | None, engine: EngineType, optimizations: QueryOptFlags) -> LazyFrame | None
   - pql: (path: str | Path, compression: str) -> None
-- `sort`: Missing params: maintain_order, more_by, multithreaded
+- `sort`
   - Polars: (by: IntoExpr | Iterable[IntoExpr], more_by: IntoExpr, descending: bool | Sequence[bool], nulls_last: bool | Sequence[bool], maintain_order: bool, multithreaded: bool) -> LazyFrame
-  - pql: (by: str | Expr, descending: bool | Iterable[bool], nulls_last: bool | Iterable[bool]) -> Self
-- `unique`: Missing params: keep, maintain_order
+  - pql: (by: IntoExpr | Iterable[IntoExpr], descending: bool | Iterable[bool], nulls_last: bool | Iterable[bool]) -> Self
+- `top_k`
+  - Polars: (k: int, by: IntoExpr | Iterable[IntoExpr], reverse: bool | Sequence[bool]) -> LazyFrame
+  - pql: (k: int, by: IntoExpr | Iterable[IntoExpr], reverse: bool) -> Self
+- `unique`
   - Polars: (subset: IntoExpr | Collection[IntoExpr] | None, keep: UniqueKeepStrategy, maintain_order: bool) -> LazyFrame
   - pql: (subset: str | Iterable[str] | None) -> Self
-- `with_columns`: Missing params: named_exprs
+- `with_columns`
   - Polars: (exprs: IntoExpr | Iterable[IntoExpr], named_exprs: IntoExpr) -> LazyFrame
-  - pql: (exprs: Expr) -> Self
+  - pql: (exprs: IntoExpr | Iterable[IntoExpr]) -> Self
 
 ### [+] Extra Methods (pql-only) (1)
 
@@ -145,30 +159,19 @@ This report shows the API coverage of pql compared to Polars.
 
 ## Expr
 
-### [v] Matched Methods (58)
+### [v] Matched Methods (34)
 
 - `abs`
-- `add`
 - `alias`
 - `and_`
-- `arccos`
-- `arcsin`
 - `arctan`
 - `cbrt`
 - `ceil`
-- `clip`
 - `cos`
 - `cosh`
-- `cum_count`
 - `degrees`
-- `eq`
 - `exp`
-- `fill_nan`
-- `flatten`
 - `floor`
-- `floordiv`
-- `ge`
-- `gt`
 - `is_duplicated`
 - `is_finite`
 - `is_first_distinct`
@@ -179,41 +182,30 @@ This report shows the API coverage of pql compared to Polars.
 - `is_not_null`
 - `is_null`
 - `is_unique`
-- `le`
-- `log`
 - `log10`
 - `log1p`
-- `lt`
-- `mod`
-- `mul`
-- `ne`
 - `neg`
 - `not_`
 - `or_`
-- `peak_max`
-- `peak_min`
-- `pipe`
 - `radians`
-- `repeat_by`
-- `round`
 - `sign`
 - `sin`
 - `sinh`
 - `sqrt`
 - `str`
-- `sub`
 - `tan`
 - `tanh`
-- `truediv`
 
-### [x] Missing Methods (144)
+### [x] Missing Methods (157)
 
 - `agg_groups` () -> Expr
 - `all` (ignore_nulls: bool) -> Expr
 - `any` (ignore_nulls: bool) -> Expr
 - `append` (other: IntoExpr, upcast: bool) -> Expr
 - `approx_n_unique` () -> Expr
+- `arccos` () -> Expr
 - `arccosh` () -> Expr
+- `arcsin` () -> Expr
 - `arcsinh` () -> Expr
 - `arctanh` () -> Expr
 - `arg_max` () -> Expr
@@ -235,8 +227,14 @@ This report shows the API coverage of pql compared to Polars.
 - `bottom_k` (k: int | IntoExprColumn) -> Expr
 - `bottom_k_by` (by: IntoExpr | Iterable[IntoExpr], k: int | IntoExprColumn, reverse: bool | Sequence[bool]) -> Expr
 - `cat` ()
+- `clip` (lower_bound: NumericLiteral | TemporalLiteral | IntoExprColumn | None, upper_bound: NumericLiteral | TemporalLiteral | IntoExprColumn | None) -> Expr
 - `cot` () -> Expr
 - `count` () -> Expr
+- `cum_count` (reverse: bool) -> Expr
+- `cum_max` (reverse: bool) -> Expr
+- `cum_min` (reverse: bool) -> Expr
+- `cum_prod` (reverse: bool) -> Expr
+- `cum_sum` (reverse: bool) -> Expr
 - `cumulative_eval` (expr: Expr, min_samples: int) -> Expr
 - `cut` (breaks: Sequence[float], labels: Sequence[str] | None, left_closed: bool, include_breaks: bool) -> Expr
 - `deserialize` (source: str | Path | IOBase | bytes, format: SerializationFormat) -> Expr
@@ -252,10 +250,13 @@ This report shows the API coverage of pql compared to Polars.
 - `ewm_std` (com: float | None, span: float | None, half_life: float | None, alpha: float | None, adjust: bool, bias: bool, min_samples: int, ignore_nulls: bool) -> Expr
 - `ewm_var` (com: float | None, span: float | None, half_life: float | None, alpha: float | None, adjust: bool, bias: bool, min_samples: int, ignore_nulls: bool) -> Expr
 - `exclude` (columns: str | PolarsDataType | Collection[str] | Collection[PolarsDataType], more_columns: str | PolarsDataType) -> Expr
+- `explode` (empty_as_null: bool, keep_nulls: bool) -> Expr
 - `ext` ()
 - `extend_constant` (value: IntoExpr, n: int | IntoExprColumn) -> Expr
+- `fill_null` (value: Any | Expr | None, strategy: FillNullStrategy | None, limit: int | None) -> Expr
 - `filter` (predicates: IntoExprColumn | Iterable[IntoExprColumn], constraints: Any) -> Expr
 - `first` (ignore_nulls: bool) -> Expr
+- `flatten` () -> Expr
 - `from_json` (value: str) -> Expr
 - `gather` (indices: int | Sequence[int] | IntoExpr | Series | np.ndarray[Any, Any]) -> Expr
 - `gather_every` (n: int, offset: int) -> Expr
@@ -294,6 +295,8 @@ This report shows the API coverage of pql compared to Polars.
 - `null_count` () -> Expr
 - `over` (partition_by: IntoExpr | Iterable[IntoExpr] | None, more_exprs: IntoExpr, order_by: IntoExpr | Iterable[IntoExpr] | None, descending: bool, nulls_last: bool, mapping_strategy: WindowMappingStrategy) -> Expr
 - `pct_change` (n: int | IntoExprColumn) -> Expr
+- `peak_max` () -> Expr
+- `peak_min` () -> Expr
 - `product` () -> Expr
 - `qcut` (quantiles: Sequence[float] | int, labels: Sequence[str] | None, left_closed: bool, allow_duplicates: bool, include_breaks: bool) -> Expr
 - `quantile` (quantile: float | Expr, interpolation: QuantileMethod) -> Expr
@@ -353,53 +356,86 @@ This report shows the API coverage of pql compared to Polars.
 - `where` (predicate: Expr) -> Expr
 - `xor` (other: Any) -> Expr
 
-### [!] Signature Mismatches (15)
+### [!] Signature Mismatches (26)
 
-- `backward_fill`: Missing params: limit
+- `add`
+  - Polars: (other: Any) -> Expr
+  - pql: (other: IntoExpr) -> Self
+- `backward_fill`
   - Polars: (limit: int | None) -> Expr
   - pql: () -> Self
-- `cast`: Missing params: strict, wrap_numerical
+- `cast`
   - Polars: (dtype: PolarsDataType | pl.DataTypeExpr | type[Any], strict: bool, wrap_numerical: bool) -> Expr
   - pql: (dtype: datatypes.DataType) -> Self
-- `cum_max`: Missing params: reverse
-  - Polars: (reverse: bool) -> Expr
-  - pql: () -> Self
-- `cum_min`: Missing params: reverse
-  - Polars: (reverse: bool) -> Expr
-  - pql: () -> Self
-- `cum_prod`: Missing params: reverse
-  - Polars: (reverse: bool) -> Expr
-  - pql: () -> Self
-- `cum_sum`: Missing params: reverse
-  - Polars: (reverse: bool) -> Expr
-  - pql: () -> Self
-- `explode`: Missing params: empty_as_null, keep_nulls
-  - Polars: (empty_as_null: bool, keep_nulls: bool) -> Expr
-  - pql: () -> Self
-- `fill_null`: Missing params: limit, strategy
-  - Polars: (value: Any | Expr | None, strategy: FillNullStrategy | None, limit: int | None) -> Expr
-  - pql: (value: object) -> Self
-- `forward_fill`: Missing params: limit
+- `eq`
+  - Polars: (other: Any) -> Expr
+  - pql: (other: IntoExpr) -> Self
+- `fill_nan`
+  - Polars: (value: int | float | Expr | None) -> Expr
+  - pql: (value: IntoExpr) -> Self
+- `floordiv`
+  - Polars: (other: Any) -> Expr
+  - pql: (other: IntoExpr) -> Self
+- `forward_fill`
   - Polars: (limit: int | None) -> Expr
   - pql: () -> Self
-- `hash`: Missing params: seed_1, seed_2, seed_3
+- `ge`
+  - Polars: (other: Any) -> Expr
+  - pql: (other: IntoExpr) -> Self
+- `gt`
+  - Polars: (other: Any) -> Expr
+  - pql: (other: IntoExpr) -> Self
+- `hash`
   - Polars: (seed: int, seed_1: int | None, seed_2: int | None, seed_3: int | None) -> Expr
   - pql: (seed: int) -> Self
-- `interpolate`: Missing params: method
+- `interpolate`
   - Polars: (method: InterpolationMethod) -> Expr
   - pql: () -> Self
-- `is_in`: Missing params: nulls_equal, other; Extra params: values
+- `is_in`
   - Polars: (other: Expr | Collection[Any] | Series, nulls_equal: bool) -> Expr
-  - pql: (values: Iterable[object]) -> Self
-- `pow`: Missing params: exponent; Extra params: other
+  - pql: (other: Collection[IntoExpr] | IntoExpr) -> Self
+- `le`
+  - Polars: (other: Any) -> Expr
+  - pql: (other: IntoExpr) -> Self
+- `log`
+  - Polars: (base: float | IntoExpr) -> Expr
+  - pql: (base: float) -> Self
+- `lt`
+  - Polars: (other: Any) -> Expr
+  - pql: (other: IntoExpr) -> Self
+- `mod`
+  - Polars: (other: Any) -> Expr
+  - pql: (other: IntoExpr) -> Self
+- `mul`
+  - Polars: (other: Any) -> Expr
+  - pql: (other: IntoExpr) -> Self
+- `ne`
+  - Polars: (other: Any) -> Expr
+  - pql: (other: IntoExpr) -> Self
+- `pipe`
+  - Polars: (function: Callable[Concatenate[Expr, P], T], args: P.args, kwargs: P.kwargs) -> T
+  - pql: (function: Callable[Concatenate[Self, P], T], args: P.args, kwargs: P.kwargs) -> T
+- `pow`
   - Polars: (exponent: IntoExprColumn | int | float) -> Expr
-  - pql: (other: object) -> Self
-- `replace`: Missing params: default, return_dtype
+  - pql: (other: IntoExpr) -> Self
+- `repeat_by`
+  - Polars: (by: pl.Series | Expr | str | int) -> Expr
+  - pql: (by: Expr | int) -> Self
+- `replace`
   - Polars: (old: IntoExpr | Sequence[Any] | Mapping[Any, Any], new: IntoExpr | Sequence[Any] | NoDefault, default: IntoExpr | NoDefault, return_dtype: PolarsDataType | None) -> Expr
-  - pql: (old: object | Iterable[object], new: object | Iterable[object]) -> Self
-- `shuffle`: Missing params: seed
+  - pql: (old: IntoExpr, new: IntoExpr) -> Self
+- `round`
+  - Polars: (decimals: int, mode: RoundMode) -> Expr
+  - pql: (decimals: int, mode: str) -> Self
+- `shuffle`
   - Polars: (seed: int | None) -> Expr
   - pql: () -> Self
+- `sub`
+  - Polars: (other: Any) -> Expr
+  - pql: (other: IntoExpr) -> Self
+- `truediv`
+  - Polars: (other: Any) -> Expr
+  - pql: (other: IntoExpr) -> Self
 
 ### [+] Extra Methods (pql-only) (1)
 
@@ -407,32 +443,17 @@ This report shows the API coverage of pql compared to Polars.
 
 ## Expr.str
 
-### [v] Matched Methods (22)
+### [v] Matched Methods (7)
 
-- `count_matches`
-- `ends_with`
-- `extract`
-- `extract_all`
-- `head`
 - `len_bytes`
 - `len_chars`
-- `pad_end`
-- `pad_start`
-- `replace_all`
 - `reverse`
-- `slice`
-- `split`
-- `starts_with`
-- `strip_prefix`
-- `strip_suffix`
-- `tail`
 - `to_decimal`
 - `to_lowercase`
 - `to_titlecase`
 - `to_uppercase`
-- `zfill`
 
-### [x] Missing Methods (15)
+### [x] Missing Methods (23)
 
 - `concat` (delimiter: str | None, ignore_nulls: bool) -> Expr
 - `contains_any` (patterns: IntoExpr, ascii_case_insensitive: bool) -> Expr
@@ -440,51 +461,80 @@ This report shows the API coverage of pql compared to Polars.
 - `encode` (encoding: TransferEncoding) -> Expr
 - `escape_regex` () -> Expr
 - `explode` () -> Expr
+- `extract` (pattern: IntoExprColumn, group_index: int) -> Expr
 - `extract_groups` (pattern: str) -> Expr
 - `extract_many` (patterns: IntoExpr, ascii_case_insensitive: bool, overlapping: bool, leftmost: bool) -> Expr
+- `find` (pattern: str | Expr, literal: bool, strict: bool) -> Expr
 - `find_many` (patterns: IntoExpr, ascii_case_insensitive: bool, overlapping: bool, leftmost: bool) -> Expr
 - `join` (delimiter: str, ignore_nulls: bool) -> Expr
+- `json_decode` (dtype: PolarsDataType | pl.DataTypeExpr, infer_schema_length: int | None) -> Expr
+- `json_path_match` (json_path: IntoExprColumn) -> Expr
 - `normalize` (form: UnicodeForm) -> Expr
+- `pad_end` (length: int | IntoExprColumn, fill_char: str) -> Expr
+- `pad_start` (length: int | IntoExprColumn, fill_char: str) -> Expr
+- `replace_many` (patterns: IntoExpr | Mapping[str, str], replace_with: IntoExpr | NoDefault, ascii_case_insensitive: bool, leftmost: bool) -> Expr
 - `split_exact` (by: IntoExpr, n: int, inclusive: bool) -> Expr
 - `splitn` (by: IntoExpr, n: int) -> Expr
 - `strptime` (dtype: PolarsTemporalType, format: str | None, strict: bool, exact: bool, cache: bool, ambiguous: Ambiguous | Expr) -> Expr
 - `to_integer` (base: int | IntoExprColumn, dtype: PolarsIntegerType, strict: bool) -> Expr
+- `zfill` (length: int | IntoExprColumn) -> Expr
 
-### [!] Signature Mismatches (12)
+### [!] Signature Mismatches (19)
 
-- `contains`: Missing params: strict
+- `contains`
   - Polars: (pattern: str | Expr, literal: bool, strict: bool) -> Expr
   - pql: (pattern: str, literal: bool) -> Expr
-- `find`: Missing params: strict
-  - Polars: (pattern: str | Expr, literal: bool, strict: bool) -> Expr
+- `count_matches`
+  - Polars: (pattern: str | Expr, literal: bool) -> Expr
   - pql: (pattern: str, literal: bool) -> Expr
-- `json_decode`: Missing params: infer_schema_length
-  - Polars: (dtype: PolarsDataType | pl.DataTypeExpr, infer_schema_length: int | None) -> Expr
-  - pql: (dtype: datatypes.DataType) -> Expr
-- `json_path_match`: Missing params: json_path; Extra params: path
-  - Polars: (json_path: IntoExprColumn) -> Expr
-  - pql: (path: str) -> Expr
-- `replace`: Missing params: literal, n, value; Extra params: replacement
+- `ends_with`
+  - Polars: (suffix: str | Expr) -> Expr
+  - pql: (suffix: str) -> Expr
+- `extract_all`
+  - Polars: (pattern: str | Expr) -> Expr
+  - pql: (pattern: str) -> Expr
+- `head`
+  - Polars: (n: int | IntoExprColumn) -> Expr
+  - pql: (n: int) -> Expr
+- `replace`
   - Polars: (pattern: str | Expr, value: str | Expr, literal: bool, n: int) -> Expr
   - pql: (pattern: str, replacement: str) -> Expr
-- `replace_many`: Missing params: ascii_case_insensitive, leftmost
-  - Polars: (patterns: IntoExpr | Mapping[str, str], replace_with: IntoExpr | NoDefault, ascii_case_insensitive: bool, leftmost: bool) -> Expr
-  - pql: (patterns: Iterable[str], replace_with: str | Iterable[str]) -> Expr
-- `strip_chars`: Missing params: characters
+- `replace_all`
+  - Polars: (pattern: str | Expr, value: str | Expr, literal: bool) -> Expr
+  - pql: (pattern: str, value: str, literal: bool) -> Expr
+- `slice`
+  - Polars: (offset: int | IntoExprColumn, length: int | IntoExprColumn | None) -> Expr
+  - pql: (offset: int, length: int | None) -> Expr
+- `split`
+  - Polars: (by: IntoExpr, inclusive: bool) -> Expr
+  - pql: (by: str, inclusive: bool) -> Expr
+- `starts_with`
+  - Polars: (prefix: str | Expr) -> Expr
+  - pql: (prefix: str) -> Expr
+- `strip_chars`
   - Polars: (characters: IntoExpr) -> Expr
   - pql: () -> Expr
-- `strip_chars_end`: Missing params: characters
+- `strip_chars_end`
   - Polars: (characters: IntoExpr) -> Expr
   - pql: () -> Expr
-- `strip_chars_start`: Missing params: characters
+- `strip_chars_start`
   - Polars: (characters: IntoExpr) -> Expr
   - pql: () -> Expr
-- `to_date`: Missing params: cache, exact, format, strict; Extra params: fmt
+- `strip_prefix`
+  - Polars: (prefix: IntoExpr) -> Expr
+  - pql: (prefix: str) -> Expr
+- `strip_suffix`
+  - Polars: (suffix: IntoExpr) -> Expr
+  - pql: (suffix: str) -> Expr
+- `tail`
+  - Polars: (n: int | IntoExprColumn) -> Expr
+  - pql: (n: int) -> Expr
+- `to_date`
   - Polars: (format: str | None, strict: bool, exact: bool, cache: bool) -> Expr
   - pql: (fmt: str | None) -> Expr
-- `to_datetime`: Missing params: ambiguous, cache, exact, format, strict; Extra params: fmt
+- `to_datetime`
   - Polars: (format: str | None, time_unit: TimeUnit | None, time_zone: str | None, strict: bool, exact: bool, cache: bool, ambiguous: Ambiguous | Expr) -> Expr
   - pql: (fmt: str | None, time_unit: str, time_zone: str | None) -> Expr
-- `to_time`: Missing params: cache, format, strict; Extra params: fmt
+- `to_time`
   - Polars: (format: str | None, strict: bool, cache: bool) -> Expr
   - pql: (fmt: str | None) -> Expr

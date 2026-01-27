@@ -3,10 +3,10 @@
 from __future__ import annotations
 
 import inspect
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from enum import Enum, auto
 from pathlib import Path
-from typing import Any, Self
+from typing import Self
 
 import polars as pl
 import pyochain as pc
@@ -21,15 +21,6 @@ class MatchStatus(Enum):
     SIGNATURE_MISMATCH = auto()
     MATCH = auto()
     EXTRA = auto()
-
-    @classmethod
-    def from_length(cls, val: pc.traits.PyoIterable[Any]) -> MatchStatus:
-        """Get MatchStatus from length."""
-        match val.length():
-            case 0:
-                return MatchStatus.MATCH
-            case _:
-                return MatchStatus.SIGNATURE_MISMATCH
 
 
 @dataclass(slots=True)
@@ -96,7 +87,6 @@ class ComparisonResult:
     status: MatchStatus
     polars_info: pc.Option[MethodInfo]
     pql_info: pc.Option[MethodInfo]
-    diff_details: pc.Option[str] = field(default_factory=lambda: pc.NONE)
 
     @classmethod
     def from_method(cls, polars_cls: type, pql_cls: type, method_name: str) -> Self:
@@ -120,13 +110,16 @@ class ComparisonResult:
                     pql_info=pc.NONE,
                 )
             case (pc.Some(pl_info), pc.Some(pql_info)):
-                diffs = _compare_params(pl_info.params, pql_info.params)
+                has_mismatch = _has_param_mismatch(pl_info.params, pql_info.params)
                 return cls(
                     method_name=method_name,
-                    status=diffs.into(MatchStatus.from_length),
+                    status=(
+                        MatchStatus.SIGNATURE_MISMATCH
+                        if has_mismatch
+                        else MatchStatus.MATCH
+                    ),
                     polars_info=pc.Some(pl_info),
                     pql_info=pc.Some(pql_info),
-                    diff_details=diffs.then_some().map(lambda d: d.iter().join("; ")),
                 )
             case _:
                 return cls(
@@ -142,34 +135,41 @@ def _getattr(obj: object, name: str) -> pc.Option[object]:
     return pc.Option(getattr(obj, name, None))
 
 
-def _compare_params(
+def _has_param_mismatch(
     polars_params: pc.Seq[ParamInfo], pql_params: pc.Seq[ParamInfo]
-) -> pc.Seq[str]:
-    def _filter_self(params: pc.Seq[ParamInfo]) -> pc.Set[str]:
+) -> bool:
+    def _param_map(params: pc.Seq[ParamInfo]) -> pc.Dict[str, ParamInfo]:
         return (
             params.iter()
             .filter(lambda p: p.name != "self")
-            .map(lambda p: p.name)
-            .collect(pc.Set)
+            .map(lambda p: (p.name, p))
+            .collect(pc.Dict)
         )
 
-    pl_names = polars_params.into(_filter_self)
-    pql_names = pql_params.into(_filter_self)
+    def _annotations_differ(pl_param: ParamInfo, pql_param: ParamInfo) -> bool:
+        match (pl_param.annotation, pql_param.annotation):
+            case (pc.Some(pl_ann), pc.Some(pql_ann)) if pl_ann != pql_ann:
+                return True
+            case _:
+                return False
 
-    return (
-        pc.Iter(
-            (
-                pl_names.difference(pql_names)
-                .then_some()
-                .map(lambda m: f"Missing params: {m.iter().sort().join(', ')}"),
-                pql_names.difference(pl_names)
-                .then_some()
-                .map(lambda e: f"Extra params: {e.iter().sort().join(', ')}"),
+    def _check(
+        pl_map: pc.Dict[str, ParamInfo], pql_map: pc.Dict[str, ParamInfo]
+    ) -> bool:
+        on_params = pl_map.keys().symmetric_difference(pql_map.keys()).length() > 0
+        on_ann = (
+            pl_map.keys()
+            .intersection(pql_map.keys())
+            .any(
+                lambda name: _annotations_differ(
+                    pl_map.get_item(name).unwrap(),
+                    pql_map.get_item(name).unwrap(),
+                )
             )
         )
-        .filter_map(lambda x: x)
-        .collect()
-    )
+        return on_params or on_ann
+
+    return _check(polars_params.into(_param_map), pql_params.into(_param_map))
 
 
 def _get_method_info(cls: type, name: str) -> pc.Option[MethodInfo]:
@@ -182,7 +182,7 @@ def _build_method_info(attr: object, name: str) -> pc.Option[MethodInfo]:
             return pc.Some(
                 MethodInfo(
                     name=name,
-                    params=pc.Seq(()),
+                    params=pc.Seq[ParamInfo](()),
                     return_annotation=pc.NONE,
                     is_property=True,
                 )
@@ -307,15 +307,15 @@ def _format_result_line(
     result: ComparisonResult, *, show_signature: bool
 ) -> pc.Iter[str]:
     """Format a single comparison result as markdown lines."""
-    match (show_signature, result.polars_info, result.pql_info, result.diff_details):
+    match (show_signature, result.polars_info, result.pql_info, result.status):
         case (True, pc.Some(polars_info), _, _):
             return pc.Iter.once(
                 f"- `{result.method_name}` {polars_info.signature_str()}"
             )
-        case (_, pc.Some(pl_info), pc.Some(pql_info), pc.Some(diff_str)):
+        case (_, pc.Some(pl_info), pc.Some(pql_info), MatchStatus.SIGNATURE_MISMATCH):
             return pc.Iter(
                 (
-                    f"- `{result.method_name}`: {diff_str}",
+                    f"- `{result.method_name}`",
                     f"  - Polars: {pl_info.signature_str()}",
                     f"  - pql: {pql_info.signature_str()}",
                 )
