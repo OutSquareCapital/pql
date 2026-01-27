@@ -9,6 +9,7 @@
 [dependency-groups]
     dev = [
         "duckdb>=1.4.3",
+        "narwhals>=2.15.0",
         "polars>=1.37.1",
         "pyarrow>=23.0.0",
         "pytest>=9.0.2",
