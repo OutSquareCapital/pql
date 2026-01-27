@@ -9,7 +9,15 @@ from typing import TYPE_CHECKING, Concatenate, Literal, Self
 import duckdb
 import pyochain as pc
 
-from ._ast import FrameInit, IntoExpr, data_to_rel, iter_to_exprs, to_expr, to_value
+from ._ast import (
+    FrameInit,
+    IntoExpr,
+    WindowSpec,
+    data_to_rel,
+    iter_to_exprs,
+    to_expr,
+    to_value,
+)
 
 if TYPE_CHECKING:
     import polars as pl
@@ -83,7 +91,7 @@ class LazyFrame:
                     return to_expr(col).desc().nulls_first()
                 case (False, True):
                     return to_expr(col).asc().nulls_last()
-                case _:
+                case (False, False):
                     return to_expr(col).asc()
 
         return self.__from_lf__(
@@ -109,11 +117,15 @@ class LazyFrame:
             return self.__from_lf__(
                 self._rel.select(
                     duckdb.StarExpression(),
-                    duckdb.SQLExpression(
-                        f"ROW_NUMBER() OVER (PARTITION BY {cols.join(', ')}) as __rn__"
-                    ),
+                    WindowSpec(partition_by=cols.map(to_expr).collect())
+                    .into_expr(
+                        duckdb.FunctionExpression("row_number"),
+                    )
+                    .alias("__rn__"),
                 )
-                .filter("__rn__ = 1")
+                .filter(
+                    duckdb.ColumnExpression("__rn__") == duckdb.ConstantExpression(1)
+                )
                 .project("* EXCLUDE (__rn__)")
             )
 
@@ -328,16 +340,16 @@ class LazyFrame:
     ) -> Self:
         """Fill null values."""
         match (value, strategy):
-            case (_, "forward"):
+            case (None, "forward"):
                 return self._fill_strategy("LAST_VALUE")
-            case (_, "backward"):
+            case (None, "backward"):
                 return self._fill_strategy("FIRST_VALUE")
-            case val if val[0] is not None:
+            case (val, None) if val is not None:
                 return self.__from_lf__(
                     self._rel.select(
                         *self.columns.iter().map(
                             lambda c: duckdb.CoalesceOperator(
-                                duckdb.ColumnExpression(c), to_expr(value)
+                                duckdb.ColumnExpression(c), to_expr(val)
                             ).alias(c)
                         )
                     )
@@ -350,14 +362,23 @@ class LazyFrame:
         """Internal fill strategy using window functions."""
         match func_name:
             case "FIRST_VALUE":
-                over_args = "(ROWS BETWEEN CURRENT ROW AND UNBOUNDED FOLLOWING)"
+                rows_start = pc.Some(0)
+                rows_end = pc.NONE
             case "LAST_VALUE":
-                over_args = "(ROWS UNBOUNDED PRECEDING)"
+                rows_start = pc.NONE
+                rows_end = pc.Some(0)
         return self.__from_lf__(
             self._rel.select(
                 *self.columns.iter().map(
-                    lambda c: duckdb.SQLExpression(
-                        f"COALESCE({c}, {func_name}({c} IGNORE NULLS) OVER {over_args})"
+                    lambda c: duckdb.CoalesceOperator(
+                        duckdb.ColumnExpression(c),
+                        WindowSpec(
+                            rows_start=rows_start, rows_end=rows_end, ignore_nulls=True
+                        ).into_expr(
+                            duckdb.FunctionExpression(
+                                func_name.lower(), duckdb.ColumnExpression(c)
+                            ),
+                        ),
                     ).alias(c)
                 )
             )
@@ -430,8 +451,15 @@ class LazyFrame:
         return self.__from_lf__(
             self._rel.select(
                 *self.columns.iter().map(
-                    lambda c: duckdb.SQLExpression(
-                        f"COALESCE({func}({c}, {abs_n}) OVER (), {to_value(fill_value)})"
+                    lambda c: duckdb.CoalesceOperator(
+                        WindowSpec().into_expr(
+                            duckdb.FunctionExpression(
+                                func.lower(),
+                                duckdb.ColumnExpression(c),
+                                duckdb.ConstantExpression(abs_n),
+                            ),
+                        ),
+                        to_value(fill_value),
                     ).alias(c)
                 )
             )

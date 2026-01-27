@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Iterable
+from dataclasses import dataclass, field
 from typing import TYPE_CHECKING
 
 import duckdb
@@ -88,3 +89,83 @@ def iter_to_exprs(
             return _to_exprs(single)
         case _:
             return pc.Iter(values).map(_to_exprs).flatten()
+
+
+type ByClause = (
+    pc.Seq[str] | pc.Seq[duckdb.Expression] | pc.Seq[str | duckdb.Expression]
+)
+type BoolClause = pc.Seq[bool] | bool | None
+
+
+@dataclass(slots=True)
+class WindowSpec:
+    partition_by: ByClause = field(default_factory=pc.Seq[str | duckdb.Expression].new)
+    order_by: ByClause = field(default_factory=pc.Seq[str | duckdb.Expression].new)
+    rows_start: pc.Option[int] = field(default_factory=lambda: pc.NONE)
+    rows_end: pc.Option[int] = field(default_factory=lambda: pc.NONE)
+    descending: BoolClause = None
+    nulls_last: BoolClause = None
+    ignore_nulls: bool = False
+
+    def _on_scalar(self, *, val: bool) -> pc.Seq[bool]:
+        return pc.Iter.once(val).cycle().take(self.order_by.length()).collect()
+
+    def _get_clauses(self, clauses: BoolClause) -> pc.Seq[bool]:
+        match clauses:
+            case None:
+                return self._on_scalar(val=False)
+            case bool():
+                return self._on_scalar(val=clauses)
+            case pc.Seq():
+                return clauses
+
+    def get_partition_by(self) -> str:
+        return (
+            self.partition_by.then_some()
+            .map(lambda x: x.iter().map(lambda item: str(to_expr(item))).join(", "))
+            .map(lambda s: "partition by " + s)
+            .unwrap_or("")
+        )
+
+    def get_order_by(self) -> str:
+        return (
+            self.order_by.then_some()
+            .map(
+                lambda x: x.iter()
+                .zip(
+                    self._get_clauses(self.descending),
+                    self._get_clauses(self.nulls_last),
+                )
+                .map_star(
+                    lambda item,
+                    desc,
+                    nl: f"{to_expr(item)} {'desc' if desc else 'asc'} {'nulls last' if nl else 'nulls first'}"
+                )
+                .join(", ")
+            )
+            .map(lambda s: "order by " + s)
+            .unwrap_or("")
+        )
+
+    def get_rows_clause(self) -> str:
+        match (self.rows_start, self.rows_end):
+            case (pc.Some(start), pc.Some(end)):
+                return f"rows between {-start} preceding and {end} following"
+            case (pc.Some(start), pc.NONE):
+                return f"rows between {-start} preceding and unbounded following"
+            case (pc.NONE, pc.Some(end)):
+                return f"rows between unbounded preceding and {end} following"
+            case _:
+                return ""
+
+    def get_func(self, expr: duckdb.Expression) -> str:
+        match self.ignore_nulls:
+            case True:
+                return f"{str(expr).removesuffix(')')} ignore nulls)"
+            case False:
+                return str(expr)
+
+    def into_expr(self, expr: duckdb.Expression) -> duckdb.Expression:
+        return duckdb.SQLExpression(
+            f"{self.get_func(expr)} over ({self.get_partition_by()} {self.get_order_by()} {self.get_rows_clause()})"
+        )

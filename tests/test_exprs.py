@@ -448,9 +448,5 @@ def test_is_in() -> None:
     )
 
 
-def test_shuffle() -> None:
-    assert_eq(pql.col("x").shuffle().alias("x"), pl.col("x").shuffle().alias("x"))
-
-
 def test_abs() -> None:
     assert_eq(pql.col("x").abs().alias("x"), pl.col("x").abs().alias("x"))

@@ -6,9 +6,10 @@ from collections.abc import Callable, Collection
 from typing import TYPE_CHECKING, Any, Concatenate, Self
 
 import duckdb
+import pyochain as pc
 
 from . import datatypes
-from ._ast import iter_to_exprs, to_value
+from ._ast import WindowSpec, iter_to_exprs, to_value
 
 if TYPE_CHECKING:
     from ._ast import IntoExpr
@@ -317,29 +318,31 @@ class Expr:
     def forward_fill(self) -> Self:
         """Fill null values with the last non-null value."""
         return self.__class__(
-            duckdb.SQLExpression(
-                f"LAST_VALUE({self._expr} IGNORE NULLS) OVER (ROWS UNBOUNDED PRECEDING)"
+            WindowSpec(rows_end=pc.Some(0), ignore_nulls=True).into_expr(
+                duckdb.FunctionExpression("last_value", self._expr),
             )
         )
 
     def backward_fill(self) -> Self:
         """Fill null values with the next non-null value."""
         return self.__class__(
-            duckdb.SQLExpression(
-                f"FIRST_VALUE({self._expr} IGNORE NULLS) OVER (ROWS BETWEEN CURRENT ROW AND UNBOUNDED FOLLOWING)"
+            WindowSpec(rows_start=pc.Some(0), ignore_nulls=True).into_expr(
+                duckdb.FunctionExpression("first_value", self._expr),
             )
         )
 
     def interpolate(self) -> Self:
         """Interpolate null values using linear interpolation."""
-        return self.__class__(
-            duckdb.SQLExpression(
-                f"COALESCE({self._expr}, "
-                f"LAST_VALUE({self._expr} IGNORE NULLS) OVER (ROWS UNBOUNDED PRECEDING) + "
-                f"(FIRST_VALUE({self._expr} IGNORE NULLS) OVER (ROWS BETWEEN CURRENT ROW AND UNBOUNDED FOLLOWING) - "
-                f"LAST_VALUE({self._expr} IGNORE NULLS) OVER (ROWS UNBOUNDED PRECEDING)) / 2)"
-            )
+        last_value = WindowSpec(rows_end=pc.Some(0), ignore_nulls=True).into_expr(
+            duckdb.FunctionExpression("last_value", self._expr),
         )
+        first_value = WindowSpec(rows_start=pc.Some(0), ignore_nulls=True).into_expr(
+            duckdb.FunctionExpression("first_value", self._expr)
+        )
+        interpolated = last_value + (
+            first_value - last_value
+        ) / duckdb.ConstantExpression(2)
+        return self.__class__(duckdb.CoalesceOperator(self._expr, interpolated))
 
     def is_nan(self) -> Self:
         """Check if value is NaN."""
@@ -373,10 +376,6 @@ class Expr:
             )
         )
 
-    def shuffle(self) -> Self:
-        """Shuffle values randomly."""
-        return self.__class__(duckdb.SQLExpression(f"{self._expr} ORDER BY RANDOM()"))
-
     def replace(self, old: IntoExpr, new: IntoExpr) -> Self:
         """Replace values."""
         return self.__class__(
@@ -388,35 +387,50 @@ class Expr:
     def repeat_by(self, by: Expr | int) -> Self:
         """Repeat values by count, returning a list."""
         return self.__class__(
-            duckdb.SQLExpression(
-                f"list_transform(range({to_value(by)}), _ -> {self._expr})"
+            duckdb.FunctionExpression(
+                "list_transform",
+                duckdb.FunctionExpression("range", to_value(by)),
+                duckdb.LambdaExpression("_", self._expr),
             )
         )
 
     def is_duplicated(self) -> Self:
         """Check if value is duplicated."""
         return self.__class__(
-            duckdb.SQLExpression(f"COUNT(*) OVER (PARTITION BY {self._expr}) > 1")
+            WindowSpec(partition_by=pc.Seq((self._expr,))).into_expr(
+                duckdb.FunctionExpression("count", duckdb.StarExpression())
+            )
+            > duckdb.ConstantExpression(1),
         )
 
     def is_unique(self) -> Self:
         """Check if value is unique."""
         return self.__class__(
-            duckdb.SQLExpression(f"COUNT(*) OVER (PARTITION BY {self._expr}) = 1")
+            WindowSpec(partition_by=pc.Seq((self._expr,))).into_expr(
+                duckdb.FunctionExpression("count", duckdb.StarExpression())
+            )
+            == duckdb.ConstantExpression(1),
         )
 
     def is_first_distinct(self) -> Self:
         """Check if value is first occurrence."""
         return self.__class__(
-            duckdb.SQLExpression(f"ROW_NUMBER() OVER (PARTITION BY {self._expr}) = 1")
+            WindowSpec(partition_by=pc.Seq((self._expr,))).into_expr(
+                duckdb.FunctionExpression("row_number")
+            )
+            == duckdb.ConstantExpression(1)
         )
 
     def is_last_distinct(self) -> Self:
         """Check if value is last occurrence."""
         return self.__class__(
-            duckdb.SQLExpression(
-                f"ROW_NUMBER() OVER (PARTITION BY {self._expr} ORDER BY (SELECT COUNT(*) FROM (SELECT 1)) DESC) = 1"
-            )
+            WindowSpec(
+                partition_by=pc.Seq((self._expr,)),
+                order_by=pc.Seq((self._expr,)),
+                descending=True,
+                nulls_last=True,
+            ).into_expr(duckdb.FunctionExpression("row_number"))
+            == duckdb.ConstantExpression(1)
         )
 
     @property
@@ -679,8 +693,34 @@ class ExprStringNameSpace:
 
     def to_titlecase(self) -> Expr:
         """Convert to title case."""
+        elem = duckdb.ColumnExpression("_")
         return Expr(
-            duckdb.SQLExpression(
-                f"list_aggr(list_transform(string_split({self._expr}, ' '), x -> concat(upper(left(x, 1)), substring(x, 2))), 'string_agg', ' ')"
+            duckdb.FunctionExpression(
+                "list_aggregate",
+                duckdb.FunctionExpression(
+                    "list_transform",
+                    duckdb.FunctionExpression(
+                        "regexp_extract_all",
+                        duckdb.FunctionExpression("lower", self._expr),
+                        duckdb.ConstantExpression(r"[a-z]*[^a-z]*"),
+                    ),
+                    duckdb.LambdaExpression(
+                        "_",
+                        duckdb.FunctionExpression(
+                            "concat",
+                            duckdb.FunctionExpression(
+                                "upper",
+                                duckdb.FunctionExpression(
+                                    "array_extract", elem, duckdb.ConstantExpression(1)
+                                ),
+                            ),
+                            duckdb.FunctionExpression(
+                                "substring", elem, duckdb.ConstantExpression(2)
+                            ),
+                        ),
+                    ),
+                ),
+                duckdb.ConstantExpression("string_agg"),
+                duckdb.ConstantExpression(""),
             )
         )
