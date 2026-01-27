@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING, Concatenate, Literal, Self
 import duckdb
 import pyochain as pc
 
-from ._ast import FrameInit, data_to_rel, iter_to_exprs, to_expr, to_value
+from ._ast import FrameInit, IntoExpr, data_to_rel, iter_to_exprs, to_expr, to_value
 
 if TYPE_CHECKING:
     import polars as pl
@@ -44,17 +44,14 @@ class LazyFrame:
         """Execute the query and return a Polars DataFrame."""
         return self._rel.pl()
 
-    def select(self, *exprs: Expr | str) -> Self:
+    def select(self, *exprs: IntoExpr | Iterable[IntoExpr]) -> Self:
         """Select columns or expressions."""
-        return self.__from_lf__(self._rel.select(*pc.Iter(exprs).map(to_expr)))
+        return self.__from_lf__(self._rel.select(*iter_to_exprs(*exprs)))
 
-    def with_columns(self, *exprs: Expr) -> Self:
+    def with_columns(self, *exprs: IntoExpr | Iterable[IntoExpr]) -> Self:
         """Add or replace columns."""
         return self.__from_lf__(
-            self._rel.select(
-                duckdb.StarExpression(),
-                *pc.Iter(exprs).map(lambda e: e.expr),
-            )
+            self._rel.select(duckdb.StarExpression(), *iter_to_exprs(*exprs))
         )
 
     def filter(self, *predicates: Expr) -> Self:
@@ -65,7 +62,7 @@ class LazyFrame:
 
     def sort(
         self,
-        *by: str | Expr,
+        *by: IntoExpr | Iterable[IntoExpr],
         descending: bool | Iterable[bool] = False,
         nulls_last: bool | Iterable[bool] = False,
     ) -> Self:
@@ -78,21 +75,20 @@ class LazyFrame:
                 case Iterable():
                     return pc.Iter(arg)
 
-        def _make_order(col: str | Expr, desc: bool, nl: bool) -> duckdb.Expression:  # noqa: FBT001
-            expr = to_expr(col)
+        def _make_order(col: IntoExpr, desc: bool, nl: bool) -> duckdb.Expression:  # noqa: FBT001
             match (desc, nl):
                 case (True, True):
-                    return expr.desc().nulls_last()
+                    return to_expr(col).desc().nulls_last()
                 case (True, False):
-                    return expr.desc().nulls_first()
+                    return to_expr(col).desc().nulls_first()
                 case (False, True):
-                    return expr.asc().nulls_last()
-                case (False, False):
-                    return expr.asc()
+                    return to_expr(col).asc().nulls_last()
+                case _:
+                    return to_expr(col).asc()
 
         return self.__from_lf__(
             self._rel.sort(
-                *pc.Iter(by)
+                *iter_to_exprs(*by)
                 .zip(_args_iter(arg=descending), _args_iter(arg=nulls_last))
                 .map_star(_make_order)
             )
@@ -326,7 +322,7 @@ class LazyFrame:
 
     def fill_null(
         self,
-        value: object | Expr | None = None,
+        value: IntoExpr = None,
         *,
         strategy: Literal["forward", "backward"] | None = None,
     ) -> Self:
@@ -427,7 +423,7 @@ class LazyFrame:
     # Deprecated alias
     with_row_count = with_row_index
 
-    def shift(self, n: int = 1, *, fill_value: object | Expr | None = None) -> Self:
+    def shift(self, n: int = 1, *, fill_value: IntoExpr | None = None) -> Self:
         """Shift values by n positions."""
         func = "LAG" if n > 0 else "LEAD"
         abs_n = abs(n)
@@ -492,29 +488,17 @@ class LazyFrame:
             .project("* EXCLUDE (__rn__)")
         )
 
-    def interpolate(self) -> Self:
-        """Interpolate null values using linear interpolation."""
-        return self
-
     def top_k(
-        self,
-        k: int,
-        *,
-        by: str | Expr | Iterable[str] | Iterable[Expr],
-        reverse: bool = False,
+        self, k: int, *, by: IntoExpr | Iterable[IntoExpr], reverse: bool = False
     ) -> Self:
         """Return top k rows by column(s)."""
-        return self.sort(*iter_to_exprs(by), descending=not reverse).head(k)
+        return self.sort(by, descending=not reverse).head(k)
 
     def bottom_k(
-        self,
-        k: int,
-        *,
-        by: str | Expr | Iterable[str] | Iterable[Expr],
-        reverse: bool = False,
+        self, k: int, *, by: IntoExpr | Iterable[IntoExpr], reverse: bool = False
     ) -> Self:
         """Return bottom k rows by column(s)."""
-        return self.sort(*iter_to_exprs(by), descending=reverse).head(k)
+        return self.sort(by, descending=reverse).head(k)
 
     def cast(
         self, dtypes: Mapping[str, datatypes.DataType] | datatypes.DataType
