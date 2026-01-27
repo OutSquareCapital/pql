@@ -9,26 +9,7 @@ import duckdb
 import pyochain as pc
 
 from . import datatypes
-
-
-def to_expr(value: object) -> duckdb.Expression:
-    """Convert a value to a DuckDB Expression (strings become columns for select/group_by)."""
-    match value:
-        case Expr():
-            return value.expr
-        case str():
-            return duckdb.ColumnExpression(value)
-        case _:
-            return duckdb.ConstantExpression(value)
-
-
-def _to_value(value: object) -> duckdb.Expression:
-    """Convert a value to a DuckDB Expression (strings become constants for comparisons)."""
-    match value:
-        case Expr():
-            return value.expr
-        case _:
-            return duckdb.ConstantExpression(value)
+from ._ast import to_expr, to_value
 
 
 class Col:
@@ -72,43 +53,43 @@ class Expr:
         return self.add(other)
 
     def __radd__(self, other: object) -> Self:
-        return self.__class__(_to_value(other) + self._expr)
+        return self.__class__(to_value(other) + self._expr)
 
     def __sub__(self, other: object) -> Self:
         return self.sub(other)
 
     def __rsub__(self, other: object) -> Self:
-        return self.__class__(_to_value(other) - self._expr)
+        return self.__class__(to_value(other) - self._expr)
 
     def __mul__(self, other: object) -> Self:
         return self.mul(other)
 
     def __rmul__(self, other: object) -> Self:
-        return self.__class__(_to_value(other) * self._expr)
+        return self.__class__(to_value(other) * self._expr)
 
     def __truediv__(self, other: object) -> Self:
         return self.truediv(other)
 
     def __rtruediv__(self, other: object) -> Self:
-        return self.__class__(_to_value(other) / self._expr)
+        return self.__class__(to_value(other) / self._expr)
 
     def __floordiv__(self, other: object) -> Self:
         return self.floordiv(other)
 
     def __rfloordiv__(self, other: object) -> Self:
-        return self.__class__(_to_value(other) // self._expr)
+        return self.__class__(to_value(other) // self._expr)
 
     def __mod__(self, other: object) -> Self:
         return self.mod(other)
 
     def __rmod__(self, other: object) -> Self:
-        return self.__class__(_to_value(other) % self._expr)
+        return self.__class__(to_value(other) % self._expr)
 
     def __pow__(self, other: object) -> Self:
         return self.pow(other)
 
     def __rpow__(self, other: object) -> Self:
-        return self.__class__(_to_value(other) ** self._expr)
+        return self.__class__(to_value(other) ** self._expr)
 
     def __neg__(self) -> Self:
         return self.neg()
@@ -135,13 +116,13 @@ class Expr:
         return self.and_(other)
 
     def __rand__(self, other: object) -> Self:
-        return self.__class__(_to_value(other) & self._expr)
+        return self.__class__(to_value(other) & self._expr)
 
     def __or__(self, other: object) -> Self:
         return self.or_(other)
 
     def __ror__(self, other: object) -> Self:
-        return self.__class__(_to_value(other) | self._expr)
+        return self.__class__(to_value(other) | self._expr)
 
     def __invert__(self) -> Self:
         return self.not_()
@@ -151,25 +132,25 @@ class Expr:
 
     def add(self, other: object) -> Self:
         """Add another expression or value."""
-        return self.__class__(self._expr + _to_value(other))
+        return self.__class__(self._expr + to_value(other))
 
     def sub(self, other: object) -> Self:
-        return self.__class__(self._expr - _to_value(other))
+        return self.__class__(self._expr - to_value(other))
 
     def mul(self, other: object) -> Self:
-        return self.__class__(self._expr * _to_value(other))
+        return self.__class__(self._expr * to_value(other))
 
     def truediv(self, other: object) -> Self:
-        return self.__class__(self._expr / _to_value(other))
+        return self.__class__(self._expr / to_value(other))
 
     def floordiv(self, other: object) -> Self:
-        return self.__class__(self._expr // _to_value(other))
+        return self.__class__(self._expr // to_value(other))
 
     def mod(self, other: object) -> Self:
-        return self.__class__(self._expr % _to_value(other))
+        return self.__class__(self._expr % to_value(other))
 
     def pow(self, other: object) -> Self:
-        return self.__class__(self._expr ** _to_value(other))
+        return self.__class__(self._expr ** to_value(other))
 
     def neg(self) -> Self:
         return self.__class__(-self._expr)
@@ -178,28 +159,28 @@ class Expr:
         return self.__class__(duckdb.FunctionExpression("abs", self._expr))
 
     def eq(self, other: object) -> Self:
-        return self.__class__(self._expr == _to_value(other))
+        return self.__class__(self._expr == to_value(other))
 
     def ne(self, other: object) -> Self:
-        return self.__class__(self._expr != _to_value(other))
+        return self.__class__(self._expr != to_value(other))
 
     def lt(self, other: object) -> Self:
-        return self.__class__(self._expr < _to_value(other))
+        return self.__class__(self._expr < to_value(other))
 
     def le(self, other: object) -> Self:
-        return self.__class__(self._expr <= _to_value(other))
+        return self.__class__(self._expr <= to_value(other))
 
     def gt(self, other: object) -> Self:
-        return self.__class__(self._expr > _to_value(other))
+        return self.__class__(self._expr > to_value(other))
 
     def ge(self, other: object) -> Self:
-        return self.__class__(self._expr >= _to_value(other))
+        return self.__class__(self._expr >= to_value(other))
 
     def and_(self, others: Any) -> Self:  # noqa: ANN401
-        return self.__class__(self._expr & _to_value(others))
+        return self.__class__(self._expr & to_value(others))
 
     def or_(self, others: Any) -> Self:  # noqa: ANN401
-        return self.__class__(self._expr | _to_value(others))
+        return self.__class__(self._expr | to_value(others))
 
     def not_(self) -> Self:
         return self.__class__(~self._expr)
@@ -226,7 +207,7 @@ class Expr:
 
     def is_in(self, values: Iterable[object]) -> Self:
         """Check if value is in an iterable of values."""
-        return self.__class__(self._expr.isin(*pc.Iter(values).map(_to_value)))
+        return self.__class__(self._expr.isin(*pc.Iter(values).map(to_value)))
 
     def pipe[**P, T](
         self,
@@ -266,7 +247,7 @@ class Expr:
         """Compute the logarithm."""
         return self.__class__(
             duckdb.FunctionExpression(
-                "log", duckdb.ConstantExpression(str(base)), self._expr
+                "log", duckdb.ConstantExpression(base), self._expr
             )
         )
 
@@ -420,9 +401,9 @@ class Expr:
         """Clip values to bounds."""
         expr = self._expr
         if lower_bound is not None:
-            expr = duckdb.FunctionExpression("greatest", expr, _to_value(lower_bound))
+            expr = duckdb.FunctionExpression("greatest", expr, to_value(lower_bound))
         if upper_bound is not None:
-            expr = duckdb.FunctionExpression("least", expr, _to_value(upper_bound))
+            expr = duckdb.FunctionExpression("least", expr, to_value(upper_bound))
         return self.__class__(expr)
 
     def is_nan(self) -> Self:
@@ -445,7 +426,7 @@ class Expr:
         """Fill NaN values."""
         return self.__class__(
             duckdb.CaseExpression(
-                duckdb.FunctionExpression("isnan", self._expr), _to_value(value)
+                duckdb.FunctionExpression("isnan", self._expr), to_value(value)
             ).otherwise(self._expr)
         )
 
@@ -470,22 +451,21 @@ class Expr:
         return self.__class__(duckdb.FunctionExpression("flatten", self._expr))
 
     def replace(
-        self,
-        old: object | Iterable[object],
-        new: object | Iterable[object],
+        self, old: object | Iterable[object], new: object | Iterable[object]
     ) -> Self:
         """Replace values."""
-        old_val = _to_value(old)
-        new_val = _to_value(new)
         return self.__class__(
-            duckdb.CaseExpression(self._expr == old_val, new_val).otherwise(self._expr)
+            duckdb.CaseExpression(self._expr == to_value(old), to_value(new)).otherwise(
+                self._expr
+            )
         )
 
     def repeat_by(self, by: Expr | int) -> Self:
         """Repeat values by count, returning a list."""
-        by_expr = by.expr if isinstance(by, Expr) else duckdb.ConstantExpression(by)
         return self.__class__(
-            duckdb.SQLExpression(f"list_transform(range({by_expr}), _ -> {self._expr})")
+            duckdb.SQLExpression(
+                f"list_transform(range({to_value(by)}), _ -> {self._expr})"
+            )
         )
 
     def peak_max(self) -> Self:

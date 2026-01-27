@@ -7,36 +7,15 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Concatenate, Literal, Self
 
 import duckdb
-import polars as pl
 import pyochain as pc
-from polars._typing import FrameInitTypes  # pyright: ignore[reportUnknownVariableType]
 
-from ._expr import Expr, to_expr
+from ._ast import FrameInit, data_to_rel, iter_to_exprs, to_expr, to_value
 
 if TYPE_CHECKING:
+    import polars as pl
+
     from . import datatypes
-
-type FrameInit = (
-    duckdb.DuckDBPyRelation | pl.DataFrame | pl.LazyFrame | None | FrameInitTypes
-)
-
-
-def _data_to_rel(data: FrameInit) -> duckdb.DuckDBPyRelation:  # pyright: ignore[reportUnknownParameterType]
-    match data:
-        case duckdb.DuckDBPyRelation():
-            return data
-        case pl.DataFrame():
-            return duckdb.from_arrow(data)
-        case pl.LazyFrame():
-            from sqlglot import exp
-
-            _ = data
-            return duckdb.sql(exp.select(exp.Star()).from_("_").sql(dialect="duckdb"))
-
-        case None:
-            return duckdb.from_arrow(pl.DataFrame({"_": []}))
-        case _:  # pyright: ignore[reportUnknownVariableType]
-            return duckdb.from_arrow(pl.DataFrame(data))
+    from ._expr import Expr
 
 
 class LazyFrame:
@@ -45,8 +24,8 @@ class LazyFrame:
     _rel: duckdb.DuckDBPyRelation
     __slots__ = ("_rel",)
 
-    def __init__(self, data: FrameInit = None) -> None:  # pyright: ignore[reportUnknownParameterType]
-        self._rel = _data_to_rel(data)
+    def __init__(self, data: FrameInit = None) -> None:
+        self._rel = data_to_rel(data)
 
     def __repr__(self) -> str:
         return f"LazyFrame\n{self._rel}\n"
@@ -93,11 +72,11 @@ class LazyFrame:
         """Sort by columns."""
 
         def _args_iter(*, arg: bool | Iterable[bool]) -> pc.Iter[bool]:
-            return (
-                pc.Iter.once(arg).cycle().take(len(by))
-                if isinstance(arg, bool)
-                else pc.Iter(arg)
-            )
+            match arg:
+                case bool():
+                    return pc.Iter.once(arg).cycle().take(len(by))
+                case Iterable():
+                    return pc.Iter(arg)
 
         def _make_order(col: str | Expr, desc: bool, nl: bool) -> duckdb.Expression:  # noqa: FBT001
             expr = to_expr(col)
@@ -111,12 +90,13 @@ class LazyFrame:
                 case (False, False):
                     return expr.asc()
 
-        order_exprs = (
-            pc.Iter(by)
-            .zip(_args_iter(arg=descending), _args_iter(arg=nulls_last))
-            .map_star(_make_order)
+        return self.__from_lf__(
+            self._rel.sort(
+                *pc.Iter(by)
+                .zip(_args_iter(arg=descending), _args_iter(arg=nulls_last))
+                .map_star(_make_order)
+            )
         )
-        return self.__from_lf__(self._rel.sort(*order_exprs))
 
     def limit(self, n: int) -> Self:
         """Limit the number of rows."""
@@ -128,19 +108,26 @@ class LazyFrame:
 
     def unique(self, subset: str | Iterable[str] | None = None) -> Self:
         """Get unique rows based on subset of columns."""
-        if subset is None:
-            return self.__from_lf__(self._rel.distinct())
-        cols = pc.Iter.once(subset) if isinstance(subset, str) else pc.Iter(subset)
-        return self.__from_lf__(
-            self._rel.select(
-                duckdb.StarExpression(),
-                duckdb.SQLExpression(
-                    f"ROW_NUMBER() OVER (PARTITION BY {cols.join(', ')}) as __rn__"
-                ),
+
+        def _on_subset(cols: pc.Iter[str]) -> Self:
+            return self.__from_lf__(
+                self._rel.select(
+                    duckdb.StarExpression(),
+                    duckdb.SQLExpression(
+                        f"ROW_NUMBER() OVER (PARTITION BY {cols.join(', ')}) as __rn__"
+                    ),
+                )
+                .filter("__rn__ = 1")
+                .project("* EXCLUDE (__rn__)")
             )
-            .filter("__rn__ = 1")
-            .project("* EXCLUDE (__rn__)")
-        )
+
+        match subset:
+            case None:
+                return self.__from_lf__(self._rel.distinct())
+            case str():
+                return pc.Iter.once(subset).into(_on_subset)
+            case Iterable():
+                return pc.Iter(subset).into(_on_subset)
 
     def drop(self, *columns: str) -> Self:
         """Drop columns from the frame."""
@@ -152,12 +139,15 @@ class LazyFrame:
         """Rename columns."""
         rename_map = pc.Dict(mapping)
 
-        exprs = self.columns.iter().map(
-            lambda c: duckdb.ColumnExpression(c).alias(
-                rename_map.get_item(c).unwrap_or(c)
+        return self.__from_lf__(
+            self._rel.select(
+                *self.columns.iter().map(
+                    lambda c: duckdb.ColumnExpression(c).alias(
+                        rename_map.get_item(c).unwrap_or(c)
+                    )
+                )
             )
         )
-        return self.__from_lf__(self._rel.select(*exprs))
 
     def explain(self) -> str:
         """Generate SQL string."""
@@ -347,12 +337,11 @@ class LazyFrame:
             case (_, "backward"):
                 return self._fill_strategy("FIRST_VALUE")
             case val if val[0] is not None:
-                fill_val = to_expr(value) if not isinstance(value, Expr) else value.expr
                 return self.__from_lf__(
                     self._rel.select(
                         *self.columns.iter().map(
                             lambda c: duckdb.CoalesceOperator(
-                                duckdb.ColumnExpression(c), fill_val
+                                duckdb.ColumnExpression(c), to_expr(value)
                             ).alias(c)
                         )
                     )
@@ -361,18 +350,18 @@ class LazyFrame:
                 msg = "Either `value` or `strategy` must be provided."
                 raise ValueError(msg)
 
-    def _fill_strategy(self, func_name: str) -> Self:
+    def _fill_strategy(self, func_name: Literal["LAST_VALUE", "FIRST_VALUE"]) -> Self:
         """Internal fill strategy using window functions."""
-        window_clause = (
-            "OVER (ROWS UNBOUNDED PRECEDING)"
-            if func_name == "LAST_VALUE"
-            else "OVER (ROWS BETWEEN CURRENT ROW AND UNBOUNDED FOLLOWING)"
-        )
+        match func_name:
+            case "FIRST_VALUE":
+                over_args = "(ROWS BETWEEN CURRENT ROW AND UNBOUNDED FOLLOWING)"
+            case "LAST_VALUE":
+                over_args = "(ROWS UNBOUNDED PRECEDING)"
         return self.__from_lf__(
             self._rel.select(
                 *self.columns.iter().map(
                     lambda c: duckdb.SQLExpression(
-                        f"COALESCE({c}, {func_name}({c} IGNORE NULLS) {window_clause})"
+                        f"COALESCE({c}, {func_name}({c} IGNORE NULLS) OVER {over_args})"
                     ).alias(c)
                 )
             )
@@ -395,14 +384,7 @@ class LazyFrame:
 
     def drop_nulls(self, subset: str | Iterable[str] | None = None) -> Self:
         """Drop rows with null values."""
-        cols = (
-            self._rel.columns
-            if subset is None
-            else (subset,)
-            if isinstance(subset, str)
-            else tuple(subset)
-        )
-        return pc.Iter(cols).fold(
+        return self._col_or_subset(subset).fold(
             self,
             lambda lf, c: lf.__from_lf__(
                 lf._rel.filter(duckdb.ColumnExpression(c).isnotnull())
@@ -411,14 +393,7 @@ class LazyFrame:
 
     def drop_nans(self, subset: str | Iterable[str] | None = None) -> Self:
         """Drop rows with NaN values."""
-        cols = (
-            self._rel.columns
-            if subset is None
-            else (subset,)
-            if isinstance(subset, str)
-            else tuple(subset)
-        )
-        return pc.Iter(cols).fold(
+        return self._col_or_subset(subset).fold(
             self,
             lambda lf, c: lf.__from_lf__(
                 lf._rel.filter(
@@ -426,6 +401,15 @@ class LazyFrame:
                 )
             ),
         )
+
+    def _col_or_subset(self, subset: str | Iterable[str] | None) -> pc.Iter[str]:
+        match subset:
+            case None:
+                return self.columns.iter()
+            case str():
+                return pc.Iter.once(subset)
+            case Iterable():
+                return pc.Iter(subset)
 
     def with_row_index(self, name: str = "index", offset: int = 0) -> Self:
         """Add a row index column."""
@@ -445,18 +429,13 @@ class LazyFrame:
 
     def shift(self, n: int = 1, *, fill_value: object | Expr | None = None) -> Self:
         """Shift values by n positions."""
-        match fill_value:
-            case Expr():
-                fill = fill_value.expr
-            case _:
-                fill = duckdb.ConstantExpression(fill_value)
         func = "LAG" if n > 0 else "LEAD"
         abs_n = abs(n)
         return self.__from_lf__(
             self._rel.select(
                 *self.columns.iter().map(
                     lambda c: duckdb.SQLExpression(
-                        f"COALESCE({func}({c}, {abs_n}) OVER (), {fill})"
+                        f"COALESCE({func}({c}, {abs_n}) OVER (), {to_value(fill_value)})"
                     ).alias(c)
                 )
             )
@@ -482,11 +461,11 @@ class LazyFrame:
         return len(self._rel.columns)
 
     @property
-    def schema(self) -> dict[str, str]:
+    def schema(self) -> pc.Dict[str, str]:
         """Get the schema as a dictionary."""
-        return self.columns.iter().zip(self._rel.dtypes).collect(dict)
+        return self.columns.iter().zip(self._rel.dtypes).collect(pc.Dict)
 
-    def collect_schema(self) -> dict[str, str]:
+    def collect_schema(self) -> pc.Dict[str, str]:
         """Collect the schema (same as schema property for lazy)."""
         return self.schema
 
@@ -518,48 +497,46 @@ class LazyFrame:
         return self
 
     def top_k(
-        self, k: int, *, by: str | Expr | Iterable[str | Expr], reverse: bool = False
+        self,
+        k: int,
+        *,
+        by: str | Expr | Iterable[str] | Iterable[Expr],
+        reverse: bool = False,
     ) -> Self:
         """Return top k rows by column(s)."""
-        by_cols = (by,) if isinstance(by, str | Expr) else tuple(by)
-        return self.sort(*by_cols, descending=not reverse).head(k)
+        return self.sort(*iter_to_exprs(by), descending=not reverse).head(k)
 
     def bottom_k(
-        self, k: int, *, by: str | Expr | Iterable[str | Expr], reverse: bool = False
+        self,
+        k: int,
+        *,
+        by: str | Expr | Iterable[str] | Iterable[Expr],
+        reverse: bool = False,
     ) -> Self:
         """Return bottom k rows by column(s)."""
-        by_cols = (by,) if isinstance(by, str | Expr) else tuple(by)
-        return self.sort(*by_cols, descending=reverse).head(k)
+        return self.sort(*iter_to_exprs(by), descending=reverse).head(k)
 
     def cast(
-        self,
-        dtypes: Mapping[str, datatypes.DataType] | datatypes.DataType,
+        self, dtypes: Mapping[str, datatypes.DataType] | datatypes.DataType
     ) -> Self:
         """Cast columns to specified dtypes."""
         match dtypes:
             case Mapping():
                 dtype_map = pc.Dict(dtypes)
-                return self.__from_lf__(
-                    self._rel.select(
-                        *self.columns.iter().map(
-                            lambda c: (
-                                duckdb.ColumnExpression(c)
-                                .cast(dtype_map.get_item(c).unwrap())
-                                .alias(c)
-                                if c in dtypes
-                                else duckdb.ColumnExpression(c)
-                            )
-                        )
+                exprs = self.columns.iter().map(
+                    lambda c: (
+                        duckdb.ColumnExpression(c)
+                        .cast(dtype_map.get_item(c).unwrap())
+                        .alias(c)
+                        if c in dtypes
+                        else duckdb.ColumnExpression(c)
                     )
                 )
             case _:
-                return self.__from_lf__(
-                    self._rel.select(
-                        *self.columns.iter().map(
-                            lambda c: duckdb.ColumnExpression(c).cast(dtypes).alias(c)
-                        )
-                    )
+                exprs = self.columns.iter().map(
+                    lambda c: duckdb.ColumnExpression(c).cast(dtypes).alias(c)
                 )
+        return self.__from_lf__(self._rel.select(*exprs))
 
     def sink_parquet(
         self,
