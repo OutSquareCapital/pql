@@ -60,9 +60,7 @@ def test_lazyframe_from_dict() -> None:
 def test_properties(sample_df: pl.DataFrame) -> None:
     lf = pql.LazyFrame(sample_df)
     assert len(lf.dtypes) == len(sample_df.dtypes)
-    assert isinstance(lf.dtypes, list)
-    assert lf.width == len(sample_df.columns)
-    assert isinstance(lf.schema, dict)
+    assert lf.width == sample_df.width
     assert set(lf.schema.keys()) == set(sample_df.columns)
     assert lf.schema == lf.collect_schema()
 

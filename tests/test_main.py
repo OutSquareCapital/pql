@@ -853,45 +853,37 @@ def test_fill_nan_with_value() -> None:
 
 
 def test_drop_nans() -> None:
-    df = pl.DataFrame({"a": [1.0, float("nan"), 3.0], "b": [4.0, 5.0, float("nan")]})
-    result = pql.LazyFrame(df).drop_nans().collect()
-    expected = df.lazy().drop_nans().collect()
-    assert_eq(result, expected)
+    df = pl.DataFrame(
+        {
+            "a": [1.0, float("nan"), 3.0],
+            "b": [4.0, 5.0, float("nan")],
+            "c": [7.0, 8.0, 9.0],
+        }
+    )
+    assert_eq(pql.LazyFrame(df).drop_nans().collect(), df.lazy().drop_nans().collect())
+    assert_eq(
+        pql.LazyFrame(df).drop_nans(subset="a").collect(),
+        df.lazy().drop_nans(subset="a").collect(),
+    )
+    assert_eq(
+        pql.LazyFrame(df).drop_nans(subset=["a", "b"]).collect(),
+        df.lazy().drop_nans(subset=["a", "b"]).collect(),
+    )
 
 
-def test_drop_nans_subset() -> None:
-    df = pl.DataFrame({"a": [1.0, float("nan"), 3.0], "b": [4.0, 5.0, float("nan")]})
-    result = pql.LazyFrame(df).drop_nans(subset="a").collect()
-    expected = df.lazy().drop_nans(subset="a").collect()
-    assert_eq(result, expected)
-
-
-def test_shift_positive() -> None:
+def test_shift() -> None:
     df = pl.DataFrame({"a": [1, 2, 3, 4, 5]})
-    result = pql.LazyFrame(df).shift(2).collect()
-    expected = df.lazy().shift(2).collect()
-    assert_eq(result, expected)
+    assert_eq(pql.LazyFrame(df).shift(2).collect(), df.lazy().shift(2).collect())
+    assert_eq(pql.LazyFrame(df).shift(-2).collect(), df.lazy().shift(-2).collect())
 
-
-def test_shift_negative() -> None:
-    df = pl.DataFrame({"a": [1, 2, 3, 4, 5]})
-    result = pql.LazyFrame(df).shift(-2).collect()
-    expected = df.lazy().shift(-2).collect()
-    assert_eq(result, expected)
-
-
-def test_shift_with_fill_value() -> None:
-    df = pl.DataFrame({"a": [1, 2, 3, 4, 5]})
-    result = pql.LazyFrame(df).shift(2, fill_value=0).collect()
-    expected = df.lazy().shift(2, fill_value=0).collect()
-    assert_eq(result, expected)
-
-
-def test_unique_with_subset() -> None:
-    df = pl.DataFrame({"a": [1, 1, 2], "b": [3, 4, 5]})
-    result = pql.LazyFrame(df).unique(subset="a").collect()
-    expected = df.lazy().unique(subset="a").collect()
-    assert_eq(result, expected)
+    assert_eq(
+        pql.LazyFrame(df).shift(2, fill_value=0).collect(),
+        df.lazy().shift(2, fill_value=0).collect(),
+    )
+    assert_eq(
+        pql.LazyFrame(df).shift(1, fill_value=pql.lit(999)).collect(),
+        pl.LazyFrame(df).shift(1, fill_value=pl.lit(999)).collect(),
+    )
 
 
 def test_cum_sum() -> None:
@@ -1104,16 +1096,21 @@ def test_is_duplicated() -> None:
 
 
 def test_is_unique() -> None:
-    df = pl.DataFrame({"a": [1, 2, 2, 3]})
-    result = (
+    df = pl.DataFrame({"a": [1, 1, 2], "b": [3, 4, 5]})
+    assert_eq(
         pql.LazyFrame(df)
         .with_columns(pql.col("a").is_unique().alias("is_unique"))
-        .collect()
+        .collect(),
+        df.lazy().with_columns(pl.col("a").is_unique().alias("is_unique")).collect(),
     )
-    expected = (
-        df.lazy().with_columns(pl.col("a").is_unique().alias("is_unique")).collect()
+    assert_eq(
+        pql.LazyFrame(df).unique(subset="a").collect(),
+        df.lazy().unique(subset="a").collect(),
     )
-    assert_eq(result, expected)
+    assert_eq(
+        pql.LazyFrame(df).unique(subset=["a", "b"]).collect(),
+        df.lazy().unique(subset=["a", "b"]).collect(),
+    )
 
 
 def test_is_first_distinct() -> None:
@@ -1267,13 +1264,6 @@ def test_std_var_ddof() -> None:
 def test_interpolate(sample_df: pl.DataFrame) -> None:
     result = pql.LazyFrame(sample_df).interpolate().collect()
     expected = sample_df.lazy().interpolate().collect()
-    assert_eq(result, expected)
-
-
-def test_shift_with_expr_fill() -> None:
-    df = pl.DataFrame({"a": [1, 2, 3, 4, 5]})
-    result = pql.LazyFrame(df).shift(2, fill_value=999).collect()
-    expected = df.lazy().shift(2, fill_value=999).collect()
     assert_eq(result, expected)
 
 
@@ -1625,12 +1615,4 @@ def test_replace() -> None:
     assert_eq(
         pql.LazyFrame(df).select(pql.col("x").replace(2, 99).alias("rep")).collect(),
         pl.LazyFrame(df).select(pl.col("x").replace(2, 99).alias("rep")).collect(),
-    )
-
-
-def test_shift_with_expr_fill_value() -> None:
-    df = pl.DataFrame({"x": [1, 2, 3, 4, 5]})
-    assert_eq(
-        pql.LazyFrame(df).shift(1, fill_value=pql.lit(999)).collect(),
-        pl.LazyFrame(df).shift(1, fill_value=pl.lit(999)).collect(),
     )
