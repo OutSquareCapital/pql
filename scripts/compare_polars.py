@@ -6,7 +6,7 @@ import inspect
 from dataclasses import dataclass, field
 from enum import Enum, auto
 from pathlib import Path
-from typing import Self
+from typing import Any, Self
 
 import polars as pl
 import pyochain as pc
@@ -21,6 +21,15 @@ class MatchStatus(Enum):
     SIGNATURE_MISMATCH = auto()
     MATCH = auto()
     EXTRA = auto()
+
+    @classmethod
+    def from_length(cls, val: pc.traits.PyoIterable[Any]) -> MatchStatus:
+        """Get MatchStatus from length."""
+        match val.length():
+            case 0:
+                return MatchStatus.MATCH
+            case _:
+                return MatchStatus.SIGNATURE_MISMATCH
 
 
 @dataclass(slots=True)
@@ -51,6 +60,17 @@ class MethodInfo:
     params: pc.Seq[ParamInfo]
     return_annotation: pc.Option[str]
     is_property: bool = False
+
+    @classmethod
+    def from_signature(cls, name: str, sig: inspect.Signature) -> Self:
+        """Create MethodInfo from inspect.Signature."""
+        return cls(
+            name=name,
+            params=pc.Iter(sig.parameters.values())
+            .map(ParamInfo.from_signature)
+            .collect(),
+            return_annotation=_get_annotation_str(sig.return_annotation),
+        )
 
     def signature_str(self) -> str:
         """Generate a human-readable signature string."""
@@ -85,14 +105,14 @@ class ComparisonResult:
             _get_method_info(polars_cls, method_name),
             _get_method_info(pql_cls, method_name),
         ):
-            case (pc.NoneOption(), pc.Some(pql_info)):
+            case (pc.NONE, pc.Some(pql_info)):
                 return cls(
                     method_name=method_name,
                     status=MatchStatus.EXTRA,
                     polars_info=pc.NONE,
                     pql_info=pc.Some(pql_info),
                 )
-            case (pc.Some(pl_info), pc.NoneOption()):
+            case (pc.Some(pl_info), pc.NONE):
                 return cls(
                     method_name=method_name,
                     status=MatchStatus.MISSING,
@@ -101,14 +121,9 @@ class ComparisonResult:
                 )
             case (pc.Some(pl_info), pc.Some(pql_info)):
                 diffs = _compare_params(pl_info.params, pql_info.params)
-                status = (
-                    MatchStatus.SIGNATURE_MISMATCH
-                    if diffs.length() > 0
-                    else MatchStatus.MATCH
-                )
                 return cls(
                     method_name=method_name,
-                    status=status,
+                    status=diffs.into(MatchStatus.from_length),
                     polars_info=pc.Some(pl_info),
                     pql_info=pc.Some(pql_info),
                     diff_details=diffs.then_some().map(lambda d: d.iter().join("; ")),
@@ -158,9 +173,13 @@ def _compare_params(
 
 
 def _get_method_info(cls: type, name: str) -> pc.Option[MethodInfo]:
-    def _build_method_info(attr: object) -> pc.Option[MethodInfo]:
-        if isinstance(attr, property):
-            return pc.Option(
+    return _getattr(cls, name).and_then(_build_method_info, name)
+
+
+def _build_method_info(attr: object, name: str) -> pc.Option[MethodInfo]:
+    match attr:
+        case property():
+            return pc.Some(
                 MethodInfo(
                     name=name,
                     params=pc.Seq(()),
@@ -168,30 +187,22 @@ def _get_method_info(cls: type, name: str) -> pc.Option[MethodInfo]:
                     is_property=True,
                 )
             )
-        if not callable(attr):
-            return pc.NONE
-        try:
-            sig = inspect.signature(attr)
-            return pc.Option(
-                MethodInfo(
-                    name=name,
-                    params=pc.Iter(sig.parameters.values())
-                    .map(ParamInfo.from_signature)
-                    .collect(),
-                    return_annotation=_get_annotation_str(sig.return_annotation),
+        case attr if callable(attr):
+            try:
+                return pc.Some(
+                    MethodInfo.from_signature(name=name, sig=inspect.signature(attr))
                 )
-            )
-        except (ValueError, TypeError):
+            except (ValueError, TypeError):
+                return pc.NONE
+        case _:
             return pc.NONE
-
-    return _getattr(cls, name).and_then(_build_method_info)
 
 
 def _get_annotation_str(annotation: object) -> pc.Option[str]:
     """Convert annotation to string representation."""
-    if annotation is inspect.Parameter.empty or annotation is inspect.Signature.empty:
-        return pc.NONE
     match annotation:
+        case inspect.Parameter.empty | inspect.Signature.empty:
+            return pc.NONE
         case type():
             return pc.Option(annotation.__name__)
         case _:
@@ -244,98 +255,89 @@ class ClassComparison:
 
     def coverage_percent(self) -> float:
         """Calculate API coverage percentage."""
-        total_polars = (
-            self.results.iter().filter(lambda r: r.polars_info.is_some()).length()
+        match self.results.iter().filter_map(lambda r: r.polars_info).length():
+            case 0:
+                return 100.0
+            case total_polars:
+                return (self.by_status(MatchStatus.MATCH).length() / total_polars) * 100
+
+
+def _format_class_detail(comp: ClassComparison) -> pc.Seq[str]:
+    """Format detailed sections for a class comparison."""
+    return pc.Seq(
+        (
+            f"\n## {comp.class_name}\n",
+            _format_section("[v] Matched Methods", comp.by_status(MatchStatus.MATCH)),
+            _format_section(
+                "[x] Missing Methods",
+                comp.by_status(MatchStatus.MISSING),
+                show_signature=True,
+            ),
+            _format_section(
+                "[!] Signature Mismatches",
+                comp.by_status(MatchStatus.SIGNATURE_MISMATCH),
+            ),
+            _format_section(
+                "[+] Extra Methods (pql-only)", comp.by_status(MatchStatus.EXTRA)
+            ),
         )
-        if total_polars == 0:
-            return 100.0
-        matched = self.by_status(MatchStatus.MATCH).length()
-        return (matched / total_polars) * 100
+    )
 
 
-def generate_report(comparisons: pc.Seq[ClassComparison]) -> str:
-    """Generate a markdown report from comparison results."""
-
-    def _format_class_detail(comp: ClassComparison) -> pc.Seq[str]:
-        """Format detailed sections for a class comparison."""
-        return pc.Seq(
-            (
-                f"\n## {comp.class_name}\n",
-                _format_section(
-                    "[v] Matched Methods", comp.by_status(MatchStatus.MATCH)
-                ),
-                _format_section(
-                    "[x] Missing Methods",
-                    comp.by_status(MatchStatus.MISSING),
-                    show_signature=True,
-                ),
-                _format_section(
-                    "[!] Signature Mismatches",
-                    comp.by_status(MatchStatus.SIGNATURE_MISMATCH),
-                ),
-                _format_section(
-                    "[+] Extra Methods (pql-only)", comp.by_status(MatchStatus.EXTRA)
-                ),
-            )
-        )
-
-    def _format_section(
-        title: str, items: pc.Seq[ComparisonResult], *, show_signature: bool = False
-    ) -> str:
-        """Format a section of the report."""
-        count = items.length()
-        if count == 0:
+def _format_section(
+    title: str, items: pc.Seq[ComparisonResult], *, show_signature: bool = False
+) -> str:
+    """Format a section of the report."""
+    match items.length():
+        case 0:
             return ""
-
-        return (
-            pc.Iter((f"\n### {title} ({count})\n",))
-            .chain(
-                items.iter().flat_map(
-                    lambda r: _format_result_line(r, show_signature=show_signature)
-                )
-            )
-            .join("\n")
-        )
-
-    def _format_result_line(
-        result: ComparisonResult, *, show_signature: bool
-    ) -> pc.Iter[str]:
-        """Format a single comparison result as markdown lines."""
-        if show_signature and result.polars_info.is_some():
-            return pc.Iter.once(
-                f"- `{result.method_name}` {result.polars_info.unwrap().signature_str()}"
-            )
-        if result.diff_details.is_some():
+        case count:
             return (
-                pc.Iter.once(
-                    f"- `{result.method_name}`: {result.diff_details.unwrap()}"
-                )
-                .iter()
+                pc.Iter((f"\n### {title} ({count})\n",))
                 .chain(
-                    result.polars_info.map(
-                        lambda p: f"  - Polars: {p.signature_str()}"
-                    ).iter()
+                    items.iter().flat_map(
+                        lambda r: _format_result_line(r, show_signature=show_signature)
+                    )
                 )
-                .chain(
-                    result.pql_info.map(
-                        lambda p: f"  - pql: {p.signature_str()}"
-                    ).iter()
+                .join("\n")
+            )
+
+
+def _format_result_line(
+    result: ComparisonResult, *, show_signature: bool
+) -> pc.Iter[str]:
+    """Format a single comparison result as markdown lines."""
+    match (show_signature, result.polars_info, result.pql_info, result.diff_details):
+        case (True, pc.Some(polars_info), _, _):
+            return pc.Iter.once(
+                f"- `{result.method_name}` {polars_info.signature_str()}"
+            )
+        case (_, pc.Some(pl_info), pc.Some(pql_info), pc.Some(diff_str)):
+            return pc.Iter(
+                (
+                    f"- `{result.method_name}`: {diff_str}",
+                    f"  - Polars: {pl_info.signature_str()}",
+                    f"  - pql: {pql_info.signature_str()}",
                 )
             )
-        return pc.Iter.once(f"- `{result.method_name}`")
+        case _:
+            return pc.Iter.once(f"- `{result.method_name}`")
 
-    def _format_summary_row(comp: ClassComparison) -> str:
-        """Format a single summary table row."""
-        return (
-            f"| {comp.class_name} | "
-            f"{comp.coverage_percent():.1f}% | "
-            f"{comp.by_status(MatchStatus.MATCH).length()} | "
-            f"{comp.by_status(MatchStatus.MISSING).length()} | "
-            f"{comp.by_status(MatchStatus.SIGNATURE_MISMATCH).length()} | "
-            f"{comp.by_status(MatchStatus.EXTRA).length()} |"
-        )
 
-    header: pc.Iter[str] = pc.Iter(
+def _format_summary_row(comp: ClassComparison) -> str:
+    """Format a single summary table row."""
+    return (
+        f"| {comp.class_name} | "
+        f"{comp.coverage_percent():.1f}% | "
+        f"{comp.by_status(MatchStatus.MATCH).length()} | "
+        f"{comp.by_status(MatchStatus.MISSING).length()} | "
+        f"{comp.by_status(MatchStatus.SIGNATURE_MISMATCH).length()} | "
+        f"{comp.by_status(MatchStatus.EXTRA).length()} |"
+    )
+
+
+def _header() -> pc.Iter[str]:
+    return pc.Iter(
         (
             "# pql vs Polars API Comparison Report\n",
             "This report shows the API coverage of pql compared to Polars.\n",
@@ -345,24 +347,30 @@ def generate_report(comparisons: pc.Seq[ClassComparison]) -> str:
         )
     )
 
-    return (
-        header.chain(comparisons.iter().map(_format_summary_row))
-        .chain(comparisons.iter().flat_map(_format_class_detail))
-        .join("\n")
-    )
-
 
 def main() -> None:
     """Run the comparison and generate report."""
-    comparisons = pc.Seq(
-        (
-            ClassComparison.from_classes(pl.LazyFrame, pql.LazyFrame),
-            ClassComparison.from_classes(pl.Expr, pql.Expr),
-            ClassComparison.from_classes(
-                pl.col("x").str.__class__, pql.col("x").str.__class__, name="Expr.str"
-            ),
+    comparisons = (
+        pc.Seq(
+            (
+                ClassComparison.from_classes(pl.LazyFrame, pql.LazyFrame),
+                ClassComparison.from_classes(pl.Expr, pql.Expr),
+                ClassComparison.from_classes(
+                    pl.col("x").str.__class__,
+                    pql.col("x").str.__class__,
+                    name="Expr.str",
+                ),
+            )
         )
-    ).into(generate_report)
+        .into(
+            lambda comps: (
+                _header()
+                .chain(comps.iter().map(_format_summary_row))
+                .chain(comps.iter().flat_map(_format_class_detail))
+            )
+        )
+        .join("\n")
+    )
 
     Path("API_COVERAGE.md").write_text(comparisons, encoding="utf-8")
 
