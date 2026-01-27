@@ -369,7 +369,7 @@ class Expr:
         """Compute a hash."""
         return self.__class__(
             duckdb.FunctionExpression(
-                "hash", self._expr, duckdb.ConstantExpression(str(seed))
+                "hash", self._expr, duckdb.ConstantExpression(seed)
             )
         )
 

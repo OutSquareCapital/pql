@@ -447,9 +447,9 @@ class LazyFrame:
         return pc.Vec.from_ref(self._rel.columns)
 
     @property
-    def dtypes(self) -> list[str]:
+    def dtypes(self) -> pc.Vec[str]:
         """Get column data types."""
-        return self._rel.dtypes
+        return pc.Vec.from_ref(self._rel.dtypes)
 
     @property
     def width(self) -> int:
