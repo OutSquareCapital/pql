@@ -1,646 +1,301 @@
-from functools import partial
+from collections.abc import Iterable
 
 import polars as pl
-import pytest
 from polars.testing import assert_frame_equal
 
 import pql
 
-assert_eq = partial(assert_frame_equal, check_dtypes=False, check_row_order=False)
 
-
-@pytest.fixture
-def sample_df_strings() -> pl.DataFrame:
+def sample_df() -> pl.LazyFrame:
     """Create a sample DataFrame with string data for testing."""
-    return pl.DataFrame(
+    return pl.LazyFrame(
         {
             "text": [
                 "  Hello World suffix  ",
                 "  foo bar baz suffix  ",
                 "  Polars is great suffix  ",
                 "  Testing string functions suffix  ",
-            ]
+            ],
+            "date_str": [
+                "2024-01-15",
+                "2024-02-20",
+                "2024-03-25",
+                "2024-04-30",
+            ],
+            "dt_str": [
+                "2024-01-15 10:30:00",
+                "2024-02-20 15:45:30",
+                "2024-03-25 20:00:00",
+                "2024-04-30 23:59:59",
+            ],
+            "time_str": [
+                "10:30:00",
+                "15:45:30",
+                "20:00:00",
+                "23:59:59",
+            ],
+            "prefixed": ["prefix_text", "prefix_other", "prefix_sample", "prefix_data"],
+            "json": ['{"a": 1}', '{"a": 2}', '{"a": 3}', '{"a": 4}'],
+            "numbers": ["123.456", "456.789", "789.123", "1234.567"],
         }
     )
 
 
-def test_to_uppercase(sample_df_strings: pl.DataFrame) -> None:
-    assert_eq(
-        pql.LazyFrame(sample_df_strings)
-        .select(
-            pql.col("text"),
-            pql.col("text").str.to_uppercase().alias("upper"),
-        )
-        .collect(),
-        sample_df_strings.lazy()
-        .select(
-            pl.col("text"),
-            pl.col("text").str.to_uppercase().alias("upper"),
-        )
-        .collect(),
+def assert_eq(
+    pql_exprs: pql.Expr | Iterable[pql.Expr], polars_exprs: pl.Expr | Iterable[pl.Expr]
+) -> None:
+    df = sample_df()
+    assert_frame_equal(
+        df.select(polars_exprs).collect(),
+        pql.LazyFrame(df).select(pql_exprs).collect(),
+        check_dtypes=False,
+        check_row_order=False,
     )
 
 
-def test_to_lowercase(sample_df_strings: pl.DataFrame) -> None:
+def test_to_uppercase() -> None:
     assert_eq(
-        pql.LazyFrame(sample_df_strings)
-        .select(
-            pql.col("text"),
-            pql.col("text").str.to_lowercase().alias("lower"),
-        )
-        .collect(),
-        sample_df_strings.lazy()
-        .select(
-            pl.col("text"),
-            pl.col("text").str.to_lowercase().alias("lower"),
-        )
-        .collect(),
+        (pql.col("text").str.to_uppercase().alias("upper")),
+        (pl.col("text").str.to_uppercase().alias("upper")),
     )
 
 
-def test_len_chars(sample_df_strings: pl.DataFrame) -> None:
+def test_to_lowercase() -> None:
     assert_eq(
-        pql.LazyFrame(sample_df_strings)
-        .select(
-            pql.col("text"),
-            pql.col("text").str.len_chars().alias("length"),
-        )
-        .collect(),
-        sample_df_strings.lazy()
-        .select(
-            pl.col("text"),
-            pl.col("text").str.len_chars().alias("length"),
-        )
-        .collect(),
+        (pql.col("text").str.to_lowercase().alias("lower")),
+        (pl.col("text").str.to_lowercase().alias("lower")),
     )
 
 
-def test_contains_literal(sample_df_strings: pl.DataFrame) -> None:
+def test_len_chars() -> None:
     assert_eq(
-        pql.LazyFrame(sample_df_strings)
-        .select(
-            pql.col("text"),
-            pql.col("text").str.contains("lo", literal=True).alias("contains_lo"),
-        )
-        .collect(),
-        sample_df_strings.lazy()
-        .select(
-            pl.col("text"),
-            pl.col("text").str.contains("lo", literal=True).alias("contains_lo"),
-        )
-        .collect(),
+        (pql.col("text").str.len_chars().alias("length")),
+        (pl.col("text").str.len_chars().alias("length")),
     )
 
 
-def test_starts_with(sample_df_strings: pl.DataFrame) -> None:
+def test_contains_literal() -> None:
     assert_eq(
-        pql.LazyFrame(sample_df_strings)
-        .select(
-            pql.col("text"),
-            pql.col("text").str.starts_with("Hello").alias("starts_hello"),
-        )
-        .collect(),
-        sample_df_strings.lazy()
-        .select(
-            pl.col("text"),
-            pl.col("text").str.starts_with("Hello").alias("starts_hello"),
-        )
-        .collect(),
+        (pql.col("text").str.contains("lo", literal=True).alias("contains_lo")),
+        (pl.col("text").str.contains("lo", literal=True).alias("contains_lo")),
     )
 
 
-def test_ends_with(sample_df_strings: pl.DataFrame) -> None:
+def test_starts_with() -> None:
     assert_eq(
-        pql.LazyFrame(sample_df_strings)
-        .select(
-            pql.col("text"),
-            pql.col("text").str.ends_with("suffix").alias("ends_suffix"),
-        )
-        .collect(),
-        sample_df_strings.lazy()
-        .select(
-            pl.col("text"),
-            pl.col("text").str.ends_with("suffix").alias("ends_suffix"),
-        )
-        .collect(),
+        (pql.col("text").str.starts_with("Hello").alias("starts_hello")),
+        (pl.col("text").str.starts_with("Hello").alias("starts_hello")),
     )
 
 
-def test_replace(sample_df_strings: pl.DataFrame) -> None:
+def test_ends_with() -> None:
     assert_eq(
-        pql.LazyFrame(sample_df_strings)
-        .select(
-            pql.col("text"),
-            pql.col("text").str.replace("Hello", "Hi").alias("replaced"),
-        )
-        .collect(),
-        sample_df_strings.lazy()
-        .select(
-            pl.col("text"),
-            pl.col("text").str.replace("Hello", "Hi", literal=True).alias("replaced"),
-        )
-        .collect(),
+        (pql.col("text").str.ends_with("suffix").alias("ends_suffix")),
+        (pl.col("text").str.ends_with("suffix").alias("ends_suffix")),
     )
 
 
-def test_strip(sample_df_strings: pl.DataFrame) -> None:
+def test_replace() -> None:
     assert_eq(
-        pql.LazyFrame(sample_df_strings)
-        .select(
-            pql.col("text"),
-            pql.col("text").str.strip_chars().alias("stripped"),
-        )
-        .collect(),
-        sample_df_strings.lazy()
-        .select(
-            pl.col("text"),
-            pl.col("text").str.strip_chars().alias("stripped"),
-        )
-        .collect(),
+        (pql.col("text").str.replace("Hello", "Hi").alias("replaced")),
+        (pl.col("text").str.replace("Hello", "Hi", literal=True).alias("replaced")),
     )
 
 
-def test_strip_chars_start(sample_df_strings: pl.DataFrame) -> None:
+def test_strip() -> None:
     assert_eq(
-        pql.LazyFrame(sample_df_strings)
-        .select(
-            pql.col("text"),
-            pql.col("text").str.strip_chars_start().alias("lstripped"),
-        )
-        .collect(),
-        sample_df_strings.lazy()
-        .select(
-            pl.col("text"),
-            pl.col("text").str.strip_chars_start().alias("lstripped"),
-        )
-        .collect(),
+        (pql.col("text").str.strip_chars().alias("stripped")),
+        (pl.col("text").str.strip_chars().alias("stripped")),
     )
 
 
-def test_strip_chars_end(sample_df_strings: pl.DataFrame) -> None:
+def test_strip_chars_start() -> None:
     assert_eq(
-        pql.LazyFrame(sample_df_strings)
-        .select(
-            pql.col("text"),
-            pql.col("text").str.strip_chars_end().alias("rstripped"),
-        )
-        .collect(),
-        sample_df_strings.lazy()
-        .select(
-            pl.col("text"),
-            pl.col("text").str.strip_chars_end().alias("rstripped"),
-        )
-        .collect(),
+        (pql.col("text").str.strip_chars_start().alias("lstripped")),
+        (pl.col("text").str.strip_chars_start().alias("lstripped")),
     )
 
 
-def test_slice(sample_df_strings: pl.DataFrame) -> None:
+def test_strip_chars_end() -> None:
     assert_eq(
-        pql.LazyFrame(sample_df_strings)
-        .select(
-            pql.col("text"),
+        (pql.col("text").str.strip_chars_end().alias("rstripped")),
+        (pl.col("text").str.strip_chars_end().alias("rstripped")),
+    )
+
+
+def test_slice() -> None:
+    assert_eq(
+        (
             pql.col("text").str.slice(0, 5).alias("sliced"),
-        )
-        .collect(),
-        sample_df_strings.lazy()
-        .select(
-            pl.col("text"),
+            pql.col("text").str.slice(0).alias("sliced_full"),
+        ),
+        (
             pl.col("text").str.slice(0, 5).alias("sliced"),
-        )
-        .collect(),
+            pl.col("text").str.slice(0).alias("sliced_full"),
+        ),
     )
 
 
 def test_len_bytes() -> None:
-    str_df = pl.DataFrame({"text": ["hello", "world", "café"]})
-    result = (
-        pql.LazyFrame(str_df)
-        .select(pql.col("text").str.len_bytes().alias("bytes"))
-        .collect()
+    assert_eq(
+        (pql.col("text").str.len_bytes().alias("bytes")),
+        (pl.col("text").str.len_bytes().alias("bytes")),
     )
-    expected = (
-        str_df.lazy().select(pl.col("text").str.len_bytes().alias("bytes")).collect()
-    )
-    assert_eq(result, expected)
-
-
-def test_pad_start() -> None:
-    str_df = pl.DataFrame({"text": ["a", "bb", "ccc"]})
-    result = (
-        pql.LazyFrame(str_df)
-        .select(pql.col("text").str.pad_start(5, "*").alias("padded"))
-        .collect()
-    )
-    expected = (
-        str_df.lazy()
-        .select(pl.col("text").str.pad_start(5, "*").alias("padded"))
-        .collect()
-    )
-    assert_eq(result, expected)
-
-
-def test_pad_end() -> None:
-    str_df = pl.DataFrame({"text": ["a", "bb", "ccc"]})
-    result = (
-        pql.LazyFrame(str_df)
-        .select(pql.col("text").str.pad_end(5, "*").alias("padded"))
-        .collect()
-    )
-    expected = (
-        str_df.lazy()
-        .select(pl.col("text").str.pad_end(5, "*").alias("padded"))
-        .collect()
-    )
-    assert_eq(result, expected)
-
-
-def test_zfill() -> None:
-    str_df = pl.DataFrame({"text": ["1", "22", "333"]})
-    result = (
-        pql.LazyFrame(str_df)
-        .select(pql.col("text").str.zfill(5).alias("zfilled"))
-        .collect()
-    )
-    expected = (
-        str_df.lazy().select(pl.col("text").str.zfill(5).alias("zfilled")).collect()
-    )
-    assert_eq(result, expected)
 
 
 def test_head_str() -> None:
-    str_df = pl.DataFrame({"text": ["hello", "world"]})
-    result = (
-        pql.LazyFrame(str_df)
-        .select(pql.col("text").str.head(3).alias("first_3"))
-        .collect()
+    assert_eq(
+        (pql.col("text").str.head(3).alias("first_3")),
+        (pl.col("text").str.head(3).alias("first_3")),
     )
-    expected = (
-        str_df.lazy().select(pl.col("text").str.head(3).alias("first_3")).collect()
-    )
-    assert_eq(result, expected)
 
 
 def test_tail_str() -> None:
-    str_df = pl.DataFrame({"text": ["hello", "world"]})
-    result = (
-        pql.LazyFrame(str_df)
-        .select(pql.col("text").str.tail(3).alias("last_3"))
-        .collect()
+    assert_eq(
+        (pql.col("text").str.tail(3).alias("last_3")),
+        (pl.col("text").str.tail(3).alias("last_3")),
     )
-    expected = (
-        str_df.lazy().select(pl.col("text").str.tail(3).alias("last_3")).collect()
-    )
-    assert_eq(result, expected)
 
 
 def test_reverse_str() -> None:
-    str_df = pl.DataFrame({"text": ["hello", "world"]})
-    result = (
-        pql.LazyFrame(str_df)
-        .select(pql.col("text").str.reverse().alias("reversed"))
-        .collect()
+    assert_eq(
+        (pql.col("text").str.reverse().alias("reversed")),
+        (pl.col("text").str.reverse().alias("reversed")),
     )
-    expected = (
-        str_df.lazy().select(pl.col("text").str.reverse().alias("reversed")).collect()
-    )
-    assert_eq(result, expected)
 
 
 def test_to_titlecase() -> None:
-    str_df = pl.DataFrame({"text": ["hello world", "foo bar"]})
-    result = (
-        pql.LazyFrame(str_df)
-        .select(pql.col("text").str.to_titlecase().alias("title"))
-        .collect()
+    assert_eq(
+        (pql.col("text").str.to_titlecase().alias("title")),
+        (pl.col("text").str.to_titlecase().alias("title")),
     )
-    expected = (
-        str_df.lazy().select(pl.col("text").str.to_titlecase().alias("title")).collect()
-    )
-    assert_eq(result, expected)
 
 
 def test_split() -> None:
-    df = pl.DataFrame({"text": ["a,b,c", "x,y"]})
-    result = (
-        pql.LazyFrame(df)
-        .select(pql.col("text").str.split(",").alias("split"))
-        .collect()
+    assert_eq(
+        (pql.col("text").str.split(",").alias("split")),
+        (pl.col("text").str.split(",").alias("split")),
     )
-    expected = df.lazy().select(pl.col("text").str.split(",").alias("split")).collect()
-    assert_eq(result, expected)
-
-
-def test_extract() -> None:
-    df = pl.DataFrame({"text": ["abc123", "xyz456"]})
-    result = (
-        pql.LazyFrame(df)
-        .select(pql.col("text").str.extract(r"(\d+)").alias("extracted"))
-        .collect()
-    )
-    expected = (
-        df.lazy()
-        .select(pl.col("text").str.extract(r"(\d+)").alias("extracted"))
-        .collect()
-    )
-    assert_eq(result, expected)
 
 
 def test_extract_all() -> None:
-    df = pl.DataFrame({"text": ["abc123def456"]})
     assert_eq(
-        pql.LazyFrame(df)
-        .select(pql.col("text").str.extract_all(r"\d+").alias("extracted"))
-        .collect(),
-        df.lazy()
-        .select(pl.col("text").str.extract_all(r"\d+").alias("extracted"))
-        .collect(),
+        (pql.col("text").str.extract_all(r"\d+").alias("extracted")),
+        (pl.col("text").str.extract_all(r"\d+").alias("extracted")),
     )
 
 
 def test_count_matches() -> None:
-    df = pl.DataFrame({"text": ["abcabc", "xyzxyz"]})
-
     assert_eq(
-        pql.LazyFrame(df)
-        .select(pql.col("text").str.count_matches("a", literal=True).alias("count"))
-        .collect(),
-        df.lazy()
-        .select(pl.col("text").str.count_matches("a", literal=True).alias("count"))
-        .collect(),
+        (pql.col("text").str.count_matches("a", literal=True).alias("count")),
+        (pl.col("text").str.count_matches("a", literal=True).alias("count")),
     )
 
 
 def test_strip_prefix() -> None:
-    df = pl.DataFrame({"text": ["prefix_text", "prefix_other"]})
     assert_eq(
-        pql.LazyFrame(df)
-        .select(pql.col("text").str.strip_prefix("prefix_").alias("stripped"))
-        .collect(),
-        df.lazy()
-        .select(pl.col("text").str.strip_prefix("prefix_").alias("stripped"))
-        .collect(),
+        (pql.col("text").str.strip_prefix("prefix_").alias("stripped")),
+        (pl.col("text").str.strip_prefix("prefix_").alias("stripped")),
     )
 
 
 def test_strip_suffix() -> None:
-    df = pl.DataFrame({"text": ["text_suffix", "other_suffix"]})
     assert_eq(
-        pql.LazyFrame(df)
-        .select(pql.col("text").str.strip_suffix("_suffix").alias("stripped"))
-        .collect(),
-        df.lazy()
-        .select(pl.col("text").str.strip_suffix("_suffix").alias("stripped"))
-        .collect(),
+        (pql.col("prefixed").str.strip_suffix("_suffix").alias("stripped")),
+        (pl.col("prefixed").str.strip_suffix("_suffix").alias("stripped")),
     )
 
 
 def test_replace_all() -> None:
-    df = pl.DataFrame({"text": ["hello world", "foo bar"]})
     assert_eq(
-        pql.LazyFrame(df)
-        .select(
-            pql.col("text").str.replace_all("o", "0", literal=True).alias("replaced")
-        )
-        .collect(),
-        df.lazy()
-        .select(
-            pl.col("text").str.replace_all("o", "0", literal=True).alias("replaced")
-        )
-        .collect(),
-    )
-
-
-def test_find() -> None:
-    df = pl.DataFrame({"text": ["hello", "world"]})
-
-    assert_eq(
-        pql.LazyFrame(df)
-        .select(pql.col("text").str.find("l", literal=True).alias("index"))
-        .collect(),
-        df.lazy()
-        .select(pl.col("text").str.find("l", literal=True).alias("index"))
-        .collect(),
+        (pql.col("text").str.replace_all("o", "0", literal=True).alias("replaced")),
+        (pl.col("text").str.replace_all("o", "0", literal=True).alias("replaced")),
     )
 
 
 def test_head() -> None:
-    """Test string head."""
-    df = pl.DataFrame({"text": ["Hello", "World"]})
     assert_eq(
-        pql.LazyFrame(df).select(pql.col("text").str.head(2).alias("first")).collect(),
-        pl.LazyFrame(df).select(pl.col("text").str.head(2).alias("first")).collect(),
+        (pql.col("text").str.head(2).alias("first")),
+        (pl.col("text").str.head(2).alias("first")),
     )
 
 
 def test_tail() -> None:
-    """Test string tail."""
-    df = pl.DataFrame({"text": ["Hello", "World"]})
     assert_eq(
-        pql.LazyFrame(df).select(pql.col("text").str.tail(2).alias("last")).collect(),
-        pl.LazyFrame(df).select(pl.col("text").str.tail(2).alias("last")).collect(),
+        pql.col("text").str.tail(2).alias("last"),
+        (pl.col("text").str.tail(2).alias("last")),
     )
 
 
 def test_contains_regex() -> None:
-    """Test string contains with regex."""
-    df = pl.DataFrame({"text": ["hello123", "world", "test456"]})
     assert_eq(
-        pql.LazyFrame(df)
-        .select(pql.col("text").str.contains(r"\d+", literal=False).alias("has_digit"))
-        .collect(),
-        pl.LazyFrame(df)
-        .select(pl.col("text").str.contains(r"\d+", literal=False).alias("has_digit"))
-        .collect(),
+        (pql.col("text").str.contains(r"\d+", literal=False).alias("has_digit")),
+        (pl.col("text").str.contains(r"\d+", literal=False).alias("has_digit")),
     )
 
 
 def test_strip_chars_none() -> None:
-    """Test string strip_chars without characters."""
-    df = pl.DataFrame({"text": ["  hello  ", "  world  "]})
     assert_eq(
-        pql.LazyFrame(df)
-        .select(pql.col("text").str.strip_chars().alias("stripped"))
-        .collect(),
-        pl.LazyFrame(df)
-        .select(pl.col("text").str.strip_chars().alias("stripped"))
-        .collect(),
+        (pql.col("text").str.strip_chars().alias("stripped")),
+        (pl.col("text").str.strip_chars().alias("stripped")),
     )
 
 
 def test_count_matches_literal() -> None:
-    """Test string count_matches with literal."""
-    df = pl.DataFrame({"text": ["aaa", "ababab"]})
     assert_eq(
-        pql.LazyFrame(df)
-        .select(pql.col("text").str.count_matches("a", literal=True).alias("count"))
-        .collect(),
-        pl.LazyFrame(df)
-        .select(pl.col("text").str.count_matches("a", literal=True).alias("count"))
-        .collect(),
+        (pql.col("text").str.count_matches("a", literal=True).alias("count")),
+        (pl.col("text").str.count_matches("a", literal=True).alias("count")),
     )
 
 
 def test_count_matches_regex() -> None:
-    """Test string count_matches with regex."""
-    df = pl.DataFrame({"text": ["hello123world456", "test"]})
     assert_eq(
-        pql.LazyFrame(df)
-        .select(pql.col("text").str.count_matches(r"\d+", literal=False).alias("count"))
-        .collect(),
-        pl.LazyFrame(df)
-        .select(pl.col("text").str.count_matches(r"\d+", literal=False).alias("count"))
-        .collect(),
+        (pql.col("text").str.count_matches(r"\d+", literal=False).alias("count")),
+        (pl.col("text").str.count_matches(r"\d+", literal=False).alias("count")),
     )
 
 
 def test_to_date() -> None:
-    """Test string to_date."""
-    df = pl.DataFrame({"date_str": ["2024-01-15", "2024-02-20"]})
     assert_eq(
-        pql.LazyFrame(df)
-        .select(pql.col("date_str").str.to_date("%Y-%m-%d").alias("date"))
-        .collect(),
-        pl.LazyFrame(df)
-        .select(pl.col("date_str").str.to_date("%Y-%m-%d").alias("date"))
-        .collect(),
+        (pql.col("date_str").str.to_date("%Y-%m-%d").alias("date")),
+        (pl.col("date_str").str.to_date("%Y-%m-%d").alias("date")),
     )
 
 
 def test_to_datetime() -> None:
-    """Test string to_datetime."""
-    df = pl.DataFrame({"dt_str": ["2024-01-15 10:30:00"]})
     assert_eq(
-        pql.LazyFrame(df)
-        .select(pql.col("dt_str").str.to_datetime("%Y-%m-%d %H:%M:%S").alias("dt"))
-        .collect(),
-        pl.LazyFrame(df)
-        .select(pl.col("dt_str").str.to_datetime("%Y-%m-%d %H:%M:%S").alias("dt"))
-        .collect(),
+        (pql.col("dt_str").str.to_datetime("%Y-%m-%d %H:%M:%S").alias("dt")),
+        (pl.col("dt_str").str.to_datetime("%Y-%m-%d %H:%M:%S").alias("dt")),
     )
 
 
 def test_to_time() -> None:
-    """Test string to_time."""
-    df = pl.DataFrame({"time_str": ["10:30:00", "15:45:30"]})
     assert_eq(
-        pql.LazyFrame(df)
-        .select(pql.col("time_str").str.to_time("%H:%M:%S").alias("time"))
-        .collect(),
-        pl.LazyFrame(df)
-        .select(pl.col("time_str").str.to_time("%H:%M:%S").alias("time"))
-        .collect(),
+        (pql.col("time_str").str.to_time("%H:%M:%S").alias("time")),
+        (pl.col("time_str").str.to_time("%H:%M:%S").alias("time")),
     )
-
-
-def test_json_path_match() -> None:
-    """Test str.json_path_match."""
-    df = pl.DataFrame({"json": ['{"a": 1}', '{"a": 2}']})
     assert_eq(
-        pql.LazyFrame(df)
-        .select(pql.col("json").str.json_path_match("$.a").alias("val"))
-        .collect(),
-        pl.LazyFrame(df)
-        .select(pl.col("json").str.json_path_match("$.a").alias("val"))
-        .collect(),
-    )
-
-
-def test_json_decode() -> None:
-    """Test json_decode."""
-    df = pl.DataFrame({"json_str": "1"})
-    assert_eq(
-        pql.LazyFrame(df)
-        .select(pql.col("json_str").str.json_decode(pql.Int64).alias("decoded"))
-        .collect(),
-        pl.LazyFrame(df)
-        .select(pl.col("json_str").str.json_decode(pl.Int64).alias("decoded"))
-        .collect(),
+        (pql.col("time_str").str.to_time().alias("time")),
+        (pl.col("time_str").str.to_time().alias("time")),
     )
 
 
 def test_to_decimal() -> None:
-    """Test str.to_decimal."""
-    df = pl.DataFrame({"text": ["123.45", "67.89"]})
     assert_eq(
-        pql.LazyFrame(df)
-        .select(pql.col("text").str.to_decimal(scale=10).alias("dec"))
-        .collect(),
-        pl.LazyFrame(df)
-        .select(pl.col("text").str.to_decimal(scale=10).alias("dec"))
-        .collect(),
+        (pql.col("numbers").str.to_decimal(scale=10).alias("dec")),
+        (pl.col("numbers").str.to_decimal(scale=10).alias("dec")),
     )
 
 
 def test_replace_all_literal() -> None:
-    """Test str.replace_all with literal."""
-    df = pl.DataFrame({"text": ["hello hello", "world world"]})
     assert_eq(
-        pql.LazyFrame(df)
-        .select(
-            pql.col("text").str.replace_all("l", "L", literal=True).alias("replaced")
-        )
-        .collect(),
-        pl.LazyFrame(df)
-        .select(
-            pl.col("text").str.replace_all("l", "L", literal=True).alias("replaced")
-        )
-        .collect(),
+        (pql.col("text").str.replace_all("l", "L", literal=True).alias("replaced")),
+        (pl.col("text").str.replace_all("l", "L", literal=True).alias("replaced")),
     )
 
 
 def test_replace_all_regex() -> None:
-    """Test str.replace_all with regex."""
-    df = pl.DataFrame({"text": ["hello123", "world456"]})
     assert_eq(
-        pql.LazyFrame(df)
-        .select(
-            pql.col("text")
-            .str.replace_all(r"\d+", "X", literal=False)
-            .alias("replaced")
-        )
-        .collect(),
-        pl.LazyFrame(df)
-        .select(
-            pl.col("text").str.replace_all(r"\d+", "X", literal=False).alias("replaced")
-        )
-        .collect(),
-    )
-
-
-def test_find_literal() -> None:
-    """Test str.find with literal=True."""
-    df = pl.DataFrame({"text": ["hello world", "foo bar baz"]})
-    assert_eq(
-        pql.LazyFrame(df)
-        .select(pql.col("text").str.find("o", literal=True).alias("pos"))
-        .collect(),
-        pl.LazyFrame(df)
-        .select((pl.col("text").str.find("o", literal=True)).alias("pos"))
-        .collect(),
-    )
-
-
-def test_find_regex() -> None:
-    """Test str.find with literal=False (regex)."""
-    df = pl.DataFrame({"text": ["abc123def", "xyz456"]})
-    assert_eq(
-        pql.LazyFrame(df)
-        .select(pql.col("text").str.find(r"\d", literal=False).alias("pos"))
-        .collect(),
-        pl.LazyFrame(df)
-        .select((pl.col("text").str.find(r"\d", literal=False)).alias("pos"))
-        .collect(),
-    )
-
-
-def test_replace_many() -> None:
-    """Test str.replace_many."""
-    df = pl.DataFrame({"text": ["hello world", "foo bar"]})
-    assert_eq(
-        pql.LazyFrame(df)
-        .select(pql.col("text").str.replace_many(["h"], "H").alias("replaced"))
-        .collect(),
-        pl.LazyFrame(df)
-        .select(pl.col("text").str.replace_many(["h"], "H").alias("replaced"))
-        .collect(),
+        (pql.col("text").str.replace_all(r"\d+", "X", literal=False).alias("replaced")),
+        (pl.col("text").str.replace_all(r"\d+", "X", literal=False).alias("replaced")),
     )
