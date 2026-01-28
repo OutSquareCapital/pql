@@ -1,15 +1,14 @@
-import duckdb
-
-col = duckdb.ColumnExpression
-lit = duckdb.ConstantExpression
-when = duckdb.CaseExpression
-all = duckdb.StarExpression
-func = duckdb.FunctionExpression
-fn_once = duckdb.LambdaExpression
-coalesce = duckdb.CoalesceOperator
-raw = duckdb.SQLExpression
-from_arrow = duckdb.from_arrow
-from_query = duckdb.from_query
-Relation = duckdb.DuckDBPyRelation
-
-type SqlExpr = duckdb.Expression
+from duckdb import (
+    CaseExpression as when,  # noqa: F401, N813 # pyright: ignore[reportUnusedImport]
+    CoalesceOperator as coalesce,  # noqa: F401, N813 # pyright: ignore[reportUnusedImport]
+    ColumnExpression as col,  # noqa: F401, N813 # pyright: ignore[reportUnusedImport]
+    ConstantExpression as lit,  # noqa: F401, N813 # pyright: ignore[reportUnusedImport]
+    DuckDBPyRelation as Relation,  # noqa: F401 # pyright: ignore[reportUnusedImport]
+    Expression as SqlExpr,  # noqa: F401 # pyright: ignore[reportUnusedImport]
+    FunctionExpression as func,  # noqa: F401, N813 # pyright: ignore[reportUnusedImport]
+    LambdaExpression as fn_once,  # noqa: F401, N813 # pyright: ignore[reportUnusedImport]
+    SQLExpression as raw,  # noqa: F401, N813 # pyright: ignore[reportUnusedImport]
+    StarExpression as all,  # noqa: F401, N813 # pyright: ignore[reportUnusedImport]
+    from_arrow,  # noqa: F401 # pyright: ignore[reportUnusedImport]
+    from_query,  # noqa: F401 # pyright: ignore[reportUnusedImport]
+)
