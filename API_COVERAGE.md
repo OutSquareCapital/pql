@@ -4,13 +4,13 @@ This report shows the API coverage of pql compared to Polars.
 
 ## Summary
 
-| Class | Coverage | Matched | Missing | Mismatched | Extra |
-|-------|----------|---------|---------|------------|-------|
-| LazyFrame | 50.0% | 26 | 7 | 19 | 1 |
-| Expr | 48.6% | 52 | 46 | 9 | 1 |
-| Expr.str | 88.9% | 24 | 1 | 2 | 0 |
-| Expr.list | 100.0% | 10 | 0 | 0 | 0 |
-| Expr.struct | 100.0% | 1 | 0 | 0 | 0 |
+| Class       | Coverage vs Narwhals | Total | Matched | Missing | Mismatched | Extra | Extra vs Narwhals |
+| ----------- | -------------------- | ----- | ------- | ------- | ---------- | ----- | ----------------- |
+| LazyFrame   | 50.0%                | 52    | 26      | 7       | 19         | 1     | 26                |
+| Expr        | 48.6%                | 107   | 52      | 46      | 9          | 1     | 38                |
+| Expr.str    | 88.9%                | 27    | 24      | 1       | 2          | 0     | 10                |
+| Expr.list   | 100.0%               | 10    | 10      | 0       | 0          | 0     | 0                 |
+| Expr.struct | 100.0%               | 1     | 1       | 0       | 0          | 0     | 0                 |
 
 ## LazyFrame
 

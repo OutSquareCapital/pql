@@ -53,7 +53,7 @@ def main() -> None:
         .into(
             lambda comps: (
                 _header()
-                .chain(comps.iter().map(lambda comp: comp.to_row()))
+                .chain(_render_summary_table(comps))
                 .chain(comps.iter().flat_map(lambda comp: comp.to_section()))
             )
         )
@@ -69,10 +69,65 @@ def _header() -> pc.Iter[str]:
             "# pql vs Polars API Comparison Report\n",
             "This report shows the API coverage of pql compared to Polars.\n",
             "## Summary\n",
-            "| Class | Coverage | Matched | Missing | Mismatched | Extra |",
-            "|-------|----------|---------|---------|------------|-------|",
         )
     )
+
+
+def _render_summary_table(comps: pc.Seq[ComparisonReport]) -> pc.Iter[str]:
+    data_rows = _summary_rows(comps)
+    widths = (
+        pc.Iter.once(_summary_header()).chain(data_rows).collect().into(_summary_widths)
+    )
+    return (
+        pc.Iter.once(_format_row(_summary_header(), widths))
+        .chain(pc.Iter.once(_format_separator(widths)))
+        .chain(data_rows.iter().map(lambda row: _format_row(row, widths)))
+    )
+
+
+def _summary_header() -> pc.Seq[str]:
+    return pc.Seq(
+        (
+            "Class",
+            "Coverage vs Narwhals",
+            "Total",
+            "Matched",
+            "Missing",
+            "Mismatched",
+            "Extra",
+            "Extra vs Narwhals",
+        )
+    )
+
+
+def _summary_rows(comps: pc.Seq[ComparisonReport]) -> pc.Seq[pc.Seq[str]]:
+    return comps.iter().map(lambda comp: comp.to_row()).collect()
+
+
+def _summary_widths(rows: pc.Seq[pc.Seq[str]]) -> pc.Seq[int]:
+    return (
+        pc.Iter(range(_summary_header().length()))
+        .map(
+            lambda idx: rows.iter()
+            .map(lambda row: len(row[idx]))
+            .fold(0, lambda acc, length: max(length, acc))
+        )
+        .collect()
+    )
+
+
+def _format_row(row: pc.Seq[str], widths: pc.Seq[int]) -> str:
+    cells = (
+        pc.Iter(range(widths.length()))
+        .map(lambda idx: row[idx].ljust(widths[idx]))
+        .join(" | ")
+    )
+    return f"| {cells} |"
+
+
+def _format_separator(widths: pc.Seq[int]) -> str:
+    cells = widths.iter().map(lambda width: "-" * width).join(" | ")
+    return f"| {cells} |"
 
 
 class Status(Enum):
@@ -412,15 +467,19 @@ class ComparisonReport:
             )
         )
 
-    def to_row(self) -> str:
-        """Format a single summary table row."""
-        return (
-            f"| {self.name} | "
-            f"{_coverage_percent(self.results):.1f}% | "
-            f"{_by_status(self.results, Status.MATCH).length()} | "
-            f"{_by_status(self.results, Status.MISSING).length()} | "
-            f"{_by_status(self.results, Status.SIGNATURE_MISMATCH).length()} | "
-            f"{_by_status(self.results, Status.EXTRA).length()} |"
+    def to_row(self) -> pc.Seq[str]:
+        """Return a row of summary data as columns."""
+        return pc.Seq(
+            (
+                self.name,
+                f"{_coverage_percent(self.results):.1f}%",
+                str(_total_methods(self.results)),
+                str(_by_status(self.results, Status.MATCH).length()),
+                str(_by_status(self.results, Status.MISSING).length()),
+                str(_by_status(self.results, Status.SIGNATURE_MISMATCH).length()),
+                str(_by_status(self.results, Status.EXTRA).length()),
+                str(_extra_vs_narwhals(self.results).length()),
+            )
         )
 
 
@@ -500,11 +559,33 @@ def _coverage_percent(results: pc.Vec[ComparisonResult]) -> float:
             return (matched / total_narwhals) * 100
 
 
+def _total_methods(results: pc.Vec[ComparisonResult]) -> int:
+    """Count total methods considered for coverage."""
+    return (
+        results.iter()
+        .filter(lambda r: r.infos.narwhals.is_some() or r.infos.polars.is_some())
+        .length()
+    )
+
+
 def _by_status(
     results: pc.Vec[ComparisonResult], status: Status
 ) -> pc.Seq[ComparisonResult]:
     """Filter results by match status."""
     return results.iter().filter(lambda r: r.classification.status == status).collect()
+
+
+def _extra_vs_narwhals(results: pc.Vec[ComparisonResult]) -> pc.Seq[ComparisonResult]:
+    """Filter results where pql has methods missing in narwhals."""
+    return (
+        results.iter()
+        .filter(
+            lambda r: r.infos.pql_info.is_some()
+            and r.infos.narwhals.is_none()
+            and r.infos.polars.is_some()
+        )
+        .collect()
+    )
 
 
 if __name__ == "__main__":
