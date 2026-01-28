@@ -137,7 +137,7 @@ class LazyFrame:
                 self._rel.select(
                     sql.all(),
                     sql.WindowExpr(partition_by=cols.collect())
-                    .call(sql.row_number())
+                    .call(sql.fns.row_number())
                     .alias("__rn__"),
                 )
                 .filter(sql.col("__rn__").__eq__(sql.lit(1)))
@@ -227,7 +227,7 @@ class LazyFrame:
         """Return the count of each column."""
         return self.__from_lf__(
             self._rel.aggregate(
-                self.columns.iter().map(lambda c: sql.count(sql.col(c)).alias(c)),
+                self.columns.iter().map(lambda c: sql.fns.count(sql.col(c)).alias(c)),
             )
         )
 
@@ -235,7 +235,7 @@ class LazyFrame:
         """Aggregate the sum of each column."""
         return self.__from_lf__(
             self._rel.aggregate(
-                self.columns.iter().map(lambda c: sql.sum_func(sql.col(c)).alias(c))
+                self.columns.iter().map(lambda c: sql.fns.sum_func(sql.col(c)).alias(c))
             )
         )
 
@@ -243,7 +243,7 @@ class LazyFrame:
         """Aggregate the mean of each column."""
         return self.__from_lf__(
             self._rel.aggregate(
-                self.columns.iter().map(lambda c: sql.avg(sql.col(c)).alias(c)),
+                self.columns.iter().map(lambda c: sql.fns.avg(sql.col(c)).alias(c)),
             )
         )
 
@@ -251,7 +251,7 @@ class LazyFrame:
         """Aggregate the median of each column."""
         return self.__from_lf__(
             self._rel.aggregate(
-                self.columns.iter().map(lambda c: sql.median(sql.col(c)).alias(c))
+                self.columns.iter().map(lambda c: sql.fns.median(sql.col(c)).alias(c))
             )
         )
 
@@ -259,7 +259,7 @@ class LazyFrame:
         """Aggregate the minimum of each column."""
         return self.__from_lf__(
             self._rel.aggregate(
-                self.columns.iter().map(lambda c: sql.min_func(sql.col(c)).alias(c))
+                self.columns.iter().map(lambda c: sql.fns.min(sql.col(c)).alias(c))
             )
         )
 
@@ -267,13 +267,13 @@ class LazyFrame:
         """Aggregate the maximum of each column."""
         return self.__from_lf__(
             self._rel.aggregate(
-                self.columns.iter().map(lambda c: sql.max_func(sql.col(c)).alias(c))
+                self.columns.iter().map(lambda c: sql.fns.max(sql.col(c)).alias(c))
             )
         )
 
     def std(self, ddof: int = 1) -> Self:
         """Aggregate the standard deviation of each column."""
-        std_func = sql.stddev_samp if ddof == 1 else sql.stddev_pop
+        std_func = sql.fns.stddev_samp if ddof == 1 else sql.fns.stddev_pop
         return self.__from_lf__(
             self._rel.aggregate(
                 self.columns.iter().map(lambda c: std_func(sql.col(c)).alias(c))
@@ -282,7 +282,7 @@ class LazyFrame:
 
     def var(self, ddof: int = 1) -> Self:
         """Aggregate the variance of each column."""
-        var_func = sql.var_samp if ddof == 1 else sql.var_pop
+        var_func = sql.fns.var_samp if ddof == 1 else sql.fns.var_pop
         return self.__from_lf__(
             self._rel.aggregate(
                 self.columns.iter().map(lambda c: var_func(sql.col(c)).alias(c))
@@ -294,7 +294,7 @@ class LazyFrame:
         return self.__from_lf__(
             self._rel.aggregate(
                 self.columns.iter().map(
-                    lambda c: sql.count_if(
+                    lambda c: sql.fns.count_if(
                         sql.col(c).isnull(),
                     ).alias(c)
                 )
@@ -333,11 +333,11 @@ class LazyFrame:
             case "FIRST_VALUE":
                 rows_start = pc.Some(0)
                 rows_end = pc.NONE
-                fill_func = sql.first_value
+                fill_func = sql.fns.first_value
             case "LAST_VALUE":
                 rows_start = pc.NONE
                 rows_end = pc.Some(0)
-                fill_func = sql.last_value
+                fill_func = sql.fns.last_value
         return self.__from_lf__(
             self._rel.select(
                 *self.columns.iter().map(
@@ -358,10 +358,7 @@ class LazyFrame:
         return self.__from_lf__(
             self._rel.select(
                 *self.columns.iter().map(
-                    lambda c: sql.when(
-                        sql.isnan(sql.col(c)),
-                        sql.from_expr(value),
-                    )
+                    lambda c: sql.when(sql.fns.isnan(sql.col(c)), sql.from_expr(value))
                     .otherwise(sql.col(c))
                     .alias(c)
                 )
@@ -379,7 +376,7 @@ class LazyFrame:
         """Drop rows with NaN values."""
         return self._col_or_subset(subset).fold(
             self,
-            lambda lf, c: lf.__from_lf__(lf._rel.filter(~sql.isnan(sql.col(c)))),
+            lambda lf, c: lf.__from_lf__(lf._rel.filter(~sql.fns.isnan(sql.col(c)))),
         )
 
     def _col_or_subset(self, subset: str | Iterable[str] | None) -> pc.Iter[str]:
@@ -411,7 +408,7 @@ class LazyFrame:
 
     def shift(self, n: int = 1, *, fill_value: IntoExpr | None = None) -> Self:
         """Shift values by n positions."""
-        shift_func = sql.lag if n > 0 else sql.lead
+        shift_func = sql.fns.lag if n > 0 else sql.fns.lead
         abs_n = abs(n)
         return self.__from_lf__(
             self._rel.select(
@@ -462,7 +459,7 @@ class LazyFrame:
         return self.__from_lf__(
             self._rel.aggregate(
                 self.columns.iter().map(
-                    lambda c: sql.quantile_cont(
+                    lambda c: sql.fns.quantile_cont(
                         sql.col(c),
                         sql.lit(quantile),
                     ).alias(c)

@@ -170,7 +170,7 @@ class Expr:
         return self.__class__(-self._expr)
 
     def abs(self) -> Self:
-        return self.__class__(sql.abs(self._expr))
+        return self.__class__(sql.fns.abs(self._expr))
 
     def eq(self, other: Any) -> Self:  # noqa: ANN401
         return self.__class__(self._expr == sql.from_value(other))
@@ -230,67 +230,67 @@ class Expr:
 
     def floor(self) -> Self:
         """Round down to the nearest integer."""
-        return self.__class__(sql.floor(self._expr))
+        return self.__class__(sql.fns.floor(self._expr))
 
     def ceil(self) -> Self:
         """Round up to the nearest integer."""
-        return self.__class__(sql.ceil(self._expr))
+        return self.__class__(sql.fns.ceil(self._expr))
 
     def round(self, decimals: int = 0, *, mode: RoundMode = "half_to_even") -> Self:
         """Round to given number of decimal places."""
         match mode:
             case "half_to_even":
-                rounding_func = sql.round_even
+                rounding_func = sql.fns.round_even
             case "half_away_from_zero":
-                rounding_func = sql.round_half
+                rounding_func = sql.fns.round_half
         return self.__class__(rounding_func(self._expr, sql.lit(decimals)))
 
     def sqrt(self) -> Self:
         """Compute the square root."""
-        return self.__class__(sql.sqrt(self._expr))
+        return self.__class__(sql.fns.sqrt(self._expr))
 
     def cbrt(self) -> Self:
         """Compute the cube root."""
-        return self.__class__(sql.cbrt(self._expr))
+        return self.__class__(sql.fns.cbrt(self._expr))
 
     def log(self, base: float = 2.718281828459045) -> Self:
         """Compute the logarithm."""
-        return self.__class__(sql.log(sql.lit(base), self._expr))
+        return self.__class__(sql.fns.log(sql.lit(base), self._expr))
 
     def log10(self) -> Self:
         """Compute the base 10 logarithm."""
-        return self.__class__(sql.log10(self._expr))
+        return self.__class__(sql.fns.log10(self._expr))
 
     def log1p(self) -> Self:
         """Compute the natural logarithm of 1+x."""
-        return self.__class__(sql.ln(self._expr.__add__(sql.lit(1))))
+        return self.__class__(sql.fns.ln(self._expr.__add__(sql.lit(1))))
 
     def exp(self) -> Self:
         """Compute the exponential."""
-        return self.__class__(sql.exp(self._expr))
+        return self.__class__(sql.fns.exp(self._expr))
 
     def sin(self) -> Self:
         """Compute the sine."""
-        return self.__class__(sql.sin(self._expr))
+        return self.__class__(sql.fns.sin(self._expr))
 
     def cos(self) -> Self:
         """Compute the cosine."""
-        return self.__class__(sql.cos(self._expr))
+        return self.__class__(sql.fns.cos(self._expr))
 
     def tan(self) -> Self:
         """Compute the tangent."""
-        return self.__class__(sql.tan(self._expr))
+        return self.__class__(sql.fns.tan(self._expr))
 
     def arctan(self) -> Self:
         """Compute the arc tangent."""
-        return self.__class__(sql.atan(self._expr))
+        return self.__class__(sql.fns.atan(self._expr))
 
     def sinh(self) -> Self:
         """Compute the hyperbolic sine."""
         return self.__class__(
-            sql.func(
+            sql.fns.func(
                 "/",
-                sql.exp(self._expr).__sub__(sql.exp(-self._expr)),
+                sql.fns.exp(self._expr).__sub__(sql.fns.exp(-self._expr)),
                 sql.lit("2"),
             )
         )
@@ -298,38 +298,38 @@ class Expr:
     def cosh(self) -> Self:
         """Compute the hyperbolic cosine."""
         return self.__class__(
-            sql.func(
+            sql.fns.func(
                 "/",
-                sql.exp(self._expr).__add__(sql.exp(-self._expr)),
+                sql.fns.exp(self._expr).__add__(sql.fns.exp(-self._expr)),
                 sql.lit("2"),
             )
         )
 
     def tanh(self) -> Self:
         """Compute the hyperbolic tangent."""
-        exp_x = sql.exp(self._expr)
-        exp_neg_x = sql.exp(-self._expr)
+        exp_x = sql.fns.exp(self._expr)
+        exp_neg_x = sql.fns.exp(-self._expr)
         return self.__class__(
             (exp_x.__sub__(exp_neg_x)).__truediv__(exp_x.__add__(exp_neg_x))
         )
 
     def degrees(self) -> Self:
         """Convert radians to degrees."""
-        return self.__class__(sql.degrees(self._expr))
+        return self.__class__(sql.fns.degrees(self._expr))
 
     def radians(self) -> Self:
         """Convert degrees to radians."""
-        return self.__class__(sql.radians(self._expr))
+        return self.__class__(sql.fns.radians(self._expr))
 
     def sign(self) -> Self:
         """Get the sign of the value."""
-        return self.__class__(sql.sign(self._expr))
+        return self.__class__(sql.fns.sign(self._expr))
 
     def forward_fill(self) -> Self:
         """Fill null values with the last non-null value."""
         return self.__class__(
             sql.WindowExpr(rows_end=pc.Some(0), ignore_nulls=True).call(
-                sql.last_value(self._expr),
+                sql.fns.last_value(self._expr),
             )
         )
 
@@ -337,21 +337,21 @@ class Expr:
         """Fill null values with the next non-null value."""
         return self.__class__(
             sql.WindowExpr(rows_start=pc.Some(0), ignore_nulls=True).call(
-                sql.first_value(self._expr),
+                sql.fns.first_value(self._expr),
             )
         )
 
     def interpolate(self) -> Self:
         """Interpolate null values using linear interpolation."""
         last_value = sql.WindowExpr(rows_end=pc.Some(0), ignore_nulls=True).call(
-            sql.last_value(self._expr),
+            sql.fns.last_value(self._expr),
         )
         return self.__class__(
             sql.coalesce(
                 self._expr,
                 last_value.__add__(
                     sql.WindowExpr(rows_start=pc.Some(0), ignore_nulls=True)
-                    .call(sql.first_value(self._expr))
+                    .call(sql.fns.first_value(self._expr))
                     .__sub__(last_value)
                 ).__truediv__(sql.lit(2)),
             )
@@ -359,29 +359,31 @@ class Expr:
 
     def is_nan(self) -> Self:
         """Check if value is NaN."""
-        return self.__class__(sql.isnan(self._expr))
+        return self.__class__(sql.fns.isnan(self._expr))
 
     def is_not_nan(self) -> Self:
         """Check if value is not NaN."""
-        return self.__class__(~sql.isnan(self._expr))
+        return self.__class__(~sql.fns.isnan(self._expr))
 
     def is_finite(self) -> Self:
         """Check if value is finite."""
-        return self.__class__(sql.isfinite(self._expr))
+        return self.__class__(sql.fns.isfinite(self._expr))
 
     def is_infinite(self) -> Self:
         """Check if value is infinite."""
-        return self.__class__(sql.isinf(self._expr))
+        return self.__class__(sql.fns.isinf(self._expr))
 
     def fill_nan(self, value: int | float | Expr | None) -> Self:  # noqa: PYI041
         """Fill NaN values."""
         return self.__class__(
-            sql.when(sql.isnan(self._expr), sql.from_value(value)).otherwise(self._expr)
+            sql.when(sql.fns.isnan(self._expr), sql.from_value(value)).otherwise(
+                self._expr
+            )
         )
 
     def hash(self, seed: int = 0) -> Self:
         """Compute a hash."""
-        return self.__class__(sql.hash(self._expr, sql.lit(seed)))
+        return self.__class__(sql.fns.hash(self._expr, sql.lit(seed)))
 
     def replace(self, old: IntoExpr, new: IntoExpr) -> Self:
         """Replace values."""
@@ -394,8 +396,8 @@ class Expr:
     def repeat_by(self, by: Expr | int) -> Self:
         """Repeat values by count, returning a list."""
         return self.__class__(
-            sql.list_transform(
-                sql.range_func(sql.from_value(by)),
+            sql.fns.list_transform(
+                sql.fns.range_func(sql.from_value(by)),
                 sql.fn_once("_", self._expr),
             )
         )
@@ -404,7 +406,7 @@ class Expr:
         """Check if value is duplicated."""
         return self.__class__(
             sql.WindowExpr(partition_by=pc.Seq((self,)))
-            .call(sql.count(sql.all()))
+            .call(sql.fns.count(sql.all()))
             .__gt__(sql.lit(1)),
         )
 
@@ -412,7 +414,7 @@ class Expr:
         """Check if value is unique."""
         return self.__class__(
             sql.WindowExpr(partition_by=pc.Seq((self,)))
-            .call(sql.count(sql.all()))
+            .call(sql.fns.count(sql.all()))
             .__eq__(sql.lit(1)),
         )
 
@@ -420,7 +422,7 @@ class Expr:
         """Check if value is first occurrence."""
         return self.__class__(
             sql.WindowExpr(partition_by=pc.Seq((self,)))
-            .call(sql.row_number())
+            .call(sql.fns.row_number())
             .__eq__(sql.lit(1))
         )
 
@@ -433,7 +435,7 @@ class Expr:
                 descending=pc.Some(value=True),
                 nulls_last=pc.Some(value=True),
             )
-            .call(sql.row_number())
+            .call(sql.fns.row_number())
             .__eq__(sql.lit(1))
         )
 
@@ -446,31 +448,31 @@ class ExprStringNameSpace:
 
     def to_uppercase(self) -> Expr:
         """Convert to uppercase."""
-        return Expr(sql.upper(self._expr))
+        return Expr(sql.fns.upper(self._expr))
 
     def to_lowercase(self) -> Expr:
         """Convert to lowercase."""
-        return Expr(sql.lower(self._expr))
+        return Expr(sql.fns.lower(self._expr))
 
     def len_chars(self) -> Expr:
         """Get the length in characters."""
-        return Expr(sql.length(self._expr))
+        return Expr(sql.fns.length(self._expr))
 
     def contains(self, pattern: str, *, literal: bool = False) -> Expr:
         """Check if string contains a pattern."""
         match literal:
             case True:
-                return Expr(sql.contains(self._expr, sql.lit(pattern)))
+                return Expr(sql.fns.contains(self._expr, sql.lit(pattern)))
             case False:
-                return Expr(sql.regexp_matches(self._expr, sql.lit(pattern)))
+                return Expr(sql.fns.regexp_matches(self._expr, sql.lit(pattern)))
 
     def starts_with(self, prefix: str) -> Expr:
         """Check if string starts with prefix."""
-        return Expr(sql.starts_with(self._expr, sql.lit(prefix)))
+        return Expr(sql.fns.starts_with(self._expr, sql.lit(prefix)))
 
     def ends_with(self, suffix: str) -> Expr:
         """Check if string ends with suffix."""
-        return Expr(sql.ends_with(self._expr, sql.lit(suffix)))
+        return Expr(sql.fns.ends_with(self._expr, sql.lit(suffix)))
 
     def replace(
         self,
@@ -485,14 +487,14 @@ class ExprStringNameSpace:
         pattern_expr = sql.lit(re.escape(pattern) if literal else pattern)
 
         def _replace_once(expr: SqlExpr) -> SqlExpr:
-            return sql.regexp_replace(expr, pattern_expr, value_expr)
+            return sql.fns.regexp_replace(expr, pattern_expr, value_expr)
 
         match n:
             case 0:
                 return Expr(self._expr)
             case n_val if n_val < 0:
                 return Expr(
-                    sql.regexp_replace(
+                    sql.fns.regexp_replace(
                         self._expr,
                         pattern_expr,
                         value_expr,
@@ -510,20 +512,20 @@ class ExprStringNameSpace:
         """Strip leading and trailing characters."""
         match characters:
             case None:
-                return Expr(sql.trim(self._expr))
+                return Expr(sql.fns.trim(self._expr))
             case _:
-                return Expr(sql.trim(self._expr, sql.lit(characters)))
+                return Expr(sql.fns.trim(self._expr, sql.lit(characters)))
 
     def strip_chars_start(self, characters: IntoExpr = None) -> Expr:
         """Strip leading characters."""
         match characters:
             case None:
-                return Expr(sql.ltrim(self._expr))
+                return Expr(sql.fns.ltrim(self._expr))
             case _:
                 characters_expr = sql.from_value(characters)
                 return Expr(
                     sql.when(characters_expr.isnull(), sql.lit(None)).otherwise(
-                        sql.ltrim(self._expr, characters_expr)
+                        sql.fns.ltrim(self._expr, characters_expr)
                     )
                 )
 
@@ -531,12 +533,12 @@ class ExprStringNameSpace:
         """Strip trailing characters."""
         match characters:
             case None:
-                return Expr(sql.rtrim(self._expr))
+                return Expr(sql.fns.rtrim(self._expr))
             case _:
                 characters_expr = sql.from_value(characters)
                 return Expr(
                     sql.when(characters_expr.isnull(), sql.lit(None)).otherwise(
-                        sql.rtrim(self._expr, characters_expr)
+                        sql.fns.rtrim(self._expr, characters_expr)
                     )
                 )
 
@@ -551,19 +553,19 @@ class ExprStringNameSpace:
                     sql.lit(offset + 1),
                     sql.lit(length),
                 )
-        return Expr(sql.substring(*args))
+        return Expr(sql.fns.substring(*args))
 
     def len_bytes(self) -> Expr:
         """Get the length in bytes."""
-        return Expr(sql.octet_length(sql.encode(self._expr)))
+        return Expr(sql.fns.octet_length(sql.fns.encode(self._expr)))
 
     def split(self, by: str) -> Expr:
         """Split string by separator."""
-        return Expr(sql.string_split(self._expr, sql.lit(by)))
+        return Expr(sql.fns.string_split(self._expr, sql.lit(by)))
 
     def extract_all(self, pattern: str | Expr) -> Expr:
         """Extract all regex matches."""
-        return Expr(sql.regexp_extract_all(self._expr, sql.from_value(pattern)))
+        return Expr(sql.fns.regexp_extract_all(self._expr, sql.from_value(pattern)))
 
     def count_matches(self, pattern: str | Expr, *, literal: bool = False) -> Expr:
         """Count pattern matches."""
@@ -571,8 +573,8 @@ class ExprStringNameSpace:
         match literal:
             case False:
                 return Expr(
-                    sql.length(
-                        sql.regexp_extract_all(
+                    sql.fns.length(
+                        sql.fns.regexp_extract_all(
                             self._expr,
                             pattern_expr,
                         ),
@@ -580,17 +582,17 @@ class ExprStringNameSpace:
                 )
             case True:
                 return Expr(
-                    sql.length(self._expr)
+                    sql.fns.length(self._expr)
                     .__sub__(
-                        sql.length(
-                            sql.replace(
+                        sql.fns.length(
+                            sql.fns.replace(
                                 self._expr,
                                 pattern_expr,
                                 sql.lit(""),
                             ),
                         )
                     )
-                    .__truediv__(sql.length(pattern_expr))
+                    .__truediv__(sql.fns.length(pattern_expr))
                 )
 
     def to_date(self, format: str | None = None) -> Expr:  # noqa: A002
@@ -600,7 +602,7 @@ class ExprStringNameSpace:
                 return Expr(self._expr.cast(datatypes.Date))
             case _:
                 return Expr(
-                    sql.strptime(self._expr, sql.lit(format)).cast(datatypes.Date)
+                    sql.fns.strptime(self._expr, sql.lit(format)).cast(datatypes.Date)
                 )
 
     def to_datetime(self, format: str | None = None, *, time_unit: str = "us") -> Expr:  # noqa: A002
@@ -610,7 +612,7 @@ class ExprStringNameSpace:
             case None:
                 base_expr = self._expr.cast(precision_map.get(time_unit, "TIMESTAMP"))
             case _:
-                base_expr = sql.strptime(self._expr, sql.lit(format))
+                base_expr = sql.fns.strptime(self._expr, sql.lit(format))
         return Expr(base_expr)
 
     def to_time(self, format: str | None = None) -> Expr:  # noqa: A002
@@ -620,7 +622,7 @@ class ExprStringNameSpace:
                 return Expr(self._expr.cast(datatypes.Time))
             case _:
                 return Expr(
-                    sql.strptime(self._expr, sql.lit(format)).cast(datatypes.Time)
+                    sql.fns.strptime(self._expr, sql.lit(format)).cast(datatypes.Time)
                 )
 
     def to_decimal(self, *, scale: int = 38) -> Expr:
@@ -633,7 +635,7 @@ class ExprStringNameSpace:
         match prefix:
             case str() as prefix_str:
                 return Expr(
-                    sql.regexp_replace(
+                    sql.fns.regexp_replace(
                         self._expr,
                         sql.lit(f"^{re.escape(prefix_str)}"),
                         sql.lit(""),
@@ -644,10 +646,10 @@ class ExprStringNameSpace:
                 return Expr(
                     sql.when(prefix_expr.isnull(), sql.lit(None)).otherwise(
                         sql.when(
-                            sql.starts_with(self._expr, prefix_expr),
-                            sql.substring(
+                            sql.fns.starts_with(self._expr, prefix_expr),
+                            sql.fns.substring(
                                 self._expr,
-                                sql.length(prefix_expr).__add__(sql.lit(1)),
+                                sql.fns.length(prefix_expr).__add__(sql.lit(1)),
                             ),
                         ).otherwise(self._expr)
                     )
@@ -658,7 +660,7 @@ class ExprStringNameSpace:
         match suffix:
             case str() as suffix_str:
                 return Expr(
-                    sql.regexp_replace(
+                    sql.fns.regexp_replace(
                         self._expr,
                         sql.lit(f"{re.escape(suffix_str)}$"),
                         sql.lit(""),
@@ -669,11 +671,13 @@ class ExprStringNameSpace:
                 return Expr(
                     sql.when(suffix_expr.isnull(), sql.lit(None)).otherwise(
                         sql.when(
-                            sql.ends_with(self._expr, suffix_expr),
-                            sql.substring(
+                            sql.fns.ends_with(self._expr, suffix_expr),
+                            sql.fns.substring(
                                 self._expr,
                                 sql.lit(1),
-                                sql.length(self._expr).__sub__(sql.length(suffix_expr)),
+                                sql.fns.length(self._expr).__sub__(
+                                    sql.fns.length(suffix_expr)
+                                ),
                             ),
                         ).otherwise(self._expr)
                     )
@@ -681,15 +685,15 @@ class ExprStringNameSpace:
 
     def head(self, n: int) -> Expr:
         """Get first n characters."""
-        return Expr(sql.left(self._expr, sql.lit(n)))
+        return Expr(sql.fns.left(self._expr, sql.lit(n)))
 
     def tail(self, n: int) -> Expr:
         """Get last n characters."""
-        return Expr(sql.right(self._expr, sql.lit(n)))
+        return Expr(sql.fns.right(self._expr, sql.lit(n)))
 
     def reverse(self) -> Expr:
         """Reverse the string."""
-        return Expr(sql.reverse(self._expr))
+        return Expr(sql.fns.reverse(self._expr))
 
     def replace_all(
         self, pattern: str, value: IntoExpr, *, literal: bool = False
@@ -699,7 +703,7 @@ class ExprStringNameSpace:
         match literal:
             case True:
                 return Expr(
-                    sql.replace(
+                    sql.fns.replace(
                         self._expr,
                         sql.lit(pattern),
                         value_expr,
@@ -707,7 +711,7 @@ class ExprStringNameSpace:
                 )
             case False:
                 return Expr(
-                    sql.regexp_replace(
+                    sql.fns.regexp_replace(
                         self._expr,
                         sql.lit(pattern),
                         value_expr,
@@ -719,17 +723,17 @@ class ExprStringNameSpace:
         """Convert to title case."""
         elem = sql.col("_")
         return Expr(
-            sql.list_aggregate(
-                sql.list_transform(
-                    sql.regexp_extract_all(
-                        sql.lower(self._expr),
+            sql.fns.list_aggregate(
+                sql.fns.list_transform(
+                    sql.fns.regexp_extract_all(
+                        sql.fns.lower(self._expr),
                         sql.lit(r"[a-z]*[^a-z]*"),
                     ),
                     sql.fn_once(
                         "_",
-                        sql.concat(
-                            sql.upper(sql.array_extract(elem, sql.lit(1))),
-                            sql.substring(elem, sql.lit(2)),
+                        sql.fns.concat(
+                            sql.fns.upper(sql.fns.array_extract(elem, sql.lit(1))),
+                            sql.fns.substring(elem, sql.lit(2)),
                         ),
                     ),
                 ),
@@ -747,18 +751,18 @@ class ExprListNameSpace:
 
     def len(self) -> Expr:
         """Return the number of elements in each list."""
-        return Expr(sql.len(self._expr))
+        return Expr(sql.fns.len(self._expr))
 
     def unique(self) -> Expr:
         """Return unique values in each list."""
-        distinct_expr = sql.list_distinct(self._expr)
+        distinct_expr = sql.fns.list_distinct(self._expr)
         return Expr(
             sql.when(
-                sql.array_position(
+                sql.fns.array_position(
                     self._expr,
                     sql.lit(None),
                 ).isnotnull(),
-                sql.list_append(
+                sql.fns.list_append(
                     distinct_expr,
                     sql.lit(None),
                 ),
@@ -768,14 +772,14 @@ class ExprListNameSpace:
     def contains(self, item: IntoExpr, *, nulls_equal: bool = True) -> Expr:
         """Check if sublists contain the given item."""
         item_expr = sql.from_value(item)
-        contains_expr = sql.list_contains(self._expr, item_expr)
+        contains_expr = sql.fns.list_contains(self._expr, item_expr)
         if nulls_equal:
             false_expr = duckdb.SQLExpression("false")
             return Expr(
                 sql.when(
                     item_expr.isnull(),
                     sql.coalesce(
-                        sql.array_position(
+                        sql.fns.array_position(
                             self._expr,
                             sql.lit(None),
                         ).isnotnull(),
@@ -788,7 +792,7 @@ class ExprListNameSpace:
     def get(self, index: int) -> Expr:
         """Return the value by index in each list."""
         return Expr(
-            sql.list_extract(
+            sql.fns.list_extract(
                 self._expr,
                 sql.lit(index + 1 if index >= 0 else index),
             )
@@ -796,32 +800,32 @@ class ExprListNameSpace:
 
     def min(self) -> Expr:
         """Compute the min value of the lists in the array."""
-        return Expr(sql.list_min(self._expr))
+        return Expr(sql.fns.list_min(self._expr))
 
     def max(self) -> Expr:
         """Compute the max value of the lists in the array."""
-        return Expr(sql.list_max(self._expr))
+        return Expr(sql.fns.list_max(self._expr))
 
     def mean(self) -> Expr:
         """Compute the mean value of the lists in the array."""
-        return Expr(sql.list_avg(self._expr))
+        return Expr(sql.fns.list_avg(self._expr))
 
     def median(self) -> Expr:
         """Compute the median value of the lists in the array."""
-        return Expr(sql.list_median(self._expr))
+        return Expr(sql.fns.list_median(self._expr))
 
     def sum(self) -> Expr:
         """Compute the sum value of the lists in the array."""
-        expr_no_nulls = sql.list_filter(
+        expr_no_nulls = sql.fns.list_filter(
             self._expr, sql.fn_once("_", sql.col("_").isnotnull())
         )
         return Expr(
             sql.when(
-                sql.array_length(
+                sql.fns.array_length(
                     expr_no_nulls,
                 ).__eq__(sql.lit(0)),
                 sql.lit(0),
-            ).otherwise(sql.list_sum(expr_no_nulls))
+            ).otherwise(sql.fns.list_sum(expr_no_nulls))
         )
 
     def sort(self, *, descending: bool = False, nulls_last: bool = False) -> Expr:
@@ -829,7 +833,7 @@ class ExprListNameSpace:
         sort_direction = "DESC" if descending else "ASC"
         nulls_position = "NULLS LAST" if nulls_last else "NULLS FIRST"
         return Expr(
-            sql.list_sort(
+            sql.fns.list_sort(
                 self._expr,
                 sql.lit(sort_direction),
                 sql.lit(nulls_position),
@@ -845,4 +849,4 @@ class ExprStructNameSpace:
 
     def field(self, name: str) -> Expr:
         """Retrieve a struct field by name."""
-        return Expr(sql.struct_extract(self._expr, sql.lit(name)))
+        return Expr(sql.fns.struct_extract(self._expr, sql.lit(name)))
