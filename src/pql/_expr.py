@@ -518,13 +518,31 @@ class ExprStringNameSpace:
             case _:
                 return Expr(sql.func("trim", self._expr, sql.lit(characters)))
 
-    def strip_chars_start(self) -> Expr:
-        """Strip leading whitespace."""
-        return Expr(sql.func("ltrim", self._expr))
+    def strip_chars_start(self, characters: IntoExpr = None) -> Expr:
+        """Strip leading characters."""
+        match characters:
+            case None:
+                return Expr(sql.func("ltrim", self._expr))
+            case _:
+                characters_expr = sql.from_value(characters)
+                return Expr(
+                    sql.when(characters_expr.isnull(), sql.lit(None)).otherwise(
+                        sql.func("ltrim", self._expr, characters_expr)
+                    )
+                )
 
-    def strip_chars_end(self) -> Expr:
-        """Strip trailing whitespace."""
-        return Expr(sql.func("rtrim", self._expr))
+    def strip_chars_end(self, characters: IntoExpr = None) -> Expr:
+        """Strip trailing characters."""
+        match characters:
+            case None:
+                return Expr(sql.func("rtrim", self._expr))
+            case _:
+                characters_expr = sql.from_value(characters)
+                return Expr(
+                    sql.when(characters_expr.isnull(), sql.lit(None)).otherwise(
+                        sql.func("rtrim", self._expr, characters_expr)
+                    )
+                )
 
     def slice(self, offset: int, length: int | None = None) -> Expr:
         """Extract a substring."""
@@ -547,12 +565,13 @@ class ExprStringNameSpace:
         """Split string by separator."""
         return Expr(sql.func("string_split", self._expr, sql.lit(by)))
 
-    def extract_all(self, pattern: str) -> Expr:
+    def extract_all(self, pattern: str | Expr) -> Expr:
         """Extract all regex matches."""
-        return Expr(sql.func("regexp_extract_all", self._expr, sql.lit(pattern)))
+        return Expr(sql.func("regexp_extract_all", self._expr, sql.from_value(pattern)))
 
-    def count_matches(self, pattern: str, *, literal: bool = False) -> Expr:
+    def count_matches(self, pattern: str | Expr, *, literal: bool = False) -> Expr:
         """Count pattern matches."""
+        pattern_expr = sql.from_value(pattern)
         match literal:
             case False:
                 return Expr(
@@ -561,7 +580,7 @@ class ExprStringNameSpace:
                         sql.func(
                             "regexp_extract_all",
                             self._expr,
-                            sql.lit(pattern),
+                            pattern_expr,
                         ),
                     )
                 )
@@ -574,12 +593,12 @@ class ExprStringNameSpace:
                             sql.func(
                                 "replace",
                                 self._expr,
-                                sql.lit(pattern),
+                                pattern_expr,
                                 sql.lit(""),
                             ),
                         )
                     )
-                    .__truediv__(sql.lit(len(pattern)))
+                    .__truediv__(sql.func("length", pattern_expr))
                 )
 
     def to_date(self, format: str | None = None) -> Expr:  # noqa: A002
@@ -621,13 +640,62 @@ class ExprStringNameSpace:
         precision = min(scale, 38)
         return Expr(self._expr.cast(f"DECIMAL({precision}, {precision // 2})"))
 
-    def strip_prefix(self, prefix: str) -> Expr:
+    def strip_prefix(self, prefix: IntoExpr) -> Expr:
         """Strip prefix from string."""
-        return Expr(sql.func("ltrim", self._expr, sql.lit(prefix)))
+        match prefix:
+            case str() as prefix_str:
+                return Expr(
+                    sql.func(
+                        "regexp_replace",
+                        self._expr,
+                        sql.lit(f"^{re.escape(prefix_str)}"),
+                        sql.lit(""),
+                    )
+                )
+            case _:
+                prefix_expr = sql.from_value(prefix)
+                return Expr(
+                    sql.when(prefix_expr.isnull(), sql.lit(None)).otherwise(
+                        sql.when(
+                            sql.func("starts_with", self._expr, prefix_expr),
+                            sql.func(
+                                "substring",
+                                self._expr,
+                                sql.func("length", prefix_expr).__add__(sql.lit(1)),
+                            ),
+                        ).otherwise(self._expr)
+                    )
+                )
 
-    def strip_suffix(self, suffix: str) -> Expr:
+    def strip_suffix(self, suffix: IntoExpr) -> Expr:
         """Strip suffix from string."""
-        return Expr(sql.func("rtrim", self._expr, sql.lit(suffix)))
+        match suffix:
+            case str() as suffix_str:
+                return Expr(
+                    sql.func(
+                        "regexp_replace",
+                        self._expr,
+                        sql.lit(f"{re.escape(suffix_str)}$"),
+                        sql.lit(""),
+                    )
+                )
+            case _:
+                suffix_expr = sql.from_value(suffix)
+                return Expr(
+                    sql.when(suffix_expr.isnull(), sql.lit(None)).otherwise(
+                        sql.when(
+                            sql.func("ends_with", self._expr, suffix_expr),
+                            sql.func(
+                                "substring",
+                                self._expr,
+                                sql.lit(1),
+                                sql.func("length", self._expr).__sub__(
+                                    sql.func("length", suffix_expr)
+                                ),
+                            ),
+                        ).otherwise(self._expr)
+                    )
+                )
 
     def head(self, n: int) -> Expr:
         """Get first n characters."""
