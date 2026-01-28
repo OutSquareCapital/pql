@@ -136,7 +136,7 @@ class LazyFrame:
             return self.__from_lf__(
                 self._rel.select(
                     sql.all(),
-                    sql.WindowExpr(partition_by=cols.collect())
+                    sql.WindowExpr(partition_by=cols.map(sql.col).collect())
                     .call(sql.fns.row_number())
                     .alias("__rn__"),
                 )

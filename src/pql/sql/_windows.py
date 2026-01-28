@@ -1,15 +1,9 @@
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING
 
 import pyochain as pc
 
-from ._converters import from_expr
 from ._exprs import SqlExpr, raw
 
-if TYPE_CHECKING:
-    from .._expr import Expr
-
-type ByClause = pc.Seq[str] | pc.Seq[Expr] | pc.Seq[str | Expr]
 type BoolClause = pc.Option[pc.Seq[bool]] | pc.Option[bool]
 
 
@@ -17,8 +11,8 @@ type BoolClause = pc.Option[pc.Seq[bool]] | pc.Option[bool]
 class WindowExpr:
     """A window function expression builder."""
 
-    partition_by: ByClause = field(default_factory=pc.Seq.new)  # pyright: ignore[reportUnknownVariableType]
-    order_by: ByClause = field(default_factory=pc.Seq.new)  # pyright: ignore[reportUnknownVariableType]
+    partition_by: pc.Seq[SqlExpr] = field(default_factory=pc.Seq[SqlExpr].new)
+    order_by: pc.Seq[SqlExpr] = field(default_factory=pc.Seq[SqlExpr].new)
     rows_start: pc.Option[int] = field(default_factory=lambda: pc.NONE)
     rows_end: pc.Option[int] = field(default_factory=lambda: pc.NONE)
     descending: BoolClause = field(default_factory=lambda: pc.NONE)
@@ -40,7 +34,7 @@ class WindowExpr:
     def _get_partition_by(self) -> str:
         return (
             self.partition_by.then_some()
-            .map(lambda x: x.iter().map(lambda item: str(from_expr(item))).join(", "))
+            .map(lambda x: x.iter().map(str).join(", "))
             .map(lambda s: "partition by " + s)
             .unwrap_or("")
         )
@@ -57,7 +51,7 @@ class WindowExpr:
                 .map_star(
                     lambda item,
                     desc,
-                    nl: f"{from_expr(item)} {'desc' if desc else 'asc'} {'nulls last' if nl else 'nulls first'}"
+                    nl: f"{item} {'desc' if desc else 'asc'} {'nulls last' if nl else 'nulls first'}"
                 )
                 .join(", ")
             )

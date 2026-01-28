@@ -408,7 +408,7 @@ class Expr(SqlExprHandler):
     def is_duplicated(self) -> Self:
         """Check if value is duplicated."""
         return self.__class__(
-            sql.WindowExpr(partition_by=pc.Seq((self,)))
+            sql.WindowExpr(partition_by=pc.Seq((self._expr,)))
             .call(sql.fns.count(sql.all()))
             .__gt__(sql.lit(1)),
         )
@@ -416,7 +416,7 @@ class Expr(SqlExprHandler):
     def is_unique(self) -> Self:
         """Check if value is unique."""
         return self.__class__(
-            sql.WindowExpr(partition_by=pc.Seq((self,)))
+            sql.WindowExpr(partition_by=pc.Seq((self._expr,)))
             .call(sql.fns.count(sql.all()))
             .__eq__(sql.lit(1)),
         )
@@ -424,7 +424,7 @@ class Expr(SqlExprHandler):
     def is_first_distinct(self) -> Self:
         """Check if value is first occurrence."""
         return self.__class__(
-            sql.WindowExpr(partition_by=pc.Seq((self,)))
+            sql.WindowExpr(partition_by=pc.Seq((self._expr,)))
             .call(sql.fns.row_number())
             .__eq__(sql.lit(1))
         )
@@ -433,8 +433,8 @@ class Expr(SqlExprHandler):
         """Check if value is last occurrence."""
         return self.__class__(
             sql.WindowExpr(
-                partition_by=pc.Seq((self,)),
-                order_by=pc.Seq((self,)),
+                partition_by=pc.Seq((self._expr,)),
+                order_by=pc.Seq((self._expr,)),
                 descending=pc.Some(value=True),
                 nulls_last=pc.Some(value=True),
             )
