@@ -9,7 +9,7 @@ import duckdb
 import pyochain as pc
 
 from . import datatypes
-from ._ast import WindowSpec, iter_to_exprs, to_value
+from ._ast import WindowExpr, iter_to_exprs, to_value
 
 if TYPE_CHECKING:
     from ._ast import IntoExpr
@@ -252,7 +252,9 @@ class Expr:
     def log1p(self) -> Self:
         """Compute the natural logarithm of 1+x."""
         return self.__class__(
-            duckdb.FunctionExpression("ln", self._expr + duckdb.ConstantExpression(1))
+            duckdb.FunctionExpression(
+                "ln", self._expr.__add__(duckdb.ConstantExpression(1))
+            )
         )
 
     def exp(self) -> Self:
@@ -280,8 +282,9 @@ class Expr:
         return self.__class__(
             duckdb.FunctionExpression(
                 "/",
-                duckdb.FunctionExpression("exp", self._expr)
-                - duckdb.FunctionExpression("exp", -self._expr),
+                duckdb.FunctionExpression("exp", self._expr).__sub__(
+                    duckdb.FunctionExpression("exp", -self._expr)
+                ),
                 duckdb.ConstantExpression("2"),
             )
         )
@@ -291,8 +294,9 @@ class Expr:
         return self.__class__(
             duckdb.FunctionExpression(
                 "/",
-                duckdb.FunctionExpression("exp", self._expr)
-                + duckdb.FunctionExpression("exp", -self._expr),
+                duckdb.FunctionExpression("exp", self._expr).__add__(
+                    duckdb.FunctionExpression("exp", -self._expr)
+                ),
                 duckdb.ConstantExpression("2"),
             )
         )
@@ -301,7 +305,9 @@ class Expr:
         """Compute the hyperbolic tangent."""
         exp_x = duckdb.FunctionExpression("exp", self._expr)
         exp_neg_x = duckdb.FunctionExpression("exp", -self._expr)
-        return self.__class__((exp_x - exp_neg_x) / (exp_x + exp_neg_x))
+        return self.__class__(
+            (exp_x.__sub__(exp_neg_x)).__truediv__(exp_x.__add__(exp_neg_x))
+        )
 
     def degrees(self) -> Self:
         """Convert radians to degrees."""
@@ -318,7 +324,7 @@ class Expr:
     def forward_fill(self) -> Self:
         """Fill null values with the last non-null value."""
         return self.__class__(
-            WindowSpec(rows_end=pc.Some(0), ignore_nulls=True).into_expr(
+            WindowExpr(rows_end=pc.Some(0), ignore_nulls=True).call(
                 duckdb.FunctionExpression("last_value", self._expr),
             )
         )
@@ -326,23 +332,26 @@ class Expr:
     def backward_fill(self) -> Self:
         """Fill null values with the next non-null value."""
         return self.__class__(
-            WindowSpec(rows_start=pc.Some(0), ignore_nulls=True).into_expr(
+            WindowExpr(rows_start=pc.Some(0), ignore_nulls=True).call(
                 duckdb.FunctionExpression("first_value", self._expr),
             )
         )
 
     def interpolate(self) -> Self:
         """Interpolate null values using linear interpolation."""
-        last_value = WindowSpec(rows_end=pc.Some(0), ignore_nulls=True).into_expr(
+        last_value = WindowExpr(rows_end=pc.Some(0), ignore_nulls=True).call(
             duckdb.FunctionExpression("last_value", self._expr),
         )
-        first_value = WindowSpec(rows_start=pc.Some(0), ignore_nulls=True).into_expr(
-            duckdb.FunctionExpression("first_value", self._expr)
+        return self.__class__(
+            duckdb.CoalesceOperator(
+                self._expr,
+                last_value.__add__(
+                    WindowExpr(rows_start=pc.Some(0), ignore_nulls=True)
+                    .call(duckdb.FunctionExpression("first_value", self._expr))
+                    .__sub__(last_value)
+                ).__truediv__(duckdb.ConstantExpression(2)),
+            )
         )
-        interpolated = last_value + (
-            first_value - last_value
-        ) / duckdb.ConstantExpression(2)
-        return self.__class__(duckdb.CoalesceOperator(self._expr, interpolated))
 
     def is_nan(self) -> Self:
         """Check if value is NaN."""
@@ -379,9 +388,9 @@ class Expr:
     def replace(self, old: IntoExpr, new: IntoExpr) -> Self:
         """Replace values."""
         return self.__class__(
-            duckdb.CaseExpression(self._expr == to_value(old), to_value(new)).otherwise(
-                self._expr
-            )
+            duckdb.CaseExpression(
+                self._expr.__eq__(to_value(old)), to_value(new)
+            ).otherwise(self._expr)
         )
 
     def repeat_by(self, by: Expr | int) -> Self:
@@ -397,40 +406,38 @@ class Expr:
     def is_duplicated(self) -> Self:
         """Check if value is duplicated."""
         return self.__class__(
-            WindowSpec(partition_by=pc.Seq((self._expr,))).into_expr(
-                duckdb.FunctionExpression("count", duckdb.StarExpression())
-            )
-            > duckdb.ConstantExpression(1),
+            WindowExpr(partition_by=pc.Seq((self._expr,)))
+            .call(duckdb.FunctionExpression("count", duckdb.StarExpression()))
+            .__gt__(duckdb.ConstantExpression(1)),
         )
 
     def is_unique(self) -> Self:
         """Check if value is unique."""
         return self.__class__(
-            WindowSpec(partition_by=pc.Seq((self._expr,))).into_expr(
-                duckdb.FunctionExpression("count", duckdb.StarExpression())
-            )
-            == duckdb.ConstantExpression(1),
+            WindowExpr(partition_by=pc.Seq((self._expr,)))
+            .call(duckdb.FunctionExpression("count", duckdb.StarExpression()))
+            .__eq__(duckdb.ConstantExpression(1)),
         )
 
     def is_first_distinct(self) -> Self:
         """Check if value is first occurrence."""
         return self.__class__(
-            WindowSpec(partition_by=pc.Seq((self._expr,))).into_expr(
-                duckdb.FunctionExpression("row_number")
-            )
-            == duckdb.ConstantExpression(1)
+            WindowExpr(partition_by=pc.Seq((self._expr,)))
+            .call(duckdb.FunctionExpression("row_number"))
+            .__eq__(duckdb.ConstantExpression(1))
         )
 
     def is_last_distinct(self) -> Self:
         """Check if value is last occurrence."""
         return self.__class__(
-            WindowSpec(
+            WindowExpr(
                 partition_by=pc.Seq((self._expr,)),
                 order_by=pc.Seq((self._expr,)),
                 descending=pc.Some(value=True),
                 nulls_last=pc.Some(value=True),
-            ).into_expr(duckdb.FunctionExpression("row_number"))
-            == duckdb.ConstantExpression(1)
+            )
+            .call(duckdb.FunctionExpression("row_number"))
+            .__eq__(duckdb.ConstantExpression(1))
         )
 
     @property
@@ -566,9 +573,9 @@ class ExprStringNameSpace:
                 )
             case True:
                 return Expr(
-                    (
-                        duckdb.FunctionExpression("length", self._expr)
-                        - duckdb.FunctionExpression(
+                    duckdb.FunctionExpression("length", self._expr)
+                    .__sub__(
+                        duckdb.FunctionExpression(
                             "length",
                             duckdb.FunctionExpression(
                                 "replace",
@@ -578,7 +585,7 @@ class ExprStringNameSpace:
                             ),
                         )
                     )
-                    / duckdb.ConstantExpression(len(pattern))
+                    .__truediv__(duckdb.ConstantExpression(len(pattern)))
                 )
 
     def to_date(self, fmt: str | None = None) -> Expr:
