@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Iterable
 from dataclasses import dataclass, field
+from functools import partial
 from typing import TYPE_CHECKING
 
 import duckdb
@@ -23,6 +24,93 @@ raw = duckdb.SQLExpression
 from_arrow = duckdb.from_arrow
 from_query = duckdb.from_query
 Relation = duckdb.DuckDBPyRelation
+
+
+def _fn(name: str):  # noqa: ANN202
+    return partial(func, name)
+
+
+# SQL Function partials
+abs = _fn("abs")
+floor = _fn("floor")
+ceil = _fn("ceil")
+hash = _fn("hash")
+round_even = _fn("round_even")
+round_half = _fn("round")
+sqrt = _fn("sqrt")
+cbrt = _fn("cbrt")
+ln = _fn("ln")
+log = _fn("log")
+log10 = _fn("log10")
+exp = _fn("exp")
+sin = _fn("sin")
+cos = _fn("cos")
+tan = _fn("tan")
+atan = _fn("atan")
+degrees = _fn("degrees")
+radians = _fn("radians")
+sign = _fn("sign")
+isnan = _fn("isnan")
+isfinite = _fn("isfinite")
+isinf = _fn("isinf")
+count = _fn("count")
+count_if = _fn("count_if")
+sum_func = _fn("sum")
+avg = _fn("avg")
+median = _fn("median")
+min_func = _fn("min")
+max_func = _fn("max")
+row_number = _fn("row_number")
+stddev_pop = _fn("stddev_pop")
+stddev_samp = _fn("stddev_samp")
+var_pop = _fn("var_pop")
+var_samp = _fn("var_samp")
+last_value = _fn("last_value")
+first_value = _fn("first_value")
+quantile_cont = _fn("quantile_cont")
+list_transform = _fn("list_transform")
+list_sort = _fn("list_sort")
+list_sum = _fn("list_sum")
+list_min = _fn("list_min")
+list_max = _fn("list_max")
+list_avg = _fn("list_avg")
+list_median = _fn("list_median")
+list_filter = _fn("list_filter")
+list_aggregate = _fn("list_aggregate")
+list_distinct = _fn("list_distinct")
+list_append = _fn("list_append")
+list_contains = _fn("list_contains")
+list_extract = _fn("list_extract")
+range_func = _fn("range")
+lag = _fn("lag")
+lead = _fn("lead")
+trim = _fn("trim")
+ltrim = _fn("ltrim")
+rtrim = _fn("rtrim")
+replace = _fn("replace")
+regexp_replace = _fn("regexp_replace")
+regexp_extract_all = _fn("regexp_extract_all")
+substring = _fn("substring")
+length = _fn("length")
+octet_length = _fn("octet_length")
+string_split = _fn("string_split")
+encode = _fn("encode")
+array_length = _fn("array_length")
+array_position = _fn("array_position")
+array_extract = _fn("array_extract")
+struct_extract = _fn("struct_extract")
+upper = _fn("upper")
+lower = _fn("lower")
+contains = _fn("contains")
+regexp_matches = _fn("regexp_matches")
+starts_with = _fn("starts_with")
+ends_with = _fn("ends_with")
+left = _fn("left")
+right = _fn("right")
+reverse = _fn("reverse")
+concat = _fn("concat")
+len = _fn("len")
+strptime = _fn("strptime")
 
 
 def from_expr(value: IntoExpr) -> SqlExpr:
