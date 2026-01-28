@@ -38,8 +38,6 @@ def sample_df() -> pl.DataFrame:
 
 
 def test_lazyframe_from_duckdb_relation() -> None:
-    import duckdb
-
     result = pql.LazyFrame(duckdb.sql("SELECT 1 as a, 2 as b")).collect()
     expected = duckdb.sql("SELECT 1 as a, 2 as b").pl()
     assert_eq(result, expected)
@@ -69,6 +67,7 @@ def test_properties(sample_df: pl.DataFrame) -> None:
     assert lf.width == sample_df.width
     assert set(lf.schema.keys()) == set(sample_df.columns)
     assert lf.schema == lf.collect_schema()
+    assert isinstance(lf.lazy(), pl.LazyFrame)
 
 
 def test_relation_property(sample_df: pl.DataFrame) -> None:
@@ -523,9 +522,10 @@ def test_top_k_with_reverse(sample_df: pl.DataFrame) -> None:
 
 
 def test_bottom_k_with_multiple_cols(sample_df: pl.DataFrame) -> None:
-    result = pql.LazyFrame(sample_df).bottom_k(3, by=["department", "age"]).collect()
-    expected = sample_df.lazy().bottom_k(3, by=["department", "age"]).collect()
-    assert_eq(result, expected)
+    assert_eq(
+        pql.LazyFrame(sample_df).bottom_k(3, by=["department", "age"]).collect(),
+        sample_df.lazy().bottom_k(3, by=["department", "age"]).collect(),
+    )
 
 
 def test_bottom_k_with_reverse(sample_df: pl.DataFrame) -> None:

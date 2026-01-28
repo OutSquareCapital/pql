@@ -135,12 +135,28 @@ def test_replace() -> None:
         (pql.col("text").str.replace("Hello", "Hi").alias("replaced")),
         (pl.col("text").str.replace("Hello", "Hi").alias("replaced")),
     )
+    assert_eq_pl(
+        (
+            pql.col("text").str.replace("a", "_", n=2).alias("replaced"),
+            pql.col("text").str.replace("a", "_", n=0).alias("replaced_0"),
+            pql.col("text").str.replace("a", "_", n=-1).alias("replaced_minus1"),
+        ),
+        (
+            pl.col("text").str.replace("a", "_", n=2).alias("replaced"),
+            pl.col("text").str.replace("a", "_", n=0).alias("replaced_0"),
+            pl.col("text").str.replace("a", "_", n=-1).alias("replaced_minus1"),
+        ),
+    )
 
 
 def test_strip() -> None:
     assert_eq(
         (pql.col("text").str.strip_chars().alias("stripped")),
         (nw.col("text").str.strip_chars().alias("stripped")),
+    )
+    assert_eq(
+        (pql.col("text").str.strip_chars(" ").alias("stripped_space")),
+        (nw.col("text").str.strip_chars(" ").alias("stripped_space")),
     )
 
 
@@ -255,6 +271,18 @@ def test_replace_all() -> None:
     assert_eq(
         (pql.col("text").str.replace_all(r"\d+", "X", literal=False).alias("replaced")),
         (nw.col("text").str.replace_all(r"\d+", "X", literal=False).alias("replaced")),
+    )
+    assert_eq(
+        (
+            pql.col("text")
+            .str.replace_all("suffix", pql.col("suffix_val"), literal=True)
+            .alias("replaced"),
+        ),
+        (
+            nw.col("text")
+            .str.replace_all("suffix", nw.col("suffix_val"), literal=True)
+            .alias("replaced"),
+        ),
     )
 
 
