@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Callable, Collection
-from typing import TYPE_CHECKING, Any, Concatenate, Self
+from typing import TYPE_CHECKING, Any, Concatenate, Literal, Self
 
 import duckdb
 import pyochain as pc
@@ -41,6 +41,21 @@ class Expr:
 
     def __repr__(self) -> str:
         return f"Expr({self._expr})"
+
+    @property
+    def str(self) -> ExprStringNameSpace:
+        """Access string operations."""
+        return ExprStringNameSpace(self._expr)
+
+    @property
+    def list(self) -> ExprListNameSpace:
+        """Access list operations."""
+        return ExprListNameSpace(self._expr)
+
+    @property
+    def struct(self) -> ExprStructNameSpace:
+        """Access struct operations."""
+        return ExprStructNameSpace(self._expr)
 
     @property
     def expr(self) -> duckdb.Expression:
@@ -220,9 +235,18 @@ class Expr:
         """Round up to the nearest integer."""
         return self.__class__(duckdb.FunctionExpression("ceil", self._expr))
 
-    def round(self, decimals: int = 0, *, mode: str = "half_to_even") -> Self:
+    def round(
+        self,
+        decimals: int = 0,
+        *,
+        mode: Literal["half_to_even", "half_away_from_zero"] = "half_to_even",
+    ) -> Self:
         """Round to given number of decimal places."""
-        func = "round_even" if mode == "half_to_even" else "round"
+        match mode:
+            case "half_to_even":
+                func = "round_even"
+            case "half_away_from_zero":
+                func = "round"
         return self.__class__(
             duckdb.FunctionExpression(
                 func, self._expr, duckdb.ConstantExpression(decimals)
@@ -440,11 +464,6 @@ class Expr:
             .__eq__(duckdb.ConstantExpression(1))
         )
 
-    @property
-    def str(self) -> ExprStringNameSpace:
-        """Access string operations."""
-        return ExprStringNameSpace(self._expr)
-
 
 class ExprStringNameSpace:
     """String operations namespace (equivalent to pl.Expr.str)."""
@@ -588,39 +607,39 @@ class ExprStringNameSpace:
                     .__truediv__(duckdb.ConstantExpression(len(pattern)))
                 )
 
-    def to_date(self, fmt: str | None = None) -> Expr:
+    def to_date(self, format: str | None = None) -> Expr:  # noqa: A002
         """Convert string to date."""
-        match fmt:
+        match format:
             case None:
                 return Expr(self._expr.cast(datatypes.Date))
             case _:
                 return Expr(
                     duckdb.FunctionExpression(
-                        "strptime", self._expr, duckdb.ConstantExpression(fmt)
+                        "strptime", self._expr, duckdb.ConstantExpression(format)
                     ).cast(datatypes.Date)
                 )
 
-    def to_datetime(self, fmt: str | None = None, *, time_unit: str = "us") -> Expr:
+    def to_datetime(self, format: str | None = None, *, time_unit: str = "us") -> Expr:  # noqa: A002
         """Convert string to datetime."""
         precision_map = {"ns": "TIMESTAMP_NS", "us": "TIMESTAMP", "ms": "TIMESTAMP_MS"}
-        match fmt:
+        match format:
             case None:
                 base_expr = self._expr.cast(precision_map.get(time_unit, "TIMESTAMP"))
             case _:
                 base_expr = duckdb.FunctionExpression(
-                    "strptime", self._expr, duckdb.ConstantExpression(fmt)
+                    "strptime", self._expr, duckdb.ConstantExpression(format)
                 )
         return Expr(base_expr)
 
-    def to_time(self, fmt: str | None = None) -> Expr:
+    def to_time(self, format: str | None = None) -> Expr:  # noqa: A002
         """Convert string to time."""
-        match fmt:
+        match format:
             case None:
                 return Expr(self._expr.cast(datatypes.Time))
             case _:
                 return Expr(
                     duckdb.FunctionExpression(
-                        "strptime", self._expr, duckdb.ConstantExpression(fmt)
+                        "strptime", self._expr, duckdb.ConstantExpression(format)
                     ).cast(datatypes.Time)
                 )
 
@@ -717,3 +736,21 @@ class ExprStringNameSpace:
                 duckdb.ConstantExpression(""),
             )
         )
+
+
+class ExprListNameSpace:
+    """List operations namespace (equivalent to pl.Expr.list)."""
+
+    __slots__ = ("_expr",)
+
+    def __init__(self, expr: duckdb.Expression) -> None:
+        self._expr = expr
+
+
+class ExprStructNameSpace:
+    """Struct operations namespace (equivalent to pl.Expr.struct)."""
+
+    __slots__ = ("_expr",)
+
+    def __init__(self, expr: duckdb.Expression) -> None:
+        self._expr = expr
