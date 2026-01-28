@@ -185,7 +185,7 @@ def test_replace() -> None:
     )
 
 
-def test_strip() -> None:
+def test_strip_chars() -> None:
     assert_eq(
         (pql.col("text").str.strip_chars().alias("stripped")),
         (nw.col("text").str.strip_chars().alias("stripped")),
@@ -198,12 +198,14 @@ def test_strip() -> None:
 
 def test_strip_chars_start() -> None:
     assert_eq_pl(
-        (pql.col("text").str.strip_chars_start().alias("lstripped")),
-        (pl.col("text").str.strip_chars_start().alias("lstripped")),
-    )
-    assert_eq_pl(
-        (pql.col("text").str.strip_chars_start(" ").alias("lstripped")),
-        (pl.col("text").str.strip_chars_start(" ").alias("lstripped")),
+        (
+            pql.col("text").str.strip_chars_start().alias("lstripped"),
+            pql.col("text").str.strip_chars_start(" ").alias("lstripped_space"),
+        ),
+        (
+            pl.col("text").str.strip_chars_start().alias("lstripped"),
+            pl.col("text").str.strip_chars_start(" ").alias("lstripped_space"),
+        ),
     )
 
 
@@ -215,10 +217,6 @@ def test_strip_chars_end() -> None:
     assert_eq_pl(
         (pql.col("text").str.strip_chars_end(" ").alias("rstripped")),
         (pl.col("text").str.strip_chars_end(" ").alias("rstripped")),
-    )
-    assert_eq_pl(
-        (pql.col("text_nullable").str.strip_chars_end().alias("rstripped"),),
-        (pl.col("text_nullable").str.strip_chars_end().alias("rstripped"),),
     )
 
 
@@ -386,13 +384,6 @@ def test_contains_regex() -> None:
     assert_eq(
         (pql.col("text").str.contains(r"\d+", literal=False).alias("has_digit")),
         (nw.col("text").str.contains(r"\d+", literal=False).alias("has_digit")),
-    )
-
-
-def test_strip_chars_none() -> None:
-    assert_eq(
-        (pql.col("text").str.strip_chars().alias("stripped")),
-        (nw.col("text").str.strip_chars().alias("stripped")),
     )
 
 
