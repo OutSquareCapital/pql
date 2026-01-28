@@ -98,7 +98,7 @@ def test_ends_with() -> None:
 def test_replace() -> None:
     assert_eq(
         (pql.col("text").str.replace("Hello", "Hi").alias("replaced")),
-        (pl.col("text").str.replace("Hello", "Hi", literal=True).alias("replaced")),
+        (pl.col("text").str.replace("Hello", "Hi").alias("replaced")),
     )
 
 
@@ -260,12 +260,20 @@ def test_to_date() -> None:
         (pql.col("date_str").str.to_date("%Y-%m-%d").alias("date")),
         (pl.col("date_str").str.to_date("%Y-%m-%d").alias("date")),
     )
+    assert_eq(
+        (pql.col("date_str").str.to_date().alias("date")),
+        (pl.col("date_str").str.to_date().alias("date")),
+    )
 
 
 def test_to_datetime() -> None:
     assert_eq(
         (pql.col("dt_str").str.to_datetime("%Y-%m-%d %H:%M:%S").alias("dt")),
         (pl.col("dt_str").str.to_datetime("%Y-%m-%d %H:%M:%S").alias("dt")),
+    )
+    assert_eq(
+        (pql.col("dt_str").str.to_datetime().alias("dt")),
+        (pl.col("dt_str").str.to_datetime().alias("dt")),
     )
 
 

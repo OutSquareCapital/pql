@@ -600,13 +600,7 @@ class ExprStringNameSpace:
                     ).cast(datatypes.Date)
                 )
 
-    def to_datetime(
-        self,
-        fmt: str | None = None,
-        *,
-        time_unit: str = "us",
-        time_zone: str | None = None,
-    ) -> Expr:
+    def to_datetime(self, fmt: str | None = None, *, time_unit: str = "us") -> Expr:
         """Convert string to datetime."""
         precision_map = {"ns": "TIMESTAMP_NS", "us": "TIMESTAMP", "ms": "TIMESTAMP_MS"}
         match fmt:
@@ -616,15 +610,7 @@ class ExprStringNameSpace:
                 base_expr = duckdb.FunctionExpression(
                     "strptime", self._expr, duckdb.ConstantExpression(fmt)
                 )
-        match time_zone:
-            case None | "":
-                return Expr(base_expr)
-            case _:
-                return Expr(
-                    duckdb.FunctionExpression(
-                        "timezone", duckdb.ConstantExpression(time_zone), base_expr
-                    )
-                )
+        return Expr(base_expr)
 
     def to_time(self, fmt: str | None = None) -> Expr:
         """Convert string to time."""

@@ -7,7 +7,7 @@ This report shows the API coverage of pql compared to Polars.
 | Class | Coverage | Matched | Missing | Mismatched | Extra |
 |-------|----------|---------|---------|------------|-------|
 | LazyFrame | 25.0% | 22 | 44 | 22 | 1 |
-| Expr | 15.7% | 34 | 157 | 26 | 1 |
+| Expr | 15.7% | 34 | 158 | 25 | 1 |
 | Expr.str | 14.3% | 7 | 23 | 19 | 0 |
 
 ## LazyFrame
@@ -196,7 +196,7 @@ This report shows the API coverage of pql compared to Polars.
 - `tan`
 - `tanh`
 
-### [x] Missing Methods (157)
+### [x] Missing Methods (158)
 
 - `agg_groups` () -> Expr
 - `all` (ignore_nulls: bool) -> Expr
@@ -337,6 +337,7 @@ This report shows the API coverage of pql compared to Polars.
 - `set_sorted` (descending: bool) -> Expr
 - `shift` (n: int | IntoExprColumn, fill_value: IntoExpr | None) -> Expr
 - `shrink_dtype` () -> Expr
+- `shuffle` (seed: int | None) -> Expr
 - `skew` (bias: bool) -> Expr
 - `slice` (offset: int | Expr, length: int | Expr | None) -> Expr
 - `sort` (descending: bool, nulls_last: bool) -> Expr
@@ -356,7 +357,7 @@ This report shows the API coverage of pql compared to Polars.
 - `where` (predicate: Expr) -> Expr
 - `xor` (other: Any) -> Expr
 
-### [!] Signature Mismatches (26)
+### [!] Signature Mismatches (25)
 
 - `add`
   - Polars: (other: Any) -> Expr
@@ -427,9 +428,6 @@ This report shows the API coverage of pql compared to Polars.
 - `round`
   - Polars: (decimals: int, mode: RoundMode) -> Expr
   - pql: (decimals: int, mode: str) -> Self
-- `shuffle`
-  - Polars: (seed: int | None) -> Expr
-  - pql: () -> Self
 - `sub`
   - Polars: (other: Any) -> Expr
   - pql: (other: IntoExpr) -> Self
@@ -534,7 +532,7 @@ This report shows the API coverage of pql compared to Polars.
   - pql: (fmt: str | None) -> Expr
 - `to_datetime`
   - Polars: (format: str | None, time_unit: TimeUnit | None, time_zone: str | None, strict: bool, exact: bool, cache: bool, ambiguous: Ambiguous | Expr) -> Expr
-  - pql: (fmt: str | None, time_unit: str, time_zone: str | None) -> Expr
+  - pql: (fmt: str | None, time_unit: str) -> Expr
 - `to_time`
   - Polars: (format: str | None, strict: bool, cache: bool) -> Expr
   - pql: (fmt: str | None) -> Expr
