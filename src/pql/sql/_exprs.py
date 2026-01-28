@@ -11,3 +11,5 @@ raw = duckdb.SQLExpression
 from_arrow = duckdb.from_arrow
 from_query = duckdb.from_query
 Relation = duckdb.DuckDBPyRelation
+
+type SqlExpr = duckdb.Expression

@@ -14,7 +14,7 @@ from . import sql
 if TYPE_CHECKING:
     from . import datatypes
     from ._expr import Expr
-    from ._types import FrameInit, IntoExpr, SqlExpr
+    from ._types import FrameInit, IntoExpr
 
 
 class LazyFrame:
@@ -102,7 +102,7 @@ class LazyFrame:
                 case Iterable():
                     return pc.Iter(arg)
 
-        def _make_order(col: SqlExpr, desc: bool, nl: bool) -> SqlExpr:  # noqa: FBT001
+        def _make_order(col: sql.SqlExpr, desc: bool, nl: bool) -> sql.SqlExpr:  # noqa: FBT001
             match (desc, nl):
                 case (True, True):
                     return col.desc().nulls_last()

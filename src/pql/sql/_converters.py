@@ -5,10 +5,10 @@ from typing import TYPE_CHECKING
 
 import pyochain as pc
 
-from ._exprs import col, lit
+from ._exprs import SqlExpr, col, lit
 
 if TYPE_CHECKING:
-    from .._types import IntoExpr, SqlExpr
+    from .._types import IntoExpr
 
 
 def from_expr(value: IntoExpr) -> SqlExpr:

@@ -13,7 +13,7 @@ import pyochain as pc
 from . import datatypes, sql
 
 if TYPE_CHECKING:
-    from ._types import IntoExpr, RoundMode, SqlExpr
+    from ._types import IntoExpr, RoundMode
 
 
 class Col:
@@ -32,13 +32,16 @@ def all() -> Expr:
     return Expr(sql.all())
 
 
-class Expr:
+@dataclass(slots=True)
+class SqlExprHandler:
+    """A wrapper for DuckDB expressions."""
+
+    _expr: sql.SqlExpr
+
+
+@dataclass(slots=True)
+class Expr(SqlExprHandler):
     """Expression wrapper providing Polars-like API over DuckDB expressions."""
-
-    __slots__ = ("_expr",)
-
-    def __init__(self, expr: SqlExpr) -> None:
-        self._expr = expr
 
     def __repr__(self) -> str:
         return f"Expr({self._expr})"
@@ -59,7 +62,7 @@ class Expr:
         return ExprStructNameSpace(self._expr)
 
     @property
-    def expr(self) -> SqlExpr:
+    def expr(self) -> sql.SqlExpr:
         """Get the underlying DuckDB expression."""
         return self._expr
 
@@ -444,7 +447,7 @@ class Expr:
 class ExprStringNameSpace:
     """String operations namespace (equivalent to pl.Expr.str)."""
 
-    _expr: SqlExpr
+    _expr: sql.SqlExpr
 
     def to_uppercase(self) -> Expr:
         """Convert to uppercase."""
@@ -486,7 +489,7 @@ class ExprStringNameSpace:
         value_expr = sql.from_value(value)
         pattern_expr = sql.lit(re.escape(pattern) if literal else pattern)
 
-        def _replace_once(expr: SqlExpr) -> SqlExpr:
+        def _replace_once(expr: sql.SqlExpr) -> sql.SqlExpr:
             return sql.fns.regexp_replace(expr, pattern_expr, value_expr)
 
         match n:
@@ -744,10 +747,8 @@ class ExprStringNameSpace:
 
 
 @dataclass(slots=True)
-class ExprListNameSpace:
+class ExprListNameSpace(SqlExprHandler):
     """List operations namespace (equivalent to pl.Expr.list)."""
-
-    _expr: SqlExpr
 
     def len(self) -> Expr:
         """Return the number of elements in each list."""
@@ -842,10 +843,8 @@ class ExprListNameSpace:
 
 
 @dataclass(slots=True)
-class ExprStructNameSpace:
+class ExprStructNameSpace(SqlExprHandler):
     """Struct operations namespace (equivalent to pl.Expr.struct)."""
-
-    _expr: SqlExpr
 
     def field(self, name: str) -> Expr:
         """Retrieve a struct field by name."""

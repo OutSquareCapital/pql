@@ -1,10 +1,16 @@
 from dataclasses import dataclass, field
+from typing import TYPE_CHECKING
 
 import pyochain as pc
 
-from .._types import BoolClause, ByClause, SqlExpr
 from ._converters import from_expr
-from ._exprs import raw
+from ._exprs import SqlExpr, raw
+
+if TYPE_CHECKING:
+    from .._expr import Expr
+
+type ByClause = pc.Seq[str] | pc.Seq[Expr] | pc.Seq[str | Expr]
+type BoolClause = pc.Option[pc.Seq[bool]] | pc.Option[bool]
 
 
 @dataclass(slots=True)
