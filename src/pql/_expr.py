@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Callable, Collection
+from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Concatenate, Literal, Self
 
 import duckdb
@@ -465,13 +466,11 @@ class Expr:
         )
 
 
+@dataclass(slots=True)
 class ExprStringNameSpace:
     """String operations namespace (equivalent to pl.Expr.str)."""
 
-    __slots__ = ("_expr",)
-
-    def __init__(self, expr: duckdb.Expression) -> None:
-        self._expr = expr
+    _expr: duckdb.Expression
 
     def to_uppercase(self) -> Expr:
         """Convert to uppercase."""
@@ -738,19 +737,124 @@ class ExprStringNameSpace:
         )
 
 
+@dataclass(slots=True)
 class ExprListNameSpace:
     """List operations namespace (equivalent to pl.Expr.list)."""
 
-    __slots__ = ("_expr",)
+    _expr: duckdb.Expression
 
-    def __init__(self, expr: duckdb.Expression) -> None:
-        self._expr = expr
+    def len(self) -> Expr:
+        """Return the number of elements in each list."""
+        return Expr(duckdb.FunctionExpression("len", self._expr))
+
+    def unique(self) -> Expr:
+        """Return unique values in each list."""
+        distinct_expr = duckdb.FunctionExpression("list_distinct", self._expr)
+        return Expr(
+            duckdb.CaseExpression(
+                duckdb.FunctionExpression(
+                    "array_position",
+                    self._expr,
+                    duckdb.ConstantExpression(None),
+                ).isnotnull(),
+                duckdb.FunctionExpression(
+                    "list_append",
+                    distinct_expr,
+                    duckdb.ConstantExpression(None),
+                ),
+            ).otherwise(distinct_expr)
+        )
+
+    def contains(self, item: IntoExpr, *, nulls_equal: bool = True) -> Expr:
+        """Check if sublists contain the given item."""
+        item_expr = to_value(item)
+        contains_expr = duckdb.FunctionExpression(
+            "list_contains", self._expr, item_expr
+        )
+        if nulls_equal:
+            false_expr = duckdb.SQLExpression("false")
+            null_in_list = duckdb.FunctionExpression(
+                "array_position",
+                self._expr,
+                duckdb.ConstantExpression(None),
+            ).isnotnull()
+            return Expr(
+                duckdb.CaseExpression(
+                    item_expr.isnull(),
+                    duckdb.CoalesceOperator(null_in_list, false_expr),
+                ).otherwise(duckdb.CoalesceOperator(contains_expr, false_expr))
+            )
+        return Expr(contains_expr)
+
+    def get(self, index: int) -> Expr:
+        """Return the value by index in each list."""
+        return Expr(
+            duckdb.FunctionExpression(
+                "list_extract",
+                self._expr,
+                duckdb.ConstantExpression(index + 1 if index >= 0 else index),
+            )
+        )
+
+    def min(self) -> Expr:
+        """Compute the min value of the lists in the array."""
+        return Expr(duckdb.FunctionExpression("list_min", self._expr))
+
+    def max(self) -> Expr:
+        """Compute the max value of the lists in the array."""
+        return Expr(duckdb.FunctionExpression("list_max", self._expr))
+
+    def mean(self) -> Expr:
+        """Compute the mean value of the lists in the array."""
+        return Expr(duckdb.FunctionExpression("list_avg", self._expr))
+
+    def median(self) -> Expr:
+        """Compute the median value of the lists in the array."""
+        return Expr(duckdb.FunctionExpression("list_median", self._expr))
+
+    def sum(self) -> Expr:
+        """Compute the sum value of the lists in the array."""
+        elem = duckdb.ColumnExpression("_")
+        expr_no_nulls = duckdb.FunctionExpression(
+            "list_filter",
+            self._expr,
+            duckdb.LambdaExpression("_", elem.isnotnull()),
+        )
+        expr_sum = duckdb.FunctionExpression("list_sum", expr_no_nulls)
+        return Expr(
+            duckdb.CaseExpression(
+                duckdb.FunctionExpression(
+                    "array_length",
+                    expr_no_nulls,
+                ).__eq__(duckdb.ConstantExpression(0)),
+                duckdb.ConstantExpression(0),
+            ).otherwise(expr_sum)
+        )
+
+    def sort(self, *, descending: bool = False, nulls_last: bool = False) -> Expr:
+        """Sort the lists of the expression."""
+        sort_direction = "DESC" if descending else "ASC"
+        nulls_position = "NULLS LAST" if nulls_last else "NULLS FIRST"
+        return Expr(
+            duckdb.FunctionExpression(
+                "list_sort",
+                self._expr,
+                duckdb.ConstantExpression(sort_direction),
+                duckdb.ConstantExpression(nulls_position),
+            )
+        )
 
 
+@dataclass(slots=True)
 class ExprStructNameSpace:
     """Struct operations namespace (equivalent to pl.Expr.struct)."""
 
-    __slots__ = ("_expr",)
+    _expr: duckdb.Expression
 
-    def __init__(self, expr: duckdb.Expression) -> None:
-        self._expr = expr
+    def field(self, name: str) -> Expr:
+        """Retrieve a struct field by name."""
+        return Expr(
+            duckdb.FunctionExpression(
+                "struct_extract", self._expr, duckdb.ConstantExpression(name)
+            )
+        )
