@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 from collections.abc import Callable, Collection
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Concatenate, Literal, Self
@@ -144,26 +145,26 @@ class Expr:
     def __hash__(self) -> int:
         return hash(str(self._expr))
 
-    def add(self, other: IntoExpr) -> Self:
+    def add(self, other: Any) -> Self:  # noqa: ANN401
         """Add another expression or value."""
         return self.__class__(self._expr + to_value(other))
 
-    def sub(self, other: IntoExpr) -> Self:
+    def sub(self, other: Any) -> Self:  # noqa: ANN401
         return self.__class__(self._expr - to_value(other))
 
-    def mul(self, other: IntoExpr) -> Self:
+    def mul(self, other: Any) -> Self:  # noqa: ANN401
         return self.__class__(self._expr * to_value(other))
 
-    def truediv(self, other: IntoExpr) -> Self:
+    def truediv(self, other: Any) -> Self:  # noqa: ANN401
         return self.__class__(self._expr / to_value(other))
 
-    def floordiv(self, other: IntoExpr) -> Self:
+    def floordiv(self, other: Any) -> Self:  # noqa: ANN401
         return self.__class__(self._expr // to_value(other))
 
-    def mod(self, other: IntoExpr) -> Self:
+    def mod(self, other: Any) -> Self:  # noqa: ANN401
         return self.__class__(self._expr % to_value(other))
 
-    def pow(self, other: IntoExpr) -> Self:
+    def pow(self, other: Any) -> Self:  # noqa: ANN401
         return self.__class__(self._expr ** to_value(other))
 
     def neg(self) -> Self:
@@ -172,22 +173,22 @@ class Expr:
     def abs(self) -> Self:
         return self.__class__(duckdb.FunctionExpression("abs", self._expr))
 
-    def eq(self, other: IntoExpr) -> Self:
+    def eq(self, other: Any) -> Self:  # noqa: ANN401
         return self.__class__(self._expr == to_value(other))
 
-    def ne(self, other: IntoExpr) -> Self:
+    def ne(self, other: Any) -> Self:  # noqa: ANN401
         return self.__class__(self._expr != to_value(other))
 
-    def lt(self, other: IntoExpr) -> Self:
+    def lt(self, other: Any) -> Self:  # noqa: ANN401
         return self.__class__(self._expr < to_value(other))
 
-    def le(self, other: IntoExpr) -> Self:
+    def le(self, other: Any) -> Self:  # noqa: ANN401
         return self.__class__(self._expr <= to_value(other))
 
-    def gt(self, other: IntoExpr) -> Self:
+    def gt(self, other: Any) -> Self:  # noqa: ANN401
         return self.__class__(self._expr > to_value(other))
 
-    def ge(self, other: IntoExpr) -> Self:
+    def ge(self, other: Any) -> Self:  # noqa: ANN401
         return self.__class__(self._expr >= to_value(other))
 
     def and_(self, others: Any) -> Self:  # noqa: ANN401
@@ -484,7 +485,7 @@ class ExprStringNameSpace:
         """Get the length in characters."""
         return Expr(duckdb.FunctionExpression("length", self._expr))
 
-    def contains(self, pattern: str, *, literal: bool = True) -> Expr:
+    def contains(self, pattern: str, *, literal: bool = False) -> Expr:
         """Check if string contains a pattern."""
         match literal:
             case True:
@@ -516,20 +517,56 @@ class ExprStringNameSpace:
             )
         )
 
-    def replace(self, pattern: str, replacement: str) -> Expr:
-        """Replace occurrences of pattern with replacement."""
-        return Expr(
-            duckdb.FunctionExpression(
-                "replace",
-                self._expr,
-                duckdb.ConstantExpression(pattern),
-                duckdb.ConstantExpression(replacement),
-            )
+    def replace(
+        self,
+        pattern: str,
+        value: str | IntoExpr,
+        *,
+        literal: bool = False,
+        n: int = 1,
+    ) -> Expr:
+        """Replace first matching substring with a new string value."""
+        value_expr = to_value(value)
+        pattern_expr = duckdb.ConstantExpression(
+            re.escape(pattern) if literal else pattern
         )
 
-    def strip_chars(self) -> Expr:
-        """Strip leading and trailing whitespace."""
-        return Expr(duckdb.FunctionExpression("trim", self._expr))
+        def _replace_once(expr: duckdb.Expression) -> duckdb.Expression:
+            return duckdb.FunctionExpression(
+                "regexp_replace", expr, pattern_expr, value_expr
+            )
+
+        match n:
+            case 0:
+                return Expr(self._expr)
+            case n_val if n_val < 0:
+                return Expr(
+                    duckdb.FunctionExpression(
+                        "regexp_replace",
+                        self._expr,
+                        pattern_expr,
+                        value_expr,
+                        duckdb.ConstantExpression("g"),
+                    )
+                )
+            case _:
+                return Expr(
+                    pc.Iter(range(n)).fold(
+                        self._expr, lambda acc, _: _replace_once(acc)
+                    )
+                )
+
+    def strip_chars(self, characters: str | None = None) -> Expr:
+        """Strip leading and trailing characters."""
+        match characters:
+            case None:
+                return Expr(duckdb.FunctionExpression("trim", self._expr))
+            case _:
+                return Expr(
+                    duckdb.FunctionExpression(
+                        "trim", self._expr, duckdb.ConstantExpression(characters)
+                    )
+                )
 
     def strip_chars_start(self) -> Expr:
         """Strip leading whitespace."""
@@ -560,11 +597,12 @@ class ExprStringNameSpace:
             )
         )
 
-    def split(self, by: str, *, inclusive: bool = False) -> Expr:
+    def split(self, by: str) -> Expr:
         """Split string by separator."""
-        func = "string_split_regex" if inclusive else "string_split"
         return Expr(
-            duckdb.FunctionExpression(func, self._expr, duckdb.ConstantExpression(by))
+            duckdb.FunctionExpression(
+                "string_split", self._expr, duckdb.ConstantExpression(by)
+            )
         )
 
     def extract_all(self, pattern: str) -> Expr:
@@ -679,8 +717,11 @@ class ExprStringNameSpace:
         """Reverse the string."""
         return Expr(duckdb.FunctionExpression("reverse", self._expr))
 
-    def replace_all(self, pattern: str, value: str, *, literal: bool = False) -> Expr:
+    def replace_all(
+        self, pattern: str, value: IntoExpr, *, literal: bool = False
+    ) -> Expr:
         """Replace all occurrences."""
+        value_expr = to_value(value)
         match literal:
             case True:
                 return Expr(
@@ -688,7 +729,7 @@ class ExprStringNameSpace:
                         "replace",
                         self._expr,
                         duckdb.ConstantExpression(pattern),
-                        duckdb.ConstantExpression(value),
+                        value_expr,
                     )
                 )
             case False:
@@ -697,7 +738,7 @@ class ExprStringNameSpace:
                         "regexp_replace",
                         self._expr,
                         duckdb.ConstantExpression(pattern),
-                        duckdb.ConstantExpression(value),
+                        value_expr,
                         duckdb.ConstantExpression("g"),
                     )
                 )

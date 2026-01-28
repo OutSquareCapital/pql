@@ -48,6 +48,10 @@ class LazyFrame:
         """Get the underlying DuckDB relation."""
         return self._rel
 
+    def lazy(self) -> pl.LazyFrame:
+        """Get a Polars LazyFrame."""
+        return self._rel.pl(lazy=True)
+
     def collect(self) -> pl.DataFrame:
         """Execute the query and return a Polars DataFrame."""
         return self._rel.pl()
