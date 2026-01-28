@@ -8,7 +8,7 @@ This report shows the API coverage of pql compared to Polars.
 |-------|----------|---------|---------|------------|-------|
 | LazyFrame | 46.2% | 24 | 7 | 21 | 1 |
 | Expr | 48.6% | 52 | 46 | 9 | 1 |
-| Expr.str | 66.7% | 18 | 1 | 8 | 0 |
+| Expr.str | 88.9% | 24 | 1 | 2 | 0 |
 | Expr.list | 100.0% | 10 | 0 | 0 | 0 |
 | Expr.struct | 100.0% | 1 | 0 | 0 | 0 |
 
@@ -276,10 +276,12 @@ This report shows the API coverage of pql compared to Polars.
 
 ## Expr.str
 
-### [v] Matched Methods (18)
+### [v] Matched Methods (24)
 
 - `contains`
+- `count_matches`
 - `ends_with`
+- `extract_all`
 - `head`
 - `len_bytes`
 - `len_chars`
@@ -290,6 +292,10 @@ This report shows the API coverage of pql compared to Polars.
 - `split`
 - `starts_with`
 - `strip_chars`
+- `strip_chars_end`
+- `strip_chars_start`
+- `strip_prefix`
+- `strip_suffix`
 - `tail`
 - `to_date`
 - `to_decimal`
@@ -301,26 +307,8 @@ This report shows the API coverage of pql compared to Polars.
 
 - `zfill` (width: int) -> ExprT
 
-### [!] Signature Mismatches (8)
+### [!] Signature Mismatches (2)
 
-- `count_matches` (pl)
-  - Polars: (**pattern: str | Expr**, literal: bool) -> Expr
-  - pql: (**pattern: str**, literal: bool) -> Expr
-- `extract_all` (pl)
-  - Polars: (**pattern: str | Expr**) -> Expr
-  - pql: (**pattern: str**) -> Expr
-- `strip_chars_end` (pl)
-  - Polars: (**characters: IntoExpr**) -> Expr
-  - pql: () -> Expr
-- `strip_chars_start` (pl)
-  - Polars: (**characters: IntoExpr**) -> Expr
-  - pql: () -> Expr
-- `strip_prefix` (pl)
-  - Polars: (**prefix: IntoExpr**) -> Expr
-  - pql: (**prefix: str**) -> Expr
-- `strip_suffix` (pl)
-  - Polars: (**suffix: IntoExpr**) -> Expr
-  - pql: (**suffix: str**) -> Expr
 - `to_datetime` (nw)
   - Narwhals: (format: str | None) -> ExprT
   - Polars: (format: str | None, **time_unit: TimeUnit | None**, **time_zone: str | None**, **strict: bool**, **exact: bool**, **cache: bool**, **ambiguous: Ambiguous | Expr**) -> Expr
