@@ -12,7 +12,7 @@ import pyochain as pc
 from ._ast import (
     FrameInit,
     IntoExpr,
-    WindowSpec,
+    WindowExpr,
     data_to_rel,
     iter_to_exprs,
     to_expr,
@@ -117,14 +117,16 @@ class LazyFrame:
             return self.__from_lf__(
                 self._rel.select(
                     duckdb.StarExpression(),
-                    WindowSpec(partition_by=cols.map(to_expr).collect())
-                    .into_expr(
+                    WindowExpr(partition_by=cols.map(to_expr).collect())
+                    .call(
                         duckdb.FunctionExpression("row_number"),
                     )
                     .alias("__rn__"),
                 )
                 .filter(
-                    duckdb.ColumnExpression("__rn__") == duckdb.ConstantExpression(1)
+                    duckdb.ColumnExpression("__rn__").__eq__(
+                        duckdb.ConstantExpression(1)
+                    )
                 )
                 .project("* EXCLUDE (__rn__)")
             )
@@ -259,8 +261,7 @@ class LazyFrame:
                     lambda c: duckdb.FunctionExpression(
                         "median", duckdb.ColumnExpression(c)
                     ).alias(c)
-                ),
-                "",
+                )
             )
         )
 
@@ -272,8 +273,7 @@ class LazyFrame:
                     lambda c: duckdb.FunctionExpression(
                         "min", duckdb.ColumnExpression(c)
                     ).alias(c)
-                ),
-                "",
+                )
             )
         )
 
@@ -285,8 +285,7 @@ class LazyFrame:
                     lambda c: duckdb.FunctionExpression(
                         "max", duckdb.ColumnExpression(c)
                     ).alias(c)
-                ),
-                "",
+                )
             )
         )
 
@@ -299,8 +298,7 @@ class LazyFrame:
                     lambda c: duckdb.FunctionExpression(
                         func, duckdb.ColumnExpression(c)
                     ).alias(c)
-                ),
-                "",
+                )
             )
         )
 
@@ -313,8 +311,7 @@ class LazyFrame:
                     lambda c: duckdb.FunctionExpression(
                         func, duckdb.ColumnExpression(c)
                     ).alias(c)
-                ),
-                "",
+                )
             )
         )
 
@@ -327,8 +324,7 @@ class LazyFrame:
                         "count_if",
                         duckdb.ColumnExpression(c).isnull(),
                     ).alias(c)
-                ),
-                "",
+                )
             )
         )
 
@@ -372,9 +368,9 @@ class LazyFrame:
                 *self.columns.iter().map(
                     lambda c: duckdb.CoalesceOperator(
                         duckdb.ColumnExpression(c),
-                        WindowSpec(
+                        WindowExpr(
                             rows_start=rows_start, rows_end=rows_end, ignore_nulls=True
-                        ).into_expr(
+                        ).call(
                             duckdb.FunctionExpression(
                                 func_name.lower(), duckdb.ColumnExpression(c)
                             ),
@@ -454,7 +450,7 @@ class LazyFrame:
             self._rel.select(
                 *self.columns.iter().map(
                     lambda c: duckdb.CoalesceOperator(
-                        WindowSpec().into_expr(
+                        WindowExpr().call(
                             duckdb.FunctionExpression(
                                 func.lower(),
                                 duckdb.ColumnExpression(c),
@@ -505,8 +501,7 @@ class LazyFrame:
                         duckdb.ColumnExpression(c),
                         duckdb.ConstantExpression(quantile),
                     ).alias(c)
-                ),
-                "",
+                )
             )
         )
 

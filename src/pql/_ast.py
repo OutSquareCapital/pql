@@ -98,7 +98,7 @@ type BoolClause = pc.Option[pc.Seq[bool]] | pc.Option[bool]
 
 
 @dataclass(slots=True)
-class WindowSpec:
+class WindowExpr:
     partition_by: ByClause = field(default_factory=pc.Seq[str | duckdb.Expression].new)
     order_by: ByClause = field(default_factory=pc.Seq[str | duckdb.Expression].new)
     rows_start: pc.Option[int] = field(default_factory=lambda: pc.NONE)
@@ -165,7 +165,7 @@ class WindowSpec:
             case False:
                 return str(expr)
 
-    def into_expr(self, expr: duckdb.Expression) -> duckdb.Expression:
+    def call(self, expr: duckdb.Expression) -> duckdb.Expression:
         return duckdb.SQLExpression(
             f"{self.get_func(expr)} over ({self.get_partition_by()} {self.get_order_by()} {self.get_rows_clause()})"
         )
