@@ -6,533 +6,299 @@ This report shows the API coverage of pql compared to Polars.
 
 | Class | Coverage | Matched | Missing | Mismatched | Extra |
 |-------|----------|---------|---------|------------|-------|
-| LazyFrame | 25.0% | 22 | 44 | 22 | 1 |
-| Expr | 15.7% | 34 | 158 | 25 | 1 |
-| Expr.str | 14.3% | 7 | 23 | 19 | 0 |
+| LazyFrame | 26.9% | 7 | 8 | 11 | 27 |
+| Expr | 24.6% | 17 | 48 | 4 | 39 |
+| Expr.str | 58.8% | 10 | 1 | 6 | 10 |
 
 ## LazyFrame
 
-### [v] Matched Methods (22)
+### [v] Matched Methods (7)
 
-- `clone`
 - `collect_schema`
 - `columns`
-- `count`
-- `dtypes`
-- `first`
 - `gather_every`
 - `head`
+- `pipe`
+- `schema`
+- `with_row_index`
+
+### [x] Missing Methods (8)
+
+- `explode` (columns: str | Sequence[str], more_columns: str) -> Self
+- `group_by` (keys: IntoExpr | Iterable[IntoExpr], drop_null_keys: bool) -> LazyGroupBy[Self]
+- `join` (other: Self, on: str | list[str] | None, how: JoinStrategy, left_on: str | list[str] | None, right_on: str | list[str] | None, suffix: str) -> Self
+- `join_asof` (other: Self, left_on: str | None, right_on: str | None, on: str | None, by_left: str | list[str] | None, by_right: str | list[str] | None, by: str | list[str] | None, strategy: AsofJoinStrategy, suffix: str) -> Self
+- `lazy` () -> Self
+- `tail` (n: int) -> Self
+- `to_native` () -> LazyFrameT
+- `unpivot` (on: str | list[str] | None, index: str | list[str] | None, variable_name: str, value_name: str) -> Self
+
+### [!] Signature Mismatches (11)
+
+- `collect` (nw)
+  - Narwhals: (backend: IntoBackend[Polars | Pandas | Arrow] | None, kwargs: Any) -> DataFrame[Any]
+  - Polars: (type_coercion: bool, predicate_pushdown: bool, projection_pushdown: bool, simplify_expression: bool, slice_pushdown: bool, comm_subplan_elim: bool, comm_subexpr_elim: bool, cluster_with_columns: bool, collapse_joins: bool, no_optimization: bool, engine: EngineType, background: bool, optimizations: QueryOptFlags,_kwargs: Any) -> DataFrame | InProcessQuery
+  - pql: () -> pl.DataFrame
+- `drop` (nw)
+  - Narwhals: (columns: str | Iterable[str], strict: bool) -> Self
+  - Polars: (columns: ColumnNameOrSelector | Iterable[ColumnNameOrSelector], strict: bool) -> LazyFrame
+  - pql: (columns: str) -> Self
+- `drop_nulls` (nw)
+  - Narwhals: (subset: str | list[str] | None) -> Self
+  - Polars: (subset: ColumnNameOrSelector | Collection[ColumnNameOrSelector] | None) -> LazyFrame
+  - pql: (subset: str | Iterable[str] | None) -> Self
+- `filter` (nw)
+  - Narwhals: (predicates: IntoExpr | Iterable[IntoExpr], constraints: Any) -> Self
+  - Polars: (predicates: IntoExprColumn | Iterable[IntoExprColumn] | bool | list[bool], constraints: Any) -> LazyFrame
+  - pql: (predicates: Expr) -> Self
+- `rename` (nw)
+  - Narwhals: (mapping: dict[str, str]) -> Self
+  - Polars: (mapping: Mapping[str, str] | Callable[[str], str], strict: bool) -> LazyFrame
+  - pql: (mapping: Mapping[str, str]) -> Self
+- `select` (nw)
+  - Narwhals: (exprs: IntoExpr | Iterable[IntoExpr], named_exprs: IntoExpr) -> Self
+  - Polars: (exprs: IntoExpr | Iterable[IntoExpr], named_exprs: IntoExpr) -> LazyFrame
+  - pql: (exprs: IntoExpr | Iterable[IntoExpr]) -> Self
+- `sink_parquet` (nw)
+  - Narwhals: (file: str | Path | BytesIO) -> None
+  - Polars: (path: str | Path | IO[bytes] | _SinkDirectory | PartitionBy, compression: str, compression_level: int | None, statistics: bool | str | dict[str, bool], row_group_size: int | None, data_page_size: int | None, maintain_order: bool, storage_options: dict[str, Any] | None, credential_provider: CredentialProviderFunction | Literal['auto'] | None, retries: int, sync_on_close: SyncOnCloseMethod | None, metadata: ParquetMetadata | None, mkdir: bool, lazy: bool, field_overwrites: ParquetFieldOverwrites | Sequence[ParquetFieldOverwrites] | Mapping[str, ParquetFieldOverwrites] | None, engine: EngineType, optimizations: QueryOptFlags) -> LazyFrame | None
+  - pql: (path: str | Path, compression: str) -> None
+- `sort` (nw)
+  - Narwhals: (by: str | Iterable[str], more_by: str, descending: bool | Sequence[bool], nulls_last: bool) -> Self
+  - Polars: (by: IntoExpr | Iterable[IntoExpr], more_by: IntoExpr, descending: bool | Sequence[bool], nulls_last: bool | Sequence[bool], maintain_order: bool, multithreaded: bool) -> LazyFrame
+  - pql: (by: IntoExpr | Iterable[IntoExpr], descending: bool | Iterable[bool], nulls_last: bool | Iterable[bool]) -> Self
+- `top_k` (nw)
+  - Narwhals: (k: int, by: str | Iterable[str], reverse: bool | Sequence[bool]) -> Self
+  - Polars: (k: int, by: IntoExpr | Iterable[IntoExpr], reverse: bool | Sequence[bool]) -> LazyFrame
+  - pql: (k: int, by: IntoExpr | Iterable[IntoExpr], reverse: bool) -> Self
+- `unique` (nw)
+  - Narwhals: (subset: str | list[str] | None, keep: UniqueKeepStrategy, order_by: str | Sequence[str] | None) -> Self
+  - Polars: (subset: IntoExpr | Collection[IntoExpr] | None, keep: UniqueKeepStrategy, maintain_order: bool) -> LazyFrame
+  - pql: (subset: str | Iterable[str] | None) -> Self
+- `with_columns` (nw)
+  - Narwhals: (exprs: IntoExpr | Iterable[IntoExpr], named_exprs: IntoExpr) -> Self
+  - Polars: (exprs: IntoExpr | Iterable[IntoExpr], named_exprs: IntoExpr) -> LazyFrame
+  - pql: (exprs: IntoExpr | Iterable[IntoExpr]) -> Self
+
+### [+] Extra Methods (pql-only) (27)
+
+- `bottom_k`
+- `cast`
+- `clone`
+- `count`
+- `drop_nans`
+- `dtypes`
+- `explain`
+- `fill_nan`
+- `fill_null`
+- `first`
 - `limit`
 - `max`
 - `mean`
 - `median`
 - `min`
 - `null_count`
+- `quantile`
+- `relation`
 - `reverse`
-- `schema`
+- `shift`
+- `sink_csv`
+- `sink_ndjson`
 - `std`
 - `sum`
 - `var`
 - `width`
 - `with_row_count`
-- `with_row_index`
-
-### [x] Missing Methods (44)
-
-- `approx_n_unique` () -> LazyFrame
-- `cache` () -> LazyFrame
-- `clear` (n: int) -> LazyFrame
-- `collect_async` (gevent: bool, engine: EngineType, optimizations: QueryOptFlags) -> Awaitable[DataFrame] | _GeventDataFrameResult[DataFrame]
-- `collect_batches` (chunk_size: int | None, maintain_order: bool, lazy: bool, engine: EngineType, optimizations: QueryOptFlags) -> Iterator[DataFrame]
-- `describe` (percentiles: Sequence[float] | float | None, interpolation: QuantileMethod) -> DataFrame
-- `deserialize` (source: str | bytes | Path | IOBase, format: SerializationFormat) -> LazyFrame
-- `explode` (columns: ColumnNameOrSelector | Iterable[ColumnNameOrSelector], more_columns: ColumnNameOrSelector, empty_as_null: bool, keep_nulls: bool) -> LazyFrame
-- `fetch` (n_rows: int, kwargs: Any) -> DataFrame
-- `group_by` (by: IntoExpr | Iterable[IntoExpr], maintain_order: bool, named_by: IntoExpr) -> LazyGroupBy
-- `group_by_dynamic` (index_column: IntoExpr, every: str | timedelta, period: str | timedelta | None, offset: str | timedelta | None, include_boundaries: bool, closed: ClosedInterval, label: Label, group_by: IntoExpr | Iterable[IntoExpr] | None, start_by: StartBy) -> LazyGroupBy
-- `inspect` (fmt: str) -> LazyFrame
-- `interpolate` () -> LazyFrame
-- `join` (other: LazyFrame, on: str | Expr | Sequence[str | Expr] | None, how: JoinStrategy, left_on: str | Expr | Sequence[str | Expr] | None, right_on: str | Expr | Sequence[str | Expr] | None, suffix: str, validate: JoinValidation, nulls_equal: bool, coalesce: bool | None, maintain_order: MaintainOrderJoin | None, allow_parallel: bool, force_parallel: bool) -> LazyFrame
-- `join_asof` (other: LazyFrame, left_on: str | None | Expr, right_on: str | None | Expr, on: str | None | Expr, by_left: str | Sequence[str] | None, by_right: str | Sequence[str] | None, by: str | Sequence[str] | None, strategy: AsofJoinStrategy, suffix: str, tolerance: str | int | float | timedelta | None, allow_parallel: bool, force_parallel: bool, coalesce: bool, allow_exact_matches: bool, check_sortedness: bool) -> LazyFrame
-- `join_where` (other: LazyFrame, predicates: Expr | Iterable[Expr], suffix: str) -> LazyFrame
-- `last` () -> LazyFrame
-- `lazy` () -> LazyFrame
-- `map_batches` (function: Callable[[DataFrame], DataFrame], predicate_pushdown: bool, projection_pushdown: bool, slice_pushdown: bool, no_optimizations: bool, schema: None | SchemaDict, validate_output_schema: bool, streamable: bool) -> LazyFrame
-- `match_to_schema` (schema: SchemaDict | Schema, missing_columns: Literal['insert', 'raise'] | Mapping[str, Literal['insert', 'raise'] | Expr], missing_struct_fields: Literal['insert', 'raise'] | Mapping[str, Literal['insert', 'raise']], extra_columns: Literal['ignore', 'raise'], extra_struct_fields: Literal['ignore', 'raise'] | Mapping[str, Literal['ignore', 'raise']], integer_cast: Literal['upcast', 'forbid'] | Mapping[str, Literal['upcast', 'forbid']], float_cast: Literal['upcast', 'forbid'] | Mapping[str, Literal['upcast', 'forbid']]) -> LazyFrame
-- `melt` (id_vars: ColumnNameOrSelector | Sequence[ColumnNameOrSelector] | None, value_vars: ColumnNameOrSelector | Sequence[ColumnNameOrSelector] | None, variable_name: str | None, value_name: str | None, streamable: bool) -> LazyFrame
-- `merge_sorted` (other: LazyFrame, key: str) -> LazyFrame
-- `pipe_with_schema` (function: Callable[[LazyFrame, Schema], LazyFrame]) -> LazyFrame
-- `pivot` (on: ColumnNameOrSelector | Sequence[ColumnNameOrSelector], on_columns: Sequence[Any] | pl.Series | pl.DataFrame, index: ColumnNameOrSelector | Sequence[ColumnNameOrSelector] | None, values: ColumnNameOrSelector | Sequence[ColumnNameOrSelector] | None, aggregate_function: PivotAgg | Expr | None, maintain_order: bool, separator: str) -> LazyFrame
-- `profile` (type_coercion: bool, predicate_pushdown: bool, projection_pushdown: bool, simplify_expression: bool, no_optimization: bool, slice_pushdown: bool, comm_subplan_elim: bool, comm_subexpr_elim: bool, cluster_with_columns: bool, collapse_joins: bool, show_plot: bool, truncate_nodes: int, figsize: tuple[int, int], engine: EngineType, optimizations: QueryOptFlags,_kwargs: Any) -> tuple[DataFrame, DataFrame]
-- `remote` (context: pc.ComputeContext | None, plan_type: pc._typing.PlanTypePreference, n_retries: int, engine: pc._typing.Engine, scaling_mode: pc._typing.ScalingMode) -> pc.LazyFrameRemote
-- `remove` (predicates: IntoExprColumn | Iterable[IntoExprColumn] | bool | list[bool] | np.ndarray[Any, Any], constraints: Any) -> LazyFrame
-- `rolling` (index_column: IntoExpr, period: str | timedelta, offset: str | timedelta | None, closed: ClosedInterval, group_by: IntoExpr | Iterable[IntoExpr] | None) -> LazyGroupBy
-- `select_seq` (exprs: IntoExpr | Iterable[IntoExpr], named_exprs: IntoExpr) -> LazyFrame
-- `serialize` (file: IOBase | str | Path | None, format: SerializationFormat) -> bytes | str | None
-- `set_sorted` (column: str | list[str], more_columns: str, descending: bool | list[bool], nulls_last: bool | list[bool]) -> LazyFrame
-- `show` (limit: int | None, ascii_tables: bool | None, decimal_separator: str | None, thousands_separator: str | bool | None, float_precision: int | None, fmt_float: FloatFmt | None, fmt_str_lengths: int | None, fmt_table_cell_list_len: int | None, tbl_cell_alignment: Literal['LEFT', 'CENTER', 'RIGHT'] | None, tbl_cell_numeric_alignment: Literal['LEFT', 'CENTER', 'RIGHT'] | None, tbl_cols: int | None, tbl_column_data_type_inline: bool | None, tbl_dataframe_shape_below: bool | None, tbl_formatting: TableFormatNames | None, tbl_hide_column_data_types: bool | None, tbl_hide_column_names: bool | None, tbl_hide_dtype_separator: bool | None, tbl_hide_dataframe_shape: bool | None, tbl_width_chars: int | None, trim_decimal_zeros: bool | None) -> None
-- `show_graph` (optimized: bool, show: bool, output_path: str | Path | None, raw_output: bool, figsize: tuple[float, float], type_coercion: bool,_type_check: bool, predicate_pushdown: bool, projection_pushdown: bool, simplify_expression: bool, slice_pushdown: bool, comm_subplan_elim: bool, comm_subexpr_elim: bool, cluster_with_columns: bool, collapse_joins: bool, engine: EngineType, plan_stage: PlanStage,_check_order: bool, optimizations: QueryOptFlags) -> str | None
-- `sink_batches` (function: Callable[[DataFrame], bool | None], chunk_size: int | None, maintain_order: bool, lazy: bool, engine: EngineType, optimizations: QueryOptFlags) -> pl.LazyFrame | None
-- `sink_delta` (target: str | Path | deltalake.DeltaTable, mode: Literal['error', 'append', 'overwrite', 'ignore', 'merge'], storage_options: dict[str, str] | None, credential_provider: CredentialProviderFunction | Literal['auto'] | None, delta_write_options: dict[str, Any] | None, delta_merge_options: dict[str, Any] | None, optimizations: QueryOptFlags) -> deltalake.table.TableMerger | None
-- `sink_ipc` (path: str | Path | IO[bytes] | _SinkDirectory | PartitionBy, compression: IpcCompression | None, compat_level: CompatLevel | None, record_batch_size: int | None, maintain_order: bool, storage_options: dict[str, Any] | None, credential_provider: CredentialProviderFunction | Literal['auto'] | None, retries: int, sync_on_close: SyncOnCloseMethod | None, mkdir: bool, lazy: bool, engine: EngineType, optimizations: QueryOptFlags) -> LazyFrame | None
-- `slice` (offset: int, length: int | None) -> LazyFrame
-- `sql` (query: str, table_name: str) -> LazyFrame
-- `tail` (n: int) -> LazyFrame
-- `unnest` (columns: ColumnNameOrSelector | Collection[ColumnNameOrSelector], more_columns: ColumnNameOrSelector, separator: str | None) -> LazyFrame
-- `unpivot` (on: ColumnNameOrSelector | Sequence[ColumnNameOrSelector] | None, index: ColumnNameOrSelector | Sequence[ColumnNameOrSelector] | None, variable_name: str | None, value_name: str | None, streamable: bool) -> LazyFrame
-- `update` (other: LazyFrame, on: str | Sequence[str] | None, how: Literal['left', 'inner', 'full'], left_on: str | Sequence[str] | None, right_on: str | Sequence[str] | None, include_nulls: bool, maintain_order: MaintainOrderJoin | None) -> LazyFrame
-- `with_columns_seq` (exprs: IntoExpr | Iterable[IntoExpr], named_exprs: IntoExpr) -> LazyFrame
-- `with_context` (other: Self | list[Self]) -> LazyFrame
-
-### [!] Signature Mismatches (22)
-
-- `bottom_k`
-  - Polars: (k: int, by: IntoExpr | Iterable[IntoExpr], reverse: bool | Sequence[bool]) -> LazyFrame
-  - pql: (k: int, by: IntoExpr | Iterable[IntoExpr], reverse: bool) -> Self
-- `cast`
-  - Polars: (dtypes: Mapping[ColumnNameOrSelector | PolarsDataType, PolarsDataType | PythonDataType] | PolarsDataType | pl.DataTypeExpr | Schema, strict: bool) -> LazyFrame
-  - pql: (dtypes: Mapping[str, datatypes.DataType] | datatypes.DataType) -> Self
-- `collect`
-  - Polars: (type_coercion: bool, predicate_pushdown: bool, projection_pushdown: bool, simplify_expression: bool, slice_pushdown: bool, comm_subplan_elim: bool, comm_subexpr_elim: bool, cluster_with_columns: bool, collapse_joins: bool, no_optimization: bool, engine: EngineType, background: bool, optimizations: QueryOptFlags,_kwargs: Any) -> DataFrame | InProcessQuery
-  - pql: () -> pl.DataFrame
-- `drop`
-  - Polars: (columns: ColumnNameOrSelector | Iterable[ColumnNameOrSelector], strict: bool) -> LazyFrame
-  - pql: (columns: str) -> Self
-- `drop_nans`
-  - Polars: (subset: ColumnNameOrSelector | Collection[ColumnNameOrSelector] | None) -> LazyFrame
-  - pql: (subset: str | Iterable[str] | None) -> Self
-- `drop_nulls`
-  - Polars: (subset: ColumnNameOrSelector | Collection[ColumnNameOrSelector] | None) -> LazyFrame
-  - pql: (subset: str | Iterable[str] | None) -> Self
-- `explain`
-  - Polars: (format: ExplainFormat, optimized: bool, type_coercion: bool, predicate_pushdown: bool, projection_pushdown: bool, simplify_expression: bool, slice_pushdown: bool, comm_subplan_elim: bool, comm_subexpr_elim: bool, cluster_with_columns: bool, collapse_joins: bool, streaming: bool, engine: EngineType, tree_format: bool | None, optimizations: QueryOptFlags) -> str
-  - pql: () -> str
-- `fill_nan`
-  - Polars: (value: int | float | Expr | None) -> LazyFrame
-  - pql: (value: float | Expr | None) -> Self
-- `fill_null`
-  - Polars: (value: Any | Expr | None, strategy: FillNullStrategy | None, limit: int | None, matches_supertype: bool) -> LazyFrame
-  - pql: (value: IntoExpr, strategy: Literal['forward', 'backward'] | None) -> Self
-- `filter`
-  - Polars: (predicates: IntoExprColumn | Iterable[IntoExprColumn] | bool | list[bool], constraints: Any) -> LazyFrame
-  - pql: (predicates: Expr) -> Self
-- `pipe`
-  - Polars: (function: Callable[Concatenate[LazyFrame, P], T], args: P.args, kwargs: P.kwargs) -> T
-  - pql: (function: Callable[Concatenate[Self, P], T], args: P.args, kwargs: P.kwargs) -> T
-- `quantile`
-  - Polars: (quantile: float | Expr, interpolation: QuantileMethod) -> LazyFrame
-  - pql: (quantile: float) -> Self
-- `rename`
-  - Polars: (mapping: Mapping[str, str] | Callable[[str], str], strict: bool) -> LazyFrame
-  - pql: (mapping: Mapping[str, str]) -> Self
-- `select`
-  - Polars: (exprs: IntoExpr | Iterable[IntoExpr], named_exprs: IntoExpr) -> LazyFrame
-  - pql: (exprs: IntoExpr | Iterable[IntoExpr]) -> Self
-- `shift`
-  - Polars: (n: int | IntoExprColumn, fill_value: IntoExpr | None) -> LazyFrame
-  - pql: (n: int, fill_value: IntoExpr | None) -> Self
-- `sink_csv`
-  - Polars: (path: str | Path | IO[bytes] | IO[str] | _SinkDirectory | PartitionBy, include_bom: bool, include_header: bool, separator: str, line_terminator: str, quote_char: str, batch_size: int, datetime_format: str | None, date_format: str | None, time_format: str | None, float_scientific: bool | None, float_precision: int | None, decimal_comma: bool, null_value: str | None, quote_style: CsvQuoteStyle | None, maintain_order: bool, storage_options: dict[str, Any] | None, credential_provider: CredentialProviderFunction | Literal['auto'] | None, retries: int, sync_on_close: SyncOnCloseMethod | None, mkdir: bool, lazy: bool, engine: EngineType, optimizations: QueryOptFlags) -> LazyFrame | None
-  - pql: (path: str | Path, separator: str, include_header: bool) -> None
-- `sink_ndjson`
-  - Polars: (path: str | Path | IO[bytes] | IO[str] | _SinkDirectory | PartitionBy, maintain_order: bool, storage_options: dict[str, Any] | None, credential_provider: CredentialProviderFunction | Literal['auto'] | None, retries: int, sync_on_close: SyncOnCloseMethod | None, mkdir: bool, lazy: bool, engine: EngineType, optimizations: QueryOptFlags) -> LazyFrame | None
-  - pql: (path: str | Path) -> None
-- `sink_parquet`
-  - Polars: (path: str | Path | IO[bytes] | _SinkDirectory | PartitionBy, compression: str, compression_level: int | None, statistics: bool | str | dict[str, bool], row_group_size: int | None, data_page_size: int | None, maintain_order: bool, storage_options: dict[str, Any] | None, credential_provider: CredentialProviderFunction | Literal['auto'] | None, retries: int, sync_on_close: SyncOnCloseMethod | None, metadata: ParquetMetadata | None, mkdir: bool, lazy: bool, field_overwrites: ParquetFieldOverwrites | Sequence[ParquetFieldOverwrites] | Mapping[str, ParquetFieldOverwrites] | None, engine: EngineType, optimizations: QueryOptFlags) -> LazyFrame | None
-  - pql: (path: str | Path, compression: str) -> None
-- `sort`
-  - Polars: (by: IntoExpr | Iterable[IntoExpr], more_by: IntoExpr, descending: bool | Sequence[bool], nulls_last: bool | Sequence[bool], maintain_order: bool, multithreaded: bool) -> LazyFrame
-  - pql: (by: IntoExpr | Iterable[IntoExpr], descending: bool | Iterable[bool], nulls_last: bool | Iterable[bool]) -> Self
-- `top_k`
-  - Polars: (k: int, by: IntoExpr | Iterable[IntoExpr], reverse: bool | Sequence[bool]) -> LazyFrame
-  - pql: (k: int, by: IntoExpr | Iterable[IntoExpr], reverse: bool) -> Self
-- `unique`
-  - Polars: (subset: IntoExpr | Collection[IntoExpr] | None, keep: UniqueKeepStrategy, maintain_order: bool) -> LazyFrame
-  - pql: (subset: str | Iterable[str] | None) -> Self
-- `with_columns`
-  - Polars: (exprs: IntoExpr | Iterable[IntoExpr], named_exprs: IntoExpr) -> LazyFrame
-  - pql: (exprs: IntoExpr | Iterable[IntoExpr]) -> Self
-
-### [+] Extra Methods (pql-only) (1)
-
-- `relation`
 
 ## Expr
 
-### [v] Matched Methods (34)
+### [v] Matched Methods (17)
 
 - `abs`
 - `alias`
-- `and_`
-- `arctan`
-- `cbrt`
 - `ceil`
-- `cos`
-- `cosh`
-- `degrees`
 - `exp`
 - `floor`
 - `is_duplicated`
 - `is_finite`
 - `is_first_distinct`
-- `is_infinite`
 - `is_last_distinct`
 - `is_nan`
-- `is_not_nan`
-- `is_not_null`
 - `is_null`
 - `is_unique`
+- `log`
+- `pipe`
+- `sin`
+- `sqrt`
+- `str`
+
+### [x] Missing Methods (48)
+
+- `all` () -> Self
+- `any` () -> Self
+- `any_value` (ignore_nulls: bool) -> Self
+- `cat` ()
+- `clip` (lower_bound: IntoExpr | NumericLiteral | TemporalLiteral | None, upper_bound: IntoExpr | NumericLiteral | TemporalLiteral | None) -> Self
+- `count` () -> Self
+- `cum_count` (reverse: bool) -> Self
+- `cum_max` (reverse: bool) -> Self
+- `cum_min` (reverse: bool) -> Self
+- `cum_prod` (reverse: bool) -> Self
+- `cum_sum` (reverse: bool) -> Self
+- `diff` () -> Self
+- `drop_nulls` () -> Self
+- `dt` ()
+- `ewm_mean` (com: float | None, span: float | None, half_life: float | None, alpha: float | None, adjust: bool, min_samples: int, ignore_nulls: bool) -> Self
+- `fill_null` (value: Expr | NonNestedLiteral, strategy: FillNullStrategy | None, limit: int | None) -> Self
+- `filter` (predicates: Any) -> Self
+- `first` () -> Self
+- `is_between` (lower_bound: Any | IntoExpr, upper_bound: Any | IntoExpr, closed: ClosedInterval) -> Self
+- `is_close` (other: Expr | Series[Any] | NumericLiteral, abs_tol: float, rel_tol: float, nans_equal: bool) -> Self
+- `kurtosis` () -> Self
+- `last` () -> Self
+- `len` () -> Self
+- `list` ()
+- `map_batches` (function: Callable[[Any], CompliantExpr[Any, Any]], return_dtype: DType | None, returns_scalar: bool) -> Self
+- `max` () -> Self
+- `mean` () -> Self
+- `median` () -> Self
+- `min` () -> Self
+- `mode` (keep: ModeKeepStrategy) -> Self
+- `n_unique` () -> Self
+- `name` ()
+- `null_count` () -> Self
+- `over` (partition_by: str | Sequence[str], order_by: str | Sequence[str] | None) -> Self
+- `quantile` (quantile: float, interpolation: RollingInterpolationMethod) -> Self
+- `rank` (method: RankMethod, descending: bool) -> Self
+- `replace_strict` (old: Sequence[Any] | Mapping[Any, Any], new: Sequence[Any] | None, default: Any | NoDefault, return_dtype: IntoDType | None) -> Self
+- `rolling_mean` (window_size: int, min_samples: int | None, center: bool) -> Self
+- `rolling_std` (window_size: int, min_samples: int | None, center: bool, ddof: int) -> Self
+- `rolling_sum` (window_size: int, min_samples: int | None, center: bool) -> Self
+- `rolling_var` (window_size: int, min_samples: int | None, center: bool, ddof: int) -> Self
+- `shift` (n: int) -> Self
+- `skew` () -> Self
+- `std` (ddof: int) -> Self
+- `struct` ()
+- `sum` () -> Self
+- `unique` () -> Self
+- `var` (ddof: int) -> Self
+
+### [!] Signature Mismatches (4)
+
+- `cast` (nw)
+  - Narwhals: (dtype: IntoDType) -> Self
+  - Polars: (dtype: PolarsDataType | pl.DataTypeExpr | type[Any], strict: bool, wrap_numerical: bool) -> Expr
+  - pql: (dtype: datatypes.DataType) -> Self
+- `fill_nan` (nw)
+  - Narwhals: (value: float | None) -> Self
+  - Polars: (value: int | float | Expr | None) -> Expr
+  - pql: (value: IntoExpr) -> Self
+- `is_in` (nw)
+  - Narwhals: (other: Any) -> Self
+  - Polars: (other: Expr | Collection[Any] | Series, nulls_equal: bool) -> Expr
+  - pql: (other: Collection[IntoExpr] | IntoExpr) -> Self
+- `round` (nw)
+  - Narwhals: (decimals: int) -> Self
+  - Polars: (decimals: int, mode: RoundMode) -> Expr
+  - pql: (decimals: int, mode: Literal['half_to_even', 'half_away_from_zero']) -> Self
+
+### [+] Extra Methods (pql-only) (39)
+
+- `add`
+- `and_`
+- `arctan`
+- `backward_fill`
+- `cbrt`
+- `cos`
+- `cosh`
+- `degrees`
+- `eq`
+- `expr`
+- `floordiv`
+- `forward_fill`
+- `ge`
+- `gt`
+- `hash`
+- `interpolate`
+- `is_infinite`
+- `is_not_nan`
+- `is_not_null`
+- `le`
 - `log10`
 - `log1p`
+- `lt`
+- `mod`
+- `mul`
+- `ne`
 - `neg`
 - `not_`
 - `or_`
+- `pow`
 - `radians`
+- `repeat_by`
+- `replace`
 - `sign`
-- `sin`
 - `sinh`
-- `sqrt`
-- `str`
+- `sub`
 - `tan`
 - `tanh`
-
-### [x] Missing Methods (158)
-
-- `agg_groups` () -> Expr
-- `all` (ignore_nulls: bool) -> Expr
-- `any` (ignore_nulls: bool) -> Expr
-- `append` (other: IntoExpr, upcast: bool) -> Expr
-- `approx_n_unique` () -> Expr
-- `arccos` () -> Expr
-- `arccosh` () -> Expr
-- `arcsin` () -> Expr
-- `arcsinh` () -> Expr
-- `arctanh` () -> Expr
-- `arg_max` () -> Expr
-- `arg_min` () -> Expr
-- `arg_sort` (descending: bool, nulls_last: bool) -> Expr
-- `arg_true` () -> Expr
-- `arg_unique` () -> Expr
-- `arr` ()
-- `bin` ()
-- `bitwise_and` () -> Expr
-- `bitwise_count_ones` () -> Expr
-- `bitwise_count_zeros` () -> Expr
-- `bitwise_leading_ones` () -> Expr
-- `bitwise_leading_zeros` () -> Expr
-- `bitwise_or` () -> Expr
-- `bitwise_trailing_ones` () -> Expr
-- `bitwise_trailing_zeros` () -> Expr
-- `bitwise_xor` () -> Expr
-- `bottom_k` (k: int | IntoExprColumn) -> Expr
-- `bottom_k_by` (by: IntoExpr | Iterable[IntoExpr], k: int | IntoExprColumn, reverse: bool | Sequence[bool]) -> Expr
-- `cat` ()
-- `clip` (lower_bound: NumericLiteral | TemporalLiteral | IntoExprColumn | None, upper_bound: NumericLiteral | TemporalLiteral | IntoExprColumn | None) -> Expr
-- `cot` () -> Expr
-- `count` () -> Expr
-- `cum_count` (reverse: bool) -> Expr
-- `cum_max` (reverse: bool) -> Expr
-- `cum_min` (reverse: bool) -> Expr
-- `cum_prod` (reverse: bool) -> Expr
-- `cum_sum` (reverse: bool) -> Expr
-- `cumulative_eval` (expr: Expr, min_samples: int) -> Expr
-- `cut` (breaks: Sequence[float], labels: Sequence[str] | None, left_closed: bool, include_breaks: bool) -> Expr
-- `deserialize` (source: str | Path | IOBase | bytes, format: SerializationFormat) -> Expr
-- `diff` (n: int | IntoExpr, null_behavior: NullBehavior) -> Expr
-- `dot` (other: Expr | str) -> Expr
-- `drop_nans` () -> Expr
-- `drop_nulls` () -> Expr
-- `dt` ()
-- `entropy` (base: float, normalize: bool) -> Expr
-- `eq_missing` (other: Any) -> Expr
-- `ewm_mean` (com: float | None, span: float | None, half_life: float | None, alpha: float | None, adjust: bool, min_samples: int, ignore_nulls: bool) -> Expr
-- `ewm_mean_by` (by: str | IntoExpr, half_life: str | timedelta) -> Expr
-- `ewm_std` (com: float | None, span: float | None, half_life: float | None, alpha: float | None, adjust: bool, bias: bool, min_samples: int, ignore_nulls: bool) -> Expr
-- `ewm_var` (com: float | None, span: float | None, half_life: float | None, alpha: float | None, adjust: bool, bias: bool, min_samples: int, ignore_nulls: bool) -> Expr
-- `exclude` (columns: str | PolarsDataType | Collection[str] | Collection[PolarsDataType], more_columns: str | PolarsDataType) -> Expr
-- `explode` (empty_as_null: bool, keep_nulls: bool) -> Expr
-- `ext` ()
-- `extend_constant` (value: IntoExpr, n: int | IntoExprColumn) -> Expr
-- `fill_null` (value: Any | Expr | None, strategy: FillNullStrategy | None, limit: int | None) -> Expr
-- `filter` (predicates: IntoExprColumn | Iterable[IntoExprColumn], constraints: Any) -> Expr
-- `first` (ignore_nulls: bool) -> Expr
-- `flatten` () -> Expr
-- `from_json` (value: str) -> Expr
-- `gather` (indices: int | Sequence[int] | IntoExpr | Series | np.ndarray[Any, Any]) -> Expr
-- `gather_every` (n: int, offset: int) -> Expr
-- `get` (index: int | Expr, null_on_oob: bool) -> Expr
-- `has_nulls` () -> Expr
-- `head` (n: int | Expr) -> Expr
-- `hist` (bins: IntoExpr | None, bin_count: int | None, include_category: bool, include_breakpoint: bool) -> Expr
-- `implode` () -> Expr
-- `index_of` (element: IntoExpr) -> Expr
-- `inspect` (fmt: str) -> Expr
-- `interpolate_by` (by: IntoExpr) -> Expr
-- `is_between` (lower_bound: IntoExpr, upper_bound: IntoExpr, closed: ClosedInterval) -> Expr
-- `is_close` (other: IntoExpr, abs_tol: float, rel_tol: float, nans_equal: bool) -> Expr
-- `item` (allow_empty: bool) -> Expr
-- `kurtosis` (fisher: bool, bias: bool) -> Expr
-- `last` (ignore_nulls: bool) -> Expr
-- `len` () -> Expr
-- `limit` (n: int | Expr) -> Expr
-- `list` ()
-- `lower_bound` () -> Expr
-- `map_batches` (function: Callable[[Series], Series | Any], return_dtype: PolarsDataType | pl.DataTypeExpr | None, agg_list: bool, is_elementwise: bool, returns_scalar: bool) -> Expr
-- `map_elements` (function: Callable[[Any], Any], return_dtype: PolarsDataType | pl.DataTypeExpr | None, skip_nulls: bool, pass_name: bool, strategy: MapElementsStrategy, returns_scalar: bool) -> Expr
-- `max` () -> Expr
-- `max_by` (by: IntoExpr) -> Expr
-- `mean` () -> Expr
-- `median` () -> Expr
-- `meta` ()
-- `min` () -> Expr
-- `min_by` (by: IntoExpr) -> Expr
-- `mode` (maintain_order: bool) -> Expr
-- `n_unique` () -> Expr
-- `name` ()
-- `nan_max` () -> Expr
-- `nan_min` () -> Expr
-- `ne_missing` (other: Any) -> Expr
-- `null_count` () -> Expr
-- `over` (partition_by: IntoExpr | Iterable[IntoExpr] | None, more_exprs: IntoExpr, order_by: IntoExpr | Iterable[IntoExpr] | None, descending: bool, nulls_last: bool, mapping_strategy: WindowMappingStrategy) -> Expr
-- `pct_change` (n: int | IntoExprColumn) -> Expr
-- `peak_max` () -> Expr
-- `peak_min` () -> Expr
-- `product` () -> Expr
-- `qcut` (quantiles: Sequence[float] | int, labels: Sequence[str] | None, left_closed: bool, allow_duplicates: bool, include_breaks: bool) -> Expr
-- `quantile` (quantile: float | Expr, interpolation: QuantileMethod) -> Expr
-- `rank` (method: RankMethod, descending: bool, seed: int | None) -> Expr
-- `rechunk` () -> Expr
-- `register_plugin` (lib: str, symbol: str, args: list[IntoExpr] | None, kwargs: dict[Any, Any] | None, is_elementwise: bool, input_wildcard_expansion: bool, returns_scalar: bool, cast_to_supertypes: bool, pass_name_to_apply: bool, changes_length: bool) -> Expr
-- `reinterpret` (signed: bool) -> Expr
-- `replace_strict` (old: IntoExpr | Sequence[Any] | Mapping[Any, Any], new: IntoExpr | Sequence[Any] | NoDefault, default: IntoExpr | NoDefault, return_dtype: PolarsDataType | pl.DataTypeExpr | None) -> Expr
-- `reshape` (dimensions: tuple[int, ...]) -> Expr
-- `reverse` () -> Expr
-- `rle` () -> Expr
-- `rle_id` () -> Expr
-- `rolling` (index_column: IntoExprColumn, period: str | timedelta, offset: str | timedelta | None, closed: ClosedInterval) -> Expr
-- `rolling_kurtosis` (window_size: int, fisher: bool, bias: bool, min_samples: int | None, center: bool) -> Expr
-- `rolling_map` (function: Callable[[Series], Any], window_size: int, weights: list[float] | None, min_samples: int | None, center: bool) -> Expr
-- `rolling_max` (window_size: int, weights: list[float] | None, min_samples: int | None, center: bool) -> Expr
-- `rolling_max_by` (by: IntoExpr, window_size: timedelta | str, min_samples: int, closed: ClosedInterval) -> Expr
-- `rolling_mean` (window_size: int, weights: list[float] | None, min_samples: int | None, center: bool) -> Expr
-- `rolling_mean_by` (by: IntoExpr, window_size: timedelta | str, min_samples: int, closed: ClosedInterval) -> Expr
-- `rolling_median` (window_size: int, weights: list[float] | None, min_samples: int | None, center: bool) -> Expr
-- `rolling_median_by` (by: IntoExpr, window_size: timedelta | str, min_samples: int, closed: ClosedInterval) -> Expr
-- `rolling_min` (window_size: int, weights: list[float] | None, min_samples: int | None, center: bool) -> Expr
-- `rolling_min_by` (by: IntoExpr, window_size: timedelta | str, min_samples: int, closed: ClosedInterval) -> Expr
-- `rolling_quantile` (quantile: float, interpolation: QuantileMethod, window_size: int, weights: list[float] | None, min_samples: int | None, center: bool) -> Expr
-- `rolling_quantile_by` (by: IntoExpr, window_size: timedelta | str, quantile: float, interpolation: QuantileMethod, min_samples: int, closed: ClosedInterval) -> Expr
-- `rolling_rank` (window_size: int, method: RankMethod, seed: int | None, min_samples: int | None, center: bool) -> Expr
-- `rolling_rank_by` (by: IntoExpr, window_size: timedelta | str, method: RankMethod, seed: int | None, min_samples: int, closed: ClosedInterval) -> Expr
-- `rolling_skew` (window_size: int, bias: bool, min_samples: int | None, center: bool) -> Expr
-- `rolling_std` (window_size: int, weights: list[float] | None, min_samples: int | None, center: bool, ddof: int) -> Expr
-- `rolling_std_by` (by: IntoExpr, window_size: timedelta | str, min_samples: int, closed: ClosedInterval, ddof: int) -> Expr
-- `rolling_sum` (window_size: int, weights: list[float] | None, min_samples: int | None, center: bool) -> Expr
-- `rolling_sum_by` (by: IntoExpr, window_size: timedelta | str, min_samples: int, closed: ClosedInterval) -> Expr
-- `rolling_var` (window_size: int, weights: list[float] | None, min_samples: int | None, center: bool, ddof: int) -> Expr
-- `rolling_var_by` (by: IntoExpr, window_size: timedelta | str, min_samples: int, closed: ClosedInterval, ddof: int) -> Expr
-- `round_sig_figs` (digits: int) -> Expr
-- `sample` (n: int | IntoExprColumn | None, fraction: float | IntoExprColumn | None, with_replacement: bool, shuffle: bool, seed: int | None) -> Expr
-- `search_sorted` (element: IntoExpr | np.ndarray[Any, Any], side: SearchSortedSide, descending: bool) -> Expr
-- `set_sorted` (descending: bool) -> Expr
-- `shift` (n: int | IntoExprColumn, fill_value: IntoExpr | None) -> Expr
-- `shrink_dtype` () -> Expr
-- `shuffle` (seed: int | None) -> Expr
-- `skew` (bias: bool) -> Expr
-- `slice` (offset: int | Expr, length: int | Expr | None) -> Expr
-- `sort` (descending: bool, nulls_last: bool) -> Expr
-- `sort_by` (by: IntoExpr | Iterable[IntoExpr], more_by: IntoExpr, descending: bool | Sequence[bool], nulls_last: bool | Sequence[bool], multithreaded: bool, maintain_order: bool) -> Expr
-- `std` (ddof: int) -> Expr
-- `struct` ()
-- `sum` () -> Expr
-- `tail` (n: int | Expr) -> Expr
-- `to_physical` () -> Expr
-- `top_k` (k: int | IntoExprColumn) -> Expr
-- `top_k_by` (by: IntoExpr | Iterable[IntoExpr], k: int | IntoExprColumn, reverse: bool | Sequence[bool]) -> Expr
-- `unique` (maintain_order: bool) -> Expr
-- `unique_counts` () -> Expr
-- `upper_bound` () -> Expr
-- `value_counts` (sort: bool, parallel: bool, name: str | None, normalize: bool) -> Expr
-- `var` (ddof: int) -> Expr
-- `where` (predicate: Expr) -> Expr
-- `xor` (other: Any) -> Expr
-
-### [!] Signature Mismatches (25)
-
-- `add`
-  - Polars: (other: Any) -> Expr
-  - pql: (other: IntoExpr) -> Self
-- `backward_fill`
-  - Polars: (limit: int | None) -> Expr
-  - pql: () -> Self
-- `cast`
-  - Polars: (dtype: PolarsDataType | pl.DataTypeExpr | type[Any], strict: bool, wrap_numerical: bool) -> Expr
-  - pql: (dtype: datatypes.DataType) -> Self
-- `eq`
-  - Polars: (other: Any) -> Expr
-  - pql: (other: IntoExpr) -> Self
-- `fill_nan`
-  - Polars: (value: int | float | Expr | None) -> Expr
-  - pql: (value: IntoExpr) -> Self
-- `floordiv`
-  - Polars: (other: Any) -> Expr
-  - pql: (other: IntoExpr) -> Self
-- `forward_fill`
-  - Polars: (limit: int | None) -> Expr
-  - pql: () -> Self
-- `ge`
-  - Polars: (other: Any) -> Expr
-  - pql: (other: IntoExpr) -> Self
-- `gt`
-  - Polars: (other: Any) -> Expr
-  - pql: (other: IntoExpr) -> Self
-- `hash`
-  - Polars: (seed: int, seed_1: int | None, seed_2: int | None, seed_3: int | None) -> Expr
-  - pql: (seed: int) -> Self
-- `interpolate`
-  - Polars: (method: InterpolationMethod) -> Expr
-  - pql: () -> Self
-- `is_in`
-  - Polars: (other: Expr | Collection[Any] | Series, nulls_equal: bool) -> Expr
-  - pql: (other: Collection[IntoExpr] | IntoExpr) -> Self
-- `le`
-  - Polars: (other: Any) -> Expr
-  - pql: (other: IntoExpr) -> Self
-- `log`
-  - Polars: (base: float | IntoExpr) -> Expr
-  - pql: (base: float) -> Self
-- `lt`
-  - Polars: (other: Any) -> Expr
-  - pql: (other: IntoExpr) -> Self
-- `mod`
-  - Polars: (other: Any) -> Expr
-  - pql: (other: IntoExpr) -> Self
-- `mul`
-  - Polars: (other: Any) -> Expr
-  - pql: (other: IntoExpr) -> Self
-- `ne`
-  - Polars: (other: Any) -> Expr
-  - pql: (other: IntoExpr) -> Self
-- `pipe`
-  - Polars: (function: Callable[Concatenate[Expr, P], T], args: P.args, kwargs: P.kwargs) -> T
-  - pql: (function: Callable[Concatenate[Self, P], T], args: P.args, kwargs: P.kwargs) -> T
-- `pow`
-  - Polars: (exponent: IntoExprColumn | int | float) -> Expr
-  - pql: (other: IntoExpr) -> Self
-- `repeat_by`
-  - Polars: (by: pl.Series | Expr | str | int) -> Expr
-  - pql: (by: Expr | int) -> Self
-- `replace`
-  - Polars: (old: IntoExpr | Sequence[Any] | Mapping[Any, Any], new: IntoExpr | Sequence[Any] | NoDefault, default: IntoExpr | NoDefault, return_dtype: PolarsDataType | None) -> Expr
-  - pql: (old: IntoExpr, new: IntoExpr) -> Self
-- `round`
-  - Polars: (decimals: int, mode: RoundMode) -> Expr
-  - pql: (decimals: int, mode: str) -> Self
-- `sub`
-  - Polars: (other: Any) -> Expr
-  - pql: (other: IntoExpr) -> Self
 - `truediv`
-  - Polars: (other: Any) -> Expr
-  - pql: (other: IntoExpr) -> Self
-
-### [+] Extra Methods (pql-only) (1)
-
-- `expr`
 
 ## Expr.str
 
-### [v] Matched Methods (7)
+### [v] Matched Methods (10)
 
-- `len_bytes`
+- `contains`
+- `ends_with`
+- `head`
 - `len_chars`
-- `reverse`
-- `to_decimal`
+- `slice`
+- `starts_with`
+- `tail`
 - `to_lowercase`
 - `to_titlecase`
 - `to_uppercase`
 
-### [x] Missing Methods (23)
+### [x] Missing Methods (1)
 
-- `concat` (delimiter: str | None, ignore_nulls: bool) -> Expr
-- `contains_any` (patterns: IntoExpr, ascii_case_insensitive: bool) -> Expr
-- `decode` (encoding: TransferEncoding, strict: bool) -> Expr
-- `encode` (encoding: TransferEncoding) -> Expr
-- `escape_regex` () -> Expr
-- `explode` () -> Expr
-- `extract` (pattern: IntoExprColumn, group_index: int) -> Expr
-- `extract_groups` (pattern: str) -> Expr
-- `extract_many` (patterns: IntoExpr, ascii_case_insensitive: bool, overlapping: bool, leftmost: bool) -> Expr
-- `find` (pattern: str | Expr, literal: bool, strict: bool) -> Expr
-- `find_many` (patterns: IntoExpr, ascii_case_insensitive: bool, overlapping: bool, leftmost: bool) -> Expr
-- `join` (delimiter: str, ignore_nulls: bool) -> Expr
-- `json_decode` (dtype: PolarsDataType | pl.DataTypeExpr, infer_schema_length: int | None) -> Expr
-- `json_path_match` (json_path: IntoExprColumn) -> Expr
-- `normalize` (form: UnicodeForm) -> Expr
-- `pad_end` (length: int | IntoExprColumn, fill_char: str) -> Expr
-- `pad_start` (length: int | IntoExprColumn, fill_char: str) -> Expr
-- `replace_many` (patterns: IntoExpr | Mapping[str, str], replace_with: IntoExpr | NoDefault, ascii_case_insensitive: bool, leftmost: bool) -> Expr
-- `split_exact` (by: IntoExpr, n: int, inclusive: bool) -> Expr
-- `splitn` (by: IntoExpr, n: int) -> Expr
-- `strptime` (dtype: PolarsTemporalType, format: str | None, strict: bool, exact: bool, cache: bool, ambiguous: Ambiguous | Expr) -> Expr
-- `to_integer` (base: int | IntoExprColumn, dtype: PolarsIntegerType, strict: bool) -> Expr
-- `zfill` (length: int | IntoExprColumn) -> Expr
+- `zfill` (width: int) -> ExprT
 
-### [!] Signature Mismatches (19)
+### [!] Signature Mismatches (6)
 
-- `contains`
-  - Polars: (pattern: str | Expr, literal: bool, strict: bool) -> Expr
-  - pql: (pattern: str, literal: bool) -> Expr
-- `count_matches`
-  - Polars: (pattern: str | Expr, literal: bool) -> Expr
-  - pql: (pattern: str, literal: bool) -> Expr
-- `ends_with`
-  - Polars: (suffix: str | Expr) -> Expr
-  - pql: (suffix: str) -> Expr
-- `extract_all`
-  - Polars: (pattern: str | Expr) -> Expr
-  - pql: (pattern: str) -> Expr
-- `head`
-  - Polars: (n: int | IntoExprColumn) -> Expr
-  - pql: (n: int) -> Expr
-- `replace`
+- `replace` (nw)
+  - Narwhals: (pattern: str, value: str | IntoExpr, literal: bool, n: int) -> ExprT
   - Polars: (pattern: str | Expr, value: str | Expr, literal: bool, n: int) -> Expr
   - pql: (pattern: str, replacement: str) -> Expr
-- `replace_all`
+- `replace_all` (nw)
+  - Narwhals: (pattern: str, value: IntoExpr, literal: bool) -> ExprT
   - Polars: (pattern: str | Expr, value: str | Expr, literal: bool) -> Expr
   - pql: (pattern: str, value: str, literal: bool) -> Expr
-- `slice`
-  - Polars: (offset: int | IntoExprColumn, length: int | IntoExprColumn | None) -> Expr
-  - pql: (offset: int, length: int | None) -> Expr
-- `split`
+- `split` (nw)
+  - Narwhals: (by: str) -> ExprT
   - Polars: (by: IntoExpr, inclusive: bool) -> Expr
   - pql: (by: str, inclusive: bool) -> Expr
-- `starts_with`
-  - Polars: (prefix: str | Expr) -> Expr
-  - pql: (prefix: str) -> Expr
-- `strip_chars`
+- `strip_chars` (nw)
+  - Narwhals: (characters: str | None) -> ExprT
   - Polars: (characters: IntoExpr) -> Expr
   - pql: () -> Expr
-- `strip_chars_end`
-  - Polars: (characters: IntoExpr) -> Expr
-  - pql: () -> Expr
-- `strip_chars_start`
-  - Polars: (characters: IntoExpr) -> Expr
-  - pql: () -> Expr
-- `strip_prefix`
-  - Polars: (prefix: IntoExpr) -> Expr
-  - pql: (prefix: str) -> Expr
-- `strip_suffix`
-  - Polars: (suffix: IntoExpr) -> Expr
-  - pql: (suffix: str) -> Expr
-- `tail`
-  - Polars: (n: int | IntoExprColumn) -> Expr
-  - pql: (n: int) -> Expr
-- `to_date`
+- `to_date` (nw)
+  - Narwhals: (format: str | None) -> ExprT
   - Polars: (format: str | None, strict: bool, exact: bool, cache: bool) -> Expr
   - pql: (fmt: str | None) -> Expr
-- `to_datetime`
+- `to_datetime` (nw)
+  - Narwhals: (format: str | None) -> ExprT
   - Polars: (format: str | None, time_unit: TimeUnit | None, time_zone: str | None, strict: bool, exact: bool, cache: bool, ambiguous: Ambiguous | Expr) -> Expr
   - pql: (fmt: str | None, time_unit: str) -> Expr
+
+### [+] Extra Methods (pql-only) (10)
+
+- `count_matches`
+- `extract_all`
+- `len_bytes`
+- `reverse`
+- `strip_chars_end`
+- `strip_chars_start`
+- `strip_prefix`
+- `strip_suffix`
+- `to_decimal`
 - `to_time`
-  - Polars: (format: str | None, strict: bool, cache: bool) -> Expr
-  - pql: (fmt: str | None) -> Expr
