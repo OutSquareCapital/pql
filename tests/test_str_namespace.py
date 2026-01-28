@@ -22,6 +22,18 @@ def sample_df() -> nw.LazyFrame[duckdb.DuckDBPyRelation]:
                         "  Polars is great suffix  ",
                         "  Testing string functions suffix  ",
                     ],
+                    "text_nullable": [
+                        "  abc  ",
+                        None,
+                        "",
+                        "  ",
+                    ],
+                    "text_short": [
+                        "a",
+                        "ab",
+                        "",
+                        None,
+                    ],
                     "date_str": [
                         "2024-01-15",
                         "2024-02-20",
@@ -51,6 +63,30 @@ def sample_df() -> nw.LazyFrame[duckdb.DuckDBPyRelation]:
                         "other_suffix",
                         "sample_suffix",
                         "data_suffix",
+                    ],
+                    "prefix_exact": [
+                        "foobar",
+                        "foofoobar",
+                        "baab",
+                        "barfoo",
+                    ],
+                    "suffix_exact": [
+                        "foobar",
+                        "foobarbar",
+                        "barfoo",
+                        "ababa",
+                    ],
+                    "prefix_col": [
+                        "prefix_",
+                        "prefix_",
+                        "pre",
+                        None,
+                    ],
+                    "suffix_col": [
+                        "_suffix",
+                        "_suffix",
+                        "suffix",
+                        None,
                     ],
                     "suffix_val": pc.Iter(range(4)).map(lambda _: "suffix").collect(),
                     "json": ['{"a": 1}', '{"a": 2}', '{"a": 3}', '{"a": 4}'],
@@ -165,12 +201,24 @@ def test_strip_chars_start() -> None:
         (pql.col("text").str.strip_chars_start().alias("lstripped")),
         (pl.col("text").str.strip_chars_start().alias("lstripped")),
     )
+    assert_eq_pl(
+        (pql.col("text").str.strip_chars_start(" ").alias("lstripped")),
+        (pl.col("text").str.strip_chars_start(" ").alias("lstripped")),
+    )
 
 
 def test_strip_chars_end() -> None:
     assert_eq_pl(
         (pql.col("text").str.strip_chars_end().alias("rstripped")),
         (pl.col("text").str.strip_chars_end().alias("rstripped")),
+    )
+    assert_eq_pl(
+        (pql.col("text").str.strip_chars_end(" ").alias("rstripped")),
+        (pl.col("text").str.strip_chars_end(" ").alias("rstripped")),
+    )
+    assert_eq_pl(
+        (pql.col("text_nullable").str.strip_chars_end().alias("rstripped"),),
+        (pl.col("text_nullable").str.strip_chars_end().alias("rstripped"),),
     )
 
 
@@ -183,6 +231,16 @@ def test_slice() -> None:
         (
             nw.col("text").str.slice(0, 5).alias("sliced"),
             nw.col("text").str.slice(0).alias("sliced_full"),
+        ),
+    )
+    assert_eq_pl(
+        (
+            pql.col("text_short").str.slice(2, 3).alias("sliced"),
+            pql.col("text_short").str.slice(5).alias("sliced_full"),
+        ),
+        (
+            pl.col("text_short").str.slice(2, 3).alias("sliced"),
+            pl.col("text_short").str.slice(5).alias("sliced_full"),
         ),
     )
 
@@ -245,15 +303,39 @@ def test_count_matches() -> None:
 
 def test_strip_prefix() -> None:
     assert_eq_pl(
-        (pql.col("text").str.strip_prefix("prefix_").alias("stripped")),
-        (pl.col("text").str.strip_prefix("prefix_").alias("stripped")),
+        (pql.col("prefixed").str.strip_prefix("prefix_").alias("stripped")),
+        (pl.col("prefixed").str.strip_prefix("prefix_").alias("stripped")),
+    )
+    assert_eq_pl(
+        (
+            pql.col("prefixed")
+            .str.strip_prefix(pql.col("prefix_col"))
+            .alias("stripped"),
+        ),
+        (pl.col("prefixed").str.strip_prefix(pl.col("prefix_col")).alias("stripped"),),
+    )
+    assert_eq_pl(
+        (pql.col("prefix_exact").str.strip_prefix("foo").alias("stripped")),
+        (pl.col("prefix_exact").str.strip_prefix("foo").alias("stripped")),
     )
 
 
 def test_strip_suffix() -> None:
     assert_eq_pl(
-        (pql.col("prefixed").str.strip_suffix("_suffix").alias("stripped")),
-        (pl.col("prefixed").str.strip_suffix("_suffix").alias("stripped")),
+        (pql.col("suffixed").str.strip_suffix("_suffix").alias("stripped")),
+        (pl.col("suffixed").str.strip_suffix("_suffix").alias("stripped")),
+    )
+    assert_eq_pl(
+        (
+            pql.col("suffixed")
+            .str.strip_suffix(pql.col("suffix_col"))
+            .alias("stripped"),
+        ),
+        (pl.col("suffixed").str.strip_suffix(pl.col("suffix_col")).alias("stripped"),),
+    )
+    assert_eq_pl(
+        (pql.col("suffix_exact").str.strip_suffix("bar").alias("stripped")),
+        (pl.col("suffix_exact").str.strip_suffix("bar").alias("stripped")),
     )
 
 

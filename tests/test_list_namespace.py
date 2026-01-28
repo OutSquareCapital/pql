@@ -3,6 +3,7 @@ from collections.abc import Iterable
 import duckdb
 import narwhals as nw
 import polars as pl
+import pytest
 from polars.testing import assert_frame_equal
 
 import pql
@@ -18,6 +19,12 @@ def sample_df() -> nw.LazyFrame[duckdb.DuckDBPyRelation]:
                         [1, 2, None, 3],
                         [3, 4, None, 5],
                         [None, 5],
+                        [None],
+                    ],
+                    "x_var": [
+                        [],
+                        [1, None],
+                        None,
                         [None],
                     ],
                     "y": [1, 2, 5, 0],
@@ -54,6 +61,10 @@ def test_list_len() -> None:
     assert_eq(
         pql.col("x").list.len().alias("x_len"),
         nw.col("x").list.len().alias("x_len"),
+    )
+    assert_eq_pl(
+        pql.col("x_var").list.len().alias("x_len"),
+        pl.col("x_var").list.len().alias("x_len"),
     )
 
 
@@ -104,6 +115,11 @@ def test_list_get() -> None:
         pql.col("x").list.get(-1).alias("x"),
         pl.col("x").list.get(-1).alias("x"),
     )
+    with pytest.raises(pl.exceptions.ComputeError, match="get index is out of bounds"):
+        assert_eq_pl(
+            pql.col("x_var").list.get(10).alias("x"),
+            pl.col("x_var").list.get(10).alias("x"),
+        )
 
 
 def test_list_min() -> None:
