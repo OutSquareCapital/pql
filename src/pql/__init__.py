@@ -1,5 +1,6 @@
 """PQL - Polars Query Language over DuckDB."""
 
+from . import sql
 from ._expr import Expr, all, col
 from ._frame import LazyFrame
 from .datatypes import (
@@ -34,4 +35,5 @@ __all__ = [
     "UInt64",
     "all",
     "col",
+    "sql",
 ]
