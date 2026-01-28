@@ -1,3 +1,5 @@
+"""Utility functions for working with DuckDB SQL expressions."""
+
 from __future__ import annotations
 
 from collections.abc import Iterable
@@ -5,69 +7,51 @@ from dataclasses import dataclass, field
 from typing import TYPE_CHECKING
 
 import duckdb
-import polars as pl
 import pyochain as pc
-from polars._typing import FrameInitTypes
 
 if TYPE_CHECKING:
-    from ._expr import Expr
+    from ._types import BoolClause, ByClause, IntoExpr, SqlExpr
 
-type PyLiteral = str | int | float | bool | None
-type FrameInit = (
-    duckdb.DuckDBPyRelation | pl.DataFrame | pl.LazyFrame | None | FrameInitTypes
-)
-type IntoExpr = PyLiteral | Expr | duckdb.Expression
-
-
-def data_to_rel(data: FrameInit) -> duckdb.DuckDBPyRelation:
-    match data:
-        case duckdb.DuckDBPyRelation():
-            return data
-        case pl.DataFrame():
-            return duckdb.from_arrow(data)
-        case pl.LazyFrame():
-            from sqlglot import exp
-
-            _ = data
-            return duckdb.sql(exp.select(exp.Star()).from_("_").sql(dialect="duckdb"))
-
-        case None:
-            return duckdb.from_arrow(pl.DataFrame({"_": []}))
-        case _:
-            return duckdb.from_arrow(pl.DataFrame(data))
+col = duckdb.ColumnExpression
+lit = duckdb.ConstantExpression
+when = duckdb.CaseExpression
+all = duckdb.StarExpression
+func = duckdb.FunctionExpression
+fn_once = duckdb.LambdaExpression
+coalesce = duckdb.CoalesceOperator
+raw = duckdb.SQLExpression
+from_arrow = duckdb.from_arrow
+from_query = duckdb.from_query
+Relation = duckdb.DuckDBPyRelation
 
 
-def to_expr(value: IntoExpr) -> duckdb.Expression:
+def from_expr(value: IntoExpr) -> SqlExpr:
     """Convert a value to a DuckDB Expression (strings become columns for select/group_by)."""
     from ._expr import Expr
 
     match value:
         case Expr():
             return value.expr
-        case duckdb.Expression():
-            return value
         case str():
-            return duckdb.ColumnExpression(value)
+            return col(value)
         case _:
-            return duckdb.ConstantExpression(value)
+            return lit(value)
 
 
-def to_value(value: IntoExpr) -> duckdb.Expression:
+def from_value(value: IntoExpr) -> SqlExpr:
     """Convert a value to a DuckDB Expression (strings become constants for comparisons)."""
     from ._expr import Expr
 
     match value:
         case Expr():
             return value.expr
-        case duckdb.Expression():
-            return value
         case _:
-            return duckdb.ConstantExpression(value)
+            return lit(value)
 
 
-def iter_to_exprs(
+def from_iter(
     *values: IntoExpr | Iterable[IntoExpr],
-) -> pc.Iter[duckdb.Expression]:
+) -> pc.Iter[SqlExpr]:
     """Convert one or more values or iterables of values to an iterator of DuckDB Expressions.
 
     Note:
@@ -75,14 +59,14 @@ def iter_to_exprs(
         distinguish between a single iterable argument and multiple arguments.
     """
 
-    def _to_exprs(value: IntoExpr | Iterable[IntoExpr]) -> pc.Iter[duckdb.Expression]:
+    def _to_exprs(value: IntoExpr | Iterable[IntoExpr]) -> pc.Iter[SqlExpr]:
         match value:
             case str():
-                return pc.Iter.once(to_expr(value))
+                return pc.Iter.once(from_expr(value))
             case Iterable():
-                return pc.Iter(value).map(to_expr)
+                return pc.Iter(value).map(from_expr)
             case _:
-                return pc.Iter.once(to_expr(value))
+                return pc.Iter.once(from_expr(value))
 
     match values:
         case (single,):
@@ -91,16 +75,12 @@ def iter_to_exprs(
             return pc.Iter(values).map(_to_exprs).flatten()
 
 
-type ByClause = (
-    pc.Seq[str] | pc.Seq[duckdb.Expression] | pc.Seq[str | duckdb.Expression]
-)
-type BoolClause = pc.Option[pc.Seq[bool]] | pc.Option[bool]
-
-
 @dataclass(slots=True)
 class WindowExpr:
-    partition_by: ByClause = field(default_factory=pc.Seq[str | duckdb.Expression].new)
-    order_by: ByClause = field(default_factory=pc.Seq[str | duckdb.Expression].new)
+    """A window function expression builder."""
+
+    partition_by: ByClause = field(default_factory=pc.Seq.new)  # pyright: ignore[reportUnknownVariableType]
+    order_by: ByClause = field(default_factory=pc.Seq.new)  # pyright: ignore[reportUnknownVariableType]
     rows_start: pc.Option[int] = field(default_factory=lambda: pc.NONE)
     rows_end: pc.Option[int] = field(default_factory=lambda: pc.NONE)
     descending: BoolClause = field(default_factory=lambda: pc.NONE)
@@ -119,15 +99,15 @@ class WindowExpr:
             case _:
                 return self._on_scalar(val=False)
 
-    def get_partition_by(self) -> str:
+    def _get_partition_by(self) -> str:
         return (
             self.partition_by.then_some()
-            .map(lambda x: x.iter().map(lambda item: str(to_expr(item))).join(", "))
+            .map(lambda x: x.iter().map(lambda item: str(from_expr(item))).join(", "))
             .map(lambda s: "partition by " + s)
             .unwrap_or("")
         )
 
-    def get_order_by(self) -> str:
+    def _get_order_by(self) -> str:
         return (
             self.order_by.then_some()
             .map(
@@ -139,7 +119,7 @@ class WindowExpr:
                 .map_star(
                     lambda item,
                     desc,
-                    nl: f"{to_expr(item)} {'desc' if desc else 'asc'} {'nulls last' if nl else 'nulls first'}"
+                    nl: f"{from_expr(item)} {'desc' if desc else 'asc'} {'nulls last' if nl else 'nulls first'}"
                 )
                 .join(", ")
             )
@@ -147,7 +127,7 @@ class WindowExpr:
             .unwrap_or("")
         )
 
-    def get_rows_clause(self) -> str:
+    def _get_rows_clause(self) -> str:
         match (self.rows_start, self.rows_end):
             case (pc.Some(start), pc.Some(end)):
                 return f"rows between {-start} preceding and {end} following"
@@ -158,14 +138,15 @@ class WindowExpr:
             case _:
                 return ""
 
-    def get_func(self, expr: duckdb.Expression) -> str:
+    def _get_func(self, expr: SqlExpr) -> str:
         match self.ignore_nulls:
             case True:
                 return f"{str(expr).removesuffix(')')} ignore nulls)"
             case False:
                 return str(expr)
 
-    def call(self, expr: duckdb.Expression) -> duckdb.Expression:
-        return duckdb.SQLExpression(
-            f"{self.get_func(expr)} over ({self.get_partition_by()} {self.get_order_by()} {self.get_rows_clause()})"
+    def call(self, expr: SqlExpr) -> SqlExpr:
+        """Generate the full window function SQL expression."""
+        return raw(
+            f"{self._get_func(expr)} over ({self._get_partition_by()} {self._get_order_by()} {self._get_rows_clause()})"
         )

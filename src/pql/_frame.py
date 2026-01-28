@@ -6,45 +6,52 @@ from collections.abc import Callable, Iterable, Mapping
 from pathlib import Path
 from typing import TYPE_CHECKING, Concatenate, Literal, Self
 
-import duckdb
+import polars as pl
 import pyochain as pc
 
-from ._ast import (
-    FrameInit,
-    IntoExpr,
-    WindowExpr,
-    data_to_rel,
-    iter_to_exprs,
-    to_expr,
-    to_value,
-)
+from . import sql
 
 if TYPE_CHECKING:
-    import polars as pl
-
     from . import datatypes
     from ._expr import Expr
+    from ._types import FrameInit, IntoExpr, SqlExpr
 
 
 class LazyFrame:
     """LazyFrame providing Polars-like API over DuckDB relations."""
 
-    _rel: duckdb.DuckDBPyRelation
+    _rel: sql.Relation
     __slots__ = ("_rel",)
 
     def __init__(self, data: FrameInit = None) -> None:
-        self._rel = data_to_rel(data)
+        match data:
+            case sql.Relation():
+                self._rel = data
+            case pl.DataFrame():
+                self._rel = sql.from_arrow(data)
+            case pl.LazyFrame():
+                from sqlglot import exp
+
+                _ = data
+                self._rel = sql.from_query(
+                    exp.select(exp.Star()).from_("_").sql(dialect="duckdb")
+                )
+
+            case None:
+                self._rel = sql.from_arrow(pl.DataFrame({"_": []}))
+            case _:
+                self._rel = sql.from_arrow(pl.DataFrame(data))
 
     def __repr__(self) -> str:
         return f"LazyFrame\n{self._rel}\n"
 
-    def __from_lf__(self, rel: duckdb.DuckDBPyRelation) -> Self:
+    def __from_lf__(self, rel: sql.Relation) -> Self:
         instance = self.__class__.__new__(self.__class__)
         instance._rel = rel
         return instance
 
     @property
-    def relation(self) -> duckdb.DuckDBPyRelation:
+    def relation(self) -> sql.Relation:
         """Get the underlying DuckDB relation."""
         return self._rel
 
@@ -58,13 +65,11 @@ class LazyFrame:
 
     def select(self, *exprs: IntoExpr | Iterable[IntoExpr]) -> Self:
         """Select columns or expressions."""
-        return self.__from_lf__(self._rel.select(*iter_to_exprs(*exprs)))
+        return self.__from_lf__(self._rel.select(*sql.from_iter(*exprs)))
 
     def with_columns(self, *exprs: IntoExpr | Iterable[IntoExpr]) -> Self:
         """Add or replace columns."""
-        return self.__from_lf__(
-            self._rel.select(duckdb.StarExpression(), *iter_to_exprs(*exprs))
-        )
+        return self.__from_lf__(self._rel.select(sql.all(), *sql.from_iter(*exprs)))
 
     def filter(self, *predicates: Expr) -> Self:
         """Filter rows based on predicates."""
@@ -87,20 +92,20 @@ class LazyFrame:
                 case Iterable():
                     return pc.Iter(arg)
 
-        def _make_order(col: IntoExpr, desc: bool, nl: bool) -> duckdb.Expression:  # noqa: FBT001
+        def _make_order(col: SqlExpr, desc: bool, nl: bool) -> SqlExpr:  # noqa: FBT001
             match (desc, nl):
                 case (True, True):
-                    return to_expr(col).desc().nulls_last()
+                    return col.desc().nulls_last()
                 case (True, False):
-                    return to_expr(col).desc().nulls_first()
+                    return col.desc().nulls_first()
                 case (False, True):
-                    return to_expr(col).asc().nulls_last()
+                    return col.asc().nulls_last()
                 case (False, False):
-                    return to_expr(col).asc()
+                    return col.asc()
 
         return self.__from_lf__(
             self._rel.sort(
-                *iter_to_exprs(*by)
+                *sql.from_iter(*by)
                 .zip(_args_iter(arg=descending), _args_iter(arg=nulls_last))
                 .map_star(_make_order)
             )
@@ -120,18 +125,14 @@ class LazyFrame:
         def _on_subset(cols: pc.Iter[str]) -> Self:
             return self.__from_lf__(
                 self._rel.select(
-                    duckdb.StarExpression(),
-                    WindowExpr(partition_by=cols.map(to_expr).collect())
+                    sql.all(),
+                    sql.WindowExpr(partition_by=cols.collect())
                     .call(
-                        duckdb.FunctionExpression("row_number"),
+                        sql.func("row_number"),
                     )
                     .alias("__rn__"),
                 )
-                .filter(
-                    duckdb.ColumnExpression("__rn__").__eq__(
-                        duckdb.ConstantExpression(1)
-                    )
-                )
+                .filter(sql.col("__rn__").__eq__(sql.lit(1)))
                 .project("* EXCLUDE (__rn__)")
             )
 
@@ -145,9 +146,7 @@ class LazyFrame:
 
     def drop(self, *columns: str) -> Self:
         """Drop columns from the frame."""
-        return self.__from_lf__(
-            self._rel.select(duckdb.StarExpression(exclude=columns))
-        )
+        return self.__from_lf__(self._rel.select(sql.all(exclude=columns)))
 
     def rename(self, mapping: Mapping[str, str]) -> Self:
         """Rename columns."""
@@ -156,9 +155,7 @@ class LazyFrame:
         return self.__from_lf__(
             self._rel.select(
                 *self.columns.iter().map(
-                    lambda c: duckdb.ColumnExpression(c).alias(
-                        rename_map.get_item(c).unwrap_or(c)
-                    )
+                    lambda c: sql.col(c).alias(rename_map.get_item(c).unwrap_or(c))
                 )
             )
         )
@@ -223,9 +220,7 @@ class LazyFrame:
         return self.__from_lf__(
             self._rel.aggregate(
                 self.columns.iter().map(
-                    lambda c: duckdb.FunctionExpression(
-                        "count", duckdb.ColumnExpression(c)
-                    ).alias(c)
+                    lambda c: sql.func("count", sql.col(c)).alias(c)
                 ),
                 "",
             )
@@ -235,11 +230,7 @@ class LazyFrame:
         """Aggregate the sum of each column."""
         return self.__from_lf__(
             self._rel.aggregate(
-                self.columns.iter().map(
-                    lambda c: duckdb.FunctionExpression(
-                        "sum", duckdb.ColumnExpression(c)
-                    ).alias(c)
-                ),
+                self.columns.iter().map(lambda c: sql.func("sum", sql.col(c)).alias(c)),
                 "",
             )
         )
@@ -248,11 +239,7 @@ class LazyFrame:
         """Aggregate the mean of each column."""
         return self.__from_lf__(
             self._rel.aggregate(
-                self.columns.iter().map(
-                    lambda c: duckdb.FunctionExpression(
-                        "avg", duckdb.ColumnExpression(c)
-                    ).alias(c)
-                ),
+                self.columns.iter().map(lambda c: sql.func("avg", sql.col(c)).alias(c)),
                 "",
             )
         )
@@ -262,9 +249,7 @@ class LazyFrame:
         return self.__from_lf__(
             self._rel.aggregate(
                 self.columns.iter().map(
-                    lambda c: duckdb.FunctionExpression(
-                        "median", duckdb.ColumnExpression(c)
-                    ).alias(c)
+                    lambda c: sql.func("median", sql.col(c)).alias(c)
                 )
             )
         )
@@ -273,11 +258,7 @@ class LazyFrame:
         """Aggregate the minimum of each column."""
         return self.__from_lf__(
             self._rel.aggregate(
-                self.columns.iter().map(
-                    lambda c: duckdb.FunctionExpression(
-                        "min", duckdb.ColumnExpression(c)
-                    ).alias(c)
-                )
+                self.columns.iter().map(lambda c: sql.func("min", sql.col(c)).alias(c))
             )
         )
 
@@ -285,11 +266,7 @@ class LazyFrame:
         """Aggregate the maximum of each column."""
         return self.__from_lf__(
             self._rel.aggregate(
-                self.columns.iter().map(
-                    lambda c: duckdb.FunctionExpression(
-                        "max", duckdb.ColumnExpression(c)
-                    ).alias(c)
-                )
+                self.columns.iter().map(lambda c: sql.func("max", sql.col(c)).alias(c))
             )
         )
 
@@ -298,11 +275,7 @@ class LazyFrame:
         func = "stddev_samp" if ddof == 1 else "stddev_pop"
         return self.__from_lf__(
             self._rel.aggregate(
-                self.columns.iter().map(
-                    lambda c: duckdb.FunctionExpression(
-                        func, duckdb.ColumnExpression(c)
-                    ).alias(c)
-                )
+                self.columns.iter().map(lambda c: sql.func(func, sql.col(c)).alias(c))
             )
         )
 
@@ -311,11 +284,7 @@ class LazyFrame:
         func = "var_samp" if ddof == 1 else "var_pop"
         return self.__from_lf__(
             self._rel.aggregate(
-                self.columns.iter().map(
-                    lambda c: duckdb.FunctionExpression(
-                        func, duckdb.ColumnExpression(c)
-                    ).alias(c)
-                )
+                self.columns.iter().map(lambda c: sql.func(func, sql.col(c)).alias(c))
             )
         )
 
@@ -324,9 +293,9 @@ class LazyFrame:
         return self.__from_lf__(
             self._rel.aggregate(
                 self.columns.iter().map(
-                    lambda c: duckdb.FunctionExpression(
+                    lambda c: sql.func(
                         "count_if",
-                        duckdb.ColumnExpression(c).isnull(),
+                        sql.col(c).isnull(),
                     ).alias(c)
                 )
             )
@@ -348,8 +317,8 @@ class LazyFrame:
                 return self.__from_lf__(
                     self._rel.select(
                         *self.columns.iter().map(
-                            lambda c: duckdb.CoalesceOperator(
-                                duckdb.ColumnExpression(c), to_expr(val)
+                            lambda c: sql.coalesce(
+                                sql.col(c), sql.from_expr(val)
                             ).alias(c)
                         )
                     )
@@ -370,14 +339,12 @@ class LazyFrame:
         return self.__from_lf__(
             self._rel.select(
                 *self.columns.iter().map(
-                    lambda c: duckdb.CoalesceOperator(
-                        duckdb.ColumnExpression(c),
-                        WindowExpr(
+                    lambda c: sql.coalesce(
+                        sql.col(c),
+                        sql.WindowExpr(
                             rows_start=rows_start, rows_end=rows_end, ignore_nulls=True
                         ).call(
-                            duckdb.FunctionExpression(
-                                func_name.lower(), duckdb.ColumnExpression(c)
-                            ),
+                            sql.func(func_name.lower(), sql.col(c)),
                         ),
                     ).alias(c)
                 )
@@ -389,11 +356,11 @@ class LazyFrame:
         return self.__from_lf__(
             self._rel.select(
                 *self.columns.iter().map(
-                    lambda c: duckdb.CaseExpression(
-                        duckdb.FunctionExpression("isnan", duckdb.ColumnExpression(c)),
-                        to_expr(value),
+                    lambda c: sql.when(
+                        sql.func("isnan", sql.col(c)),
+                        sql.from_expr(value),
                     )
-                    .otherwise(duckdb.ColumnExpression(c))
+                    .otherwise(sql.col(c))
                     .alias(c)
                 )
             )
@@ -403,9 +370,7 @@ class LazyFrame:
         """Drop rows with null values."""
         return self._col_or_subset(subset).fold(
             self,
-            lambda lf, c: lf.__from_lf__(
-                lf._rel.filter(duckdb.ColumnExpression(c).isnotnull())
-            ),
+            lambda lf, c: lf.__from_lf__(lf._rel.filter(sql.col(c).isnotnull())),
         )
 
     def drop_nans(self, subset: str | Iterable[str] | None = None) -> Self:
@@ -413,9 +378,7 @@ class LazyFrame:
         return self._col_or_subset(subset).fold(
             self,
             lambda lf, c: lf.__from_lf__(
-                lf._rel.filter(
-                    ~duckdb.FunctionExpression("isnan", duckdb.ColumnExpression(c))
-                )
+                lf._rel.filter(~sql.func("isnan", sql.col(c)))
             ),
         )
 
@@ -453,15 +416,15 @@ class LazyFrame:
         return self.__from_lf__(
             self._rel.select(
                 *self.columns.iter().map(
-                    lambda c: duckdb.CoalesceOperator(
-                        WindowExpr().call(
-                            duckdb.FunctionExpression(
+                    lambda c: sql.coalesce(
+                        sql.WindowExpr().call(
+                            sql.func(
                                 func.lower(),
-                                duckdb.ColumnExpression(c),
-                                duckdb.ConstantExpression(abs_n),
+                                sql.col(c),
+                                sql.lit(abs_n),
                             ),
                         ),
-                        to_value(fill_value),
+                        sql.from_value(fill_value),
                     ).alias(c)
                 )
             )
@@ -500,10 +463,10 @@ class LazyFrame:
         return self.__from_lf__(
             self._rel.aggregate(
                 self.columns.iter().map(
-                    lambda c: duckdb.FunctionExpression(
+                    lambda c: sql.func(
                         "quantile_cont",
-                        duckdb.ColumnExpression(c),
-                        duckdb.ConstantExpression(quantile),
+                        sql.col(c),
+                        sql.lit(quantile),
                     ).alias(c)
                 )
             )
@@ -538,16 +501,14 @@ class LazyFrame:
                 dtype_map = pc.Dict(dtypes)
                 exprs = self.columns.iter().map(
                     lambda c: (
-                        duckdb.ColumnExpression(c)
-                        .cast(dtype_map.get_item(c).unwrap())
-                        .alias(c)
+                        sql.col(c).cast(dtype_map.get_item(c).unwrap()).alias(c)
                         if c in dtypes
-                        else duckdb.ColumnExpression(c)
+                        else sql.col(c)
                     )
                 )
             case _:
                 exprs = self.columns.iter().map(
-                    lambda c: duckdb.ColumnExpression(c).cast(dtypes).alias(c)
+                    lambda c: sql.col(c).cast(dtypes).alias(c)
                 )
         return self.__from_lf__(self._rel.select(*exprs))
 
