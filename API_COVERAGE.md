@@ -6,15 +6,15 @@ This report shows the API coverage of pql compared to Polars.
 
 | Class | Coverage | Matched | Missing | Mismatched | Extra |
 |-------|----------|---------|---------|------------|-------|
-| LazyFrame | 44.2% | 23 | 8 | 21 | 1 |
-| Expr | 35.5% | 38 | 46 | 23 | 1 |
-| Expr.str | 51.9% | 14 | 1 | 12 | 0 |
-| Expr.list | 0.0% | 0 | 10 | 0 | 0 |
-| Expr.struct | 0.0% | 0 | 1 | 0 | 0 |
+| LazyFrame | 46.2% | 24 | 7 | 21 | 1 |
+| Expr | 46.7% | 50 | 46 | 11 | 1 |
+| Expr.str | 66.7% | 18 | 1 | 8 | 0 |
+| Expr.list | 100.0% | 10 | 0 | 0 | 0 |
+| Expr.struct | 100.0% | 1 | 0 | 0 | 0 |
 
 ## LazyFrame
 
-### [v] Matched Methods (23)
+### [v] Matched Methods (24)
 
 - `clone`
 - `collect_schema`
@@ -24,6 +24,7 @@ This report shows the API coverage of pql compared to Polars.
 - `first`
 - `gather_every`
 - `head`
+- `lazy`
 - `limit`
 - `max`
 - `mean`
@@ -40,13 +41,12 @@ This report shows the API coverage of pql compared to Polars.
 - `with_row_count`
 - `with_row_index`
 
-### [x] Missing Methods (8)
+### [x] Missing Methods (7)
 
 - `explode` (columns: str | Sequence[str], more_columns: str) -> Self
 - `group_by` (keys: IntoExpr | Iterable[IntoExpr], drop_null_keys: bool) -> LazyGroupBy[Self]
 - `join` (other: Self, on: str | list[str] | None, how: JoinStrategy, left_on: str | list[str] | None, right_on: str | list[str] | None, suffix: str) -> Self
 - `join_asof` (other: Self, left_on: str | None, right_on: str | None, on: str | None, by_left: str | list[str] | None, by_right: str | list[str] | None, by: str | list[str] | None, strategy: AsofJoinStrategy, suffix: str) -> Self
-- `lazy` () -> Self
 - `tail` (n: int) -> Self
 - `to_native` () -> LazyFrameT
 - `unpivot` (on: str | list[str] | None, index: str | list[str] | None, variable_name: str, value_name: str) -> Self
@@ -134,9 +134,10 @@ This report shows the API coverage of pql compared to Polars.
 
 ## Expr
 
-### [v] Matched Methods (38)
+### [v] Matched Methods (50)
 
 - `abs`
+- `add`
 - `alias`
 - `and_`
 - `arctan`
@@ -145,8 +146,12 @@ This report shows the API coverage of pql compared to Polars.
 - `cos`
 - `cosh`
 - `degrees`
+- `eq`
 - `exp`
 - `floor`
+- `floordiv`
+- `ge`
+- `gt`
 - `is_duplicated`
 - `is_finite`
 - `is_first_distinct`
@@ -157,10 +162,15 @@ This report shows the API coverage of pql compared to Polars.
 - `is_not_null`
 - `is_null`
 - `is_unique`
+- `le`
 - `list`
 - `log`
 - `log10`
 - `log1p`
+- `lt`
+- `mod`
+- `mul`
+- `ne`
 - `neg`
 - `not_`
 - `or_`
@@ -172,8 +182,10 @@ This report shows the API coverage of pql compared to Polars.
 - `sqrt`
 - `str`
 - `struct`
+- `sub`
 - `tan`
 - `tanh`
+- `truediv`
 
 ### [x] Missing Methods (46)
 
@@ -224,11 +236,8 @@ This report shows the API coverage of pql compared to Polars.
 - `unique` () -> Self
 - `var` (ddof: int) -> Self
 
-### [!] Signature Mismatches (23)
+### [!] Signature Mismatches (11)
 
-- `add` (pl)
-  - Polars: (**other: Any**) -> Expr
-  - pql: (**other: IntoExpr**) -> Self
 - `backward_fill` (pl)
   - Polars: (**limit: int | None**) -> Expr
   - pql: () -> Self
@@ -236,25 +245,13 @@ This report shows the API coverage of pql compared to Polars.
   - Narwhals: (**dtype: IntoDType**) -> Self
   - Polars: (**dtype: PolarsDataType | pl.DataTypeExpr | type[Any]**, **strict: bool**, **wrap_numerical: bool**) -> Expr
   - pql: (**dtype: datatypes.DataType**) -> Self
-- `eq` (pl)
-  - Polars: (**other: Any**) -> Expr
-  - pql: (**other: IntoExpr**) -> Self
 - `fill_nan` (nw)
   - Narwhals: (**value: float | None**) -> Self
   - Polars: (**value: int | float | Expr | None**) -> Expr
   - pql: (**value: IntoExpr**) -> Self
-- `floordiv` (pl)
-  - Polars: (**other: Any**) -> Expr
-  - pql: (**other: IntoExpr**) -> Self
 - `forward_fill` (pl)
   - Polars: (**limit: int | None**) -> Expr
   - pql: () -> Self
-- `ge` (pl)
-  - Polars: (**other: Any**) -> Expr
-  - pql: (**other: IntoExpr**) -> Self
-- `gt` (pl)
-  - Polars: (**other: Any**) -> Expr
-  - pql: (**other: IntoExpr**) -> Self
 - `hash` (pl)
   - Polars: (seed: int, **seed_1: int | None**, **seed_2: int | None**, **seed_3: int | None**) -> Expr
   - pql: (seed: int) -> Self
@@ -265,24 +262,9 @@ This report shows the API coverage of pql compared to Polars.
   - Narwhals: (**other: Any**) -> Self
   - Polars: (**other: Expr | Collection[Any] | Series**, **nulls_equal: bool**) -> Expr
   - pql: (**other: Collection[IntoExpr] | IntoExpr**) -> Self
-- `le` (pl)
-  - Polars: (**other: Any**) -> Expr
-  - pql: (**other: IntoExpr**) -> Self
-- `lt` (pl)
-  - Polars: (**other: Any**) -> Expr
-  - pql: (**other: IntoExpr**) -> Self
-- `mod` (pl)
-  - Polars: (**other: Any**) -> Expr
-  - pql: (**other: IntoExpr**) -> Self
-- `mul` (pl)
-  - Polars: (**other: Any**) -> Expr
-  - pql: (**other: IntoExpr**) -> Self
-- `ne` (pl)
-  - Polars: (**other: Any**) -> Expr
-  - pql: (**other: IntoExpr**) -> Self
 - `pow` (pl)
   - Polars: (**exponent: IntoExprColumn | int | float**) -> Expr
-  - pql: (**other: IntoExpr**) -> Self
+  - pql: (**other: Any**) -> Self
 - `repeat_by` (pl)
   - Polars: (**by: pl.Series | Expr | str | int**) -> Expr
   - pql: (**by: Expr | int**) -> Self
@@ -293,12 +275,6 @@ This report shows the API coverage of pql compared to Polars.
   - Narwhals: (decimals: int) -> Self
   - Polars: (decimals: int, **mode: RoundMode**) -> Expr
   - pql: (decimals: int, **mode: Literal['half_to_even', 'half_away_from_zero']**) -> Self
-- `sub` (pl)
-  - Polars: (**other: Any**) -> Expr
-  - pql: (**other: IntoExpr**) -> Self
-- `truediv` (pl)
-  - Polars: (**other: Any**) -> Expr
-  - pql: (**other: IntoExpr**) -> Self
 
 ### [+] Extra Methods (pql-only) (1)
 
@@ -306,16 +282,20 @@ This report shows the API coverage of pql compared to Polars.
 
 ## Expr.str
 
-### [v] Matched Methods (14)
+### [v] Matched Methods (18)
 
 - `contains`
 - `ends_with`
 - `head`
 - `len_bytes`
 - `len_chars`
+- `replace`
+- `replace_all`
 - `reverse`
 - `slice`
+- `split`
 - `starts_with`
+- `strip_chars`
 - `tail`
 - `to_date`
 - `to_decimal`
@@ -327,7 +307,7 @@ This report shows the API coverage of pql compared to Polars.
 
 - `zfill` (width: int) -> ExprT
 
-### [!] Signature Mismatches (12)
+### [!] Signature Mismatches (8)
 
 - `count_matches` (pl)
   - Polars: (**pattern: str | Expr**, literal: bool) -> Expr
@@ -335,22 +315,6 @@ This report shows the API coverage of pql compared to Polars.
 - `extract_all` (pl)
   - Polars: (**pattern: str | Expr**) -> Expr
   - pql: (**pattern: str**) -> Expr
-- `replace` (nw)
-  - Narwhals: (pattern: str, **value: str | IntoExpr**, **literal: bool**, **n: int**) -> ExprT
-  - Polars: (**pattern: str | Expr**, **value: str | Expr**, **literal: bool**, **n: int**) -> Expr
-  - pql: (pattern: str, **replacement: str**) -> Expr
-- `replace_all` (nw)
-  - Narwhals: (pattern: str, **value: IntoExpr**, literal: bool) -> ExprT
-  - Polars: (**pattern: str | Expr**, **value: str | Expr**, literal: bool) -> Expr
-  - pql: (pattern: str, **value: str**, literal: bool) -> Expr
-- `split` (nw)
-  - Narwhals: (by: str) -> ExprT
-  - Polars: (**by: IntoExpr**, inclusive: bool) -> Expr
-  - pql: (by: str, **inclusive: bool**) -> Expr
-- `strip_chars` (nw)
-  - Narwhals: (**characters: str | None**) -> ExprT
-  - Polars: (**characters: IntoExpr**) -> Expr
-  - pql: () -> Expr
 - `strip_chars_end` (pl)
   - Polars: (**characters: IntoExpr**) -> Expr
   - pql: () -> Expr
@@ -373,21 +337,21 @@ This report shows the API coverage of pql compared to Polars.
 
 ## Expr.list
 
-### [x] Missing Methods (10)
+### [v] Matched Methods (10)
 
-- `contains` (item: NonNestedLiteral) -> ExprT
-- `get` (index: int) -> ExprT
-- `len` () -> ExprT
-- `max` () -> ExprT
-- `mean` () -> ExprT
-- `median` () -> ExprT
-- `min` () -> ExprT
-- `sort` (descending: bool, nulls_last: bool) -> ExprT
-- `sum` () -> ExprT
-- `unique` () -> ExprT
+- `contains`
+- `get`
+- `len`
+- `max`
+- `mean`
+- `median`
+- `min`
+- `sort`
+- `sum`
+- `unique`
 
 ## Expr.struct
 
-### [x] Missing Methods (1)
+### [v] Matched Methods (1)
 
-- `field` (name: str) -> ExprT
+- `field`
