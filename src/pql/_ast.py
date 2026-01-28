@@ -94,7 +94,7 @@ def iter_to_exprs(
 type ByClause = (
     pc.Seq[str] | pc.Seq[duckdb.Expression] | pc.Seq[str | duckdb.Expression]
 )
-type BoolClause = pc.Seq[bool] | bool | None
+type BoolClause = pc.Option[pc.Seq[bool]] | pc.Option[bool]
 
 
 @dataclass(slots=True)
@@ -103,8 +103,8 @@ class WindowSpec:
     order_by: ByClause = field(default_factory=pc.Seq[str | duckdb.Expression].new)
     rows_start: pc.Option[int] = field(default_factory=lambda: pc.NONE)
     rows_end: pc.Option[int] = field(default_factory=lambda: pc.NONE)
-    descending: BoolClause = None
-    nulls_last: BoolClause = None
+    descending: BoolClause = field(default_factory=lambda: pc.NONE)
+    nulls_last: BoolClause = field(default_factory=lambda: pc.NONE)
     ignore_nulls: bool = False
 
     def _on_scalar(self, *, val: bool) -> pc.Seq[bool]:
@@ -112,12 +112,12 @@ class WindowSpec:
 
     def _get_clauses(self, clauses: BoolClause) -> pc.Seq[bool]:
         match clauses:
-            case None:
+            case pc.Some(bool(val)):
+                return self._on_scalar(val=val)
+            case pc.Some(pc.Seq()) as seq:
+                return seq.unwrap()
+            case _:
                 return self._on_scalar(val=False)
-            case bool():
-                return self._on_scalar(val=clauses)
-            case pc.Seq():
-                return clauses
 
     def get_partition_by(self) -> str:
         return (

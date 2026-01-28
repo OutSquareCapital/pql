@@ -431,15 +431,17 @@ class LazyFrame:
     def with_row_index(self, name: str = "index", offset: int = 0) -> Self:
         """Add a row index column."""
         rel = self._rel.row_number("over () as __rn__", "*")
-        if offset == 0:
-            return self.__from_lf__(
-                rel.project(f'(__rn__ - 1)::BIGINT AS "{name}", * EXCLUDE (__rn__)')
-            )
-        return self.__from_lf__(
-            rel.project(
-                f'(__rn__ - 1 + {offset})::BIGINT AS "{name}", * EXCLUDE (__rn__)'
-            )
-        )
+        match offset:
+            case 0:
+                return self.__from_lf__(
+                    rel.project(f'(__rn__ - 1)::BIGINT AS "{name}", * EXCLUDE (__rn__)')
+                )
+            case _:
+                return self.__from_lf__(
+                    rel.project(
+                        f'(__rn__ - 1 + {offset})::BIGINT AS "{name}", * EXCLUDE (__rn__)'
+                    )
+                )
 
     # Deprecated alias
     with_row_count = with_row_index

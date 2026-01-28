@@ -427,8 +427,8 @@ class Expr:
             WindowSpec(
                 partition_by=pc.Seq((self._expr,)),
                 order_by=pc.Seq((self._expr,)),
-                descending=True,
-                nulls_last=True,
+                descending=pc.Some(value=True),
+                nulls_last=pc.Some(value=True),
             ).into_expr(duckdb.FunctionExpression("row_number"))
             == duckdb.ConstantExpression(1)
         )
@@ -461,19 +461,19 @@ class ExprStringNameSpace:
 
     def contains(self, pattern: str, *, literal: bool = True) -> Expr:
         """Check if string contains a pattern."""
-        return (
-            Expr(
-                duckdb.FunctionExpression(
-                    "contains", self._expr, duckdb.ConstantExpression(pattern)
+        match literal:
+            case True:
+                return Expr(
+                    duckdb.FunctionExpression(
+                        "contains", self._expr, duckdb.ConstantExpression(pattern)
+                    )
                 )
-            )
-            if literal
-            else Expr(
-                duckdb.FunctionExpression(
-                    "regexp_matches", self._expr, duckdb.ConstantExpression(pattern)
+            case False:
+                return Expr(
+                    duckdb.FunctionExpression(
+                        "regexp_matches", self._expr, duckdb.ConstantExpression(pattern)
+                    )
                 )
-            )
-        )
 
     def starts_with(self, prefix: str) -> Expr:
         """Check if string starts with prefix."""
@@ -552,46 +552,46 @@ class ExprStringNameSpace:
 
     def count_matches(self, pattern: str, *, literal: bool = False) -> Expr:
         """Count pattern matches."""
-        return (
-            Expr(
-                duckdb.FunctionExpression(
-                    "length",
+        match literal:
+            case False:
+                return Expr(
                     duckdb.FunctionExpression(
-                        "regexp_extract_all",
-                        self._expr,
-                        duckdb.ConstantExpression(pattern),
-                    ),
-                )
-            )
-            if not literal
-            else Expr(
-                (
-                    duckdb.FunctionExpression("length", self._expr)
-                    - duckdb.FunctionExpression(
                         "length",
                         duckdb.FunctionExpression(
-                            "replace",
+                            "regexp_extract_all",
                             self._expr,
                             duckdb.ConstantExpression(pattern),
-                            duckdb.ConstantExpression(""),
                         ),
                     )
                 )
-                / duckdb.ConstantExpression(len(pattern))
-            )
-        )
+            case True:
+                return Expr(
+                    (
+                        duckdb.FunctionExpression("length", self._expr)
+                        - duckdb.FunctionExpression(
+                            "length",
+                            duckdb.FunctionExpression(
+                                "replace",
+                                self._expr,
+                                duckdb.ConstantExpression(pattern),
+                                duckdb.ConstantExpression(""),
+                            ),
+                        )
+                    )
+                    / duckdb.ConstantExpression(len(pattern))
+                )
 
     def to_date(self, fmt: str | None = None) -> Expr:
         """Convert string to date."""
-        return (
-            Expr(self._expr.cast(datatypes.Date))
-            if fmt is None
-            else Expr(
-                duckdb.FunctionExpression(
-                    "strptime", self._expr, duckdb.ConstantExpression(fmt)
-                ).cast(datatypes.Date)
-            )
-        )
+        match fmt:
+            case None:
+                return Expr(self._expr.cast(datatypes.Date))
+            case _:
+                return Expr(
+                    duckdb.FunctionExpression(
+                        "strptime", self._expr, duckdb.ConstantExpression(fmt)
+                    ).cast(datatypes.Date)
+                )
 
     def to_datetime(
         self,
@@ -602,24 +602,22 @@ class ExprStringNameSpace:
     ) -> Expr:
         """Convert string to datetime."""
         precision_map = {"ns": "TIMESTAMP_NS", "us": "TIMESTAMP", "ms": "TIMESTAMP_MS"}
-        ts_type = precision_map.get(time_unit, "TIMESTAMP")
-        base_expr = (
-            self._expr.cast(ts_type)
-            if fmt is None
-            else duckdb.FunctionExpression(
-                "strptime", self._expr, duckdb.ConstantExpression(fmt)
-            )
-        )
-
-        return (
-            Expr(
-                duckdb.FunctionExpression(
-                    "timezone", duckdb.ConstantExpression(time_zone), base_expr
+        match fmt:
+            case None:
+                base_expr = self._expr.cast(precision_map.get(time_unit, "TIMESTAMP"))
+            case _:
+                base_expr = duckdb.FunctionExpression(
+                    "strptime", self._expr, duckdb.ConstantExpression(fmt)
                 )
-            )
-            if time_zone
-            else Expr(base_expr)
-        )
+        match time_zone:
+            case None | "":
+                return Expr(base_expr)
+            case _:
+                return Expr(
+                    duckdb.FunctionExpression(
+                        "timezone", duckdb.ConstantExpression(time_zone), base_expr
+                    )
+                )
 
     def to_time(self, fmt: str | None = None) -> Expr:
         """Convert string to time."""
@@ -672,24 +670,26 @@ class ExprStringNameSpace:
 
     def replace_all(self, pattern: str, value: str, *, literal: bool = False) -> Expr:
         """Replace all occurrences."""
-        if literal:
-            return Expr(
-                duckdb.FunctionExpression(
-                    "replace",
-                    self._expr,
-                    duckdb.ConstantExpression(pattern),
-                    duckdb.ConstantExpression(value),
+        match literal:
+            case True:
+                return Expr(
+                    duckdb.FunctionExpression(
+                        "replace",
+                        self._expr,
+                        duckdb.ConstantExpression(pattern),
+                        duckdb.ConstantExpression(value),
+                    )
                 )
-            )
-        return Expr(
-            duckdb.FunctionExpression(
-                "regexp_replace",
-                self._expr,
-                duckdb.ConstantExpression(pattern),
-                duckdb.ConstantExpression(value),
-                duckdb.ConstantExpression("g"),
-            )
-        )
+            case False:
+                return Expr(
+                    duckdb.FunctionExpression(
+                        "regexp_replace",
+                        self._expr,
+                        duckdb.ConstantExpression(pattern),
+                        duckdb.ConstantExpression(value),
+                        duckdb.ConstantExpression("g"),
+                    )
+                )
 
     def to_titlecase(self) -> Expr:
         """Convert to title case."""
