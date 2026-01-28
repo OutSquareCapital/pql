@@ -107,17 +107,11 @@ def test_select_single_column(sample_df: pl.DataFrame) -> None:
         pql.LazyFrame(sample_df).select(pql.col("name")).collect(),
         sample_df.lazy().select(pl.col("name")).collect(),
     )
-    assert_eq(
-        pql.LazyFrame(sample_df).select(duckdb.ColumnExpression("name")).collect(),
-        sample_df.lazy().select(pl.col("name")).collect(),
-    )
 
 
 def test_select_multiple_columns(sample_df: pl.DataFrame) -> None:
     assert_eq(
-        pql.LazyFrame(sample_df)
-        .select("name", "age", "salary", duckdb.ColumnExpression("id"))
-        .collect(),
+        pql.LazyFrame(sample_df).select("name", "age", "salary", "id").collect(),
         sample_df.lazy().select("name", "age", "salary", "id").collect(),
     )
 

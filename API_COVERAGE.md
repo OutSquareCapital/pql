@@ -7,7 +7,7 @@ This report shows the API coverage of pql compared to Polars.
 | Class | Coverage | Matched | Missing | Mismatched | Extra |
 |-------|----------|---------|---------|------------|-------|
 | LazyFrame | 46.2% | 24 | 7 | 21 | 1 |
-| Expr | 46.7% | 50 | 46 | 11 | 1 |
+| Expr | 48.6% | 52 | 46 | 9 | 1 |
 | Expr.str | 66.7% | 18 | 1 | 8 | 0 |
 | Expr.list | 100.0% | 10 | 0 | 0 | 0 |
 | Expr.struct | 100.0% | 1 | 0 | 0 | 0 |
@@ -134,7 +134,7 @@ This report shows the API coverage of pql compared to Polars.
 
 ## Expr
 
-### [v] Matched Methods (50)
+### [v] Matched Methods (52)
 
 - `abs`
 - `add`
@@ -148,6 +148,7 @@ This report shows the API coverage of pql compared to Polars.
 - `degrees`
 - `eq`
 - `exp`
+- `fill_nan`
 - `floor`
 - `floordiv`
 - `ge`
@@ -176,6 +177,7 @@ This report shows the API coverage of pql compared to Polars.
 - `or_`
 - `pipe`
 - `radians`
+- `round`
 - `sign`
 - `sin`
 - `sinh`
@@ -236,7 +238,7 @@ This report shows the API coverage of pql compared to Polars.
 - `unique` () -> Self
 - `var` (ddof: int) -> Self
 
-### [!] Signature Mismatches (11)
+### [!] Signature Mismatches (9)
 
 - `backward_fill` (pl)
   - Polars: (**limit: int | None**) -> Expr
@@ -245,10 +247,6 @@ This report shows the API coverage of pql compared to Polars.
   - Narwhals: (**dtype: IntoDType**) -> Self
   - Polars: (**dtype: PolarsDataType | pl.DataTypeExpr | type[Any]**, **strict: bool**, **wrap_numerical: bool**) -> Expr
   - pql: (**dtype: datatypes.DataType**) -> Self
-- `fill_nan` (nw)
-  - Narwhals: (**value: float | None**) -> Self
-  - Polars: (**value: int | float | Expr | None**) -> Expr
-  - pql: (**value: IntoExpr**) -> Self
 - `forward_fill` (pl)
   - Polars: (**limit: int | None**) -> Expr
   - pql: () -> Self
@@ -271,10 +269,6 @@ This report shows the API coverage of pql compared to Polars.
 - `replace` (pl)
   - Polars: (**old: IntoExpr | Sequence[Any] | Mapping[Any, Any]**, **new: IntoExpr | Sequence[Any] | NoDefault**, **default: IntoExpr | NoDefault**, **return_dtype: PolarsDataType | None**) -> Expr
   - pql: (**old: IntoExpr**, **new: IntoExpr**) -> Self
-- `round` (nw)
-  - Narwhals: (decimals: int) -> Self
-  - Polars: (decimals: int, **mode: RoundMode**) -> Expr
-  - pql: (decimals: int, **mode: Literal['half_to_even', 'half_away_from_zero']**) -> Self
 
 ### [+] Extra Methods (pql-only) (1)
 

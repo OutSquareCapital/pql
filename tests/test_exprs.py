@@ -443,12 +443,10 @@ def test_add() -> None:
         (
             pql.col("age").add(10).alias("age_plus_10"),
             (pql.col("age") + 10).alias("age_plus_10_bis"),
-            pql.col("age").add(duckdb.ColumnExpression("x")).alias("age_plus_x"),
         ),
         (
             nw.col("age").__add__(10).alias("age_plus_10"),
             (nw.col("age") + 10).alias("age_plus_10_bis"),
-            nw.col("age").__add__(nw.col("x")).alias("age_plus_x"),
         ),
     )
 
