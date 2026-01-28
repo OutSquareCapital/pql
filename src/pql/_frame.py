@@ -63,13 +63,23 @@ class LazyFrame:
         """Execute the query and return a Polars DataFrame."""
         return self._rel.pl()
 
-    def select(self, *exprs: IntoExpr | Iterable[IntoExpr]) -> Self:
+    def select(
+        self, *exprs: IntoExpr | Iterable[IntoExpr], **named_exprs: IntoExpr
+    ) -> Self:
         """Select columns or expressions."""
-        return self.__from_lf__(self._rel.select(*sql.from_iter(*exprs)))
+        return self.__from_lf__(
+            self._rel.select(*sql.from_args_kwargs(*exprs, **named_exprs))
+        )
 
-    def with_columns(self, *exprs: IntoExpr | Iterable[IntoExpr]) -> Self:
+    def with_columns(
+        self, *exprs: IntoExpr | Iterable[IntoExpr], **named_exprs: IntoExpr
+    ) -> Self:
         """Add or replace columns."""
-        return self.__from_lf__(self._rel.select(sql.all(), *sql.from_iter(*exprs)))
+        return self.__from_lf__(
+            self._rel.select(
+                *sql.from_args_kwargs(*exprs, **named_exprs).insert(sql.all())
+            )
+        )
 
     def filter(self, *predicates: Expr) -> Self:
         """Filter rows based on predicates."""

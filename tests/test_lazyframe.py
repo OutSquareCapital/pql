@@ -108,23 +108,26 @@ def test_select_single_column(sample_df: pl.DataFrame) -> None:
         sample_df.lazy().select(pl.col("name")).collect(),
     )
 
-
-def test_select_multiple_columns(sample_df: pl.DataFrame) -> None:
     assert_eq(
         pql.LazyFrame(sample_df).select("name", "age", "salary", "id").collect(),
         sample_df.lazy().select("name", "age", "salary", "id").collect(),
     )
 
-
-def test_select_with_expression(sample_df: pl.DataFrame) -> None:
     assert_eq(
         pql.LazyFrame(sample_df)
-        .select(pql.col("name"), pql.col("salary").mul(1.1).alias("salary_increase"))
+        .select(
+            pql.col("name"),
+            pql.col("salary").mul(1.1).alias("salary_increase"),
+            vals=pql.col("id"),
+            other_vals=42,
+        )
         .collect(),
         sample_df.lazy()
         .select(
             pl.col("name"),
             pl.col("salary").mul(1.1).alias("salary_increase"),
+            vals=pl.col("id"),
+            other_vals=42,
         )
         .collect(),
     )
@@ -382,37 +385,37 @@ def test_rename_multiple_columns(sample_df: pl.DataFrame) -> None:
 
 
 def test_with_columns_single_expr(sample_df: pl.DataFrame) -> None:
-    result = (
-        pql.LazyFrame(sample_df)
-        .with_columns(pql.col("age").mul(2).alias("age_doubled"))
-        .collect()
+    assert_eq(
+        (
+            pql.LazyFrame(sample_df)
+            .with_columns(pql.col("age").mul(2).alias("age_doubled"), x=42)
+            .collect()
+        ),
+        (
+            sample_df.lazy()
+            .with_columns(pl.col("age").mul(2).alias("age_doubled"), x=42)
+            .collect()
+        ),
     )
-    expected = (
-        sample_df.lazy()
-        .with_columns(pl.col("age").mul(2).alias("age_doubled"))
-        .collect()
-    )
-    assert_eq(result, expected)
 
-
-def test_with_columns_multiple_exprs(sample_df: pl.DataFrame) -> None:
-    result = (
-        pql.LazyFrame(sample_df)
-        .with_columns(
-            pql.col("age").mul(2).alias("age_doubled"),
-            pql.col("salary").truediv(12).alias("monthly_salary"),
-        )
-        .collect()
+    assert_eq(
+        (
+            pql.LazyFrame(sample_df)
+            .with_columns(
+                pql.col("age").mul(2).alias("age_doubled"),
+                pql.col("salary").truediv(12).alias("monthly_salary"),
+            )
+            .collect()
+        ),
+        (
+            sample_df.lazy()
+            .with_columns(
+                (pl.col("age") * 2).alias("age_doubled"),
+                (pl.col("salary") / 12).alias("monthly_salary"),
+            )
+            .collect()
+        ),
     )
-    expected = (
-        sample_df.lazy()
-        .with_columns(
-            (pl.col("age") * 2).alias("age_doubled"),
-            (pl.col("salary") / 12).alias("monthly_salary"),
-        )
-        .collect()
-    )
-    assert_eq(result, expected)
 
 
 def test_std_default(sample_df: pl.DataFrame) -> None:

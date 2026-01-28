@@ -75,6 +75,18 @@ def from_iter(
             return pc.Iter(values).map(_to_exprs).flatten()
 
 
+def from_args_kwargs(
+    *exprs: IntoExpr | Iterable[IntoExpr], **named_exprs: IntoExpr
+) -> pc.Iter[SqlExpr]:
+    """Convert positional and keyword arguments to an iterator of DuckDB Expressions."""
+    return from_iter(*exprs).chain(
+        pc.Dict.from_ref(named_exprs)
+        .items()
+        .iter()
+        .map_star(lambda name, expr: from_expr(expr).alias(name))
+    )
+
+
 @dataclass(slots=True)
 class WindowExpr:
     """A window function expression builder."""

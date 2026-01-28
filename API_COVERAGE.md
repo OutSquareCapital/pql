@@ -6,7 +6,7 @@ This report shows the API coverage of pql compared to Polars.
 
 | Class | Coverage | Matched | Missing | Mismatched | Extra |
 |-------|----------|---------|---------|------------|-------|
-| LazyFrame | 46.2% | 24 | 7 | 21 | 1 |
+| LazyFrame | 50.0% | 26 | 7 | 19 | 1 |
 | Expr | 48.6% | 52 | 46 | 9 | 1 |
 | Expr.str | 88.9% | 24 | 1 | 2 | 0 |
 | Expr.list | 100.0% | 10 | 0 | 0 | 0 |
@@ -14,7 +14,7 @@ This report shows the API coverage of pql compared to Polars.
 
 ## LazyFrame
 
-### [v] Matched Methods (24)
+### [v] Matched Methods (26)
 
 - `clone`
 - `collect_schema`
@@ -34,10 +34,12 @@ This report shows the API coverage of pql compared to Polars.
 - `pipe`
 - `reverse`
 - `schema`
+- `select`
 - `std`
 - `sum`
 - `var`
 - `width`
+- `with_columns`
 - `with_row_count`
 - `with_row_index`
 
@@ -51,7 +53,7 @@ This report shows the API coverage of pql compared to Polars.
 - `to_native` () -> LazyFrameT
 - `unpivot` (on: str | list[str] | None, index: str | list[str] | None, variable_name: str, value_name: str) -> Self
 
-### [!] Signature Mismatches (21)
+### [!] Signature Mismatches (19)
 
 - `bottom_k` (pl)
   - Polars: (k: int, by: IntoExpr | Iterable[IntoExpr], **reverse: bool | Sequence[bool]**) -> LazyFrame
@@ -94,10 +96,6 @@ This report shows the API coverage of pql compared to Polars.
   - Narwhals: (**mapping: dict[str, str]**) -> Self
   - Polars: (**mapping: Mapping[str, str] | Callable[[str], str]**, **strict: bool**) -> LazyFrame
   - pql: (**mapping: Mapping[str, str]**) -> Self
-- `select` (nw)
-  - Narwhals: (exprs: IntoExpr | Iterable[IntoExpr], **named_exprs: IntoExpr**) -> Self
-  - Polars: (exprs: IntoExpr | Iterable[IntoExpr], **named_exprs: IntoExpr**) -> LazyFrame
-  - pql: (exprs: IntoExpr | Iterable[IntoExpr]) -> Self
 - `shift` (pl)
   - Polars: (**n: int | IntoExprColumn**, fill_value: IntoExpr | None) -> LazyFrame
   - pql: (**n: int**, fill_value: IntoExpr | None) -> Self
@@ -123,10 +121,6 @@ This report shows the API coverage of pql compared to Polars.
   - Narwhals: (**subset: str | list[str] | None**, **keep: UniqueKeepStrategy**, **order_by: str | Sequence[str] | None**) -> Self
   - Polars: (**subset: IntoExpr | Collection[IntoExpr] | None**, **keep: UniqueKeepStrategy**, **maintain_order: bool**) -> LazyFrame
   - pql: (**subset: str | Iterable[str] | None**) -> Self
-- `with_columns` (nw)
-  - Narwhals: (exprs: IntoExpr | Iterable[IntoExpr], **named_exprs: IntoExpr**) -> Self
-  - Polars: (exprs: IntoExpr | Iterable[IntoExpr], **named_exprs: IntoExpr**) -> LazyFrame
-  - pql: (exprs: IntoExpr | Iterable[IntoExpr]) -> Self
 
 ### [+] Extra Methods (pql-only) (1)
 
