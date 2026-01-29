@@ -12,7 +12,6 @@ import pyochain as pc
 from . import sql
 
 if TYPE_CHECKING:
-    from . import datatypes
     from ._expr import Expr
     from ._types import FrameInit, IntoExpr
 
@@ -50,6 +49,18 @@ class LazyFrame:
         instance._rel = rel
         return instance
 
+    def _select(
+        self, exprs: Iterable[sql.SqlExpr] | sql.SqlExpr | str, groups: str = ""
+    ) -> Self:
+        return self.__from_lf__(self._rel.select(*exprs, groups=groups))  # pyright: ignore[reportUnknownArgumentType, reportGeneralTypeIssues]
+
+    def _agg(
+        self,
+        exprs: Iterable[sql.SqlExpr] | sql.SqlExpr | str,
+        group_expr: sql.SqlExpr | str = "",
+    ) -> Self:
+        return self.__from_lf__(self._rel.aggregate(exprs, group_expr))  # pyright: ignore[reportArgumentType]
+
     @property
     def relation(self) -> sql.Relation:
         """Get the underlying DuckDB relation."""
@@ -67,18 +78,16 @@ class LazyFrame:
         self, *exprs: IntoExpr | Iterable[IntoExpr], **named_exprs: IntoExpr
     ) -> Self:
         """Select columns or expressions."""
-        return self.__from_lf__(
-            self._rel.select(*sql.from_args_kwargs(*exprs, **named_exprs))
-        )
+        return self._select(sql.from_args_kwargs(*exprs, **named_exprs))
 
     def with_columns(
         self, *exprs: IntoExpr | Iterable[IntoExpr], **named_exprs: IntoExpr
     ) -> Self:
         """Add or replace columns."""
-        return self.__from_lf__(
-            self._rel.select(
-                *sql.from_args_kwargs(*exprs, **named_exprs).insert(sql.all())
-            )
+        return (
+            sql.from_args_kwargs(*exprs, **named_exprs)
+            .insert(sql.all())
+            .into(self._select)
         )
 
     def filter(self, *predicates: Expr) -> Self:
@@ -154,18 +163,16 @@ class LazyFrame:
 
     def drop(self, *columns: str) -> Self:
         """Drop columns from the frame."""
-        return self.__from_lf__(self._rel.select(sql.all(exclude=columns)))
+        return self._select(sql.all(exclude=columns))
 
     def rename(self, mapping: Mapping[str, str]) -> Self:
         """Rename columns."""
         rename_map = pc.Dict(mapping)
 
-        return self.__from_lf__(
-            self._rel.select(
-                *self.columns.iter().map(
-                    lambda c: sql.col(c).alias(rename_map.get_item(c).unwrap_or(c))
-                )
-            )
+        return (
+            self.columns.iter()
+            .map(lambda c: sql.col(c).alias(rename_map.get_item(c).unwrap_or(c)))
+            .into(self._select)
         )
 
     def explain(self) -> str:
@@ -225,78 +232,76 @@ class LazyFrame:
 
     def count(self) -> Self:
         """Return the count of each column."""
-        return self.__from_lf__(
-            self._rel.aggregate(
-                self.columns.iter().map(lambda c: sql.fns.count(sql.col(c)).alias(c)),
-            )
+        return (
+            self.columns.iter()
+            .map(lambda c: sql.fns.count(sql.col(c)).alias(c))
+            .into(self._agg)
         )
 
     def sum(self) -> Self:
         """Aggregate the sum of each column."""
-        return self.__from_lf__(
-            self._rel.aggregate(
-                self.columns.iter().map(lambda c: sql.fns.sum(sql.col(c)).alias(c))
-            )
+        return (
+            self.columns.iter()
+            .map(lambda c: sql.fns.sum(sql.col(c)).alias(c))
+            .into(self._agg)
         )
 
     def mean(self) -> Self:
         """Aggregate the mean of each column."""
-        return self.__from_lf__(
-            self._rel.aggregate(
-                self.columns.iter().map(lambda c: sql.fns.avg(sql.col(c)).alias(c)),
-            )
+        return (
+            self.columns.iter()
+            .map(lambda c: sql.fns.avg(sql.col(c)).alias(c))
+            .into(self._agg)
         )
 
     def median(self) -> Self:
         """Aggregate the median of each column."""
-        return self.__from_lf__(
-            self._rel.aggregate(
-                self.columns.iter().map(lambda c: sql.fns.median(sql.col(c)).alias(c))
-            )
+        return (
+            self.columns.iter()
+            .map(lambda c: sql.fns.median(sql.col(c)).alias(c))
+            .into(self._agg)
         )
 
     def min(self) -> Self:
         """Aggregate the minimum of each column."""
-        return self.__from_lf__(
-            self._rel.aggregate(
-                self.columns.iter().map(lambda c: sql.fns.min(sql.col(c)).alias(c))
-            )
+        return (
+            self.columns.iter()
+            .map(lambda c: sql.fns.min(sql.col(c)).alias(c))
+            .into(self._agg)
         )
 
     def max(self) -> Self:
         """Aggregate the maximum of each column."""
-        return self.__from_lf__(
-            self._rel.aggregate(
-                self.columns.iter().map(lambda c: sql.fns.max(sql.col(c)).alias(c))
-            )
+        return (
+            self.columns.iter()
+            .map(lambda c: sql.fns.max(sql.col(c)).alias(c))
+            .into(self._agg)
         )
 
     def std(self, ddof: int = 1) -> Self:
         """Aggregate the standard deviation of each column."""
         std_func = sql.fns.stddev_samp if ddof == 1 else sql.fns.stddev_pop
-        return self.__from_lf__(
-            self._rel.aggregate(
-                self.columns.iter().map(lambda c: std_func(sql.col(c)).alias(c))
-            )
+        return (
+            self.columns.iter()
+            .map(lambda c: std_func(sql.col(c)).alias(c))
+            .into(self._agg)
         )
 
     def var(self, ddof: int = 1) -> Self:
         """Aggregate the variance of each column."""
         var_func = sql.fns.var_samp if ddof == 1 else sql.fns.var_pop
-        return self.__from_lf__(
-            self._rel.aggregate(
-                self.columns.iter().map(lambda c: var_func(sql.col(c)).alias(c))
-            )
+        return (
+            self.columns.iter()
+            .map(lambda c: var_func(sql.col(c)).alias(c))
+            .into(self._agg)
         )
 
     def null_count(self) -> Self:
         """Return the null count of each column."""
-        return self.__from_lf__(
-            self._rel.aggregate(
-                self.columns.iter().map(
-                    lambda c: sql.fns.count_if(arg=sql.col(c).isnull()).alias(c)
-                )
-            )
+        return (
+            self.columns.iter()
+            .map(lambda c: sql.fns.count_if(arg=sql.col(c).isnull()).alias(c))
+            .into(self._agg)
         )
 
     def fill_null(
@@ -312,14 +317,12 @@ class LazyFrame:
             case (None, "backward"):
                 return self._fill_strategy("FIRST_VALUE")
             case (val, None) if val is not None:
-                return self.__from_lf__(
-                    self._rel.select(
-                        *self.columns.iter().map(
-                            lambda c: sql.coalesce(
-                                sql.col(c), sql.from_expr(val)
-                            ).alias(c)
-                        )
+                return (
+                    self.columns.iter()
+                    .map(
+                        lambda c: sql.coalesce(sql.col(c), sql.from_expr(val)).alias(c)
                     )
+                    .into(self._select)
                 )
             case _:
                 msg = "Either `value` or `strategy` must be provided."
@@ -336,31 +339,31 @@ class LazyFrame:
                 rows_start = pc.NONE
                 rows_end = pc.Some(0)
                 fill_func = sql.fns.last_value
-        return self.__from_lf__(
-            self._rel.select(
-                *self.columns.iter().map(
-                    lambda c: sql.coalesce(
-                        sql.col(c),
-                        sql.WindowExpr(
-                            rows_start=rows_start, rows_end=rows_end, ignore_nulls=True
-                        ).call(
-                            fill_func(sql.col(c)),
-                        ),
-                    ).alias(c)
-                )
+        return (
+            self.columns.iter()
+            .map(
+                lambda c: sql.coalesce(
+                    sql.col(c),
+                    sql.WindowExpr(
+                        rows_start=rows_start, rows_end=rows_end, ignore_nulls=True
+                    ).call(
+                        fill_func(sql.col(c)),
+                    ),
+                ).alias(c)
             )
+            .into(self._select)
         )
 
     def fill_nan(self, value: float | Expr | None) -> Self:
         """Fill NaN values."""
-        return self.__from_lf__(
-            self._rel.select(
-                *self.columns.iter().map(
-                    lambda c: sql.when(sql.fns.isnan(sql.col(c)), sql.from_expr(value))
-                    .otherwise(sql.col(c))
-                    .alias(c)
-                )
+        return (
+            self.columns.iter()
+            .map(
+                lambda c: sql.when(sql.fns.isnan(sql.col(c)), sql.from_expr(value))
+                .otherwise(sql.col(c))
+                .alias(c)
             )
+            .into(self._select)
         )
 
     def drop_nulls(self, subset: str | Iterable[str] | None = None) -> Self:
@@ -408,20 +411,20 @@ class LazyFrame:
         """Shift values by n positions."""
         shift_func = sql.fns.lag if n > 0 else sql.fns.lead
         abs_n = abs(n)
-        return self.__from_lf__(
-            self._rel.select(
-                *self.columns.iter().map(
-                    lambda c: sql.coalesce(
-                        sql.WindowExpr().call(
-                            shift_func(
-                                sql.col(c),
-                                sql.lit(abs_n),
-                            ),
+        return (
+            self.columns.iter()
+            .map(
+                lambda c: sql.coalesce(
+                    sql.WindowExpr().call(
+                        shift_func(
+                            sql.col(c),
+                            sql.lit(abs_n),
                         ),
-                        sql.from_value(fill_value),
-                    ).alias(c)
-                )
+                    ),
+                    sql.from_value(fill_value),
+                ).alias(c)
             )
+            .into(self._select)
         )
 
     def clone(self) -> Self:
@@ -454,15 +457,15 @@ class LazyFrame:
 
     def quantile(self, quantile: float) -> Self:
         """Compute quantile for each column."""
-        return self.__from_lf__(
-            self._rel.aggregate(
-                self.columns.iter().map(
-                    lambda c: sql.fns.quantile_cont(
-                        sql.col(c),
-                        sql.lit(quantile),
-                    ).alias(c)
-                )
+        return (
+            self.columns.iter()
+            .map(
+                lambda c: sql.fns.quantile_cont(
+                    sql.col(c),
+                    sql.lit(quantile),
+                ).alias(c)
             )
+            .into(self._agg)
         )
 
     def gather_every(self, n: int, offset: int = 0) -> Self:
@@ -486,7 +489,7 @@ class LazyFrame:
         return self.sort(by, descending=reverse).head(k)
 
     def cast(
-        self, dtypes: Mapping[str, datatypes.DataType] | datatypes.DataType
+        self, dtypes: Mapping[str, sql.datatypes.DataType] | sql.datatypes.DataType
     ) -> Self:
         """Cast columns to specified dtypes."""
         match dtypes:
@@ -503,7 +506,7 @@ class LazyFrame:
                 exprs = self.columns.iter().map(
                     lambda c: sql.col(c).cast(dtypes).alias(c)
                 )
-        return self.__from_lf__(self._rel.select(*exprs))
+        return self._select(exprs)
 
     def sink_parquet(
         self,
