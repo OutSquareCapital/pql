@@ -19,7 +19,7 @@ type Grouped = pc.Dict[str, pc.Seq[FunctionInfo]]
 """Grouped functions by category."""
 
 
-DEFAULT_OUTPUT = Path("src", "pql", "sql", "_generated_fns.py")
+DEFAULT_OUTPUT = Path("src", "pql", "sql", "fns.py")
 
 app = typer.Typer(add_completion=False)
 
