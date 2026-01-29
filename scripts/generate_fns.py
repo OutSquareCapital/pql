@@ -16,7 +16,7 @@ import pyochain as pc
 import typer
 
 type Grouped = pc.Dict[str, pc.Seq[FunctionInfo]]
-"""Python type names for DuckDB type mapping."""
+"""Grouped functions by category."""
 
 
 class PyTypes(StrEnum):
@@ -121,6 +121,76 @@ CATEGORY_PATTERNS: pc.Seq[tuple[str, str]] = pc.Seq(
 """Patterns to categorize functions based on their name prefixes."""
 
 
+DEFAULT_OUTPUT = Path("src", "pql", "sql", "_generated_fns.py")
+
+app = typer.Typer(add_completion=False)
+
+
+@app.command()
+def main(
+    output: Annotated[Path, typer.Option("--output", "-o")] = DEFAULT_OUTPUT,
+) -> None:
+    """Generate typed DuckDB function wrappers."""
+    typer.echo("Fetching functions from DuckDB...")
+    content = _run_pipeline()
+
+    output.parent.mkdir(parents=True, exist_ok=True)
+    output.write_text(content, encoding="utf-8")
+    typer.echo(f"Generated {output}")
+    _run_ruff(output)
+    typer.echo("Done!")
+
+
+def _run_ruff(output: Path) -> None:
+    typer.echo("Running Ruff checks and format...")
+    uv_args = ["uv", "run", "ruff"]
+    run_ruff = partial(subprocess.run, check=False)
+    run_ruff([*uv_args, "check", "--fix", "--unsafe-fixes", str(output)])
+    run_ruff([*uv_args, "format", str(output)])
+
+
+def _run_pipeline() -> str:
+    return (
+        pc.Iter(duckdb.sql(_get_query()).fetchall())
+        .map(
+            lambda row: FunctionInfo(
+                name=row[0],
+                function_type=row[1],
+                return_type=row[2] or "ANY",
+                python_name=row[3],
+                category=row[4],
+                parameters=pc.Seq(row[5]),
+                parameter_types=pc.Seq(row[6]),
+                description=row[7],
+                min_param_count=row[8],
+            )
+        )
+        .collect()
+        .inspect(lambda fns: typer.echo(f"Found {fns.length()} function signatures"))
+        .into(lambda fns: f"{_header()}{_all_names(fns)}\n]{_sections(fns)}\n")
+    )
+
+
+def _all_names(functions: pc.Seq[FunctionInfo]) -> str:
+    return functions.iter().map(lambda f: f'    "{f.python_name}",').join("\n")
+
+
+def _sections(functions: pc.Seq[FunctionInfo]) -> str:
+    return (
+        functions.iter()
+        .fold(pc.Dict[str, pc.Seq[FunctionInfo]].new(), _group_by_category_step)
+        .items()
+        .iter()
+        .sort(key=lambda kv: kv[0])
+        .iter()
+        .map_star(
+            lambda category, funcs: f"\n\n# {'=' * 60}\n# {category}\n# {'=' * 60}\n\n"
+            + funcs.iter().map(lambda f: f.generate_function()).join("\n\n\n")
+        )
+        .join("")
+    )
+
+
 @dataclass(slots=True)
 class FunctionInfo:
     """Metadata for a DuckDB function."""
@@ -134,7 +204,6 @@ class FunctionInfo:
     parameter_types: pc.Seq[str]
     description: str | None
     min_param_count: int
-    has_varargs: bool = False
 
     def _docstring(self) -> str:
         """Generate docstring for function."""
@@ -399,47 +468,6 @@ def _get_query() -> str:
     """
 
 
-def _fetch_functions() -> pc.Seq[FunctionInfo]:
-    return (
-        pc.Iter(duckdb.sql(_get_query()).fetchall())
-        .map(
-            lambda row: FunctionInfo(
-                name=row[0],
-                function_type=row[1],
-                return_type=row[2] or "ANY",
-                python_name=row[3],
-                category=row[4],
-                parameters=pc.Seq(row[5]),
-                parameter_types=pc.Seq(row[6]),
-                description=row[7],
-                min_param_count=row[8],
-            )
-        )
-        .collect()
-    )
-
-
-def _generate_file_content(functions: pc.Seq[FunctionInfo]) -> str:
-    all_names = functions.iter().map(lambda f: f'    "{f.python_name}",').join("\n")
-    init: partial[Grouped] = partial(pc.Dict.new)
-
-    sections = (
-        functions.iter()
-        .fold(init(), _group_by_category_step)
-        .items()
-        .iter()
-        .sort(key=lambda kv: kv[0])
-        .iter()
-        .map_star(
-            lambda category, funcs: f"\n\n# {'=' * 60}\n# {category}\n# {'=' * 60}\n\n"
-            + funcs.iter().map(lambda f: f.generate_function()).join("\n\n\n")
-        )
-        .join("")
-    )
-
-    return f"{_header()}{all_names}\n]{sections}\n"
-
-
 def _group_by_category_step(grouped: Grouped, func: FunctionInfo) -> Grouped:
     return grouped.insert(
         func.category,
@@ -468,34 +496,6 @@ def _header() -> str:
 
         __all__ = [
     ''')
-
-
-DEFAULT_OUTPUT = Path("src", "pql", "sql", "_generated_fns.py")
-
-app = typer.Typer(add_completion=False)
-
-
-@app.command()
-def main(
-    output: Annotated[Path, typer.Option("--output", "-o")] = DEFAULT_OUTPUT,
-) -> None:
-    """Generate typed DuckDB function wrappers."""
-    typer.echo("Fetching functions from DuckDB...")
-    functions = _fetch_functions()
-    typer.echo(f"Found {functions.length()} function signatures")
-    content = functions.into(_generate_file_content)
-
-    output.parent.mkdir(parents=True, exist_ok=True)
-    output.write_text(content, encoding="utf-8")
-    typer.echo(f"Generated {output}")
-
-    typer.echo("Running Ruff checks and format...")
-    uv_args = ["uv", "run", "ruff"]
-    run_ruff = partial(subprocess.run, check=False)
-    run_ruff([*uv_args, "check", "--fix", "--unsafe-fixes", str(output)])
-    run_ruff([*uv_args, "format", str(output)])
-
-    typer.echo("Done!")
 
 
 if __name__ == "__main__":
