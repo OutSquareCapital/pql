@@ -13,9 +13,7 @@ from duckdb import (
     from_query,  # noqa: F401 # pyright: ignore[reportUnusedImport]
 )
 
-from .._types import PyLiteral
 
-
-def func(name: str, *args: SqlExpr | PyLiteral) -> SqlExpr:
+def func(name: str, *args: object) -> SqlExpr:
     """Create a SQL function expression."""
     return FunctionExpression(name, *args)  # pyright: ignore[reportArgumentType]

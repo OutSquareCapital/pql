@@ -747,7 +747,6 @@ __all__ = [
     "yearweek",
 ]
 
-
 # ============================================================
 # Aggregate Functions
 # ============================================================
@@ -759,7 +758,7 @@ def any_value(arg: SqlExpr) -> SqlExpr:
     This function is affected by ordering.
 
     Args:
-        arg (SqlExpr): ANY expression
+        arg (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -771,7 +770,7 @@ def approx_count_distinct(any_arg: SqlExpr) -> SqlExpr:
     """Computes the approximate count of distinct elements using HyperLogLog.
 
     Args:
-        any_arg (SqlExpr): ANY expression
+        any_arg (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -783,8 +782,8 @@ def approx_quantile(x: SqlExpr | int, pos: SqlExpr | float) -> SqlExpr:
     """Computes the approximate quantile using T-Digest.
 
     Args:
-        x (SqlExpr | int): BIGINT expression
-        pos (SqlExpr | float): FLOAT expression
+        x (SqlExpr | int): `BIGINT` expression
+        pos (SqlExpr | float): `FLOAT` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -796,8 +795,8 @@ def approx_top_k(val: SqlExpr, k: SqlExpr | int) -> SqlExpr:
     """Finds the k approximately most occurring values in the data set.
 
     Args:
-        val (SqlExpr): ANY expression
-        k (SqlExpr | int): BIGINT expression
+        val (SqlExpr): `ANY` expression
+        k (SqlExpr | int): `BIGINT` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -811,7 +810,7 @@ def arbitrary(arg: SqlExpr) -> SqlExpr:
     This function is affected by ordering.
 
     Args:
-        arg (SqlExpr): ANY expression
+        arg (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -825,9 +824,9 @@ def arg_max(arg: SqlExpr, val: SqlExpr, col2: SqlExpr | int | None = None) -> Sq
     Calculates the non-NULL arg expression at that row.
 
     Args:
-        arg (SqlExpr): ANY expression
-        val (SqlExpr): ANY expression
-        col2 (SqlExpr | int): BIGINT expression
+        arg (SqlExpr): `ANY` expression
+        val (SqlExpr): `ANY` expression
+        col2 (SqlExpr | int): `BIGINT` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -841,8 +840,8 @@ def arg_max_null(arg: SqlExpr, val: SqlExpr) -> SqlExpr:
     Calculates the arg expression at that row.
 
     Args:
-        arg (SqlExpr): ANY expression
-        val (SqlExpr): ANY expression
+        arg (SqlExpr): `ANY` expression
+        val (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -856,9 +855,9 @@ def arg_min(arg: SqlExpr, val: SqlExpr, col2: SqlExpr | int | None = None) -> Sq
     Calculates the non-NULL arg expression at that row.
 
     Args:
-        arg (SqlExpr): ANY expression
-        val (SqlExpr): ANY expression
-        col2 (SqlExpr | int): BIGINT expression
+        arg (SqlExpr): `ANY` expression
+        val (SqlExpr): `ANY` expression
+        col2 (SqlExpr | int): `BIGINT` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -872,8 +871,8 @@ def arg_min_null(arg: SqlExpr, val: SqlExpr) -> SqlExpr:
     Calculates the arg expression at that row.
 
     Args:
-        arg (SqlExpr): ANY expression
-        val (SqlExpr): ANY expression
+        arg (SqlExpr): `ANY` expression
+        val (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -887,9 +886,9 @@ def argmax(arg: SqlExpr, val: SqlExpr, col2: SqlExpr | int | None = None) -> Sql
     Calculates the non-NULL arg expression at that row.
 
     Args:
-        arg (SqlExpr): ANY expression
-        val (SqlExpr): ANY expression
-        col2 (SqlExpr | int): BIGINT expression
+        arg (SqlExpr): `ANY` expression
+        val (SqlExpr): `ANY` expression
+        col2 (SqlExpr | int): `BIGINT` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -903,9 +902,9 @@ def argmin(arg: SqlExpr, val: SqlExpr, col2: SqlExpr | int | None = None) -> Sql
     Calculates the non-NULL arg expression at that row.
 
     Args:
-        arg (SqlExpr): ANY expression
-        val (SqlExpr): ANY expression
-        col2 (SqlExpr | int): BIGINT expression
+        arg (SqlExpr): `ANY` expression
+        val (SqlExpr): `ANY` expression
+        col2 (SqlExpr | int): `BIGINT` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -917,7 +916,7 @@ def avg(x: SqlExpr | int) -> SqlExpr:
     """Calculates the average value for all tuples in x.
 
     Args:
-        x (SqlExpr | int): BIGINT expression
+        x (SqlExpr | int): `BIGINT` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -929,7 +928,7 @@ def bool_and(*, arg: SqlExpr | bool) -> SqlExpr:
     """Returns TRUE if every input value is TRUE, otherwise FALSE.
 
     Args:
-        arg (SqlExpr | bool): BOOLEAN expression
+        arg (SqlExpr | bool): `BOOLEAN` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -941,7 +940,7 @@ def bool_or(*, arg: SqlExpr | bool) -> SqlExpr:
     """Returns TRUE if any input value is TRUE, otherwise FALSE.
 
     Args:
-        arg (SqlExpr | bool): BOOLEAN expression
+        arg (SqlExpr | bool): `BOOLEAN` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -953,8 +952,8 @@ def corr(y: SqlExpr | float, x: SqlExpr | float) -> SqlExpr:
     """Returns the correlation coefficient for non-NULL pairs in a group.
 
     Args:
-        y (SqlExpr | float): DOUBLE expression
-        x (SqlExpr | float): DOUBLE expression
+        y (SqlExpr | float): `DOUBLE` expression
+        x (SqlExpr | float): `DOUBLE` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -966,7 +965,7 @@ def count(arg: SqlExpr | None = None) -> SqlExpr:
     """Returns the number of non-NULL values in arg.
 
     Args:
-        arg (SqlExpr): ANY expression
+        arg (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -978,7 +977,7 @@ def count_if(*, arg: SqlExpr | bool) -> SqlExpr:
     """Counts the total number of TRUE values for a boolean column.
 
     Args:
-        arg (SqlExpr | bool): BOOLEAN expression
+        arg (SqlExpr | bool): `BOOLEAN` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -999,7 +998,7 @@ def countif(*, arg: SqlExpr | bool) -> SqlExpr:
     """Counts the total number of TRUE values for a boolean column.
 
     Args:
-        arg (SqlExpr | bool): BOOLEAN expression
+        arg (SqlExpr | bool): `BOOLEAN` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -1011,8 +1010,8 @@ def covar_pop(y: SqlExpr | float, x: SqlExpr | float) -> SqlExpr:
     """Returns the population covariance of input values.
 
     Args:
-        y (SqlExpr | float): DOUBLE expression
-        x (SqlExpr | float): DOUBLE expression
+        y (SqlExpr | float): `DOUBLE` expression
+        x (SqlExpr | float): `DOUBLE` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -1024,8 +1023,8 @@ def covar_samp(y: SqlExpr | float, x: SqlExpr | float) -> SqlExpr:
     """Returns the sample covariance for non-NULL pairs in a group.
 
     Args:
-        y (SqlExpr | float): DOUBLE expression
-        x (SqlExpr | float): DOUBLE expression
+        y (SqlExpr | float): `DOUBLE` expression
+        x (SqlExpr | float): `DOUBLE` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -1037,7 +1036,7 @@ def entropy(x: SqlExpr) -> SqlExpr:
     """Returns the log-2 entropy of count input-values.
 
     Args:
-        x (SqlExpr): ANY expression
+        x (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -1049,7 +1048,7 @@ def favg(x: SqlExpr | float) -> SqlExpr:
     """Calculates the average using a more accurate floating point summation (Kahan Sum).
 
     Args:
-        x (SqlExpr | float): DOUBLE expression
+        x (SqlExpr | float): `DOUBLE` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -1063,7 +1062,7 @@ def first(arg: SqlExpr) -> SqlExpr:
     This function is affected by ordering.
 
     Args:
-        arg (SqlExpr): ANY expression
+        arg (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -1075,7 +1074,7 @@ def fsum(arg: SqlExpr | float) -> SqlExpr:
     """Calculates the sum using a more accurate floating point summation (Kahan Sum).
 
     Args:
-        arg (SqlExpr | float): DOUBLE expression
+        arg (SqlExpr | float): `DOUBLE` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -1087,8 +1086,8 @@ def group_concat(str_arg: SqlExpr, arg: SqlExpr | str | None = None) -> SqlExpr:
     """Concatenates the column string values with an optional separator.
 
     Args:
-        str_arg (SqlExpr): ANY expression
-        arg (SqlExpr | str): VARCHAR expression
+        str_arg (SqlExpr): `ANY` expression
+        arg (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -1100,8 +1099,8 @@ def histogram(arg: SqlExpr, col1: SqlExpr | None = None) -> SqlExpr:
     """Returns a LIST of STRUCTs with the fields bucket and count.
 
     Args:
-        arg (SqlExpr): ANY expression
-        col1 (SqlExpr): ANY[] expression
+        arg (SqlExpr): `ANY` expression
+        col1 (SqlExpr): `ANY[]` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -1113,8 +1112,8 @@ def histogram_exact(arg: SqlExpr, bins: SqlExpr) -> SqlExpr:
     """Returns a LIST of STRUCTs with the fields bucket and count matching the buckets exactly.
 
     Args:
-        arg (SqlExpr): ANY expression
-        bins (SqlExpr): ANY[] expression
+        arg (SqlExpr): `ANY` expression
+        bins (SqlExpr): `ANY[]` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -1126,7 +1125,7 @@ def kahan_sum(arg: SqlExpr | float) -> SqlExpr:
     """Calculates the sum using a more accurate floating point summation (Kahan Sum).
 
     Args:
-        arg (SqlExpr | float): DOUBLE expression
+        arg (SqlExpr | float): `DOUBLE` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -1138,7 +1137,7 @@ def kurtosis(x: SqlExpr | float) -> SqlExpr:
     """Returns the excess kurtosis (Fisher's definition) of all input values, with a bias correction according to the sample size.
 
     Args:
-        x (SqlExpr | float): DOUBLE expression
+        x (SqlExpr | float): `DOUBLE` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -1150,7 +1149,7 @@ def kurtosis_pop(x: SqlExpr | float) -> SqlExpr:
     """Returns the excess kurtosis (Fisher's definition) of all input values, without bias correction.
 
     Args:
-        x (SqlExpr | float): DOUBLE expression
+        x (SqlExpr | float): `DOUBLE` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -1164,7 +1163,7 @@ def last(arg: SqlExpr) -> SqlExpr:
     This function is affected by ordering.
 
     Args:
-        arg (SqlExpr): ANY expression
+        arg (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -1176,7 +1175,7 @@ def list(arg: SqlExpr) -> SqlExpr:
     """Returns a LIST containing all the values of a column.
 
     Args:
-        arg (SqlExpr): T expression
+        arg (SqlExpr): `T` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -1192,7 +1191,7 @@ def mad(x: SqlExpr | date) -> SqlExpr:
     Temporal types return a positive INTERVAL.
 
     Args:
-        x (SqlExpr | date): DATE expression
+        x (SqlExpr | date): `DATE` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -1204,8 +1203,8 @@ def max(arg: SqlExpr, col1: SqlExpr | int | None = None) -> SqlExpr:
     """Returns the maximum value present in arg.
 
     Args:
-        arg (SqlExpr): ANY expression
-        col1 (SqlExpr | int): BIGINT expression
+        arg (SqlExpr): `ANY` expression
+        col1 (SqlExpr | int): `BIGINT` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -1219,9 +1218,9 @@ def max_by(arg: SqlExpr, val: SqlExpr, col2: SqlExpr | int | None = None) -> Sql
     Calculates the non-NULL arg expression at that row.
 
     Args:
-        arg (SqlExpr): ANY expression
-        val (SqlExpr): ANY expression
-        col2 (SqlExpr | int): BIGINT expression
+        arg (SqlExpr): `ANY` expression
+        val (SqlExpr): `ANY` expression
+        col2 (SqlExpr | int): `BIGINT` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -1233,7 +1232,7 @@ def mean(x: SqlExpr | int) -> SqlExpr:
     """Calculates the average value for all tuples in x.
 
     Args:
-        x (SqlExpr | int): BIGINT expression
+        x (SqlExpr | int): `BIGINT` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -1251,7 +1250,7 @@ def median(x: SqlExpr) -> SqlExpr:
     Non-interpolate-able types (everything else) return the lower of the two middle values.
 
     Args:
-        x (SqlExpr): ANY expression
+        x (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -1263,8 +1262,8 @@ def min(arg: SqlExpr, col1: SqlExpr | int | None = None) -> SqlExpr:
     """Returns the minimum value present in arg.
 
     Args:
-        arg (SqlExpr): ANY expression
-        col1 (SqlExpr | int): BIGINT expression
+        arg (SqlExpr): `ANY` expression
+        col1 (SqlExpr | int): `BIGINT` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -1278,9 +1277,9 @@ def min_by(arg: SqlExpr, val: SqlExpr, col2: SqlExpr | int | None = None) -> Sql
     Calculates the non-NULL arg expression at that row.
 
     Args:
-        arg (SqlExpr): ANY expression
-        val (SqlExpr): ANY expression
-        col2 (SqlExpr | int): BIGINT expression
+        arg (SqlExpr): `ANY` expression
+        val (SqlExpr): `ANY` expression
+        col2 (SqlExpr | int): `BIGINT` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -1294,7 +1293,7 @@ def mode(x: SqlExpr) -> SqlExpr:
     NULL values are ignored.
 
     Args:
-        x (SqlExpr): ANY expression
+        x (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -1306,7 +1305,7 @@ def product(arg: SqlExpr | float) -> SqlExpr:
     """Calculates the product of all tuples in arg.
 
     Args:
-        arg (SqlExpr | float): DOUBLE expression
+        arg (SqlExpr | float): `DOUBLE` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -1320,8 +1319,8 @@ def quantile(x: SqlExpr, pos: SqlExpr | float | None = None) -> SqlExpr:
     If pos is a LIST of FLOATs, then the result is a LIST of the corresponding exact quantiles.
 
     Args:
-        x (SqlExpr): ANY expression
-        pos (SqlExpr | float): DOUBLE expression
+        x (SqlExpr): `ANY` expression
+        pos (SqlExpr | float): `DOUBLE` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -1335,8 +1334,8 @@ def quantile_cont(x: SqlExpr | int, pos: SqlExpr | float) -> SqlExpr:
     If pos is a LIST of FLOATs, then the result is a LIST of the corresponding interpolated quantiles.
 
     Args:
-        x (SqlExpr | int): BIGINT expression
-        pos (SqlExpr | float): DOUBLE expression
+        x (SqlExpr | int): `BIGINT` expression
+        pos (SqlExpr | float): `DOUBLE` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -1350,8 +1349,8 @@ def quantile_disc(x: SqlExpr, pos: SqlExpr | float | None = None) -> SqlExpr:
     If pos is a LIST of FLOATs, then the result is a LIST of the corresponding exact quantiles.
 
     Args:
-        x (SqlExpr): ANY expression
-        pos (SqlExpr | float): DOUBLE expression
+        x (SqlExpr): `ANY` expression
+        pos (SqlExpr | float): `DOUBLE` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -1363,8 +1362,8 @@ def regr_avgx(y: SqlExpr | float, x: SqlExpr | float) -> SqlExpr:
     """Returns the average of the independent variable for non-NULL pairs in a group, where x is the independent variable and y is the dependent variable.
 
     Args:
-        y (SqlExpr | float): DOUBLE expression
-        x (SqlExpr | float): DOUBLE expression
+        y (SqlExpr | float): `DOUBLE` expression
+        x (SqlExpr | float): `DOUBLE` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -1376,8 +1375,8 @@ def regr_avgy(y: SqlExpr | float, x: SqlExpr | float) -> SqlExpr:
     """Returns the average of the dependent variable for non-NULL pairs in a group, where x is the independent variable and y is the dependent variable.
 
     Args:
-        y (SqlExpr | float): DOUBLE expression
-        x (SqlExpr | float): DOUBLE expression
+        y (SqlExpr | float): `DOUBLE` expression
+        x (SqlExpr | float): `DOUBLE` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -1389,8 +1388,8 @@ def regr_count(y: SqlExpr | float, x: SqlExpr | float) -> SqlExpr:
     """Returns the number of non-NULL number pairs in a group.
 
     Args:
-        y (SqlExpr | float): DOUBLE expression
-        x (SqlExpr | float): DOUBLE expression
+        y (SqlExpr | float): `DOUBLE` expression
+        x (SqlExpr | float): `DOUBLE` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -1402,8 +1401,8 @@ def regr_intercept(y: SqlExpr | float, x: SqlExpr | float) -> SqlExpr:
     """Returns the intercept of the univariate linear regression line for non-NULL pairs in a group.
 
     Args:
-        y (SqlExpr | float): DOUBLE expression
-        x (SqlExpr | float): DOUBLE expression
+        y (SqlExpr | float): `DOUBLE` expression
+        x (SqlExpr | float): `DOUBLE` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -1415,8 +1414,8 @@ def regr_r2(y: SqlExpr | float, x: SqlExpr | float) -> SqlExpr:
     """Returns the coefficient of determination for non-NULL pairs in a group.
 
     Args:
-        y (SqlExpr | float): DOUBLE expression
-        x (SqlExpr | float): DOUBLE expression
+        y (SqlExpr | float): `DOUBLE` expression
+        x (SqlExpr | float): `DOUBLE` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -1428,8 +1427,8 @@ def regr_slope(y: SqlExpr | float, x: SqlExpr | float) -> SqlExpr:
     """Returns the slope of the linear regression line for non-NULL pairs in a group.
 
     Args:
-        y (SqlExpr | float): DOUBLE expression
-        x (SqlExpr | float): DOUBLE expression
+        y (SqlExpr | float): `DOUBLE` expression
+        x (SqlExpr | float): `DOUBLE` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -1441,8 +1440,8 @@ def regr_sxx(y: SqlExpr | float, x: SqlExpr | float) -> SqlExpr:
     """SQL regr_sxx function.
 
     Args:
-        y (SqlExpr | float): DOUBLE expression
-        x (SqlExpr | float): DOUBLE expression
+        y (SqlExpr | float): `DOUBLE` expression
+        x (SqlExpr | float): `DOUBLE` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -1454,8 +1453,8 @@ def regr_sxy(y: SqlExpr | float, x: SqlExpr | float) -> SqlExpr:
     """Returns the population covariance of input values.
 
     Args:
-        y (SqlExpr | float): DOUBLE expression
-        x (SqlExpr | float): DOUBLE expression
+        y (SqlExpr | float): `DOUBLE` expression
+        x (SqlExpr | float): `DOUBLE` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -1467,8 +1466,8 @@ def regr_syy(y: SqlExpr | float, x: SqlExpr | float) -> SqlExpr:
     """SQL regr_syy function.
 
     Args:
-        y (SqlExpr | float): DOUBLE expression
-        x (SqlExpr | float): DOUBLE expression
+        y (SqlExpr | float): `DOUBLE` expression
+        x (SqlExpr | float): `DOUBLE` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -1484,9 +1483,9 @@ def reservoir_quantile(
     """Gives the approximate quantile using reservoir sampling, the sample size is optional and uses 8192 as a default size.
 
     Args:
-        x (SqlExpr | int): BIGINT expression
-        quantile (SqlExpr | float): DOUBLE expression
-        sample_size (SqlExpr | int): INTEGER expression
+        x (SqlExpr | int): `BIGINT` expression
+        quantile (SqlExpr | float): `DOUBLE` expression
+        sample_size (SqlExpr | int): `INTEGER` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -1498,7 +1497,7 @@ def sem(x: SqlExpr | float) -> SqlExpr:
     """Returns the standard error of the mean.
 
     Args:
-        x (SqlExpr | float): DOUBLE expression
+        x (SqlExpr | float): `DOUBLE` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -1510,7 +1509,7 @@ def skewness(x: SqlExpr | float) -> SqlExpr:
     """Returns the skewness of all input values.
 
     Args:
-        x (SqlExpr | float): DOUBLE expression
+        x (SqlExpr | float): `DOUBLE` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -1522,7 +1521,7 @@ def stddev(x: SqlExpr | float) -> SqlExpr:
     """Returns the sample standard deviation.
 
     Args:
-        x (SqlExpr | float): DOUBLE expression
+        x (SqlExpr | float): `DOUBLE` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -1534,7 +1533,7 @@ def stddev_pop(x: SqlExpr | float) -> SqlExpr:
     """Returns the population standard deviation.
 
     Args:
-        x (SqlExpr | float): DOUBLE expression
+        x (SqlExpr | float): `DOUBLE` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -1546,7 +1545,7 @@ def stddev_samp(x: SqlExpr | float) -> SqlExpr:
     """Returns the sample standard deviation.
 
     Args:
-        x (SqlExpr | float): DOUBLE expression
+        x (SqlExpr | float): `DOUBLE` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -1558,7 +1557,7 @@ def sum(arg: SqlExpr | int) -> SqlExpr:
     """Calculates the sum value for all tuples in arg.
 
     Args:
-        arg (SqlExpr | int): BIGINT expression
+        arg (SqlExpr | int): `BIGINT` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -1572,7 +1571,7 @@ def sum_no_overflow(arg: SqlExpr | int) -> SqlExpr:
     Calculates the sum value for all tuples in arg without overflow checks.
 
     Args:
-        arg (SqlExpr | int): BIGINT expression
+        arg (SqlExpr | int): `BIGINT` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -1584,7 +1583,7 @@ def sumkahan(arg: SqlExpr | float) -> SqlExpr:
     """Calculates the sum using a more accurate floating point summation (Kahan Sum).
 
     Args:
-        arg (SqlExpr | float): DOUBLE expression
+        arg (SqlExpr | float): `DOUBLE` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -1596,7 +1595,7 @@ def var_pop(x: SqlExpr | float) -> SqlExpr:
     """Returns the population variance.
 
     Args:
-        x (SqlExpr | float): DOUBLE expression
+        x (SqlExpr | float): `DOUBLE` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -1608,7 +1607,7 @@ def var_samp(x: SqlExpr | float) -> SqlExpr:
     """Returns the sample variance of all input values.
 
     Args:
-        x (SqlExpr | float): DOUBLE expression
+        x (SqlExpr | float): `DOUBLE` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -1620,7 +1619,7 @@ def variance(x: SqlExpr | float) -> SqlExpr:
     """Returns the sample variance of all input values.
 
     Args:
-        x (SqlExpr | float): DOUBLE expression
+        x (SqlExpr | float): `DOUBLE` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -1637,7 +1636,7 @@ def array_agg(arg: SqlExpr) -> SqlExpr:
     """Returns a LIST containing all the values of a column.
 
     Args:
-        arg (SqlExpr): T expression
+        arg (SqlExpr): `T` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -1651,9 +1650,9 @@ def array_aggr(
     """Executes the aggregate function `function_name` on the elements of `list`.
 
     Args:
-        list_arg (SqlExpr): ANY[] expression
-        function_name (SqlExpr | str): VARCHAR expression
-        *args (SqlExpr): ANY expression
+        list_arg (SqlExpr): `ANY[]` expression
+        function_name (SqlExpr | str): `VARCHAR` expression
+        *args (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -1667,9 +1666,9 @@ def array_aggregate(
     """Executes the aggregate function `function_name` on the elements of `list`.
 
     Args:
-        list_arg (SqlExpr): ANY[] expression
-        function_name (SqlExpr | str): VARCHAR expression
-        *args (SqlExpr): ANY expression
+        list_arg (SqlExpr): `ANY[]` expression
+        function_name (SqlExpr | str): `VARCHAR` expression
+        *args (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -1681,8 +1680,8 @@ def array_append(arr: SqlExpr, el: SqlExpr) -> SqlExpr:
     """SQL array_append function.
 
     Args:
-        arr (SqlExpr): ANY expression
-        el (SqlExpr): ANY expression
+        arr (SqlExpr): `ANY` expression
+        el (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -1696,8 +1695,8 @@ def array_apply(list_arg: SqlExpr, lambda_arg: SqlExpr) -> SqlExpr:
     The return type is defined by the return type of the `lambda` function.
 
     Args:
-        list_arg (SqlExpr): ANY[] expression
-        lambda_arg (SqlExpr): LAMBDA expression
+        list_arg (SqlExpr): `ANY[]` expression
+        lambda_arg (SqlExpr): `LAMBDA` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -1713,7 +1712,7 @@ def array_cat(*args: SqlExpr) -> SqlExpr:
     See also operator `||`.
 
     Args:
-        *args (SqlExpr): ANY[] expression
+        *args (SqlExpr): `ANY[]` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -1729,7 +1728,7 @@ def array_concat(*args: SqlExpr) -> SqlExpr:
     See also operator `||`.
 
     Args:
-        *args (SqlExpr): ANY[] expression
+        *args (SqlExpr): `ANY[]` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -1741,8 +1740,8 @@ def array_contains(list_arg: SqlExpr, element: SqlExpr) -> SqlExpr:
     """Returns true if the list contains the element.
 
     Args:
-        list_arg (SqlExpr): T[] expression
-        element (SqlExpr): T expression
+        list_arg (SqlExpr): `T[]` expression
+        element (SqlExpr): `T` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -1758,8 +1757,8 @@ def array_cosine_distance(array1: SqlExpr | float, array2: SqlExpr | float) -> S
     The arrays can have any size as long as the size is the same for both arguments.
 
     Args:
-        array1 (SqlExpr | float): DOUBLE[ANY] expression
-        array2 (SqlExpr | float): DOUBLE[ANY] expression
+        array1 (SqlExpr | float): `DOUBLE[ANY]` expression
+        array2 (SqlExpr | float): `DOUBLE[ANY]` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -1777,8 +1776,8 @@ def array_cosine_similarity(
     The arrays can have any size as long as the size is the same for both arguments.
 
     Args:
-        array1 (SqlExpr | float): DOUBLE[ANY] expression
-        array2 (SqlExpr | float): DOUBLE[ANY] expression
+        array1 (SqlExpr | float): `DOUBLE[ANY]` expression
+        array2 (SqlExpr | float): `DOUBLE[ANY]` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -1792,8 +1791,8 @@ def array_cross_product(array: SqlExpr | float, array1: SqlExpr | float) -> SqlE
     The array elements can not be `NULL`.
 
     Args:
-        array (SqlExpr | float): DOUBLE[3] expression
-        array1 (SqlExpr | float): DOUBLE[3] expression
+        array (SqlExpr | float): `DOUBLE[3]` expression
+        array1 (SqlExpr | float): `DOUBLE[3]` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -1809,8 +1808,8 @@ def array_distance(array1: SqlExpr | float, array2: SqlExpr | float) -> SqlExpr:
     The arrays can have any size as long as the size is the same for both arguments.
 
     Args:
-        array1 (SqlExpr | float): DOUBLE[ANY] expression
-        array2 (SqlExpr | float): DOUBLE[ANY] expression
+        array1 (SqlExpr | float): `DOUBLE[ANY]` expression
+        array2 (SqlExpr | float): `DOUBLE[ANY]` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -1824,7 +1823,7 @@ def array_distinct(list_arg: SqlExpr) -> SqlExpr:
     Does not preserve the original order.
 
     Args:
-        list_arg (SqlExpr): T[] expression
+        list_arg (SqlExpr): `T[]` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -1840,8 +1839,8 @@ def array_dot_product(array1: SqlExpr | float, array2: SqlExpr | float) -> SqlEx
     The arrays can have any size as long as the size is the same for both arguments.
 
     Args:
-        array1 (SqlExpr | float): DOUBLE[ANY] expression
-        array2 (SqlExpr | float): DOUBLE[ANY] expression
+        array1 (SqlExpr | float): `DOUBLE[ANY]` expression
+        array2 (SqlExpr | float): `DOUBLE[ANY]` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -1849,12 +1848,14 @@ def array_dot_product(array1: SqlExpr | float, array2: SqlExpr | float) -> SqlEx
     return func("array_dot_product", array1, array2)
 
 
-def array_extract(struct: SqlExpr, index: SqlExpr | int) -> SqlExpr:
+def array_extract(
+    struct: SqlExpr | dict[object, object], index: SqlExpr | int
+) -> SqlExpr:
     """Extracts the entry from an unnamed `STRUCT` (tuple) using an index (1-based).
 
     Args:
-        struct (SqlExpr): STRUCT expression
-        index (SqlExpr | int): BIGINT expression
+        struct (SqlExpr | dict[object, object]): `STRUCT` expression
+        index (SqlExpr | int): `BIGINT` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -1870,8 +1871,8 @@ def array_filter(list_arg: SqlExpr, lambda_arg: SqlExpr) -> SqlExpr:
     The return type of `list_filter` is the same as the input list's.
 
     Args:
-        list_arg (SqlExpr): ANY[] expression
-        lambda_arg (SqlExpr): LAMBDA expression
+        list_arg (SqlExpr): `ANY[]` expression
+        lambda_arg (SqlExpr): `LAMBDA` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -1887,9 +1888,9 @@ def array_grade_up(
     """Works like list_sort, but the results are the indexes that correspond to the position in the original list instead of the actual values.
 
     Args:
-        list_arg (SqlExpr): ANY[] expression
-        col1 (SqlExpr | str): VARCHAR expression
-        col2 (SqlExpr | str): VARCHAR expression
+        list_arg (SqlExpr): `ANY[]` expression
+        col1 (SqlExpr | str): `VARCHAR` expression
+        col2 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -1901,8 +1902,8 @@ def array_has(list_arg: SqlExpr, element: SqlExpr) -> SqlExpr:
     """Returns true if the list contains the element.
 
     Args:
-        list_arg (SqlExpr): T[] expression
-        element (SqlExpr): T expression
+        list_arg (SqlExpr): `T[]` expression
+        element (SqlExpr): `T` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -1916,8 +1917,8 @@ def array_has_all(list1: SqlExpr, list2: SqlExpr) -> SqlExpr:
     NULLs are ignored.
 
     Args:
-        list1 (SqlExpr): T[] expression
-        list2 (SqlExpr): T[] expression
+        list1 (SqlExpr): `T[]` expression
+        list2 (SqlExpr): `T[]` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -1931,8 +1932,8 @@ def array_has_any(list1: SqlExpr, list2: SqlExpr) -> SqlExpr:
     NULLs are ignored.
 
     Args:
-        list1 (SqlExpr): T[] expression
-        list2 (SqlExpr): T[] expression
+        list1 (SqlExpr): `T[]` expression
+        list2 (SqlExpr): `T[]` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -1946,8 +1947,8 @@ def array_indexof(list_arg: SqlExpr, element: SqlExpr) -> SqlExpr:
     If the `element` is not found, it returns `NULL`.
 
     Args:
-        list_arg (SqlExpr): T[] expression
-        element (SqlExpr): T expression
+        list_arg (SqlExpr): `T[]` expression
+        element (SqlExpr): `T` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -1963,8 +1964,8 @@ def array_inner_product(array1: SqlExpr | float, array2: SqlExpr | float) -> Sql
     The arrays can have any size as long as the size is the same for both arguments.
 
     Args:
-        array1 (SqlExpr | float): DOUBLE[ANY] expression
-        array2 (SqlExpr | float): DOUBLE[ANY] expression
+        array1 (SqlExpr | float): `DOUBLE[ANY]` expression
+        array2 (SqlExpr | float): `DOUBLE[ANY]` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -1976,8 +1977,8 @@ def array_intersect(l1: SqlExpr, l2: SqlExpr) -> SqlExpr:
     """SQL array_intersect function.
 
     Args:
-        l1 (SqlExpr): ANY expression
-        l2 (SqlExpr): ANY expression
+        l1 (SqlExpr): `ANY` expression
+        l2 (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -1989,8 +1990,8 @@ def array_length(list_arg: SqlExpr, dimension: SqlExpr | int | None = None) -> S
     """`array_length` for lists with dimensions other than 1 not implemented.
 
     Args:
-        list_arg (SqlExpr): ANY[] expression
-        dimension (SqlExpr | int): BIGINT expression
+        list_arg (SqlExpr): `ANY[]` expression
+        dimension (SqlExpr | int): `BIGINT` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -2008,8 +2009,8 @@ def array_negative_dot_product(
     The arrays can have any size as long as the size is the same for both arguments.
 
     Args:
-        array1 (SqlExpr | float): DOUBLE[ANY] expression
-        array2 (SqlExpr | float): DOUBLE[ANY] expression
+        array1 (SqlExpr | float): `DOUBLE[ANY]` expression
+        array2 (SqlExpr | float): `DOUBLE[ANY]` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -2027,8 +2028,8 @@ def array_negative_inner_product(
     The arrays can have any size as long as the size is the same for both arguments.
 
     Args:
-        array1 (SqlExpr | float): DOUBLE[ANY] expression
-        array2 (SqlExpr | float): DOUBLE[ANY] expression
+        array1 (SqlExpr | float): `DOUBLE[ANY]` expression
+        array2 (SqlExpr | float): `DOUBLE[ANY]` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -2040,7 +2041,7 @@ def array_pop_back(arr: SqlExpr) -> SqlExpr:
     """SQL array_pop_back function.
 
     Args:
-        arr (SqlExpr): ANY expression
+        arr (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -2052,7 +2053,7 @@ def array_pop_front(arr: SqlExpr) -> SqlExpr:
     """SQL array_pop_front function.
 
     Args:
-        arr (SqlExpr): ANY expression
+        arr (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -2066,8 +2067,8 @@ def array_position(list_arg: SqlExpr, element: SqlExpr) -> SqlExpr:
     If the `element` is not found, it returns `NULL`.
 
     Args:
-        list_arg (SqlExpr): T[] expression
-        element (SqlExpr): T expression
+        list_arg (SqlExpr): `T[]` expression
+        element (SqlExpr): `T` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -2079,8 +2080,8 @@ def array_prepend(el: SqlExpr, arr: SqlExpr) -> SqlExpr:
     """SQL array_prepend function.
 
     Args:
-        el (SqlExpr): ANY expression
-        arr (SqlExpr): ANY expression
+        el (SqlExpr): `ANY` expression
+        arr (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -2092,8 +2093,8 @@ def array_push_back(arr: SqlExpr, e: SqlExpr) -> SqlExpr:
     """SQL array_push_back function.
 
     Args:
-        arr (SqlExpr): ANY expression
-        e (SqlExpr): ANY expression
+        arr (SqlExpr): `ANY` expression
+        e (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -2105,8 +2106,8 @@ def array_push_front(arr: SqlExpr, e: SqlExpr) -> SqlExpr:
     """SQL array_push_front function.
 
     Args:
-        arr (SqlExpr): ANY expression
-        e (SqlExpr): ANY expression
+        arr (SqlExpr): `ANY` expression
+        e (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -2122,9 +2123,9 @@ def array_reduce(
     The `lambda` function has an optional `initial_value` argument.
 
     Args:
-        list_arg (SqlExpr): ANY[] expression
-        lambda_arg (SqlExpr): LAMBDA expression
-        initial_value (SqlExpr): ANY expression
+        list_arg (SqlExpr): `ANY[]` expression
+        lambda_arg (SqlExpr): `LAMBDA` expression
+        initial_value (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -2140,9 +2141,9 @@ def array_resize(
     Initializes new elements with `value` or `NULL` if `value` is not set.
 
     Args:
-        list_arg (SqlExpr): ANY[] expression
-        arg1 (SqlExpr): ANY expression
-        arg2 (SqlExpr): ANY expression
+        list_arg (SqlExpr): `ANY[]` expression
+        arg1 (SqlExpr): `ANY` expression
+        arg2 (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -2150,24 +2151,24 @@ def array_resize(
     return func("array_resize", list_arg, arg1, arg2)
 
 
-def array_reverse(l: SqlExpr) -> SqlExpr:
+def array_reverse(l_arg: SqlExpr) -> SqlExpr:
     """SQL array_reverse function.
 
     Args:
-        l (SqlExpr): ANY expression
+        l_arg (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
     """
-    return func("array_reverse", l)
+    return func("array_reverse", l_arg)
 
 
 def array_reverse_sort(list_arg: SqlExpr, col1: SqlExpr | str | None = None) -> SqlExpr:
     """Sorts the elements of the list in reverse order.
 
     Args:
-        list_arg (SqlExpr): ANY[] expression
-        col1 (SqlExpr | str): VARCHAR expression
+        list_arg (SqlExpr): `ANY[]` expression
+        col1 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -2179,8 +2180,8 @@ def array_select(value_list: SqlExpr, index_list: SqlExpr | int) -> SqlExpr:
     """Returns a list based on the elements selected by the `index_list`.
 
     Args:
-        value_list (SqlExpr): T[] expression
-        index_list (SqlExpr | int): BIGINT[] expression
+        value_list (SqlExpr): `T[]` expression
+        index_list (SqlExpr | int): `BIGINT[]` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -2194,10 +2195,10 @@ def array_slice(
     """list_slice with added step feature.
 
     Args:
-        list_arg (SqlExpr): ANY expression
-        begin (SqlExpr): ANY expression
-        end (SqlExpr): ANY expression
-        step (SqlExpr | int): BIGINT expression
+        list_arg (SqlExpr): `ANY` expression
+        begin (SqlExpr): `ANY` expression
+        end (SqlExpr): `ANY` expression
+        step (SqlExpr | int): `BIGINT` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -2213,9 +2214,9 @@ def array_sort(
     """Sorts the elements of the list.
 
     Args:
-        list_arg (SqlExpr): ANY[] expression
-        col1 (SqlExpr | str): VARCHAR expression
-        col2 (SqlExpr | str): VARCHAR expression
+        list_arg (SqlExpr): `ANY[]` expression
+        col1 (SqlExpr | str): `VARCHAR` expression
+        col2 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -2227,7 +2228,7 @@ def array_to_json(*args: SqlExpr) -> SqlExpr:
     """SQL array_to_json function.
 
     Args:
-        *args (SqlExpr): ANY expression
+        *args (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -2239,8 +2240,8 @@ def array_to_string(arr: SqlExpr, sep: SqlExpr) -> SqlExpr:
     """SQL array_to_string function.
 
     Args:
-        arr (SqlExpr): ANY expression
-        sep (SqlExpr): ANY expression
+        arr (SqlExpr): `ANY` expression
+        sep (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -2252,8 +2253,8 @@ def array_to_string_comma_default(arr: SqlExpr, sep: SqlExpr) -> SqlExpr:
     """SQL array_to_string_comma_default function.
 
     Args:
-        arr (SqlExpr): ANY expression
-        sep (SqlExpr): ANY expression
+        arr (SqlExpr): `ANY` expression
+        sep (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -2267,8 +2268,8 @@ def array_transform(list_arg: SqlExpr, lambda_arg: SqlExpr) -> SqlExpr:
     The return type is defined by the return type of the `lambda` function.
 
     Args:
-        list_arg (SqlExpr): ANY[] expression
-        lambda_arg (SqlExpr): LAMBDA expression
+        list_arg (SqlExpr): `ANY[]` expression
+        lambda_arg (SqlExpr): `LAMBDA` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -2280,7 +2281,7 @@ def array_unique(list_arg: SqlExpr) -> SqlExpr:
     """Counts the unique elements of a `list`.
 
     Args:
-        list_arg (SqlExpr): ANY[] expression
+        list_arg (SqlExpr): `ANY[]` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -2292,7 +2293,7 @@ def array_value(*args: SqlExpr) -> SqlExpr:
     """Creates an `ARRAY` containing the argument values.
 
     Args:
-        *args (SqlExpr): ANY expression
+        *args (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -2304,8 +2305,8 @@ def array_where(value_list: SqlExpr, *, mask_list: SqlExpr | bool) -> SqlExpr:
     """Returns a list with the `BOOLEAN`s in `mask_list` applied as a mask to the `value_list`.
 
     Args:
-        value_list (SqlExpr): T[] expression
-        mask_list (SqlExpr | bool): BOOLEAN[] expression
+        value_list (SqlExpr): `T[]` expression
+        mask_list (SqlExpr | bool): `BOOLEAN[]` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -2321,7 +2322,7 @@ def array_zip(*args: SqlExpr) -> SqlExpr:
     If `truncate` is set, all lists are truncated to the smallest list length.
 
     Args:
-        *args (SqlExpr): ANY expression
+        *args (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -2338,7 +2339,7 @@ def bit_and(arg: SqlExpr | int) -> SqlExpr:
     """Returns the bitwise AND of all bits in a given expression.
 
     Args:
-        arg (SqlExpr | int): BIGINT expression
+        arg (SqlExpr | int): `BIGINT` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -2350,7 +2351,7 @@ def bit_count(x: SqlExpr | int) -> SqlExpr:
     """Returns the number of bits that are set.
 
     Args:
-        x (SqlExpr | int): BIGINT expression
+        x (SqlExpr | int): `BIGINT` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -2362,7 +2363,7 @@ def bit_length(bit: SqlExpr | bytes) -> SqlExpr:
     """Returns the bit-length of the `bit` argument.
 
     Args:
-        bit (SqlExpr | bytes): BIT expression
+        bit (SqlExpr | bytes): `BIT` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -2374,7 +2375,7 @@ def bit_or(arg: SqlExpr | int) -> SqlExpr:
     """Returns the bitwise OR of all bits in a given expression.
 
     Args:
-        arg (SqlExpr | int): BIGINT expression
+        arg (SqlExpr | int): `BIGINT` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -2388,8 +2389,8 @@ def bit_position(substring: SqlExpr | bytes, bitstring: SqlExpr | bytes) -> SqlE
     The first (leftmost) bit is indexed 1.
 
     Args:
-        substring (SqlExpr | bytes): BIT expression
-        bitstring (SqlExpr | bytes): BIT expression
+        substring (SqlExpr | bytes): `BIT` expression
+        bitstring (SqlExpr | bytes): `BIT` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -2401,7 +2402,7 @@ def bit_xor(arg: SqlExpr | int) -> SqlExpr:
     """Returns the bitwise XOR of all bits in a given expression.
 
     Args:
-        arg (SqlExpr | int): BIGINT expression
+        arg (SqlExpr | int): `BIGINT` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -2413,8 +2414,8 @@ def bitstring(bitstring: SqlExpr | bytes, length: SqlExpr | int) -> SqlExpr:
     """Pads the bitstring until the specified length.
 
     Args:
-        bitstring (SqlExpr | bytes): BIT expression
-        length (SqlExpr | int): INTEGER expression
+        bitstring (SqlExpr | bytes): `BIT` expression
+        length (SqlExpr | int): `INTEGER` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -2430,9 +2431,9 @@ def bitstring_agg(
     """Returns a bitstring with bits set for each distinct value.
 
     Args:
-        arg (SqlExpr | int): BIGINT expression
-        col1 (SqlExpr | int): BIGINT expression
-        col2 (SqlExpr | int): BIGINT expression
+        arg (SqlExpr | int): `BIGINT` expression
+        col1 (SqlExpr | int): `BIGINT` expression
+        col2 (SqlExpr | int): `BIGINT` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -2449,7 +2450,7 @@ def from_base64(string: SqlExpr | str) -> SqlExpr:
     """Converts a base64 encoded `string` to a character string (`BLOB`).
 
     Args:
-        string (SqlExpr | str): VARCHAR expression
+        string (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -2461,7 +2462,7 @@ def from_binary(value: SqlExpr | str) -> SqlExpr:
     """Converts a `value` from binary representation to a blob.
 
     Args:
-        value (SqlExpr | str): VARCHAR expression
+        value (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -2473,7 +2474,7 @@ def from_hex(value: SqlExpr | str) -> SqlExpr:
     """Converts a `value` from hexadecimal representation to a blob.
 
     Args:
-        value (SqlExpr | str): VARCHAR expression
+        value (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -2485,8 +2486,8 @@ def from_json(col0: SqlExpr | str, col1: SqlExpr | str) -> SqlExpr:
     """SQL from_json function.
 
     Args:
-        col0 (SqlExpr | str): JSON expression
-        col1 (SqlExpr | str): VARCHAR expression
+        col0 (SqlExpr | str): `JSON` expression
+        col1 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -2498,8 +2499,8 @@ def from_json_strict(col0: SqlExpr | str, col1: SqlExpr | str) -> SqlExpr:
     """SQL from_json_strict function.
 
     Args:
-        col0 (SqlExpr | str): JSON expression
-        col1 (SqlExpr | str): VARCHAR expression
+        col0 (SqlExpr | str): `JSON` expression
+        col1 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -2513,9 +2514,9 @@ def to_base(
     """Converts `number` to a string in the given base `radix`, optionally padding with leading zeros to `min_length`.
 
     Args:
-        number (SqlExpr | int): BIGINT expression
-        radix (SqlExpr | int): INTEGER expression
-        min_length (SqlExpr | int): INTEGER expression
+        number (SqlExpr | int): `BIGINT` expression
+        radix (SqlExpr | int): `INTEGER` expression
+        min_length (SqlExpr | int): `INTEGER` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -2527,7 +2528,7 @@ def to_base64(blob: SqlExpr | bytes) -> SqlExpr:
     """Converts a `blob` to a base64 encoded string.
 
     Args:
-        blob (SqlExpr | bytes): BLOB expression
+        blob (SqlExpr | bytes): `BLOB` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -2539,7 +2540,7 @@ def to_binary(value: SqlExpr | int) -> SqlExpr:
     """Converts the `value` to binary representation.
 
     Args:
-        value (SqlExpr | int): BIGINT expression
+        value (SqlExpr | int): `BIGINT` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -2551,7 +2552,7 @@ def to_centuries(integer: SqlExpr | int) -> SqlExpr:
     """Construct a century interval.
 
     Args:
-        integer (SqlExpr | int): BIGINT expression
+        integer (SqlExpr | int): `BIGINT` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -2563,7 +2564,7 @@ def to_days(integer: SqlExpr | int) -> SqlExpr:
     """Construct a day interval.
 
     Args:
-        integer (SqlExpr | int): BIGINT expression
+        integer (SqlExpr | int): `BIGINT` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -2575,7 +2576,7 @@ def to_decades(integer: SqlExpr | int) -> SqlExpr:
     """Construct a decade interval.
 
     Args:
-        integer (SqlExpr | int): BIGINT expression
+        integer (SqlExpr | int): `BIGINT` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -2587,7 +2588,7 @@ def to_hex(value: SqlExpr | int) -> SqlExpr:
     """Converts the `value` to `VARCHAR` using hexadecimal representation.
 
     Args:
-        value (SqlExpr | int): BIGINT expression
+        value (SqlExpr | int): `BIGINT` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -2599,7 +2600,7 @@ def to_hours(integer: SqlExpr | int) -> SqlExpr:
     """Construct a hour interval.
 
     Args:
-        integer (SqlExpr | int): BIGINT expression
+        integer (SqlExpr | int): `BIGINT` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -2611,7 +2612,7 @@ def to_json(*args: SqlExpr) -> SqlExpr:
     """SQL to_json function.
 
     Args:
-        *args (SqlExpr): ANY expression
+        *args (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -2623,7 +2624,7 @@ def to_microseconds(integer: SqlExpr | int) -> SqlExpr:
     """Construct a microsecond interval.
 
     Args:
-        integer (SqlExpr | int): BIGINT expression
+        integer (SqlExpr | int): `BIGINT` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -2635,7 +2636,7 @@ def to_millennia(integer: SqlExpr | int) -> SqlExpr:
     """Construct a millenium interval.
 
     Args:
-        integer (SqlExpr | int): BIGINT expression
+        integer (SqlExpr | int): `BIGINT` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -2647,7 +2648,7 @@ def to_milliseconds(double: SqlExpr | float) -> SqlExpr:
     """Construct a millisecond interval.
 
     Args:
-        double (SqlExpr | float): DOUBLE expression
+        double (SqlExpr | float): `DOUBLE` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -2659,7 +2660,7 @@ def to_minutes(integer: SqlExpr | int) -> SqlExpr:
     """Construct a minute interval.
 
     Args:
-        integer (SqlExpr | int): BIGINT expression
+        integer (SqlExpr | int): `BIGINT` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -2671,7 +2672,7 @@ def to_months(integer: SqlExpr | int) -> SqlExpr:
     """Construct a month interval.
 
     Args:
-        integer (SqlExpr | int): BIGINT expression
+        integer (SqlExpr | int): `BIGINT` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -2683,7 +2684,7 @@ def to_quarters(integer: SqlExpr | int) -> SqlExpr:
     """Construct a quarter interval.
 
     Args:
-        integer (SqlExpr | int): BIGINT expression
+        integer (SqlExpr | int): `BIGINT` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -2695,7 +2696,7 @@ def to_seconds(double: SqlExpr | float) -> SqlExpr:
     """Construct a second interval.
 
     Args:
-        double (SqlExpr | float): DOUBLE expression
+        double (SqlExpr | float): `DOUBLE` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -2707,7 +2708,7 @@ def to_timestamp(sec: SqlExpr | float) -> SqlExpr:
     """Converts secs since epoch to a timestamp with time zone.
 
     Args:
-        sec (SqlExpr | float): DOUBLE expression
+        sec (SqlExpr | float): `DOUBLE` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -2719,7 +2720,7 @@ def to_weeks(integer: SqlExpr | int) -> SqlExpr:
     """Construct a week interval.
 
     Args:
-        integer (SqlExpr | int): BIGINT expression
+        integer (SqlExpr | int): `BIGINT` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -2731,7 +2732,7 @@ def to_years(integer: SqlExpr | int) -> SqlExpr:
     """Construct a year interval.
 
     Args:
-        integer (SqlExpr | int): BIGINT expression
+        integer (SqlExpr | int): `BIGINT` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -2757,8 +2758,8 @@ def date_add(date: SqlExpr, interval: SqlExpr) -> SqlExpr:
     """SQL date_add function.
 
     Args:
-        date (SqlExpr): ANY expression
-        interval (SqlExpr): ANY expression
+        date (SqlExpr): `ANY` expression
+        interval (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -2772,9 +2773,9 @@ def date_diff(
     """The number of partition boundaries between the timestamps.
 
     Args:
-        part (SqlExpr | str): VARCHAR expression
-        startdate (SqlExpr | date): DATE expression
-        enddate (SqlExpr | date): DATE expression
+        part (SqlExpr | str): `VARCHAR` expression
+        startdate (SqlExpr | date): `DATE` expression
+        enddate (SqlExpr | date): `DATE` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -2786,8 +2787,8 @@ def date_part(ts: SqlExpr | str, col1: SqlExpr | date) -> SqlExpr:
     """Get subfield (equivalent to extract).
 
     Args:
-        ts (SqlExpr | str): VARCHAR expression
-        col1 (SqlExpr | date): DATE expression
+        ts (SqlExpr | str): `VARCHAR` expression
+        col1 (SqlExpr | date): `DATE` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -2801,9 +2802,9 @@ def date_sub(
     """The number of complete partitions between the timestamps.
 
     Args:
-        part (SqlExpr | str): VARCHAR expression
-        startdate (SqlExpr | date): DATE expression
-        enddate (SqlExpr | date): DATE expression
+        part (SqlExpr | str): `VARCHAR` expression
+        startdate (SqlExpr | date): `DATE` expression
+        enddate (SqlExpr | date): `DATE` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -2815,8 +2816,8 @@ def date_trunc(part: SqlExpr | str, timestamp: SqlExpr | date) -> SqlExpr:
     """Truncate to specified precision.
 
     Args:
-        part (SqlExpr | str): VARCHAR expression
-        timestamp (SqlExpr | date): DATE expression
+        part (SqlExpr | str): `VARCHAR` expression
+        timestamp (SqlExpr | date): `DATE` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -2830,9 +2831,9 @@ def datediff(
     """The number of partition boundaries between the timestamps.
 
     Args:
-        part (SqlExpr | str): VARCHAR expression
-        startdate (SqlExpr | date): DATE expression
-        enddate (SqlExpr | date): DATE expression
+        part (SqlExpr | str): `VARCHAR` expression
+        startdate (SqlExpr | date): `DATE` expression
+        enddate (SqlExpr | date): `DATE` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -2844,8 +2845,8 @@ def datepart(ts: SqlExpr | str, col1: SqlExpr | date) -> SqlExpr:
     """Get subfield (equivalent to extract).
 
     Args:
-        ts (SqlExpr | str): VARCHAR expression
-        col1 (SqlExpr | date): DATE expression
+        ts (SqlExpr | str): `VARCHAR` expression
+        col1 (SqlExpr | date): `DATE` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -2859,9 +2860,9 @@ def datesub(
     """The number of complete partitions between the timestamps.
 
     Args:
-        part (SqlExpr | str): VARCHAR expression
-        startdate (SqlExpr | date): DATE expression
-        enddate (SqlExpr | date): DATE expression
+        part (SqlExpr | str): `VARCHAR` expression
+        startdate (SqlExpr | date): `DATE` expression
+        enddate (SqlExpr | date): `DATE` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -2873,8 +2874,8 @@ def datetrunc(part: SqlExpr | str, timestamp: SqlExpr | date) -> SqlExpr:
     """Truncate to specified precision.
 
     Args:
-        part (SqlExpr | str): VARCHAR expression
-        timestamp (SqlExpr | date): DATE expression
+        part (SqlExpr | str): `VARCHAR` expression
+        timestamp (SqlExpr | date): `DATE` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -2891,7 +2892,7 @@ def enum_code(enum: SqlExpr) -> SqlExpr:
     """Returns the numeric value backing the given enum value.
 
     Args:
-        enum (SqlExpr): ANY expression
+        enum (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -2903,7 +2904,7 @@ def enum_first(enum: SqlExpr) -> SqlExpr:
     """Returns the first value of the input enum type.
 
     Args:
-        enum (SqlExpr): ANY expression
+        enum (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -2915,7 +2916,7 @@ def enum_last(enum: SqlExpr) -> SqlExpr:
     """Returns the last value of the input enum type.
 
     Args:
-        enum (SqlExpr): ANY expression
+        enum (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -2927,7 +2928,7 @@ def enum_range(enum: SqlExpr) -> SqlExpr:
     """Returns all values of the input enum type as an array.
 
     Args:
-        enum (SqlExpr): ANY expression
+        enum (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -2945,8 +2946,8 @@ def enum_range_boundary(start: SqlExpr, end: SqlExpr) -> SqlExpr:
     When the second parameter is NULL, the result ends with the last value of the enum type.
 
     Args:
-        start (SqlExpr): ANY expression
-        end (SqlExpr): ANY expression
+        start (SqlExpr): `ANY` expression
+        end (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -2963,7 +2964,7 @@ def json_array(*args: SqlExpr) -> SqlExpr:
     """SQL json_array function.
 
     Args:
-        *args (SqlExpr): ANY expression
+        *args (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -2977,8 +2978,8 @@ def json_array_length(
     """SQL json_array_length function.
 
     Args:
-        col0 (SqlExpr | str): JSON expression
-        col1 (SqlExpr | str): VARCHAR expression
+        col0 (SqlExpr | str): `JSON` expression
+        col1 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -2990,8 +2991,8 @@ def json_contains(col0: SqlExpr | str, col1: SqlExpr | str) -> SqlExpr:
     """SQL json_contains function.
 
     Args:
-        col0 (SqlExpr | str): JSON expression
-        col1 (SqlExpr | str): JSON expression
+        col0 (SqlExpr | str): `JSON` expression
+        col1 (SqlExpr | str): `JSON` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -3003,7 +3004,7 @@ def json_deserialize_sql(col0: SqlExpr | str) -> SqlExpr:
     """SQL json_deserialize_sql function.
 
     Args:
-        col0 (SqlExpr | str): JSON expression
+        col0 (SqlExpr | str): `JSON` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -3015,8 +3016,8 @@ def json_exists(col0: SqlExpr | str, col1: SqlExpr | str) -> SqlExpr:
     """SQL json_exists function.
 
     Args:
-        col0 (SqlExpr | str): JSON expression
-        col1 (SqlExpr | str): VARCHAR expression
+        col0 (SqlExpr | str): `JSON` expression
+        col1 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -3028,8 +3029,8 @@ def json_extract(col0: SqlExpr | str, col1: SqlExpr | int) -> SqlExpr:
     """SQL json_extract function.
 
     Args:
-        col0 (SqlExpr | str): JSON expression
-        col1 (SqlExpr | int): BIGINT expression
+        col0 (SqlExpr | str): `JSON` expression
+        col1 (SqlExpr | int): `BIGINT` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -3041,8 +3042,8 @@ def json_extract_path(col0: SqlExpr | str, col1: SqlExpr | int) -> SqlExpr:
     """SQL json_extract_path function.
 
     Args:
-        col0 (SqlExpr | str): JSON expression
-        col1 (SqlExpr | int): BIGINT expression
+        col0 (SqlExpr | str): `JSON` expression
+        col1 (SqlExpr | int): `BIGINT` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -3054,8 +3055,8 @@ def json_extract_path_text(col0: SqlExpr | str, col1: SqlExpr | int) -> SqlExpr:
     """SQL json_extract_path_text function.
 
     Args:
-        col0 (SqlExpr | str): JSON expression
-        col1 (SqlExpr | int): BIGINT expression
+        col0 (SqlExpr | str): `JSON` expression
+        col1 (SqlExpr | int): `BIGINT` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -3067,8 +3068,8 @@ def json_extract_string(col0: SqlExpr | str, col1: SqlExpr | int) -> SqlExpr:
     """SQL json_extract_string function.
 
     Args:
-        col0 (SqlExpr | str): JSON expression
-        col1 (SqlExpr | int): BIGINT expression
+        col0 (SqlExpr | str): `JSON` expression
+        col1 (SqlExpr | int): `BIGINT` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -3080,7 +3081,7 @@ def json_group_array(x: SqlExpr) -> SqlExpr:
     """SQL json_group_array function.
 
     Args:
-        x (SqlExpr): ANY expression
+        x (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -3092,8 +3093,8 @@ def json_group_object(n: SqlExpr, v: SqlExpr) -> SqlExpr:
     """SQL json_group_object function.
 
     Args:
-        n (SqlExpr): ANY expression
-        v (SqlExpr): ANY expression
+        n (SqlExpr): `ANY` expression
+        v (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -3105,7 +3106,7 @@ def json_group_structure(x: SqlExpr) -> SqlExpr:
     """SQL json_group_structure function.
 
     Args:
-        x (SqlExpr): ANY expression
+        x (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -3117,8 +3118,8 @@ def json_keys(col0: SqlExpr | str, col1: SqlExpr | str | None = None) -> SqlExpr
     """SQL json_keys function.
 
     Args:
-        col0 (SqlExpr | str): JSON expression
-        col1 (SqlExpr | str): VARCHAR expression
+        col0 (SqlExpr | str): `JSON` expression
+        col1 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -3132,9 +3133,9 @@ def json_merge_patch(
     """SQL json_merge_patch function.
 
     Args:
-        col0 (SqlExpr | str): JSON expression
-        col1 (SqlExpr | str): JSON expression
-        *args (SqlExpr | str): JSON expression
+        col0 (SqlExpr | str): `JSON` expression
+        col1 (SqlExpr | str): `JSON` expression
+        *args (SqlExpr | str): `JSON` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -3146,7 +3147,7 @@ def json_object(*args: SqlExpr) -> SqlExpr:
     """SQL json_object function.
 
     Args:
-        *args (SqlExpr): ANY expression
+        *args (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -3158,7 +3159,7 @@ def json_pretty(col0: SqlExpr | str) -> SqlExpr:
     """SQL json_pretty function.
 
     Args:
-        col0 (SqlExpr | str): JSON expression
+        col0 (SqlExpr | str): `JSON` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -3170,7 +3171,7 @@ def json_quote(*args: SqlExpr) -> SqlExpr:
     """SQL json_quote function.
 
     Args:
-        *args (SqlExpr): ANY expression
+        *args (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -3189,11 +3190,11 @@ def json_serialize_plan(
     """SQL json_serialize_plan function.
 
     Args:
-        col0 (SqlExpr | str): VARCHAR expression
-        col1 (SqlExpr | bool): BOOLEAN expression
-        col2 (SqlExpr | bool): BOOLEAN expression
-        col3 (SqlExpr | bool): BOOLEAN expression
-        col4 (SqlExpr | bool): BOOLEAN expression
+        col0 (SqlExpr | str): `VARCHAR` expression
+        col1 (SqlExpr | bool): `BOOLEAN` expression
+        col2 (SqlExpr | bool): `BOOLEAN` expression
+        col3 (SqlExpr | bool): `BOOLEAN` expression
+        col4 (SqlExpr | bool): `BOOLEAN` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -3212,11 +3213,11 @@ def json_serialize_sql(
     """SQL json_serialize_sql function.
 
     Args:
-        col0 (SqlExpr | str): VARCHAR expression
-        col1 (SqlExpr | bool): BOOLEAN expression
-        col2 (SqlExpr | bool): BOOLEAN expression
-        col3 (SqlExpr | bool): BOOLEAN expression
-        col4 (SqlExpr | bool): BOOLEAN expression
+        col0 (SqlExpr | str): `VARCHAR` expression
+        col1 (SqlExpr | bool): `BOOLEAN` expression
+        col2 (SqlExpr | bool): `BOOLEAN` expression
+        col3 (SqlExpr | bool): `BOOLEAN` expression
+        col4 (SqlExpr | bool): `BOOLEAN` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -3228,7 +3229,7 @@ def json_structure(col0: SqlExpr | str) -> SqlExpr:
     """SQL json_structure function.
 
     Args:
-        col0 (SqlExpr | str): JSON expression
+        col0 (SqlExpr | str): `JSON` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -3240,8 +3241,8 @@ def json_transform(col0: SqlExpr | str, col1: SqlExpr | str) -> SqlExpr:
     """SQL json_transform function.
 
     Args:
-        col0 (SqlExpr | str): JSON expression
-        col1 (SqlExpr | str): VARCHAR expression
+        col0 (SqlExpr | str): `JSON` expression
+        col1 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -3253,8 +3254,8 @@ def json_transform_strict(col0: SqlExpr | str, col1: SqlExpr | str) -> SqlExpr:
     """SQL json_transform_strict function.
 
     Args:
-        col0 (SqlExpr | str): JSON expression
-        col1 (SqlExpr | str): VARCHAR expression
+        col0 (SqlExpr | str): `JSON` expression
+        col1 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -3266,8 +3267,8 @@ def json_type(col0: SqlExpr | str, col1: SqlExpr | str | None = None) -> SqlExpr
     """SQL json_type function.
 
     Args:
-        col0 (SqlExpr | str): JSON expression
-        col1 (SqlExpr | str): VARCHAR expression
+        col0 (SqlExpr | str): `JSON` expression
+        col1 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -3279,7 +3280,7 @@ def json_valid(col0: SqlExpr | str) -> SqlExpr:
     """SQL json_valid function.
 
     Args:
-        col0 (SqlExpr | str): JSON expression
+        col0 (SqlExpr | str): `JSON` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -3291,8 +3292,8 @@ def json_value(col0: SqlExpr | str, col1: SqlExpr | int) -> SqlExpr:
     """SQL json_value function.
 
     Args:
-        col0 (SqlExpr | str): JSON expression
-        col1 (SqlExpr | int): BIGINT expression
+        col0 (SqlExpr | str): `JSON` expression
+        col1 (SqlExpr | int): `BIGINT` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -3311,9 +3312,9 @@ def list_aggr(
     """Executes the aggregate function `function_name` on the elements of `list`.
 
     Args:
-        list_arg (SqlExpr): ANY[] expression
-        function_name (SqlExpr | str): VARCHAR expression
-        *args (SqlExpr): ANY expression
+        list_arg (SqlExpr): `ANY[]` expression
+        function_name (SqlExpr | str): `VARCHAR` expression
+        *args (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -3327,9 +3328,9 @@ def list_aggregate(
     """Executes the aggregate function `function_name` on the elements of `list`.
 
     Args:
-        list_arg (SqlExpr): ANY[] expression
-        function_name (SqlExpr | str): VARCHAR expression
-        *args (SqlExpr): ANY expression
+        list_arg (SqlExpr): `ANY[]` expression
+        function_name (SqlExpr | str): `VARCHAR` expression
+        *args (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -3337,29 +3338,29 @@ def list_aggregate(
     return func("list_aggregate", list_arg, function_name, *args)
 
 
-def list_any_value(l: SqlExpr) -> SqlExpr:
+def list_any_value(l_arg: SqlExpr) -> SqlExpr:
     """SQL list_any_value function.
 
     Args:
-        l (SqlExpr): ANY expression
+        l_arg (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
     """
-    return func("list_any_value", l)
+    return func("list_any_value", l_arg)
 
 
-def list_append(l: SqlExpr, e: SqlExpr) -> SqlExpr:
+def list_append(l_arg: SqlExpr, e: SqlExpr) -> SqlExpr:
     """SQL list_append function.
 
     Args:
-        l (SqlExpr): ANY expression
-        e (SqlExpr): ANY expression
+        l_arg (SqlExpr): `ANY` expression
+        e (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
     """
-    return func("list_append", l, e)
+    return func("list_append", l_arg, e)
 
 
 def list_apply(list_arg: SqlExpr, lambda_arg: SqlExpr) -> SqlExpr:
@@ -3368,8 +3369,8 @@ def list_apply(list_arg: SqlExpr, lambda_arg: SqlExpr) -> SqlExpr:
     The return type is defined by the return type of the `lambda` function.
 
     Args:
-        list_arg (SqlExpr): ANY[] expression
-        lambda_arg (SqlExpr): LAMBDA expression
+        list_arg (SqlExpr): `ANY[]` expression
+        lambda_arg (SqlExpr): `LAMBDA` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -3377,88 +3378,88 @@ def list_apply(list_arg: SqlExpr, lambda_arg: SqlExpr) -> SqlExpr:
     return func("list_apply", list_arg, lambda_arg)
 
 
-def list_approx_count_distinct(l: SqlExpr) -> SqlExpr:
+def list_approx_count_distinct(l_arg: SqlExpr) -> SqlExpr:
     """SQL list_approx_count_distinct function.
 
     Args:
-        l (SqlExpr): ANY expression
+        l_arg (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
     """
-    return func("list_approx_count_distinct", l)
+    return func("list_approx_count_distinct", l_arg)
 
 
-def list_avg(l: SqlExpr) -> SqlExpr:
+def list_avg(l_arg: SqlExpr) -> SqlExpr:
     """SQL list_avg function.
 
     Args:
-        l (SqlExpr): ANY expression
+        l_arg (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
     """
-    return func("list_avg", l)
+    return func("list_avg", l_arg)
 
 
-def list_bit_and(l: SqlExpr) -> SqlExpr:
+def list_bit_and(l_arg: SqlExpr) -> SqlExpr:
     """SQL list_bit_and function.
 
     Args:
-        l (SqlExpr): ANY expression
+        l_arg (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
     """
-    return func("list_bit_and", l)
+    return func("list_bit_and", l_arg)
 
 
-def list_bit_or(l: SqlExpr) -> SqlExpr:
+def list_bit_or(l_arg: SqlExpr) -> SqlExpr:
     """SQL list_bit_or function.
 
     Args:
-        l (SqlExpr): ANY expression
+        l_arg (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
     """
-    return func("list_bit_or", l)
+    return func("list_bit_or", l_arg)
 
 
-def list_bit_xor(l: SqlExpr) -> SqlExpr:
+def list_bit_xor(l_arg: SqlExpr) -> SqlExpr:
     """SQL list_bit_xor function.
 
     Args:
-        l (SqlExpr): ANY expression
+        l_arg (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
     """
-    return func("list_bit_xor", l)
+    return func("list_bit_xor", l_arg)
 
 
-def list_bool_and(l: SqlExpr) -> SqlExpr:
+def list_bool_and(l_arg: SqlExpr) -> SqlExpr:
     """SQL list_bool_and function.
 
     Args:
-        l (SqlExpr): ANY expression
+        l_arg (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
     """
-    return func("list_bool_and", l)
+    return func("list_bool_and", l_arg)
 
 
-def list_bool_or(l: SqlExpr) -> SqlExpr:
+def list_bool_or(l_arg: SqlExpr) -> SqlExpr:
     """SQL list_bool_or function.
 
     Args:
-        l (SqlExpr): ANY expression
+        l_arg (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
     """
-    return func("list_bool_or", l)
+    return func("list_bool_or", l_arg)
 
 
 def list_cat(*args: SqlExpr) -> SqlExpr:
@@ -3469,7 +3470,7 @@ def list_cat(*args: SqlExpr) -> SqlExpr:
     See also operator `||`.
 
     Args:
-        *args (SqlExpr): ANY[] expression
+        *args (SqlExpr): `ANY[]` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -3485,7 +3486,7 @@ def list_concat(*args: SqlExpr) -> SqlExpr:
     See also operator `||`.
 
     Args:
-        *args (SqlExpr): ANY[] expression
+        *args (SqlExpr): `ANY[]` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -3497,8 +3498,8 @@ def list_contains(list_arg: SqlExpr, element: SqlExpr) -> SqlExpr:
     """Returns true if the list contains the element.
 
     Args:
-        list_arg (SqlExpr): T[] expression
-        element (SqlExpr): T expression
+        list_arg (SqlExpr): `T[]` expression
+        element (SqlExpr): `T` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -3510,8 +3511,8 @@ def list_cosine_distance(list1: SqlExpr | float, list2: SqlExpr | float) -> SqlE
     """Computes the cosine distance between two same-sized lists.
 
     Args:
-        list1 (SqlExpr | float): DOUBLE[] expression
-        list2 (SqlExpr | float): DOUBLE[] expression
+        list1 (SqlExpr | float): `DOUBLE[]` expression
+        list2 (SqlExpr | float): `DOUBLE[]` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -3523,8 +3524,8 @@ def list_cosine_similarity(list1: SqlExpr | float, list2: SqlExpr | float) -> Sq
     """Computes the cosine similarity between two same-sized lists.
 
     Args:
-        list1 (SqlExpr | float): DOUBLE[] expression
-        list2 (SqlExpr | float): DOUBLE[] expression
+        list1 (SqlExpr | float): `DOUBLE[]` expression
+        list2 (SqlExpr | float): `DOUBLE[]` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -3532,24 +3533,24 @@ def list_cosine_similarity(list1: SqlExpr | float, list2: SqlExpr | float) -> Sq
     return func("list_cosine_similarity", list1, list2)
 
 
-def list_count(l: SqlExpr) -> SqlExpr:
+def list_count(l_arg: SqlExpr) -> SqlExpr:
     """SQL list_count function.
 
     Args:
-        l (SqlExpr): ANY expression
+        l_arg (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
     """
-    return func("list_count", l)
+    return func("list_count", l_arg)
 
 
 def list_distance(list1: SqlExpr | float, list2: SqlExpr | float) -> SqlExpr:
     """Calculates the Euclidean distance between two points with coordinates given in two inputs lists of equal length.
 
     Args:
-        list1 (SqlExpr | float): DOUBLE[] expression
-        list2 (SqlExpr | float): DOUBLE[] expression
+        list1 (SqlExpr | float): `DOUBLE[]` expression
+        list2 (SqlExpr | float): `DOUBLE[]` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -3563,7 +3564,7 @@ def list_distinct(list_arg: SqlExpr) -> SqlExpr:
     Does not preserve the original order.
 
     Args:
-        list_arg (SqlExpr): T[] expression
+        list_arg (SqlExpr): `T[]` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -3575,8 +3576,8 @@ def list_dot_product(list1: SqlExpr | float, list2: SqlExpr | float) -> SqlExpr:
     """Computes the inner product between two same-sized lists.
 
     Args:
-        list1 (SqlExpr | float): DOUBLE[] expression
-        list2 (SqlExpr | float): DOUBLE[] expression
+        list1 (SqlExpr | float): `DOUBLE[]` expression
+        list2 (SqlExpr | float): `DOUBLE[]` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -3588,8 +3589,8 @@ def list_element(list_arg: SqlExpr, index: SqlExpr | int) -> SqlExpr:
     """Extract the `index`th (1-based) value from the list.
 
     Args:
-        list_arg (SqlExpr): T[] expression
-        index (SqlExpr | int): BIGINT expression
+        list_arg (SqlExpr): `T[]` expression
+        index (SqlExpr | int): `BIGINT` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -3597,24 +3598,24 @@ def list_element(list_arg: SqlExpr, index: SqlExpr | int) -> SqlExpr:
     return func("list_element", list_arg, index)
 
 
-def list_entropy(l: SqlExpr) -> SqlExpr:
+def list_entropy(l_arg: SqlExpr) -> SqlExpr:
     """SQL list_entropy function.
 
     Args:
-        l (SqlExpr): ANY expression
+        l_arg (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
     """
-    return func("list_entropy", l)
+    return func("list_entropy", l_arg)
 
 
 def list_extract(list_arg: SqlExpr, index: SqlExpr | int) -> SqlExpr:
     """Extract the `index`th (1-based) value from the list.
 
     Args:
-        list_arg (SqlExpr): T[] expression
-        index (SqlExpr | int): BIGINT expression
+        list_arg (SqlExpr): `T[]` expression
+        index (SqlExpr | int): `BIGINT` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -3630,8 +3631,8 @@ def list_filter(list_arg: SqlExpr, lambda_arg: SqlExpr) -> SqlExpr:
     The return type of `list_filter` is the same as the input list's.
 
     Args:
-        list_arg (SqlExpr): ANY[] expression
-        lambda_arg (SqlExpr): LAMBDA expression
+        list_arg (SqlExpr): `ANY[]` expression
+        lambda_arg (SqlExpr): `LAMBDA` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -3639,16 +3640,16 @@ def list_filter(list_arg: SqlExpr, lambda_arg: SqlExpr) -> SqlExpr:
     return func("list_filter", list_arg, lambda_arg)
 
 
-def list_first(l: SqlExpr) -> SqlExpr:
+def list_first(l_arg: SqlExpr) -> SqlExpr:
     """SQL list_first function.
 
     Args:
-        l (SqlExpr): ANY expression
+        l_arg (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
     """
-    return func("list_first", l)
+    return func("list_first", l_arg)
 
 
 def list_grade_up(
@@ -3659,9 +3660,9 @@ def list_grade_up(
     """Works like list_sort, but the results are the indexes that correspond to the position in the original list instead of the actual values.
 
     Args:
-        list_arg (SqlExpr): ANY[] expression
-        col1 (SqlExpr | str): VARCHAR expression
-        col2 (SqlExpr | str): VARCHAR expression
+        list_arg (SqlExpr): `ANY[]` expression
+        col1 (SqlExpr | str): `VARCHAR` expression
+        col2 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -3673,8 +3674,8 @@ def list_has(list_arg: SqlExpr, element: SqlExpr) -> SqlExpr:
     """Returns true if the list contains the element.
 
     Args:
-        list_arg (SqlExpr): T[] expression
-        element (SqlExpr): T expression
+        list_arg (SqlExpr): `T[]` expression
+        element (SqlExpr): `T` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -3688,8 +3689,8 @@ def list_has_all(list1: SqlExpr, list2: SqlExpr) -> SqlExpr:
     NULLs are ignored.
 
     Args:
-        list1 (SqlExpr): T[] expression
-        list2 (SqlExpr): T[] expression
+        list1 (SqlExpr): `T[]` expression
+        list2 (SqlExpr): `T[]` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -3703,8 +3704,8 @@ def list_has_any(list1: SqlExpr, list2: SqlExpr) -> SqlExpr:
     NULLs are ignored.
 
     Args:
-        list1 (SqlExpr): T[] expression
-        list2 (SqlExpr): T[] expression
+        list1 (SqlExpr): `T[]` expression
+        list2 (SqlExpr): `T[]` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -3712,16 +3713,16 @@ def list_has_any(list1: SqlExpr, list2: SqlExpr) -> SqlExpr:
     return func("list_has_any", list1, list2)
 
 
-def list_histogram(l: SqlExpr) -> SqlExpr:
+def list_histogram(l_arg: SqlExpr) -> SqlExpr:
     """SQL list_histogram function.
 
     Args:
-        l (SqlExpr): ANY expression
+        l_arg (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
     """
-    return func("list_histogram", l)
+    return func("list_histogram", l_arg)
 
 
 def list_indexof(list_arg: SqlExpr, element: SqlExpr) -> SqlExpr:
@@ -3730,8 +3731,8 @@ def list_indexof(list_arg: SqlExpr, element: SqlExpr) -> SqlExpr:
     If the `element` is not found, it returns `NULL`.
 
     Args:
-        list_arg (SqlExpr): T[] expression
-        element (SqlExpr): T expression
+        list_arg (SqlExpr): `T[]` expression
+        element (SqlExpr): `T` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -3743,8 +3744,8 @@ def list_inner_product(list1: SqlExpr | float, list2: SqlExpr | float) -> SqlExp
     """Computes the inner product between two same-sized lists.
 
     Args:
-        list1 (SqlExpr | float): DOUBLE[] expression
-        list2 (SqlExpr | float): DOUBLE[] expression
+        list1 (SqlExpr | float): `DOUBLE[]` expression
+        list2 (SqlExpr | float): `DOUBLE[]` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -3756,8 +3757,8 @@ def list_intersect(l1: SqlExpr, l2: SqlExpr) -> SqlExpr:
     """SQL list_intersect function.
 
     Args:
-        l1 (SqlExpr): ANY expression
-        l2 (SqlExpr): ANY expression
+        l1 (SqlExpr): `ANY` expression
+        l2 (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -3765,100 +3766,100 @@ def list_intersect(l1: SqlExpr, l2: SqlExpr) -> SqlExpr:
     return func("list_intersect", l1, l2)
 
 
-def list_kurtosis(l: SqlExpr) -> SqlExpr:
+def list_kurtosis(l_arg: SqlExpr) -> SqlExpr:
     """SQL list_kurtosis function.
 
     Args:
-        l (SqlExpr): ANY expression
+        l_arg (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
     """
-    return func("list_kurtosis", l)
+    return func("list_kurtosis", l_arg)
 
 
-def list_kurtosis_pop(l: SqlExpr) -> SqlExpr:
+def list_kurtosis_pop(l_arg: SqlExpr) -> SqlExpr:
     """SQL list_kurtosis_pop function.
 
     Args:
-        l (SqlExpr): ANY expression
+        l_arg (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
     """
-    return func("list_kurtosis_pop", l)
+    return func("list_kurtosis_pop", l_arg)
 
 
-def list_last(l: SqlExpr) -> SqlExpr:
+def list_last(l_arg: SqlExpr) -> SqlExpr:
     """SQL list_last function.
 
     Args:
-        l (SqlExpr): ANY expression
+        l_arg (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
     """
-    return func("list_last", l)
+    return func("list_last", l_arg)
 
 
-def list_mad(l: SqlExpr) -> SqlExpr:
+def list_mad(l_arg: SqlExpr) -> SqlExpr:
     """SQL list_mad function.
 
     Args:
-        l (SqlExpr): ANY expression
+        l_arg (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
     """
-    return func("list_mad", l)
+    return func("list_mad", l_arg)
 
 
-def list_max(l: SqlExpr) -> SqlExpr:
+def list_max(l_arg: SqlExpr) -> SqlExpr:
     """SQL list_max function.
 
     Args:
-        l (SqlExpr): ANY expression
+        l_arg (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
     """
-    return func("list_max", l)
+    return func("list_max", l_arg)
 
 
-def list_median(l: SqlExpr) -> SqlExpr:
+def list_median(l_arg: SqlExpr) -> SqlExpr:
     """SQL list_median function.
 
     Args:
-        l (SqlExpr): ANY expression
+        l_arg (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
     """
-    return func("list_median", l)
+    return func("list_median", l_arg)
 
 
-def list_min(l: SqlExpr) -> SqlExpr:
+def list_min(l_arg: SqlExpr) -> SqlExpr:
     """SQL list_min function.
 
     Args:
-        l (SqlExpr): ANY expression
+        l_arg (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
     """
-    return func("list_min", l)
+    return func("list_min", l_arg)
 
 
-def list_mode(l: SqlExpr) -> SqlExpr:
+def list_mode(l_arg: SqlExpr) -> SqlExpr:
     """SQL list_mode function.
 
     Args:
-        l (SqlExpr): ANY expression
+        l_arg (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
     """
-    return func("list_mode", l)
+    return func("list_mode", l_arg)
 
 
 def list_negative_dot_product(
@@ -3867,8 +3868,8 @@ def list_negative_dot_product(
     """Computes the negative inner product between two same-sized lists.
 
     Args:
-        list1 (SqlExpr | float): DOUBLE[] expression
-        list2 (SqlExpr | float): DOUBLE[] expression
+        list1 (SqlExpr | float): `DOUBLE[]` expression
+        list2 (SqlExpr | float): `DOUBLE[]` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -3882,8 +3883,8 @@ def list_negative_inner_product(
     """Computes the negative inner product between two same-sized lists.
 
     Args:
-        list1 (SqlExpr | float): DOUBLE[] expression
-        list2 (SqlExpr | float): DOUBLE[] expression
+        list1 (SqlExpr | float): `DOUBLE[]` expression
+        list2 (SqlExpr | float): `DOUBLE[]` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -3895,8 +3896,8 @@ def list_pack(any_arg: SqlExpr | None = None, *args: SqlExpr) -> SqlExpr:
     """Creates a LIST containing the argument values.
 
     Args:
-        any_arg (SqlExpr): T expression
-        *args (SqlExpr): T expression
+        any_arg (SqlExpr): `T` expression
+        *args (SqlExpr): `T` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -3910,8 +3911,8 @@ def list_position(list_arg: SqlExpr, element: SqlExpr) -> SqlExpr:
     If the `element` is not found, it returns `NULL`.
 
     Args:
-        list_arg (SqlExpr): T[] expression
-        element (SqlExpr): T expression
+        list_arg (SqlExpr): `T[]` expression
+        element (SqlExpr): `T` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -3919,29 +3920,29 @@ def list_position(list_arg: SqlExpr, element: SqlExpr) -> SqlExpr:
     return func("list_position", list_arg, element)
 
 
-def list_prepend(e: SqlExpr, l: SqlExpr) -> SqlExpr:
+def list_prepend(e: SqlExpr, l_arg: SqlExpr) -> SqlExpr:
     """SQL list_prepend function.
 
     Args:
-        e (SqlExpr): ANY expression
-        l (SqlExpr): ANY expression
+        e (SqlExpr): `ANY` expression
+        l_arg (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
     """
-    return func("list_prepend", e, l)
+    return func("list_prepend", e, l_arg)
 
 
-def list_product(l: SqlExpr) -> SqlExpr:
+def list_product(l_arg: SqlExpr) -> SqlExpr:
     """SQL list_product function.
 
     Args:
-        l (SqlExpr): ANY expression
+        l_arg (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
     """
-    return func("list_product", l)
+    return func("list_product", l_arg)
 
 
 def list_reduce(
@@ -3952,9 +3953,9 @@ def list_reduce(
     The `lambda` function has an optional `initial_value` argument.
 
     Args:
-        list_arg (SqlExpr): ANY[] expression
-        lambda_arg (SqlExpr): LAMBDA expression
-        initial_value (SqlExpr): ANY expression
+        list_arg (SqlExpr): `ANY[]` expression
+        lambda_arg (SqlExpr): `LAMBDA` expression
+        initial_value (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -3970,9 +3971,9 @@ def list_resize(
     Initializes new elements with `value` or `NULL` if `value` is not set.
 
     Args:
-        list_arg (SqlExpr): ANY[] expression
-        arg1 (SqlExpr): ANY expression
-        arg2 (SqlExpr): ANY expression
+        list_arg (SqlExpr): `ANY[]` expression
+        arg1 (SqlExpr): `ANY` expression
+        arg2 (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -3980,24 +3981,24 @@ def list_resize(
     return func("list_resize", list_arg, arg1, arg2)
 
 
-def list_reverse(l: SqlExpr) -> SqlExpr:
+def list_reverse(l_arg: SqlExpr) -> SqlExpr:
     """SQL list_reverse function.
 
     Args:
-        l (SqlExpr): ANY expression
+        l_arg (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
     """
-    return func("list_reverse", l)
+    return func("list_reverse", l_arg)
 
 
 def list_reverse_sort(list_arg: SqlExpr, col1: SqlExpr | str | None = None) -> SqlExpr:
     """Sorts the elements of the list in reverse order.
 
     Args:
-        list_arg (SqlExpr): ANY[] expression
-        col1 (SqlExpr | str): VARCHAR expression
+        list_arg (SqlExpr): `ANY[]` expression
+        col1 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -4009,8 +4010,8 @@ def list_select(value_list: SqlExpr, index_list: SqlExpr | int) -> SqlExpr:
     """Returns a list based on the elements selected by the `index_list`.
 
     Args:
-        value_list (SqlExpr): T[] expression
-        index_list (SqlExpr | int): BIGINT[] expression
+        value_list (SqlExpr): `T[]` expression
+        index_list (SqlExpr | int): `BIGINT[]` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -4018,28 +4019,28 @@ def list_select(value_list: SqlExpr, index_list: SqlExpr | int) -> SqlExpr:
     return func("list_select", value_list, index_list)
 
 
-def list_sem(l: SqlExpr) -> SqlExpr:
+def list_sem(l_arg: SqlExpr) -> SqlExpr:
     """SQL list_sem function.
 
     Args:
-        l (SqlExpr): ANY expression
+        l_arg (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
     """
-    return func("list_sem", l)
+    return func("list_sem", l_arg)
 
 
-def list_skewness(l: SqlExpr) -> SqlExpr:
+def list_skewness(l_arg: SqlExpr) -> SqlExpr:
     """SQL list_skewness function.
 
     Args:
-        l (SqlExpr): ANY expression
+        l_arg (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
     """
-    return func("list_skewness", l)
+    return func("list_skewness", l_arg)
 
 
 def list_slice(
@@ -4048,10 +4049,10 @@ def list_slice(
     """list_slice with added step feature.
 
     Args:
-        list_arg (SqlExpr): ANY expression
-        begin (SqlExpr): ANY expression
-        end (SqlExpr): ANY expression
-        step (SqlExpr | int): BIGINT expression
+        list_arg (SqlExpr): `ANY` expression
+        begin (SqlExpr): `ANY` expression
+        end (SqlExpr): `ANY` expression
+        step (SqlExpr | int): `BIGINT` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -4067,9 +4068,9 @@ def list_sort(
     """Sorts the elements of the list.
 
     Args:
-        list_arg (SqlExpr): ANY[] expression
-        col1 (SqlExpr | str): VARCHAR expression
-        col2 (SqlExpr | str): VARCHAR expression
+        list_arg (SqlExpr): `ANY[]` expression
+        col1 (SqlExpr | str): `VARCHAR` expression
+        col2 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -4077,52 +4078,52 @@ def list_sort(
     return func("list_sort", list_arg, col1, col2)
 
 
-def list_stddev_pop(l: SqlExpr) -> SqlExpr:
+def list_stddev_pop(l_arg: SqlExpr) -> SqlExpr:
     """SQL list_stddev_pop function.
 
     Args:
-        l (SqlExpr): ANY expression
+        l_arg (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
     """
-    return func("list_stddev_pop", l)
+    return func("list_stddev_pop", l_arg)
 
 
-def list_stddev_samp(l: SqlExpr) -> SqlExpr:
+def list_stddev_samp(l_arg: SqlExpr) -> SqlExpr:
     """SQL list_stddev_samp function.
 
     Args:
-        l (SqlExpr): ANY expression
+        l_arg (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
     """
-    return func("list_stddev_samp", l)
+    return func("list_stddev_samp", l_arg)
 
 
-def list_string_agg(l: SqlExpr) -> SqlExpr:
+def list_string_agg(l_arg: SqlExpr) -> SqlExpr:
     """SQL list_string_agg function.
 
     Args:
-        l (SqlExpr): ANY expression
+        l_arg (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
     """
-    return func("list_string_agg", l)
+    return func("list_string_agg", l_arg)
 
 
-def list_sum(l: SqlExpr) -> SqlExpr:
+def list_sum(l_arg: SqlExpr) -> SqlExpr:
     """SQL list_sum function.
 
     Args:
-        l (SqlExpr): ANY expression
+        l_arg (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
     """
-    return func("list_sum", l)
+    return func("list_sum", l_arg)
 
 
 def list_transform(list_arg: SqlExpr, lambda_arg: SqlExpr) -> SqlExpr:
@@ -4131,8 +4132,8 @@ def list_transform(list_arg: SqlExpr, lambda_arg: SqlExpr) -> SqlExpr:
     The return type is defined by the return type of the `lambda` function.
 
     Args:
-        list_arg (SqlExpr): ANY[] expression
-        lambda_arg (SqlExpr): LAMBDA expression
+        list_arg (SqlExpr): `ANY[]` expression
+        lambda_arg (SqlExpr): `LAMBDA` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -4144,7 +4145,7 @@ def list_unique(list_arg: SqlExpr) -> SqlExpr:
     """Counts the unique elements of a `list`.
 
     Args:
-        list_arg (SqlExpr): ANY[] expression
+        list_arg (SqlExpr): `ANY[]` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -4156,8 +4157,8 @@ def list_value(any_arg: SqlExpr | None = None, *args: SqlExpr) -> SqlExpr:
     """Creates a LIST containing the argument values.
 
     Args:
-        any_arg (SqlExpr): T expression
-        *args (SqlExpr): T expression
+        any_arg (SqlExpr): `T` expression
+        *args (SqlExpr): `T` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -4165,36 +4166,36 @@ def list_value(any_arg: SqlExpr | None = None, *args: SqlExpr) -> SqlExpr:
     return func("list_value", any_arg, *args)
 
 
-def list_var_pop(l: SqlExpr) -> SqlExpr:
+def list_var_pop(l_arg: SqlExpr) -> SqlExpr:
     """SQL list_var_pop function.
 
     Args:
-        l (SqlExpr): ANY expression
+        l_arg (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
     """
-    return func("list_var_pop", l)
+    return func("list_var_pop", l_arg)
 
 
-def list_var_samp(l: SqlExpr) -> SqlExpr:
+def list_var_samp(l_arg: SqlExpr) -> SqlExpr:
     """SQL list_var_samp function.
 
     Args:
-        l (SqlExpr): ANY expression
+        l_arg (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
     """
-    return func("list_var_samp", l)
+    return func("list_var_samp", l_arg)
 
 
 def list_where(value_list: SqlExpr, *, mask_list: SqlExpr | bool) -> SqlExpr:
     """Returns a list with the `BOOLEAN`s in `mask_list` applied as a mask to the `value_list`.
 
     Args:
-        value_list (SqlExpr): T[] expression
-        mask_list (SqlExpr | bool): BOOLEAN[] expression
+        value_list (SqlExpr): `T[]` expression
+        mask_list (SqlExpr | bool): `BOOLEAN[]` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -4210,7 +4211,7 @@ def list_zip(*args: SqlExpr) -> SqlExpr:
     If `truncate` is set, all lists are truncated to the smallest list length.
 
     Args:
-        *args (SqlExpr): ANY expression
+        *args (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -4222,8 +4223,8 @@ def listagg(str_arg: SqlExpr, arg: SqlExpr | str | None = None) -> SqlExpr:
     """Concatenates the column string values with an optional separator.
 
     Args:
-        str_arg (SqlExpr): ANY expression
-        arg (SqlExpr | str): VARCHAR expression
+        str_arg (SqlExpr): `ANY` expression
+        arg (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -4240,8 +4241,8 @@ def col_description(table_oid: SqlExpr, column_number: SqlExpr) -> SqlExpr:
     """SQL col_description function.
 
     Args:
-        table_oid (SqlExpr): ANY expression
-        column_number (SqlExpr): ANY expression
+        table_oid (SqlExpr): `ANY` expression
+        column_number (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -4280,8 +4281,8 @@ def fdiv(x: SqlExpr, y: SqlExpr) -> SqlExpr:
     """SQL fdiv function.
 
     Args:
-        x (SqlExpr): ANY expression
-        y (SqlExpr): ANY expression
+        x (SqlExpr): `ANY` expression
+        y (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -4293,8 +4294,8 @@ def fmod(x: SqlExpr, y: SqlExpr) -> SqlExpr:
     """SQL fmod function.
 
     Args:
-        x (SqlExpr): ANY expression
-        y (SqlExpr): ANY expression
+        x (SqlExpr): `ANY` expression
+        y (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -4306,8 +4307,8 @@ def format_pg_type(logical_type: SqlExpr, type_name: SqlExpr) -> SqlExpr:
     """SQL format_pg_type function.
 
     Args:
-        logical_type (SqlExpr): ANY expression
-        type_name (SqlExpr): ANY expression
+        logical_type (SqlExpr): `ANY` expression
+        type_name (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -4319,8 +4320,8 @@ def format_type(type_oid: SqlExpr, typemod: SqlExpr) -> SqlExpr:
     """SQL format_type function.
 
     Args:
-        type_oid (SqlExpr): ANY expression
-        typemod (SqlExpr): ANY expression
+        type_oid (SqlExpr): `ANY` expression
+        typemod (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -4332,8 +4333,8 @@ def generate_subscripts(arr: SqlExpr, dim: SqlExpr) -> SqlExpr:
     """SQL generate_subscripts function.
 
     Args:
-        arr (SqlExpr): ANY expression
-        dim (SqlExpr): ANY expression
+        arr (SqlExpr): `ANY` expression
+        dim (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -4345,7 +4346,7 @@ def geomean(x: SqlExpr) -> SqlExpr:
     """SQL geomean function.
 
     Args:
-        x (SqlExpr): ANY expression
+        x (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -4357,7 +4358,7 @@ def geometric_mean(x: SqlExpr) -> SqlExpr:
     """SQL geometric_mean function.
 
     Args:
-        x (SqlExpr): ANY expression
+        x (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -4369,7 +4370,7 @@ def get_block_size(db_name: SqlExpr) -> SqlExpr:
     """SQL get_block_size function.
 
     Args:
-        db_name (SqlExpr): ANY expression
+        db_name (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -4383,9 +4384,9 @@ def has_any_column_privilege(
     """SQL has_any_column_privilege function.
 
     Args:
-        user (SqlExpr): ANY expression
-        table (SqlExpr): ANY expression
-        privilege (SqlExpr): ANY expression
+        user (SqlExpr): `ANY` expression
+        table (SqlExpr): `ANY` expression
+        privilege (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -4399,10 +4400,10 @@ def has_column_privilege(
     """SQL has_column_privilege function.
 
     Args:
-        user (SqlExpr): ANY expression
-        table (SqlExpr): ANY expression
-        column (SqlExpr): ANY expression
-        privilege (SqlExpr): ANY expression
+        user (SqlExpr): `ANY` expression
+        table (SqlExpr): `ANY` expression
+        column (SqlExpr): `ANY` expression
+        privilege (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -4416,9 +4417,9 @@ def has_database_privilege(
     """SQL has_database_privilege function.
 
     Args:
-        user (SqlExpr): ANY expression
-        database (SqlExpr): ANY expression
-        privilege (SqlExpr): ANY expression
+        user (SqlExpr): `ANY` expression
+        database (SqlExpr): `ANY` expression
+        privilege (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -4432,9 +4433,9 @@ def has_foreign_data_wrapper_privilege(
     """SQL has_foreign_data_wrapper_privilege function.
 
     Args:
-        user (SqlExpr): ANY expression
-        fdw (SqlExpr): ANY expression
-        privilege (SqlExpr): ANY expression
+        user (SqlExpr): `ANY` expression
+        fdw (SqlExpr): `ANY` expression
+        privilege (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -4448,9 +4449,9 @@ def has_function_privilege(
     """SQL has_function_privilege function.
 
     Args:
-        user (SqlExpr): ANY expression
-        function (SqlExpr): ANY expression
-        privilege (SqlExpr): ANY expression
+        user (SqlExpr): `ANY` expression
+        function (SqlExpr): `ANY` expression
+        privilege (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -4464,9 +4465,9 @@ def has_language_privilege(
     """SQL has_language_privilege function.
 
     Args:
-        user (SqlExpr): ANY expression
-        language (SqlExpr): ANY expression
-        privilege (SqlExpr): ANY expression
+        user (SqlExpr): `ANY` expression
+        language (SqlExpr): `ANY` expression
+        privilege (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -4480,9 +4481,9 @@ def has_schema_privilege(
     """SQL has_schema_privilege function.
 
     Args:
-        user (SqlExpr): ANY expression
-        schema (SqlExpr): ANY expression
-        privilege (SqlExpr): ANY expression
+        user (SqlExpr): `ANY` expression
+        schema (SqlExpr): `ANY` expression
+        privilege (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -4496,9 +4497,9 @@ def has_sequence_privilege(
     """SQL has_sequence_privilege function.
 
     Args:
-        user (SqlExpr): ANY expression
-        sequence (SqlExpr): ANY expression
-        privilege (SqlExpr): ANY expression
+        user (SqlExpr): `ANY` expression
+        sequence (SqlExpr): `ANY` expression
+        privilege (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -4512,9 +4513,9 @@ def has_server_privilege(
     """SQL has_server_privilege function.
 
     Args:
-        user (SqlExpr): ANY expression
-        server (SqlExpr): ANY expression
-        privilege (SqlExpr): ANY expression
+        user (SqlExpr): `ANY` expression
+        server (SqlExpr): `ANY` expression
+        privilege (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -4528,9 +4529,9 @@ def has_table_privilege(
     """SQL has_table_privilege function.
 
     Args:
-        user (SqlExpr): ANY expression
-        table (SqlExpr): ANY expression
-        privilege (SqlExpr): ANY expression
+        user (SqlExpr): `ANY` expression
+        table (SqlExpr): `ANY` expression
+        privilege (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -4544,9 +4545,9 @@ def has_tablespace_privilege(
     """SQL has_tablespace_privilege function.
 
     Args:
-        user (SqlExpr): ANY expression
-        tablespace (SqlExpr): ANY expression
-        privilege (SqlExpr): ANY expression
+        user (SqlExpr): `ANY` expression
+        tablespace (SqlExpr): `ANY` expression
+        privilege (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -4594,7 +4595,7 @@ def json(x: SqlExpr) -> SqlExpr:
     """SQL json function.
 
     Args:
-        x (SqlExpr): ANY expression
+        x (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -4606,7 +4607,7 @@ def md5_number_lower(param: SqlExpr) -> SqlExpr:
     """SQL md5_number_lower function.
 
     Args:
-        param (SqlExpr): ANY expression
+        param (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -4618,7 +4619,7 @@ def md5_number_upper(param: SqlExpr) -> SqlExpr:
     """SQL md5_number_upper function.
 
     Args:
-        param (SqlExpr): ANY expression
+        param (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -4630,8 +4631,8 @@ def nullif(a: SqlExpr, b: SqlExpr) -> SqlExpr:
     """SQL nullif function.
 
     Args:
-        a (SqlExpr): ANY expression
-        b (SqlExpr): ANY expression
+        a (SqlExpr): `ANY` expression
+        b (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -4643,8 +4644,8 @@ def obj_description(object_oid: SqlExpr, catalog_name: SqlExpr) -> SqlExpr:
     """SQL obj_description function.
 
     Args:
-        object_oid (SqlExpr): ANY expression
-        catalog_name (SqlExpr): ANY expression
+        object_oid (SqlExpr): `ANY` expression
+        catalog_name (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -4656,7 +4657,7 @@ def pg_collation_is_visible(collation_oid: SqlExpr) -> SqlExpr:
     """SQL pg_collation_is_visible function.
 
     Args:
-        collation_oid (SqlExpr): ANY expression
+        collation_oid (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -4677,7 +4678,7 @@ def pg_conversion_is_visible(conversion_oid: SqlExpr) -> SqlExpr:
     """SQL pg_conversion_is_visible function.
 
     Args:
-        conversion_oid (SqlExpr): ANY expression
+        conversion_oid (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -4689,7 +4690,7 @@ def pg_function_is_visible(function_oid: SqlExpr) -> SqlExpr:
     """SQL pg_function_is_visible function.
 
     Args:
-        function_oid (SqlExpr): ANY expression
+        function_oid (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -4703,8 +4704,8 @@ def pg_get_constraintdef(
     """SQL pg_get_constraintdef function.
 
     Args:
-        constraint_oid (SqlExpr): ANY expression
-        pretty_bool (SqlExpr): ANY expression
+        constraint_oid (SqlExpr): `ANY` expression
+        pretty_bool (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -4716,8 +4717,8 @@ def pg_get_expr(pg_node_tree: SqlExpr, relation_oid: SqlExpr) -> SqlExpr:
     """SQL pg_get_expr function.
 
     Args:
-        pg_node_tree (SqlExpr): ANY expression
-        relation_oid (SqlExpr): ANY expression
+        pg_node_tree (SqlExpr): `ANY` expression
+        relation_oid (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -4729,7 +4730,7 @@ def pg_get_viewdef(oid: SqlExpr) -> SqlExpr:
     """SQL pg_get_viewdef function.
 
     Args:
-        oid (SqlExpr): ANY expression
+        oid (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -4743,9 +4744,9 @@ def pg_has_role(
     """SQL pg_has_role function.
 
     Args:
-        user (SqlExpr): ANY expression
-        role (SqlExpr): ANY expression
-        privilege (SqlExpr): ANY expression
+        user (SqlExpr): `ANY` expression
+        role (SqlExpr): `ANY` expression
+        privilege (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -4757,7 +4758,7 @@ def pg_is_other_temp_schema(schema_id: SqlExpr) -> SqlExpr:
     """SQL pg_is_other_temp_schema function.
 
     Args:
-        schema_id (SqlExpr): ANY expression
+        schema_id (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -4778,7 +4779,7 @@ def pg_opclass_is_visible(opclass_oid: SqlExpr) -> SqlExpr:
     """SQL pg_opclass_is_visible function.
 
     Args:
-        opclass_oid (SqlExpr): ANY expression
+        opclass_oid (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -4790,7 +4791,7 @@ def pg_operator_is_visible(operator_oid: SqlExpr) -> SqlExpr:
     """SQL pg_operator_is_visible function.
 
     Args:
-        operator_oid (SqlExpr): ANY expression
+        operator_oid (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -4802,7 +4803,7 @@ def pg_opfamily_is_visible(opclass_oid: SqlExpr) -> SqlExpr:
     """SQL pg_opfamily_is_visible function.
 
     Args:
-        opclass_oid (SqlExpr): ANY expression
+        opclass_oid (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -4823,7 +4824,7 @@ def pg_size_pretty(bytes_arg: SqlExpr) -> SqlExpr:
     """SQL pg_size_pretty function.
 
     Args:
-        bytes_arg (SqlExpr): ANY expression
+        bytes_arg (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -4835,7 +4836,7 @@ def pg_table_is_visible(table_oid: SqlExpr) -> SqlExpr:
     """SQL pg_table_is_visible function.
 
     Args:
-        table_oid (SqlExpr): ANY expression
+        table_oid (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -4847,7 +4848,7 @@ def pg_ts_config_is_visible(config_oid: SqlExpr) -> SqlExpr:
     """SQL pg_ts_config_is_visible function.
 
     Args:
-        config_oid (SqlExpr): ANY expression
+        config_oid (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -4859,7 +4860,7 @@ def pg_ts_dict_is_visible(dict_oid: SqlExpr) -> SqlExpr:
     """SQL pg_ts_dict_is_visible function.
 
     Args:
-        dict_oid (SqlExpr): ANY expression
+        dict_oid (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -4871,7 +4872,7 @@ def pg_ts_parser_is_visible(parser_oid: SqlExpr) -> SqlExpr:
     """SQL pg_ts_parser_is_visible function.
 
     Args:
-        parser_oid (SqlExpr): ANY expression
+        parser_oid (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -4883,7 +4884,7 @@ def pg_ts_template_is_visible(template_oid: SqlExpr) -> SqlExpr:
     """SQL pg_ts_template_is_visible function.
 
     Args:
-        template_oid (SqlExpr): ANY expression
+        template_oid (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -4895,7 +4896,7 @@ def pg_type_is_visible(type_oid: SqlExpr) -> SqlExpr:
     """SQL pg_type_is_visible function.
 
     Args:
-        type_oid (SqlExpr): ANY expression
+        type_oid (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -4907,7 +4908,7 @@ def pg_typeof(expression: SqlExpr) -> SqlExpr:
     """SQL pg_typeof function.
 
     Args:
-        expression (SqlExpr): ANY expression
+        expression (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -4919,8 +4920,8 @@ def round_even(x: SqlExpr, n: SqlExpr) -> SqlExpr:
     """SQL round_even function.
 
     Args:
-        x (SqlExpr): ANY expression
-        n (SqlExpr): ANY expression
+        x (SqlExpr): `ANY` expression
+        n (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -4932,8 +4933,8 @@ def roundbankers(x: SqlExpr, n: SqlExpr) -> SqlExpr:
     """SQL roundbankers function.
 
     Args:
-        x (SqlExpr): ANY expression
-        n (SqlExpr): ANY expression
+        x (SqlExpr): `ANY` expression
+        n (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -4954,8 +4955,8 @@ def shobj_description(object_oid: SqlExpr, catalog_name: SqlExpr) -> SqlExpr:
     """SQL shobj_description function.
 
     Args:
-        object_oid (SqlExpr): ANY expression
-        catalog_name (SqlExpr): ANY expression
+        object_oid (SqlExpr): `ANY` expression
+        catalog_name (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -4967,9 +4968,9 @@ def split_part(string: SqlExpr, delimiter: SqlExpr, position: SqlExpr) -> SqlExp
     """SQL split_part function.
 
     Args:
-        string (SqlExpr): ANY expression
-        delimiter (SqlExpr): ANY expression
-        position (SqlExpr): ANY expression
+        string (SqlExpr): `ANY` expression
+        delimiter (SqlExpr): `ANY` expression
+        position (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -4990,8 +4991,8 @@ def wavg(value: SqlExpr, weight: SqlExpr) -> SqlExpr:
     """SQL wavg function.
 
     Args:
-        value (SqlExpr): ANY expression
-        weight (SqlExpr): ANY expression
+        value (SqlExpr): `ANY` expression
+        weight (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -5003,8 +5004,8 @@ def weighted_avg(value: SqlExpr, weight: SqlExpr) -> SqlExpr:
     """SQL weighted_avg function.
 
     Args:
-        value (SqlExpr): ANY expression
-        weight (SqlExpr): ANY expression
+        value (SqlExpr): `ANY` expression
+        weight (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -5021,7 +5022,7 @@ def map_concat(*args: SqlExpr) -> SqlExpr:
     """Returns a map created from merging the input maps, on key collision the value is taken from the last map with that key.
 
     Args:
-        *args (SqlExpr): ANY expression
+        *args (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -5029,12 +5030,12 @@ def map_concat(*args: SqlExpr) -> SqlExpr:
     return func("map_concat", *args)
 
 
-def map_contains(map_arg: SqlExpr, key: SqlExpr) -> SqlExpr:
+def map_contains(map_arg: SqlExpr | dict[object, object], key: SqlExpr) -> SqlExpr:
     """Checks if a map contains a given key.
 
     Args:
-        map_arg (SqlExpr): MAP(K, V) expression
-        key (SqlExpr): K expression
+        map_arg (SqlExpr | dict[object, object]): `MAP(K, V)` expression
+        key (SqlExpr): `K` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -5046,9 +5047,9 @@ def map_contains_entry(map_arg: SqlExpr, key: SqlExpr, value: SqlExpr) -> SqlExp
     """SQL map_contains_entry function.
 
     Args:
-        map_arg (SqlExpr): ANY expression
-        key (SqlExpr): ANY expression
-        value (SqlExpr): ANY expression
+        map_arg (SqlExpr): `ANY` expression
+        key (SqlExpr): `ANY` expression
+        value (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -5060,8 +5061,8 @@ def map_contains_value(map_arg: SqlExpr, value: SqlExpr) -> SqlExpr:
     """SQL map_contains_value function.
 
     Args:
-        map_arg (SqlExpr): ANY expression
-        value (SqlExpr): ANY expression
+        map_arg (SqlExpr): `ANY` expression
+        value (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -5069,11 +5070,11 @@ def map_contains_value(map_arg: SqlExpr, value: SqlExpr) -> SqlExpr:
     return func("map_contains_value", map_arg, value)
 
 
-def map_entries(map_arg: SqlExpr) -> SqlExpr:
+def map_entries(map_arg: SqlExpr | dict[object, object]) -> SqlExpr:
     """Returns the map entries as a list of keys/values.
 
     Args:
-        map_arg (SqlExpr): MAP(K, V) expression
+        map_arg (SqlExpr | dict[object, object]): `MAP(K, V)` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -5081,14 +5082,14 @@ def map_entries(map_arg: SqlExpr) -> SqlExpr:
     return func("map_entries", map_arg)
 
 
-def map_extract(map_arg: SqlExpr, key: SqlExpr) -> SqlExpr:
+def map_extract(map_arg: SqlExpr | dict[object, object], key: SqlExpr) -> SqlExpr:
     """Returns a list containing the value for a given key or an empty list if the key is not contained in the map.
 
     The type of the key provided in the second parameter must match the type of the map's keys else an error is returned.
 
     Args:
-        map_arg (SqlExpr): MAP(K, V) expression
-        key (SqlExpr): K expression
+        map_arg (SqlExpr | dict[object, object]): `MAP(K, V)` expression
+        key (SqlExpr): `K` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -5096,14 +5097,14 @@ def map_extract(map_arg: SqlExpr, key: SqlExpr) -> SqlExpr:
     return func("map_extract", map_arg, key)
 
 
-def map_extract_value(map_arg: SqlExpr, key: SqlExpr) -> SqlExpr:
+def map_extract_value(map_arg: SqlExpr | dict[object, object], key: SqlExpr) -> SqlExpr:
     """Returns the value for a given key or NULL if the key is not contained in the map.
 
     The type of the key provided in the second parameter must match the type of the map's keys else an error is returned.
 
     Args:
-        map_arg (SqlExpr): MAP(K, V) expression
-        key (SqlExpr): K expression
+        map_arg (SqlExpr | dict[object, object]): `MAP(K, V)` expression
+        key (SqlExpr): `K` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -5111,11 +5112,11 @@ def map_extract_value(map_arg: SqlExpr, key: SqlExpr) -> SqlExpr:
     return func("map_extract_value", map_arg, key)
 
 
-def map_from_entries(map_arg: SqlExpr) -> SqlExpr:
+def map_from_entries(map_arg: SqlExpr | dict[object, object]) -> SqlExpr:
     """Returns a map created from the entries of the array.
 
     Args:
-        map_arg (SqlExpr): STRUCT(K, V)[] expression
+        map_arg (SqlExpr | dict[object, object]): `STRUCT(K, V)[]` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -5123,11 +5124,11 @@ def map_from_entries(map_arg: SqlExpr) -> SqlExpr:
     return func("map_from_entries", map_arg)
 
 
-def map_keys(map_arg: SqlExpr) -> SqlExpr:
+def map_keys(map_arg: SqlExpr | dict[object, object]) -> SqlExpr:
     """Returns the keys of a map as a list.
 
     Args:
-        map_arg (SqlExpr): MAP(K, V) expression
+        map_arg (SqlExpr | dict[object, object]): `MAP(K, V)` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -5139,7 +5140,7 @@ def map_to_pg_oid(type_name: SqlExpr) -> SqlExpr:
     """SQL map_to_pg_oid function.
 
     Args:
-        type_name (SqlExpr): ANY expression
+        type_name (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -5147,11 +5148,11 @@ def map_to_pg_oid(type_name: SqlExpr) -> SqlExpr:
     return func("map_to_pg_oid", type_name)
 
 
-def map_values(map_arg: SqlExpr) -> SqlExpr:
+def map_values(map_arg: SqlExpr | dict[object, object]) -> SqlExpr:
     """Returns the values of a map as a list.
 
     Args:
-        map_arg (SqlExpr): MAP(K, V) expression
+        map_arg (SqlExpr | dict[object, object]): `MAP(K, V)` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -5168,7 +5169,7 @@ def is_histogram_other_bin(val: SqlExpr) -> SqlExpr:
     """Whether or not the provided value is the histogram "other" bin (used for values not belonging to any provided bin).
 
     Args:
-        val (SqlExpr): ANY expression
+        val (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -5180,7 +5181,7 @@ def isfinite(x: SqlExpr | date) -> SqlExpr:
     """Returns true if the floating point value is finite, false otherwise.
 
     Args:
-        x (SqlExpr | date): DATE expression
+        x (SqlExpr | date): `DATE` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -5192,7 +5193,7 @@ def isinf(x: SqlExpr | date) -> SqlExpr:
     """Returns true if the floating point value is infinite, false otherwise.
 
     Args:
-        x (SqlExpr | date): DATE expression
+        x (SqlExpr | date): `DATE` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -5204,7 +5205,7 @@ def isnan(x: SqlExpr | float) -> SqlExpr:
     """Returns true if the floating point value is not a number, false otherwise.
 
     Args:
-        x (SqlExpr | float): DOUBLE expression
+        x (SqlExpr | float): `DOUBLE` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -5216,7 +5217,7 @@ def isodow(ts: SqlExpr | date) -> SqlExpr:
     """Extract the isodow component from a date or timestamp.
 
     Args:
-        ts (SqlExpr | date): DATE expression
+        ts (SqlExpr | date): `DATE` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -5228,7 +5229,7 @@ def isoyear(ts: SqlExpr | date) -> SqlExpr:
     """Extract the isoyear component from a date or timestamp.
 
     Args:
-        ts (SqlExpr | date): DATE expression
+        ts (SqlExpr | date): `DATE` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -5245,7 +5246,7 @@ def regexp_escape(string: SqlExpr | str) -> SqlExpr:
     """Escapes special patterns to turn `string` into a regular expression similarly to Python's `re.escape` function.
 
     Args:
-        string (SqlExpr | str): VARCHAR expression
+        string (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -5268,10 +5269,10 @@ def regexp_extract(
     A set of optional regex `options` can be set.
 
     Args:
-        string (SqlExpr | str): VARCHAR expression
-        regex (SqlExpr | str): VARCHAR expression
-        group (SqlExpr | int): INTEGER expression
-        options (SqlExpr | str): VARCHAR expression
+        string (SqlExpr | str): `VARCHAR` expression
+        regex (SqlExpr | str): `VARCHAR` expression
+        group (SqlExpr | int): `INTEGER` expression
+        options (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -5290,10 +5291,10 @@ def regexp_extract_all(
     A set of optional regex `options` can be set.
 
     Args:
-        string (SqlExpr | str): VARCHAR expression
-        regex (SqlExpr | str): VARCHAR expression
-        group (SqlExpr | int): INTEGER expression
-        options (SqlExpr | str): VARCHAR expression
+        string (SqlExpr | str): `VARCHAR` expression
+        regex (SqlExpr | str): `VARCHAR` expression
+        group (SqlExpr | int): `INTEGER` expression
+        options (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -5309,9 +5310,9 @@ def regexp_full_match(
     A set of optional regex `options` can be set.
 
     Args:
-        string (SqlExpr | str): VARCHAR expression
-        regex (SqlExpr | str): VARCHAR expression
-        col2 (SqlExpr | str): VARCHAR expression
+        string (SqlExpr | str): `VARCHAR` expression
+        regex (SqlExpr | str): `VARCHAR` expression
+        col2 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -5327,9 +5328,9 @@ def regexp_matches(
     A set of optional regex `options` can be set.
 
     Args:
-        string (SqlExpr | str): VARCHAR expression
-        regex (SqlExpr | str): VARCHAR expression
-        options (SqlExpr | str): VARCHAR expression
+        string (SqlExpr | str): `VARCHAR` expression
+        regex (SqlExpr | str): `VARCHAR` expression
+        options (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -5348,10 +5349,10 @@ def regexp_replace(
     A set of optional regex `options` can be set.
 
     Args:
-        string (SqlExpr | str): VARCHAR expression
-        regex (SqlExpr | str): VARCHAR expression
-        replacement (SqlExpr | str): VARCHAR expression
-        options (SqlExpr | str): VARCHAR expression
+        string (SqlExpr | str): `VARCHAR` expression
+        regex (SqlExpr | str): `VARCHAR` expression
+        replacement (SqlExpr | str): `VARCHAR` expression
+        options (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -5367,9 +5368,9 @@ def regexp_split_to_array(
     A set of optional regex `options` can be set.
 
     Args:
-        string (SqlExpr | str): VARCHAR expression
-        regex (SqlExpr | str): VARCHAR expression
-        options (SqlExpr | str): VARCHAR expression
+        string (SqlExpr | str): `VARCHAR` expression
+        regex (SqlExpr | str): `VARCHAR` expression
+        options (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -5381,8 +5382,8 @@ def regexp_split_to_table(text: SqlExpr, pattern: SqlExpr) -> SqlExpr:
     """SQL regexp_split_to_table function.
 
     Args:
-        text (SqlExpr): ANY expression
-        pattern (SqlExpr): ANY expression
+        text (SqlExpr): `ANY` expression
+        pattern (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -5399,7 +5400,7 @@ def abs(x: SqlExpr | int) -> SqlExpr:
     """Absolute value.
 
     Args:
-        x (SqlExpr | int): BIGINT expression
+        x (SqlExpr | int): `BIGINT` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -5411,7 +5412,7 @@ def acos(x: SqlExpr | float) -> SqlExpr:
     """Computes the arccosine of x.
 
     Args:
-        x (SqlExpr | float): DOUBLE expression
+        x (SqlExpr | float): `DOUBLE` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -5423,7 +5424,7 @@ def acosh(x: SqlExpr | float) -> SqlExpr:
     """Computes the inverse hyperbolic cos of x.
 
     Args:
-        x (SqlExpr | float): DOUBLE expression
+        x (SqlExpr | float): `DOUBLE` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -5437,8 +5438,8 @@ def add(
     """SQL add function.
 
     Args:
-        col0 (SqlExpr | int): BIGINT expression
-        col1 (SqlExpr | int): BIGINT expression
+        col0 (SqlExpr | int): `BIGINT` expression
+        col1 (SqlExpr | int): `BIGINT` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -5452,8 +5453,8 @@ def age(
     """Subtract arguments, resulting in the time difference between the two timestamps.
 
     Args:
-        timestamp (SqlExpr | datetime): TIMESTAMP expression
-        timestamp1 (SqlExpr | datetime): TIMESTAMP expression
+        timestamp (SqlExpr | datetime): `TIMESTAMP` expression
+        timestamp1 (SqlExpr | datetime): `TIMESTAMP` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -5467,9 +5468,9 @@ def aggregate(
     """Executes the aggregate function `function_name` on the elements of `list`.
 
     Args:
-        list_arg (SqlExpr): ANY[] expression
-        function_name (SqlExpr | str): VARCHAR expression
-        *args (SqlExpr): ANY expression
+        list_arg (SqlExpr): `ANY[]` expression
+        function_name (SqlExpr | str): `VARCHAR` expression
+        *args (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -5481,7 +5482,7 @@ def alias(expr: SqlExpr) -> SqlExpr:
     """Returns the name of a given expression.
 
     Args:
-        expr (SqlExpr): ANY expression
+        expr (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -5495,8 +5496,8 @@ def apply(list_arg: SqlExpr, lambda_arg: SqlExpr) -> SqlExpr:
     The return type is defined by the return type of the `lambda` function.
 
     Args:
-        list_arg (SqlExpr): ANY[] expression
-        lambda_arg (SqlExpr): LAMBDA expression
+        list_arg (SqlExpr): `ANY[]` expression
+        lambda_arg (SqlExpr): `LAMBDA` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -5508,7 +5509,7 @@ def ascii(string: SqlExpr | str) -> SqlExpr:
     """Returns an integer that represents the Unicode code point of the first character of the `string`.
 
     Args:
-        string (SqlExpr | str): VARCHAR expression
+        string (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -5520,7 +5521,7 @@ def asin(x: SqlExpr | float) -> SqlExpr:
     """Computes the arcsine of x.
 
     Args:
-        x (SqlExpr | float): DOUBLE expression
+        x (SqlExpr | float): `DOUBLE` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -5532,7 +5533,7 @@ def asinh(x: SqlExpr | float) -> SqlExpr:
     """Computes the inverse hyperbolic sin of x.
 
     Args:
-        x (SqlExpr | float): DOUBLE expression
+        x (SqlExpr | float): `DOUBLE` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -5544,7 +5545,7 @@ def atan(x: SqlExpr | float) -> SqlExpr:
     """Computes the arctangent of x.
 
     Args:
-        x (SqlExpr | float): DOUBLE expression
+        x (SqlExpr | float): `DOUBLE` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -5556,8 +5557,8 @@ def atan2(y: SqlExpr | float, x: SqlExpr | float) -> SqlExpr:
     """Computes the arctangent (y, x).
 
     Args:
-        y (SqlExpr | float): DOUBLE expression
-        x (SqlExpr | float): DOUBLE expression
+        y (SqlExpr | float): `DOUBLE` expression
+        x (SqlExpr | float): `DOUBLE` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -5569,7 +5570,7 @@ def atanh(x: SqlExpr | float) -> SqlExpr:
     """Computes the inverse hyperbolic tan of x.
 
     Args:
-        x (SqlExpr | float): DOUBLE expression
+        x (SqlExpr | float): `DOUBLE` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -5588,10 +5589,10 @@ def bar(
     `width` defaults to 80.
 
     Args:
-        x (SqlExpr | float): DOUBLE expression
-        min_arg (SqlExpr | float): DOUBLE expression
-        max_arg (SqlExpr | float): DOUBLE expression
-        width (SqlExpr | float): DOUBLE expression
+        x (SqlExpr | float): `DOUBLE` expression
+        min_arg (SqlExpr | float): `DOUBLE` expression
+        max_arg (SqlExpr | float): `DOUBLE` expression
+        width (SqlExpr | float): `DOUBLE` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -5603,7 +5604,7 @@ def base64(blob: SqlExpr | bytes) -> SqlExpr:
     """Converts a `blob` to a base64 encoded string.
 
     Args:
-        blob (SqlExpr | bytes): BLOB expression
+        blob (SqlExpr | bytes): `BLOB` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -5615,7 +5616,7 @@ def bin(value: SqlExpr | int) -> SqlExpr:
     """Converts the `value` to binary representation.
 
     Args:
-        value (SqlExpr | int): BIGINT expression
+        value (SqlExpr | int): `BIGINT` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -5627,8 +5628,8 @@ def can_cast_implicitly(source_type: SqlExpr, target_type: SqlExpr) -> SqlExpr:
     """Whether or not we can implicitly cast from the source type to the other type.
 
     Args:
-        source_type (SqlExpr): ANY expression
-        target_type (SqlExpr): ANY expression
+        source_type (SqlExpr): `ANY` expression
+        target_type (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -5640,8 +5641,8 @@ def cardinality(map_arg: SqlExpr, *args: SqlExpr) -> SqlExpr:
     """Returns the size of the map (or the number of entries in the map).
 
     Args:
-        map_arg (SqlExpr): ANY expression
-        *args (SqlExpr): ANY expression
+        map_arg (SqlExpr): `ANY` expression
+        *args (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -5653,8 +5654,8 @@ def cast_to_type(param: SqlExpr, type_arg: SqlExpr) -> SqlExpr:
     """Casts the first argument to the type of the second argument.
 
     Args:
-        param (SqlExpr): ANY expression
-        type_arg (SqlExpr): ANY expression
+        param (SqlExpr): `ANY` expression
+        type_arg (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -5666,7 +5667,7 @@ def cbrt(x: SqlExpr | float) -> SqlExpr:
     """Returns the cube root of x.
 
     Args:
-        x (SqlExpr | float): DOUBLE expression
+        x (SqlExpr | float): `DOUBLE` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -5678,7 +5679,7 @@ def ceil(x: SqlExpr | float) -> SqlExpr:
     """Rounds the number up.
 
     Args:
-        x (SqlExpr | float): DECIMAL expression
+        x (SqlExpr | float): `DECIMAL` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -5690,7 +5691,7 @@ def ceiling(x: SqlExpr | float) -> SqlExpr:
     """Rounds the number up.
 
     Args:
-        x (SqlExpr | float): DECIMAL expression
+        x (SqlExpr | float): `DECIMAL` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -5702,7 +5703,7 @@ def century(ts: SqlExpr | date) -> SqlExpr:
     """Extract the century component from a date or timestamp.
 
     Args:
-        ts (SqlExpr | date): DATE expression
+        ts (SqlExpr | date): `DATE` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -5714,7 +5715,7 @@ def char_length(list_arg: SqlExpr) -> SqlExpr:
     """Returns the length of the `list`.
 
     Args:
-        list_arg (SqlExpr): ANY[] expression
+        list_arg (SqlExpr): `ANY[]` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -5726,7 +5727,7 @@ def character_length(list_arg: SqlExpr) -> SqlExpr:
     """Returns the length of the `list`.
 
     Args:
-        list_arg (SqlExpr): ANY[] expression
+        list_arg (SqlExpr): `ANY[]` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -5738,7 +5739,7 @@ def chr(code_point: SqlExpr | int) -> SqlExpr:
     """Returns a character which is corresponding the ASCII code value or Unicode code point.
 
     Args:
-        code_point (SqlExpr | int): INTEGER expression
+        code_point (SqlExpr | int): `INTEGER` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -5750,8 +5751,8 @@ def combine(col0: SqlExpr, col1: SqlExpr) -> SqlExpr:
     """SQL combine function.
 
     Args:
-        col0 (SqlExpr): AGGREGATE_STATE<?> expression
-        col1 (SqlExpr): ANY expression
+        col0 (SqlExpr): `AGGREGATE_STATE<?>` expression
+        col1 (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -5767,8 +5768,8 @@ def concat(value: SqlExpr, *args: SqlExpr) -> SqlExpr:
     See also operator `||`.
 
     Args:
-        value (SqlExpr): ANY expression
-        *args (SqlExpr): ANY expression
+        value (SqlExpr): `ANY` expression
+        *args (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -5782,9 +5783,9 @@ def concat_ws(separator: SqlExpr | str, string: SqlExpr, *args: SqlExpr) -> SqlE
     `NULL` inputs are skipped.
 
     Args:
-        separator (SqlExpr | str): VARCHAR expression
-        string (SqlExpr): ANY expression
-        *args (SqlExpr): ANY expression
+        separator (SqlExpr | str): `VARCHAR` expression
+        string (SqlExpr): `ANY` expression
+        *args (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -5798,9 +5799,9 @@ def constant_or_null(arg1: SqlExpr, arg2: SqlExpr, *args: SqlExpr) -> SqlExpr:
     Otherwise, return arg1.
 
     Args:
-        arg1 (SqlExpr): ANY expression
-        arg2 (SqlExpr): ANY expression
-        *args (SqlExpr): ANY expression
+        arg1 (SqlExpr): `ANY` expression
+        arg2 (SqlExpr): `ANY` expression
+        *args (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -5808,12 +5809,12 @@ def constant_or_null(arg1: SqlExpr, arg2: SqlExpr, *args: SqlExpr) -> SqlExpr:
     return func("constant_or_null", arg1, arg2, *args)
 
 
-def contains(col0: SqlExpr, col1: SqlExpr) -> SqlExpr:
+def contains(col0: SqlExpr | dict[object, object], col1: SqlExpr) -> SqlExpr:
     """SQL contains function.
 
     Args:
-        col0 (SqlExpr): MAP(K, V) expression
-        col1 (SqlExpr): K expression
+        col0 (SqlExpr | dict[object, object]): `MAP(K, V)` expression
+        col1 (SqlExpr): `K` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -5825,7 +5826,7 @@ def cos(x: SqlExpr | float) -> SqlExpr:
     """Computes the cos of x.
 
     Args:
-        x (SqlExpr | float): DOUBLE expression
+        x (SqlExpr | float): `DOUBLE` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -5837,7 +5838,7 @@ def cosh(x: SqlExpr | float) -> SqlExpr:
     """Computes the hyperbolic cos of x.
 
     Args:
-        x (SqlExpr | float): DOUBLE expression
+        x (SqlExpr | float): `DOUBLE` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -5849,7 +5850,7 @@ def cot(x: SqlExpr | float) -> SqlExpr:
     """Computes the cotangent of x.
 
     Args:
-        x (SqlExpr | float): DOUBLE expression
+        x (SqlExpr | float): `DOUBLE` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -5861,8 +5862,8 @@ def create_sort_key(parameters: SqlExpr, *args: SqlExpr) -> SqlExpr:
     """Constructs a binary-comparable sort key based on a set of input parameters and sort qualifiers.
 
     Args:
-        parameters (SqlExpr): ANY expression
-        *args (SqlExpr): ANY expression
+        parameters (SqlExpr): `ANY` expression
+        *args (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -5950,7 +5951,7 @@ def current_schemas(*, include_implicit: SqlExpr | bool) -> SqlExpr:
     Pass a parameter of True to include implicit schemas.
 
     Args:
-        include_implicit (SqlExpr | bool): BOOLEAN expression
+        include_implicit (SqlExpr | bool): `BOOLEAN` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -5962,7 +5963,7 @@ def current_setting(setting_name: SqlExpr | str) -> SqlExpr:
     """Returns the current value of the configuration setting.
 
     Args:
-        setting_name (SqlExpr | str): VARCHAR expression
+        setting_name (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -5985,7 +5986,7 @@ def currval(sequence_name: SqlExpr | str) -> SqlExpr:
     Note that nextval must be called at least once prior to calling currval.
 
     Args:
-        sequence_name (SqlExpr | str): VARCHAR expression
+        sequence_name (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -6001,8 +6002,8 @@ def damerau_levenshtein(s1: SqlExpr | str, s2: SqlExpr | str) -> SqlExpr:
     Characters of different cases (e.g., `a` and `A`) are considered different.
 
     Args:
-        s1 (SqlExpr | str): VARCHAR expression
-        s2 (SqlExpr | str): VARCHAR expression
+        s1 (SqlExpr | str): `VARCHAR` expression
+        s2 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -6014,7 +6015,7 @@ def day(ts: SqlExpr | date) -> SqlExpr:
     """Extract the day component from a date or timestamp.
 
     Args:
-        ts (SqlExpr | date): DATE expression
+        ts (SqlExpr | date): `DATE` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -6026,7 +6027,7 @@ def dayname(ts: SqlExpr | date) -> SqlExpr:
     """The (English) name of the weekday.
 
     Args:
-        ts (SqlExpr | date): DATE expression
+        ts (SqlExpr | date): `DATE` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -6038,7 +6039,7 @@ def dayofmonth(ts: SqlExpr | date) -> SqlExpr:
     """Extract the dayofmonth component from a date or timestamp.
 
     Args:
-        ts (SqlExpr | date): DATE expression
+        ts (SqlExpr | date): `DATE` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -6050,7 +6051,7 @@ def dayofweek(ts: SqlExpr | date) -> SqlExpr:
     """Extract the dayofweek component from a date or timestamp.
 
     Args:
-        ts (SqlExpr | date): DATE expression
+        ts (SqlExpr | date): `DATE` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -6062,7 +6063,7 @@ def dayofyear(ts: SqlExpr | date) -> SqlExpr:
     """Extract the dayofyear component from a date or timestamp.
 
     Args:
-        ts (SqlExpr | date): DATE expression
+        ts (SqlExpr | date): `DATE` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -6074,7 +6075,7 @@ def decade(ts: SqlExpr | date) -> SqlExpr:
     """Extract the decade component from a date or timestamp.
 
     Args:
-        ts (SqlExpr | date): DATE expression
+        ts (SqlExpr | date): `DATE` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -6088,7 +6089,7 @@ def decode(blob: SqlExpr | bytes) -> SqlExpr:
     Fails if `blob` is not valid UTF-8.
 
     Args:
-        blob (SqlExpr | bytes): BLOB expression
+        blob (SqlExpr | bytes): `BLOB` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -6100,7 +6101,7 @@ def degrees(x: SqlExpr | float) -> SqlExpr:
     """Converts radians to degrees.
 
     Args:
-        x (SqlExpr | float): DOUBLE expression
+        x (SqlExpr | float): `DOUBLE` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -6112,8 +6113,8 @@ def divide(col0: SqlExpr | int, col1: SqlExpr | int) -> SqlExpr:
     """SQL divide function.
 
     Args:
-        col0 (SqlExpr | int): BIGINT expression
-        col1 (SqlExpr | int): BIGINT expression
+        col0 (SqlExpr | int): `BIGINT` expression
+        col1 (SqlExpr | int): `BIGINT` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -6127,8 +6128,8 @@ def editdist3(s1: SqlExpr | str, s2: SqlExpr | str) -> SqlExpr:
     Characters of different cases (e.g., `a` and `A`) are considered different.
 
     Args:
-        s1 (SqlExpr | str): VARCHAR expression
-        s2 (SqlExpr | str): VARCHAR expression
+        s1 (SqlExpr | str): `VARCHAR` expression
+        s2 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -6136,14 +6137,14 @@ def editdist3(s1: SqlExpr | str, s2: SqlExpr | str) -> SqlExpr:
     return func("editdist3", s1, s2)
 
 
-def element_at(map_arg: SqlExpr, key: SqlExpr) -> SqlExpr:
+def element_at(map_arg: SqlExpr | dict[object, object], key: SqlExpr) -> SqlExpr:
     """Returns a list containing the value for a given key or an empty list if the key is not contained in the map.
 
     The type of the key provided in the second parameter must match the type of the map's keys else an error is returned.
 
     Args:
-        map_arg (SqlExpr): MAP(K, V) expression
-        key (SqlExpr): K expression
+        map_arg (SqlExpr | dict[object, object]): `MAP(K, V)` expression
+        key (SqlExpr): `K` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -6157,7 +6158,7 @@ def encode(string: SqlExpr | str) -> SqlExpr:
     Converts UTF-8 characters into literal encoding.
 
     Args:
-        string (SqlExpr | str): VARCHAR expression
+        string (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -6169,8 +6170,8 @@ def ends_with(string: SqlExpr | str, search_string: SqlExpr | str) -> SqlExpr:
     """Returns `true` if `string` ends with `search_string`.
 
     Args:
-        string (SqlExpr | str): VARCHAR expression
-        search_string (SqlExpr | str): VARCHAR expression
+        string (SqlExpr | str): `VARCHAR` expression
+        search_string (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -6182,7 +6183,7 @@ def epoch(temporal: SqlExpr | date) -> SqlExpr:
     """Extract the epoch component from a temporal type.
 
     Args:
-        temporal (SqlExpr | date): DATE expression
+        temporal (SqlExpr | date): `DATE` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -6194,7 +6195,7 @@ def epoch_ms(temporal: SqlExpr | int) -> SqlExpr:
     """Extract the epoch component in milliseconds from a temporal type.
 
     Args:
-        temporal (SqlExpr | int): BIGINT expression
+        temporal (SqlExpr | int): `BIGINT` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -6206,7 +6207,7 @@ def epoch_ns(temporal: SqlExpr | date) -> SqlExpr:
     """Extract the epoch component in nanoseconds from a temporal type.
 
     Args:
-        temporal (SqlExpr | date): DATE expression
+        temporal (SqlExpr | date): `DATE` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -6218,7 +6219,7 @@ def epoch_us(temporal: SqlExpr | date) -> SqlExpr:
     """Extract the epoch component in microseconds from a temporal type.
 
     Args:
-        temporal (SqlExpr | date): DATE expression
+        temporal (SqlExpr | date): `DATE` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -6238,10 +6239,10 @@ def equi_width_bins(
     If enabled nice_rounding makes the numbers more readable/less jagged.
 
     Args:
-        min_arg (SqlExpr): ANY expression
-        max_arg (SqlExpr): ANY expression
-        bin_count (SqlExpr | int): BIGINT expression
-        nice_rounding (SqlExpr | bool): BOOLEAN expression
+        min_arg (SqlExpr): `ANY` expression
+        max_arg (SqlExpr): `ANY` expression
+        bin_count (SqlExpr | int): `BIGINT` expression
+        nice_rounding (SqlExpr | bool): `BOOLEAN` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -6253,7 +6254,7 @@ def era(ts: SqlExpr | date) -> SqlExpr:
     """Extract the era component from a date or timestamp.
 
     Args:
-        ts (SqlExpr | date): DATE expression
+        ts (SqlExpr | date): `DATE` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -6265,7 +6266,7 @@ def error(message: SqlExpr | str) -> SqlExpr:
     """Throws the given error message.
 
     Args:
-        message (SqlExpr | str): VARCHAR expression
+        message (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -6277,7 +6278,7 @@ def even(x: SqlExpr | float) -> SqlExpr:
     """Rounds x to next even number by rounding away from zero.
 
     Args:
-        x (SqlExpr | float): DOUBLE expression
+        x (SqlExpr | float): `DOUBLE` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -6289,7 +6290,7 @@ def exp(x: SqlExpr | float) -> SqlExpr:
     """Computes e to the power of x.
 
     Args:
-        x (SqlExpr | float): DOUBLE expression
+        x (SqlExpr | float): `DOUBLE` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -6303,7 +6304,7 @@ def factorial(x: SqlExpr | int) -> SqlExpr:
     Computes the product of the current integer and all integers below it.
 
     Args:
-        x (SqlExpr | int): INTEGER expression
+        x (SqlExpr | int): `INTEGER` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -6319,8 +6320,8 @@ def filter(list_arg: SqlExpr, lambda_arg: SqlExpr) -> SqlExpr:
     The return type of `list_filter` is the same as the input list's.
 
     Args:
-        list_arg (SqlExpr): ANY[] expression
-        lambda_arg (SqlExpr): LAMBDA expression
+        list_arg (SqlExpr): `ANY[]` expression
+        lambda_arg (SqlExpr): `LAMBDA` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -6332,7 +6333,7 @@ def finalize(col0: SqlExpr) -> SqlExpr:
     """SQL finalize function.
 
     Args:
-        col0 (SqlExpr): AGGREGATE_STATE<?> expression
+        col0 (SqlExpr): `AGGREGATE_STATE<?>` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -6344,7 +6345,7 @@ def flatten(nested_list: SqlExpr) -> SqlExpr:
     """Flattens a nested list by one level.
 
     Args:
-        nested_list (SqlExpr): T[][] expression
+        nested_list (SqlExpr): `T[][]` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -6356,7 +6357,7 @@ def floor(x: SqlExpr | float) -> SqlExpr:
     """Rounds the number down.
 
     Args:
-        x (SqlExpr | float): DECIMAL expression
+        x (SqlExpr | float): `DECIMAL` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -6368,8 +6369,8 @@ def format(format_arg: SqlExpr | str, *args: SqlExpr) -> SqlExpr:
     """Formats a string using the fmt syntax.
 
     Args:
-        format_arg (SqlExpr | str): VARCHAR expression
-        *args (SqlExpr): ANY expression
+        format_arg (SqlExpr | str): `VARCHAR` expression
+        *args (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -6381,7 +6382,7 @@ def format_readable_decimal_size(integer: SqlExpr | int) -> SqlExpr:
     """Converts `integer` to a human-readable representation using units based on powers of 10 (KB, MB, GB, etc.).
 
     Args:
-        integer (SqlExpr | int): BIGINT expression
+        integer (SqlExpr | int): `BIGINT` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -6393,7 +6394,7 @@ def format_readable_size(integer: SqlExpr | int) -> SqlExpr:
     """Converts `integer` to a human-readable representation using units based on powers of 2 (KiB, MiB, GiB, etc.).
 
     Args:
-        integer (SqlExpr | int): BIGINT expression
+        integer (SqlExpr | int): `BIGINT` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -6405,7 +6406,7 @@ def format_bytes(integer: SqlExpr | int) -> SqlExpr:
     """Converts `integer` to a human-readable representation using units based on powers of 2 (KiB, MiB, GiB, etc.).
 
     Args:
-        integer (SqlExpr | int): BIGINT expression
+        integer (SqlExpr | int): `BIGINT` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -6417,7 +6418,7 @@ def gamma(x: SqlExpr | float) -> SqlExpr:
     """Interpolation of (x-1) factorial (so decimal inputs are allowed).
 
     Args:
-        x (SqlExpr | float): DOUBLE expression
+        x (SqlExpr | float): `DOUBLE` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -6429,8 +6430,8 @@ def gcd(x: SqlExpr | int, y: SqlExpr | int) -> SqlExpr:
     """Computes the greatest common divisor of x and y.
 
     Args:
-        x (SqlExpr | int): BIGINT expression
-        y (SqlExpr | int): BIGINT expression
+        x (SqlExpr | int): `BIGINT` expression
+        y (SqlExpr | int): `BIGINT` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -6455,9 +6456,9 @@ def generate_series(
     """Creates a list of values between `start` and `stop` - the stop parameter is inclusive.
 
     Args:
-        start (SqlExpr | int): BIGINT expression
-        stop (SqlExpr | int): BIGINT expression
-        step (SqlExpr | int): BIGINT expression
+        start (SqlExpr | int): `BIGINT` expression
+        stop (SqlExpr | int): `BIGINT` expression
+        step (SqlExpr | int): `BIGINT` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -6469,8 +6470,8 @@ def get_bit(bitstring: SqlExpr | bytes, index: SqlExpr | int) -> SqlExpr:
     """Extracts the nth bit from bitstring; the first (leftmost) bit is indexed 0.
 
     Args:
-        bitstring (SqlExpr | bytes): BIT expression
-        index (SqlExpr | int): INTEGER expression
+        bitstring (SqlExpr | bytes): `BIT` expression
+        index (SqlExpr | int): `INTEGER` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -6500,7 +6501,7 @@ def getvariable(col0: SqlExpr | str) -> SqlExpr:
     """SQL getvariable function.
 
     Args:
-        col0 (SqlExpr | str): VARCHAR expression
+        col0 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -6516,9 +6517,9 @@ def grade_up(
     """Works like list_sort, but the results are the indexes that correspond to the position in the original list instead of the actual values.
 
     Args:
-        list_arg (SqlExpr): ANY[] expression
-        col1 (SqlExpr | str): VARCHAR expression
-        col2 (SqlExpr | str): VARCHAR expression
+        list_arg (SqlExpr): `ANY[]` expression
+        col1 (SqlExpr | str): `VARCHAR` expression
+        col2 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -6534,8 +6535,8 @@ def greatest(arg1: SqlExpr, *args: SqlExpr) -> SqlExpr:
     Note that lowercase characters are considered “larger” than uppercase characters and collations are not supported.
 
     Args:
-        arg1 (SqlExpr): ANY expression
-        *args (SqlExpr): ANY expression
+        arg1 (SqlExpr): `ANY` expression
+        *args (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -6547,8 +6548,8 @@ def greatest_common_divisor(x: SqlExpr | int, y: SqlExpr | int) -> SqlExpr:
     """Computes the greatest common divisor of x and y.
 
     Args:
-        x (SqlExpr | int): BIGINT expression
-        y (SqlExpr | int): BIGINT expression
+        x (SqlExpr | int): `BIGINT` expression
+        y (SqlExpr | int): `BIGINT` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -6564,8 +6565,8 @@ def hamming(s1: SqlExpr | str, s2: SqlExpr | str) -> SqlExpr:
     Characters of different cases (e.g., `a` and `A`) are considered different.
 
     Args:
-        s1 (SqlExpr | str): VARCHAR expression
-        s2 (SqlExpr | str): VARCHAR expression
+        s1 (SqlExpr | str): `VARCHAR` expression
+        s2 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -6579,8 +6580,8 @@ def hash(value: SqlExpr, *args: SqlExpr) -> SqlExpr:
     Note that this is not a cryptographic hash.
 
     Args:
-        value (SqlExpr): ANY expression
-        *args (SqlExpr): ANY expression
+        value (SqlExpr): `ANY` expression
+        *args (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -6592,7 +6593,7 @@ def hex(value: SqlExpr | int) -> SqlExpr:
     """Converts the `value` to `VARCHAR` using hexadecimal representation.
 
     Args:
-        value (SqlExpr | int): BIGINT expression
+        value (SqlExpr | int): `BIGINT` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -6604,7 +6605,7 @@ def hour(ts: SqlExpr | date) -> SqlExpr:
     """Extract the hour component from a date or timestamp.
 
     Args:
-        ts (SqlExpr | date): DATE expression
+        ts (SqlExpr | date): `DATE` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -6616,7 +6617,7 @@ def icu_collate_af(col0: SqlExpr | str) -> SqlExpr:
     """SQL icu_collate_af function.
 
     Args:
-        col0 (SqlExpr | str): VARCHAR expression
+        col0 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -6628,7 +6629,7 @@ def icu_collate_am(col0: SqlExpr | str) -> SqlExpr:
     """SQL icu_collate_am function.
 
     Args:
-        col0 (SqlExpr | str): VARCHAR expression
+        col0 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -6640,7 +6641,7 @@ def icu_collate_ar(col0: SqlExpr | str) -> SqlExpr:
     """SQL icu_collate_ar function.
 
     Args:
-        col0 (SqlExpr | str): VARCHAR expression
+        col0 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -6652,7 +6653,7 @@ def icu_collate_ar_sa(col0: SqlExpr | str) -> SqlExpr:
     """SQL icu_collate_ar_sa function.
 
     Args:
-        col0 (SqlExpr | str): VARCHAR expression
+        col0 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -6664,7 +6665,7 @@ def icu_collate_as(col0: SqlExpr | str) -> SqlExpr:
     """SQL icu_collate_as function.
 
     Args:
-        col0 (SqlExpr | str): VARCHAR expression
+        col0 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -6676,7 +6677,7 @@ def icu_collate_az(col0: SqlExpr | str) -> SqlExpr:
     """SQL icu_collate_az function.
 
     Args:
-        col0 (SqlExpr | str): VARCHAR expression
+        col0 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -6688,7 +6689,7 @@ def icu_collate_be(col0: SqlExpr | str) -> SqlExpr:
     """SQL icu_collate_be function.
 
     Args:
-        col0 (SqlExpr | str): VARCHAR expression
+        col0 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -6700,7 +6701,7 @@ def icu_collate_bg(col0: SqlExpr | str) -> SqlExpr:
     """SQL icu_collate_bg function.
 
     Args:
-        col0 (SqlExpr | str): VARCHAR expression
+        col0 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -6712,7 +6713,7 @@ def icu_collate_bn(col0: SqlExpr | str) -> SqlExpr:
     """SQL icu_collate_bn function.
 
     Args:
-        col0 (SqlExpr | str): VARCHAR expression
+        col0 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -6724,7 +6725,7 @@ def icu_collate_bo(col0: SqlExpr | str) -> SqlExpr:
     """SQL icu_collate_bo function.
 
     Args:
-        col0 (SqlExpr | str): VARCHAR expression
+        col0 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -6736,7 +6737,7 @@ def icu_collate_br(col0: SqlExpr | str) -> SqlExpr:
     """SQL icu_collate_br function.
 
     Args:
-        col0 (SqlExpr | str): VARCHAR expression
+        col0 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -6748,7 +6749,7 @@ def icu_collate_bs(col0: SqlExpr | str) -> SqlExpr:
     """SQL icu_collate_bs function.
 
     Args:
-        col0 (SqlExpr | str): VARCHAR expression
+        col0 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -6760,7 +6761,7 @@ def icu_collate_ca(col0: SqlExpr | str) -> SqlExpr:
     """SQL icu_collate_ca function.
 
     Args:
-        col0 (SqlExpr | str): VARCHAR expression
+        col0 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -6772,7 +6773,7 @@ def icu_collate_ceb(col0: SqlExpr | str) -> SqlExpr:
     """SQL icu_collate_ceb function.
 
     Args:
-        col0 (SqlExpr | str): VARCHAR expression
+        col0 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -6784,7 +6785,7 @@ def icu_collate_chr(col0: SqlExpr | str) -> SqlExpr:
     """SQL icu_collate_chr function.
 
     Args:
-        col0 (SqlExpr | str): VARCHAR expression
+        col0 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -6796,7 +6797,7 @@ def icu_collate_cs(col0: SqlExpr | str) -> SqlExpr:
     """SQL icu_collate_cs function.
 
     Args:
-        col0 (SqlExpr | str): VARCHAR expression
+        col0 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -6808,7 +6809,7 @@ def icu_collate_cy(col0: SqlExpr | str) -> SqlExpr:
     """SQL icu_collate_cy function.
 
     Args:
-        col0 (SqlExpr | str): VARCHAR expression
+        col0 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -6820,7 +6821,7 @@ def icu_collate_da(col0: SqlExpr | str) -> SqlExpr:
     """SQL icu_collate_da function.
 
     Args:
-        col0 (SqlExpr | str): VARCHAR expression
+        col0 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -6832,7 +6833,7 @@ def icu_collate_de(col0: SqlExpr | str) -> SqlExpr:
     """SQL icu_collate_de function.
 
     Args:
-        col0 (SqlExpr | str): VARCHAR expression
+        col0 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -6844,7 +6845,7 @@ def icu_collate_de_at(col0: SqlExpr | str) -> SqlExpr:
     """SQL icu_collate_de_at function.
 
     Args:
-        col0 (SqlExpr | str): VARCHAR expression
+        col0 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -6856,7 +6857,7 @@ def icu_collate_dsb(col0: SqlExpr | str) -> SqlExpr:
     """SQL icu_collate_dsb function.
 
     Args:
-        col0 (SqlExpr | str): VARCHAR expression
+        col0 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -6868,7 +6869,7 @@ def icu_collate_dz(col0: SqlExpr | str) -> SqlExpr:
     """SQL icu_collate_dz function.
 
     Args:
-        col0 (SqlExpr | str): VARCHAR expression
+        col0 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -6880,7 +6881,7 @@ def icu_collate_ee(col0: SqlExpr | str) -> SqlExpr:
     """SQL icu_collate_ee function.
 
     Args:
-        col0 (SqlExpr | str): VARCHAR expression
+        col0 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -6892,7 +6893,7 @@ def icu_collate_el(col0: SqlExpr | str) -> SqlExpr:
     """SQL icu_collate_el function.
 
     Args:
-        col0 (SqlExpr | str): VARCHAR expression
+        col0 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -6904,7 +6905,7 @@ def icu_collate_en(col0: SqlExpr | str) -> SqlExpr:
     """SQL icu_collate_en function.
 
     Args:
-        col0 (SqlExpr | str): VARCHAR expression
+        col0 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -6916,7 +6917,7 @@ def icu_collate_en_us(col0: SqlExpr | str) -> SqlExpr:
     """SQL icu_collate_en_us function.
 
     Args:
-        col0 (SqlExpr | str): VARCHAR expression
+        col0 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -6928,7 +6929,7 @@ def icu_collate_eo(col0: SqlExpr | str) -> SqlExpr:
     """SQL icu_collate_eo function.
 
     Args:
-        col0 (SqlExpr | str): VARCHAR expression
+        col0 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -6940,7 +6941,7 @@ def icu_collate_es(col0: SqlExpr | str) -> SqlExpr:
     """SQL icu_collate_es function.
 
     Args:
-        col0 (SqlExpr | str): VARCHAR expression
+        col0 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -6952,7 +6953,7 @@ def icu_collate_et(col0: SqlExpr | str) -> SqlExpr:
     """SQL icu_collate_et function.
 
     Args:
-        col0 (SqlExpr | str): VARCHAR expression
+        col0 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -6964,7 +6965,7 @@ def icu_collate_fa(col0: SqlExpr | str) -> SqlExpr:
     """SQL icu_collate_fa function.
 
     Args:
-        col0 (SqlExpr | str): VARCHAR expression
+        col0 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -6976,7 +6977,7 @@ def icu_collate_fa_af(col0: SqlExpr | str) -> SqlExpr:
     """SQL icu_collate_fa_af function.
 
     Args:
-        col0 (SqlExpr | str): VARCHAR expression
+        col0 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -6988,7 +6989,7 @@ def icu_collate_ff(col0: SqlExpr | str) -> SqlExpr:
     """SQL icu_collate_ff function.
 
     Args:
-        col0 (SqlExpr | str): VARCHAR expression
+        col0 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -7000,7 +7001,7 @@ def icu_collate_fi(col0: SqlExpr | str) -> SqlExpr:
     """SQL icu_collate_fi function.
 
     Args:
-        col0 (SqlExpr | str): VARCHAR expression
+        col0 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -7012,7 +7013,7 @@ def icu_collate_fil(col0: SqlExpr | str) -> SqlExpr:
     """SQL icu_collate_fil function.
 
     Args:
-        col0 (SqlExpr | str): VARCHAR expression
+        col0 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -7024,7 +7025,7 @@ def icu_collate_fo(col0: SqlExpr | str) -> SqlExpr:
     """SQL icu_collate_fo function.
 
     Args:
-        col0 (SqlExpr | str): VARCHAR expression
+        col0 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -7036,7 +7037,7 @@ def icu_collate_fr(col0: SqlExpr | str) -> SqlExpr:
     """SQL icu_collate_fr function.
 
     Args:
-        col0 (SqlExpr | str): VARCHAR expression
+        col0 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -7048,7 +7049,7 @@ def icu_collate_fr_ca(col0: SqlExpr | str) -> SqlExpr:
     """SQL icu_collate_fr_ca function.
 
     Args:
-        col0 (SqlExpr | str): VARCHAR expression
+        col0 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -7060,7 +7061,7 @@ def icu_collate_fy(col0: SqlExpr | str) -> SqlExpr:
     """SQL icu_collate_fy function.
 
     Args:
-        col0 (SqlExpr | str): VARCHAR expression
+        col0 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -7072,7 +7073,7 @@ def icu_collate_ga(col0: SqlExpr | str) -> SqlExpr:
     """SQL icu_collate_ga function.
 
     Args:
-        col0 (SqlExpr | str): VARCHAR expression
+        col0 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -7084,7 +7085,7 @@ def icu_collate_gl(col0: SqlExpr | str) -> SqlExpr:
     """SQL icu_collate_gl function.
 
     Args:
-        col0 (SqlExpr | str): VARCHAR expression
+        col0 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -7096,7 +7097,7 @@ def icu_collate_gu(col0: SqlExpr | str) -> SqlExpr:
     """SQL icu_collate_gu function.
 
     Args:
-        col0 (SqlExpr | str): VARCHAR expression
+        col0 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -7108,7 +7109,7 @@ def icu_collate_ha(col0: SqlExpr | str) -> SqlExpr:
     """SQL icu_collate_ha function.
 
     Args:
-        col0 (SqlExpr | str): VARCHAR expression
+        col0 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -7120,7 +7121,7 @@ def icu_collate_haw(col0: SqlExpr | str) -> SqlExpr:
     """SQL icu_collate_haw function.
 
     Args:
-        col0 (SqlExpr | str): VARCHAR expression
+        col0 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -7132,7 +7133,7 @@ def icu_collate_he(col0: SqlExpr | str) -> SqlExpr:
     """SQL icu_collate_he function.
 
     Args:
-        col0 (SqlExpr | str): VARCHAR expression
+        col0 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -7144,7 +7145,7 @@ def icu_collate_he_il(col0: SqlExpr | str) -> SqlExpr:
     """SQL icu_collate_he_il function.
 
     Args:
-        col0 (SqlExpr | str): VARCHAR expression
+        col0 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -7156,7 +7157,7 @@ def icu_collate_hi(col0: SqlExpr | str) -> SqlExpr:
     """SQL icu_collate_hi function.
 
     Args:
-        col0 (SqlExpr | str): VARCHAR expression
+        col0 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -7168,7 +7169,7 @@ def icu_collate_hr(col0: SqlExpr | str) -> SqlExpr:
     """SQL icu_collate_hr function.
 
     Args:
-        col0 (SqlExpr | str): VARCHAR expression
+        col0 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -7180,7 +7181,7 @@ def icu_collate_hsb(col0: SqlExpr | str) -> SqlExpr:
     """SQL icu_collate_hsb function.
 
     Args:
-        col0 (SqlExpr | str): VARCHAR expression
+        col0 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -7192,7 +7193,7 @@ def icu_collate_hu(col0: SqlExpr | str) -> SqlExpr:
     """SQL icu_collate_hu function.
 
     Args:
-        col0 (SqlExpr | str): VARCHAR expression
+        col0 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -7204,7 +7205,7 @@ def icu_collate_hy(col0: SqlExpr | str) -> SqlExpr:
     """SQL icu_collate_hy function.
 
     Args:
-        col0 (SqlExpr | str): VARCHAR expression
+        col0 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -7216,7 +7217,7 @@ def icu_collate_id(col0: SqlExpr | str) -> SqlExpr:
     """SQL icu_collate_id function.
 
     Args:
-        col0 (SqlExpr | str): VARCHAR expression
+        col0 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -7228,7 +7229,7 @@ def icu_collate_id_id(col0: SqlExpr | str) -> SqlExpr:
     """SQL icu_collate_id_id function.
 
     Args:
-        col0 (SqlExpr | str): VARCHAR expression
+        col0 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -7240,7 +7241,7 @@ def icu_collate_ig(col0: SqlExpr | str) -> SqlExpr:
     """SQL icu_collate_ig function.
 
     Args:
-        col0 (SqlExpr | str): VARCHAR expression
+        col0 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -7252,7 +7253,7 @@ def icu_collate_is(col0: SqlExpr | str) -> SqlExpr:
     """SQL icu_collate_is function.
 
     Args:
-        col0 (SqlExpr | str): VARCHAR expression
+        col0 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -7264,7 +7265,7 @@ def icu_collate_it(col0: SqlExpr | str) -> SqlExpr:
     """SQL icu_collate_it function.
 
     Args:
-        col0 (SqlExpr | str): VARCHAR expression
+        col0 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -7276,7 +7277,7 @@ def icu_collate_ja(col0: SqlExpr | str) -> SqlExpr:
     """SQL icu_collate_ja function.
 
     Args:
-        col0 (SqlExpr | str): VARCHAR expression
+        col0 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -7288,7 +7289,7 @@ def icu_collate_ka(col0: SqlExpr | str) -> SqlExpr:
     """SQL icu_collate_ka function.
 
     Args:
-        col0 (SqlExpr | str): VARCHAR expression
+        col0 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -7300,7 +7301,7 @@ def icu_collate_kk(col0: SqlExpr | str) -> SqlExpr:
     """SQL icu_collate_kk function.
 
     Args:
-        col0 (SqlExpr | str): VARCHAR expression
+        col0 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -7312,7 +7313,7 @@ def icu_collate_kl(col0: SqlExpr | str) -> SqlExpr:
     """SQL icu_collate_kl function.
 
     Args:
-        col0 (SqlExpr | str): VARCHAR expression
+        col0 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -7324,7 +7325,7 @@ def icu_collate_km(col0: SqlExpr | str) -> SqlExpr:
     """SQL icu_collate_km function.
 
     Args:
-        col0 (SqlExpr | str): VARCHAR expression
+        col0 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -7336,7 +7337,7 @@ def icu_collate_kn(col0: SqlExpr | str) -> SqlExpr:
     """SQL icu_collate_kn function.
 
     Args:
-        col0 (SqlExpr | str): VARCHAR expression
+        col0 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -7348,7 +7349,7 @@ def icu_collate_ko(col0: SqlExpr | str) -> SqlExpr:
     """SQL icu_collate_ko function.
 
     Args:
-        col0 (SqlExpr | str): VARCHAR expression
+        col0 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -7360,7 +7361,7 @@ def icu_collate_kok(col0: SqlExpr | str) -> SqlExpr:
     """SQL icu_collate_kok function.
 
     Args:
-        col0 (SqlExpr | str): VARCHAR expression
+        col0 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -7372,7 +7373,7 @@ def icu_collate_ku(col0: SqlExpr | str) -> SqlExpr:
     """SQL icu_collate_ku function.
 
     Args:
-        col0 (SqlExpr | str): VARCHAR expression
+        col0 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -7384,7 +7385,7 @@ def icu_collate_ky(col0: SqlExpr | str) -> SqlExpr:
     """SQL icu_collate_ky function.
 
     Args:
-        col0 (SqlExpr | str): VARCHAR expression
+        col0 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -7396,7 +7397,7 @@ def icu_collate_lb(col0: SqlExpr | str) -> SqlExpr:
     """SQL icu_collate_lb function.
 
     Args:
-        col0 (SqlExpr | str): VARCHAR expression
+        col0 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -7408,7 +7409,7 @@ def icu_collate_lkt(col0: SqlExpr | str) -> SqlExpr:
     """SQL icu_collate_lkt function.
 
     Args:
-        col0 (SqlExpr | str): VARCHAR expression
+        col0 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -7420,7 +7421,7 @@ def icu_collate_ln(col0: SqlExpr | str) -> SqlExpr:
     """SQL icu_collate_ln function.
 
     Args:
-        col0 (SqlExpr | str): VARCHAR expression
+        col0 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -7432,7 +7433,7 @@ def icu_collate_lo(col0: SqlExpr | str) -> SqlExpr:
     """SQL icu_collate_lo function.
 
     Args:
-        col0 (SqlExpr | str): VARCHAR expression
+        col0 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -7444,7 +7445,7 @@ def icu_collate_lt(col0: SqlExpr | str) -> SqlExpr:
     """SQL icu_collate_lt function.
 
     Args:
-        col0 (SqlExpr | str): VARCHAR expression
+        col0 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -7456,7 +7457,7 @@ def icu_collate_lv(col0: SqlExpr | str) -> SqlExpr:
     """SQL icu_collate_lv function.
 
     Args:
-        col0 (SqlExpr | str): VARCHAR expression
+        col0 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -7468,7 +7469,7 @@ def icu_collate_mk(col0: SqlExpr | str) -> SqlExpr:
     """SQL icu_collate_mk function.
 
     Args:
-        col0 (SqlExpr | str): VARCHAR expression
+        col0 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -7480,7 +7481,7 @@ def icu_collate_ml(col0: SqlExpr | str) -> SqlExpr:
     """SQL icu_collate_ml function.
 
     Args:
-        col0 (SqlExpr | str): VARCHAR expression
+        col0 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -7492,7 +7493,7 @@ def icu_collate_mn(col0: SqlExpr | str) -> SqlExpr:
     """SQL icu_collate_mn function.
 
     Args:
-        col0 (SqlExpr | str): VARCHAR expression
+        col0 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -7504,7 +7505,7 @@ def icu_collate_mr(col0: SqlExpr | str) -> SqlExpr:
     """SQL icu_collate_mr function.
 
     Args:
-        col0 (SqlExpr | str): VARCHAR expression
+        col0 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -7516,7 +7517,7 @@ def icu_collate_ms(col0: SqlExpr | str) -> SqlExpr:
     """SQL icu_collate_ms function.
 
     Args:
-        col0 (SqlExpr | str): VARCHAR expression
+        col0 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -7528,7 +7529,7 @@ def icu_collate_mt(col0: SqlExpr | str) -> SqlExpr:
     """SQL icu_collate_mt function.
 
     Args:
-        col0 (SqlExpr | str): VARCHAR expression
+        col0 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -7540,7 +7541,7 @@ def icu_collate_my(col0: SqlExpr | str) -> SqlExpr:
     """SQL icu_collate_my function.
 
     Args:
-        col0 (SqlExpr | str): VARCHAR expression
+        col0 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -7552,7 +7553,7 @@ def icu_collate_nb(col0: SqlExpr | str) -> SqlExpr:
     """SQL icu_collate_nb function.
 
     Args:
-        col0 (SqlExpr | str): VARCHAR expression
+        col0 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -7564,7 +7565,7 @@ def icu_collate_nb_no(col0: SqlExpr | str) -> SqlExpr:
     """SQL icu_collate_nb_no function.
 
     Args:
-        col0 (SqlExpr | str): VARCHAR expression
+        col0 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -7576,7 +7577,7 @@ def icu_collate_ne(col0: SqlExpr | str) -> SqlExpr:
     """SQL icu_collate_ne function.
 
     Args:
-        col0 (SqlExpr | str): VARCHAR expression
+        col0 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -7588,7 +7589,7 @@ def icu_collate_nl(col0: SqlExpr | str) -> SqlExpr:
     """SQL icu_collate_nl function.
 
     Args:
-        col0 (SqlExpr | str): VARCHAR expression
+        col0 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -7600,7 +7601,7 @@ def icu_collate_nn(col0: SqlExpr | str) -> SqlExpr:
     """SQL icu_collate_nn function.
 
     Args:
-        col0 (SqlExpr | str): VARCHAR expression
+        col0 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -7612,7 +7613,7 @@ def icu_collate_noaccent(col0: SqlExpr | str) -> SqlExpr:
     """SQL icu_collate_noaccent function.
 
     Args:
-        col0 (SqlExpr | str): VARCHAR expression
+        col0 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -7624,7 +7625,7 @@ def icu_collate_om(col0: SqlExpr | str) -> SqlExpr:
     """SQL icu_collate_om function.
 
     Args:
-        col0 (SqlExpr | str): VARCHAR expression
+        col0 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -7636,7 +7637,7 @@ def icu_collate_or(col0: SqlExpr | str) -> SqlExpr:
     """SQL icu_collate_or function.
 
     Args:
-        col0 (SqlExpr | str): VARCHAR expression
+        col0 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -7648,7 +7649,7 @@ def icu_collate_pa(col0: SqlExpr | str) -> SqlExpr:
     """SQL icu_collate_pa function.
 
     Args:
-        col0 (SqlExpr | str): VARCHAR expression
+        col0 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -7660,7 +7661,7 @@ def icu_collate_pa_in(col0: SqlExpr | str) -> SqlExpr:
     """SQL icu_collate_pa_in function.
 
     Args:
-        col0 (SqlExpr | str): VARCHAR expression
+        col0 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -7672,7 +7673,7 @@ def icu_collate_pl(col0: SqlExpr | str) -> SqlExpr:
     """SQL icu_collate_pl function.
 
     Args:
-        col0 (SqlExpr | str): VARCHAR expression
+        col0 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -7684,7 +7685,7 @@ def icu_collate_ps(col0: SqlExpr | str) -> SqlExpr:
     """SQL icu_collate_ps function.
 
     Args:
-        col0 (SqlExpr | str): VARCHAR expression
+        col0 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -7696,7 +7697,7 @@ def icu_collate_pt(col0: SqlExpr | str) -> SqlExpr:
     """SQL icu_collate_pt function.
 
     Args:
-        col0 (SqlExpr | str): VARCHAR expression
+        col0 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -7708,7 +7709,7 @@ def icu_collate_ro(col0: SqlExpr | str) -> SqlExpr:
     """SQL icu_collate_ro function.
 
     Args:
-        col0 (SqlExpr | str): VARCHAR expression
+        col0 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -7720,7 +7721,7 @@ def icu_collate_ru(col0: SqlExpr | str) -> SqlExpr:
     """SQL icu_collate_ru function.
 
     Args:
-        col0 (SqlExpr | str): VARCHAR expression
+        col0 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -7732,7 +7733,7 @@ def icu_collate_sa(col0: SqlExpr | str) -> SqlExpr:
     """SQL icu_collate_sa function.
 
     Args:
-        col0 (SqlExpr | str): VARCHAR expression
+        col0 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -7744,7 +7745,7 @@ def icu_collate_se(col0: SqlExpr | str) -> SqlExpr:
     """SQL icu_collate_se function.
 
     Args:
-        col0 (SqlExpr | str): VARCHAR expression
+        col0 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -7756,7 +7757,7 @@ def icu_collate_si(col0: SqlExpr | str) -> SqlExpr:
     """SQL icu_collate_si function.
 
     Args:
-        col0 (SqlExpr | str): VARCHAR expression
+        col0 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -7768,7 +7769,7 @@ def icu_collate_sk(col0: SqlExpr | str) -> SqlExpr:
     """SQL icu_collate_sk function.
 
     Args:
-        col0 (SqlExpr | str): VARCHAR expression
+        col0 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -7780,7 +7781,7 @@ def icu_collate_sl(col0: SqlExpr | str) -> SqlExpr:
     """SQL icu_collate_sl function.
 
     Args:
-        col0 (SqlExpr | str): VARCHAR expression
+        col0 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -7792,7 +7793,7 @@ def icu_collate_smn(col0: SqlExpr | str) -> SqlExpr:
     """SQL icu_collate_smn function.
 
     Args:
-        col0 (SqlExpr | str): VARCHAR expression
+        col0 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -7804,7 +7805,7 @@ def icu_collate_sq(col0: SqlExpr | str) -> SqlExpr:
     """SQL icu_collate_sq function.
 
     Args:
-        col0 (SqlExpr | str): VARCHAR expression
+        col0 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -7816,7 +7817,7 @@ def icu_collate_sr(col0: SqlExpr | str) -> SqlExpr:
     """SQL icu_collate_sr function.
 
     Args:
-        col0 (SqlExpr | str): VARCHAR expression
+        col0 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -7828,7 +7829,7 @@ def icu_collate_sr_ba(col0: SqlExpr | str) -> SqlExpr:
     """SQL icu_collate_sr_ba function.
 
     Args:
-        col0 (SqlExpr | str): VARCHAR expression
+        col0 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -7840,7 +7841,7 @@ def icu_collate_sr_me(col0: SqlExpr | str) -> SqlExpr:
     """SQL icu_collate_sr_me function.
 
     Args:
-        col0 (SqlExpr | str): VARCHAR expression
+        col0 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -7852,7 +7853,7 @@ def icu_collate_sr_rs(col0: SqlExpr | str) -> SqlExpr:
     """SQL icu_collate_sr_rs function.
 
     Args:
-        col0 (SqlExpr | str): VARCHAR expression
+        col0 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -7864,7 +7865,7 @@ def icu_collate_sv(col0: SqlExpr | str) -> SqlExpr:
     """SQL icu_collate_sv function.
 
     Args:
-        col0 (SqlExpr | str): VARCHAR expression
+        col0 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -7876,7 +7877,7 @@ def icu_collate_sw(col0: SqlExpr | str) -> SqlExpr:
     """SQL icu_collate_sw function.
 
     Args:
-        col0 (SqlExpr | str): VARCHAR expression
+        col0 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -7888,7 +7889,7 @@ def icu_collate_ta(col0: SqlExpr | str) -> SqlExpr:
     """SQL icu_collate_ta function.
 
     Args:
-        col0 (SqlExpr | str): VARCHAR expression
+        col0 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -7900,7 +7901,7 @@ def icu_collate_te(col0: SqlExpr | str) -> SqlExpr:
     """SQL icu_collate_te function.
 
     Args:
-        col0 (SqlExpr | str): VARCHAR expression
+        col0 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -7912,7 +7913,7 @@ def icu_collate_th(col0: SqlExpr | str) -> SqlExpr:
     """SQL icu_collate_th function.
 
     Args:
-        col0 (SqlExpr | str): VARCHAR expression
+        col0 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -7924,7 +7925,7 @@ def icu_collate_tk(col0: SqlExpr | str) -> SqlExpr:
     """SQL icu_collate_tk function.
 
     Args:
-        col0 (SqlExpr | str): VARCHAR expression
+        col0 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -7936,7 +7937,7 @@ def icu_collate_to(col0: SqlExpr | str) -> SqlExpr:
     """SQL icu_collate_to function.
 
     Args:
-        col0 (SqlExpr | str): VARCHAR expression
+        col0 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -7948,7 +7949,7 @@ def icu_collate_tr(col0: SqlExpr | str) -> SqlExpr:
     """SQL icu_collate_tr function.
 
     Args:
-        col0 (SqlExpr | str): VARCHAR expression
+        col0 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -7960,7 +7961,7 @@ def icu_collate_ug(col0: SqlExpr | str) -> SqlExpr:
     """SQL icu_collate_ug function.
 
     Args:
-        col0 (SqlExpr | str): VARCHAR expression
+        col0 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -7972,7 +7973,7 @@ def icu_collate_uk(col0: SqlExpr | str) -> SqlExpr:
     """SQL icu_collate_uk function.
 
     Args:
-        col0 (SqlExpr | str): VARCHAR expression
+        col0 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -7984,7 +7985,7 @@ def icu_collate_ur(col0: SqlExpr | str) -> SqlExpr:
     """SQL icu_collate_ur function.
 
     Args:
-        col0 (SqlExpr | str): VARCHAR expression
+        col0 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -7996,7 +7997,7 @@ def icu_collate_uz(col0: SqlExpr | str) -> SqlExpr:
     """SQL icu_collate_uz function.
 
     Args:
-        col0 (SqlExpr | str): VARCHAR expression
+        col0 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -8008,7 +8009,7 @@ def icu_collate_vi(col0: SqlExpr | str) -> SqlExpr:
     """SQL icu_collate_vi function.
 
     Args:
-        col0 (SqlExpr | str): VARCHAR expression
+        col0 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -8020,7 +8021,7 @@ def icu_collate_wae(col0: SqlExpr | str) -> SqlExpr:
     """SQL icu_collate_wae function.
 
     Args:
-        col0 (SqlExpr | str): VARCHAR expression
+        col0 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -8032,7 +8033,7 @@ def icu_collate_wo(col0: SqlExpr | str) -> SqlExpr:
     """SQL icu_collate_wo function.
 
     Args:
-        col0 (SqlExpr | str): VARCHAR expression
+        col0 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -8044,7 +8045,7 @@ def icu_collate_xh(col0: SqlExpr | str) -> SqlExpr:
     """SQL icu_collate_xh function.
 
     Args:
-        col0 (SqlExpr | str): VARCHAR expression
+        col0 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -8056,7 +8057,7 @@ def icu_collate_yi(col0: SqlExpr | str) -> SqlExpr:
     """SQL icu_collate_yi function.
 
     Args:
-        col0 (SqlExpr | str): VARCHAR expression
+        col0 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -8068,7 +8069,7 @@ def icu_collate_yo(col0: SqlExpr | str) -> SqlExpr:
     """SQL icu_collate_yo function.
 
     Args:
-        col0 (SqlExpr | str): VARCHAR expression
+        col0 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -8080,7 +8081,7 @@ def icu_collate_yue(col0: SqlExpr | str) -> SqlExpr:
     """SQL icu_collate_yue function.
 
     Args:
-        col0 (SqlExpr | str): VARCHAR expression
+        col0 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -8092,7 +8093,7 @@ def icu_collate_yue_cn(col0: SqlExpr | str) -> SqlExpr:
     """SQL icu_collate_yue_cn function.
 
     Args:
-        col0 (SqlExpr | str): VARCHAR expression
+        col0 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -8104,7 +8105,7 @@ def icu_collate_zh(col0: SqlExpr | str) -> SqlExpr:
     """SQL icu_collate_zh function.
 
     Args:
-        col0 (SqlExpr | str): VARCHAR expression
+        col0 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -8116,7 +8117,7 @@ def icu_collate_zh_cn(col0: SqlExpr | str) -> SqlExpr:
     """SQL icu_collate_zh_cn function.
 
     Args:
-        col0 (SqlExpr | str): VARCHAR expression
+        col0 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -8128,7 +8129,7 @@ def icu_collate_zh_hk(col0: SqlExpr | str) -> SqlExpr:
     """SQL icu_collate_zh_hk function.
 
     Args:
-        col0 (SqlExpr | str): VARCHAR expression
+        col0 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -8140,7 +8141,7 @@ def icu_collate_zh_mo(col0: SqlExpr | str) -> SqlExpr:
     """SQL icu_collate_zh_mo function.
 
     Args:
-        col0 (SqlExpr | str): VARCHAR expression
+        col0 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -8152,7 +8153,7 @@ def icu_collate_zh_sg(col0: SqlExpr | str) -> SqlExpr:
     """SQL icu_collate_zh_sg function.
 
     Args:
-        col0 (SqlExpr | str): VARCHAR expression
+        col0 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -8164,7 +8165,7 @@ def icu_collate_zh_tw(col0: SqlExpr | str) -> SqlExpr:
     """SQL icu_collate_zh_tw function.
 
     Args:
-        col0 (SqlExpr | str): VARCHAR expression
+        col0 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -8176,7 +8177,7 @@ def icu_collate_zu(col0: SqlExpr | str) -> SqlExpr:
     """SQL icu_collate_zu function.
 
     Args:
-        col0 (SqlExpr | str): VARCHAR expression
+        col0 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -8188,8 +8189,8 @@ def icu_sort_key(col0: SqlExpr | str, col1: SqlExpr | str) -> SqlExpr:
     """SQL icu_sort_key function.
 
     Args:
-        col0 (SqlExpr | str): VARCHAR expression
-        col1 (SqlExpr | str): VARCHAR expression
+        col0 (SqlExpr | str): `VARCHAR` expression
+        col1 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -8207,9 +8208,9 @@ def ilike_escape(
     `escape_character` is used to search for wildcard characters in the `string`.
 
     Args:
-        string (SqlExpr | str): VARCHAR expression
-        like_specifier (SqlExpr | str): VARCHAR expression
-        escape_character (SqlExpr | str): VARCHAR expression
+        string (SqlExpr | str): `VARCHAR` expression
+        like_specifier (SqlExpr | str): `VARCHAR` expression
+        escape_character (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -8221,8 +8222,8 @@ def in_search_path(database_name: SqlExpr | str, schema_name: SqlExpr | str) -> 
     """Returns whether or not the database/schema are in the search path.
 
     Args:
-        database_name (SqlExpr | str): VARCHAR expression
-        schema_name (SqlExpr | str): VARCHAR expression
+        database_name (SqlExpr | str): `VARCHAR` expression
+        schema_name (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -8236,8 +8237,8 @@ def instr(string: SqlExpr | str, search_string: SqlExpr | str) -> SqlExpr:
     Returns 0 if no match found.
 
     Args:
-        string (SqlExpr | str): VARCHAR expression
-        search_string (SqlExpr | str): VARCHAR expression
+        string (SqlExpr | str): `VARCHAR` expression
+        search_string (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -8253,8 +8254,8 @@ def jaccard(s1: SqlExpr | str, s2: SqlExpr | str) -> SqlExpr:
     Returns a number between 0 and 1.
 
     Args:
-        s1 (SqlExpr | str): VARCHAR expression
-        s2 (SqlExpr | str): VARCHAR expression
+        s1 (SqlExpr | str): `VARCHAR` expression
+        s2 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -8276,9 +8277,9 @@ def jaro_similarity(
     `score_cutoff` defaults to 0.
 
     Args:
-        s1 (SqlExpr | str): VARCHAR expression
-        s2 (SqlExpr | str): VARCHAR expression
-        score_cutoff (SqlExpr | float): DOUBLE expression
+        s1 (SqlExpr | str): `VARCHAR` expression
+        s2 (SqlExpr | str): `VARCHAR` expression
+        score_cutoff (SqlExpr | float): `DOUBLE` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -8300,9 +8301,9 @@ def jaro_winkler_similarity(
     `score_cutoff` defaults to 0.
 
     Args:
-        s1 (SqlExpr | str): VARCHAR expression
-        s2 (SqlExpr | str): VARCHAR expression
-        score_cutoff (SqlExpr | float): DOUBLE expression
+        s1 (SqlExpr | str): `VARCHAR` expression
+        s2 (SqlExpr | str): `VARCHAR` expression
+        score_cutoff (SqlExpr | float): `DOUBLE` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -8314,7 +8315,7 @@ def julian(ts: SqlExpr | date) -> SqlExpr:
     """Extract the Julian Day number from a date or timestamp.
 
     Args:
-        ts (SqlExpr | date): DATE expression
+        ts (SqlExpr | date): `DATE` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -8326,7 +8327,7 @@ def last_day(ts: SqlExpr | date) -> SqlExpr:
     """Returns the last day of the month.
 
     Args:
-        ts (SqlExpr | date): DATE expression
+        ts (SqlExpr | date): `DATE` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -8338,7 +8339,7 @@ def lcase(string: SqlExpr | str) -> SqlExpr:
     """Converts `string` to lower case.
 
     Args:
-        string (SqlExpr | str): VARCHAR expression
+        string (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -8350,8 +8351,8 @@ def lcm(x: SqlExpr | int, y: SqlExpr | int) -> SqlExpr:
     """Computes the least common multiple of x and y.
 
     Args:
-        x (SqlExpr | int): BIGINT expression
-        y (SqlExpr | int): BIGINT expression
+        x (SqlExpr | int): `BIGINT` expression
+        y (SqlExpr | int): `BIGINT` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -8367,8 +8368,8 @@ def least(arg1: SqlExpr, *args: SqlExpr) -> SqlExpr:
     Note that uppercase characters are considered “smaller” than lowercase characters, and collations are not supported.
 
     Args:
-        arg1 (SqlExpr): ANY expression
-        *args (SqlExpr): ANY expression
+        arg1 (SqlExpr): `ANY` expression
+        *args (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -8380,8 +8381,8 @@ def least_common_multiple(x: SqlExpr | int, y: SqlExpr | int) -> SqlExpr:
     """Computes the least common multiple of x and y.
 
     Args:
-        x (SqlExpr | int): BIGINT expression
-        y (SqlExpr | int): BIGINT expression
+        x (SqlExpr | int): `BIGINT` expression
+        y (SqlExpr | int): `BIGINT` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -8393,8 +8394,8 @@ def left(string: SqlExpr | str, count: SqlExpr | int) -> SqlExpr:
     """Extracts the left-most count characters.
 
     Args:
-        string (SqlExpr | str): VARCHAR expression
-        count (SqlExpr | int): BIGINT expression
+        string (SqlExpr | str): `VARCHAR` expression
+        count (SqlExpr | int): `BIGINT` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -8406,8 +8407,8 @@ def left_grapheme(string: SqlExpr | str, count: SqlExpr | int) -> SqlExpr:
     """Extracts the left-most count grapheme clusters.
 
     Args:
-        string (SqlExpr | str): VARCHAR expression
-        count (SqlExpr | int): BIGINT expression
+        string (SqlExpr | str): `VARCHAR` expression
+        count (SqlExpr | int): `BIGINT` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -8419,7 +8420,7 @@ def len(list_arg: SqlExpr) -> SqlExpr:
     """Returns the length of the `list`.
 
     Args:
-        list_arg (SqlExpr): ANY[] expression
+        list_arg (SqlExpr): `ANY[]` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -8431,7 +8432,7 @@ def length(list_arg: SqlExpr) -> SqlExpr:
     """Returns the length of the `list`.
 
     Args:
-        list_arg (SqlExpr): ANY[] expression
+        list_arg (SqlExpr): `ANY[]` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -8443,7 +8444,7 @@ def length_grapheme(string: SqlExpr | str) -> SqlExpr:
     """Number of grapheme clusters in `string`.
 
     Args:
-        string (SqlExpr | str): VARCHAR expression
+        string (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -8457,8 +8458,8 @@ def levenshtein(s1: SqlExpr | str, s2: SqlExpr | str) -> SqlExpr:
     Characters of different cases (e.g., `a` and `A`) are considered different.
 
     Args:
-        s1 (SqlExpr | str): VARCHAR expression
-        s2 (SqlExpr | str): VARCHAR expression
+        s1 (SqlExpr | str): `VARCHAR` expression
+        s2 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -8470,7 +8471,7 @@ def lgamma(x: SqlExpr | float) -> SqlExpr:
     """Computes the log of the gamma function.
 
     Args:
-        x (SqlExpr | float): DOUBLE expression
+        x (SqlExpr | float): `DOUBLE` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -8488,9 +8489,9 @@ def like_escape(
     `escape_character` is used to search for wildcard characters in the `string`.
 
     Args:
-        string (SqlExpr | str): VARCHAR expression
-        like_specifier (SqlExpr | str): VARCHAR expression
-        escape_character (SqlExpr | str): VARCHAR expression
+        string (SqlExpr | str): `VARCHAR` expression
+        like_specifier (SqlExpr | str): `VARCHAR` expression
+        escape_character (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -8502,7 +8503,7 @@ def ln(x: SqlExpr | float) -> SqlExpr:
     """Computes the natural logarithm of x.
 
     Args:
-        x (SqlExpr | float): DOUBLE expression
+        x (SqlExpr | float): `DOUBLE` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -8516,8 +8517,8 @@ def log(b: SqlExpr | float, x: SqlExpr | float | None = None) -> SqlExpr:
     b may be omitted, in which case the default 10.
 
     Args:
-        b (SqlExpr | float): DOUBLE expression
-        x (SqlExpr | float): DOUBLE expression
+        b (SqlExpr | float): `DOUBLE` expression
+        x (SqlExpr | float): `DOUBLE` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -8529,7 +8530,7 @@ def log10(x: SqlExpr | float) -> SqlExpr:
     """Computes the 10-log of x.
 
     Args:
-        x (SqlExpr | float): DOUBLE expression
+        x (SqlExpr | float): `DOUBLE` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -8541,7 +8542,7 @@ def log2(x: SqlExpr | float) -> SqlExpr:
     """Computes the 2-log of x.
 
     Args:
-        x (SqlExpr | float): DOUBLE expression
+        x (SqlExpr | float): `DOUBLE` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -8553,7 +8554,7 @@ def lower(string: SqlExpr | str) -> SqlExpr:
     """Converts `string` to lower case.
 
     Args:
-        string (SqlExpr | str): VARCHAR expression
+        string (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -8569,9 +8570,9 @@ def lpad(
     Truncates the `string` on the right if it has more than `count` characters.
 
     Args:
-        string (SqlExpr | str): VARCHAR expression
-        count (SqlExpr | int): INTEGER expression
-        character (SqlExpr | str): VARCHAR expression
+        string (SqlExpr | str): `VARCHAR` expression
+        count (SqlExpr | int): `INTEGER` expression
+        character (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -8585,8 +8586,8 @@ def ltrim(string: SqlExpr | str, characters: SqlExpr | str | None = None) -> Sql
     `characters` defaults to `space`.
 
     Args:
-        string (SqlExpr | str): VARCHAR expression
-        characters (SqlExpr | str): VARCHAR expression
+        string (SqlExpr | str): `VARCHAR` expression
+        characters (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -8602,9 +8603,9 @@ def make_date(
     """The date for the given parts.
 
     Args:
-        year (SqlExpr | int): BIGINT expression
-        month (SqlExpr | int): BIGINT expression
-        day (SqlExpr | int): BIGINT expression
+        year (SqlExpr | int): `BIGINT` expression
+        month (SqlExpr | int): `BIGINT` expression
+        day (SqlExpr | int): `BIGINT` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -8618,9 +8619,9 @@ def make_time(
     """The time for the given parts.
 
     Args:
-        hour (SqlExpr | int): BIGINT expression
-        minute (SqlExpr | int): BIGINT expression
-        seconds (SqlExpr | float): DOUBLE expression
+        hour (SqlExpr | int): `BIGINT` expression
+        minute (SqlExpr | int): `BIGINT` expression
+        seconds (SqlExpr | float): `DOUBLE` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -8639,12 +8640,12 @@ def make_timestamp(
     """The timestamp for the given parts.
 
     Args:
-        year (SqlExpr | int): BIGINT expression
-        month (SqlExpr | int): BIGINT expression
-        day (SqlExpr | int): BIGINT expression
-        hour (SqlExpr | int): BIGINT expression
-        minute (SqlExpr | int): BIGINT expression
-        seconds (SqlExpr | float): DOUBLE expression
+        year (SqlExpr | int): `BIGINT` expression
+        month (SqlExpr | int): `BIGINT` expression
+        day (SqlExpr | int): `BIGINT` expression
+        hour (SqlExpr | int): `BIGINT` expression
+        minute (SqlExpr | int): `BIGINT` expression
+        seconds (SqlExpr | float): `DOUBLE` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -8656,7 +8657,7 @@ def make_timestamp_ms(nanos: SqlExpr | int) -> SqlExpr:
     """The timestamp for the given microseconds since the epoch.
 
     Args:
-        nanos (SqlExpr | int): BIGINT expression
+        nanos (SqlExpr | int): `BIGINT` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -8668,7 +8669,7 @@ def make_timestamp_ns(nanos: SqlExpr | int) -> SqlExpr:
     """The timestamp for the given nanoseconds since epoch.
 
     Args:
-        nanos (SqlExpr | int): BIGINT expression
+        nanos (SqlExpr | int): `BIGINT` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -8688,13 +8689,13 @@ def make_timestamptz(
     """SQL make_timestamptz function.
 
     Args:
-        col0 (SqlExpr | int): BIGINT expression
-        col1 (SqlExpr | int): BIGINT expression
-        col2 (SqlExpr | int): BIGINT expression
-        col3 (SqlExpr | int): BIGINT expression
-        col4 (SqlExpr | int): BIGINT expression
-        col5 (SqlExpr | float): DOUBLE expression
-        col6 (SqlExpr | str): VARCHAR expression
+        col0 (SqlExpr | int): `BIGINT` expression
+        col1 (SqlExpr | int): `BIGINT` expression
+        col2 (SqlExpr | int): `BIGINT` expression
+        col3 (SqlExpr | int): `BIGINT` expression
+        col4 (SqlExpr | int): `BIGINT` expression
+        col5 (SqlExpr | float): `DOUBLE` expression
+        col6 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -8706,8 +8707,8 @@ def map(keys: SqlExpr | None = None, values: SqlExpr | None = None) -> SqlExpr:
     """Creates a map from a set of keys and values.
 
     Args:
-        keys (SqlExpr): K[] expression
-        values (SqlExpr): V[] expression
+        keys (SqlExpr): `K[]` expression
+        values (SqlExpr): `V[]` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -8719,7 +8720,7 @@ def md5(blob: SqlExpr | bytes) -> SqlExpr:
     """Returns the MD5 hash of the `blob` as a `VARCHAR`.
 
     Args:
-        blob (SqlExpr | bytes): BLOB expression
+        blob (SqlExpr | bytes): `BLOB` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -8731,7 +8732,7 @@ def md5_number(blob: SqlExpr | bytes) -> SqlExpr:
     """Returns the MD5 hash of the `blob` as a `HUGEINT`.
 
     Args:
-        blob (SqlExpr | bytes): BLOB expression
+        blob (SqlExpr | bytes): `BLOB` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -8743,7 +8744,7 @@ def microsecond(ts: SqlExpr | date) -> SqlExpr:
     """Extract the microsecond component from a date or timestamp.
 
     Args:
-        ts (SqlExpr | date): DATE expression
+        ts (SqlExpr | date): `DATE` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -8755,7 +8756,7 @@ def millennium(ts: SqlExpr | date) -> SqlExpr:
     """Extract the millennium component from a date or timestamp.
 
     Args:
-        ts (SqlExpr | date): DATE expression
+        ts (SqlExpr | date): `DATE` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -8767,7 +8768,7 @@ def millisecond(ts: SqlExpr | date) -> SqlExpr:
     """Extract the millisecond component from a date or timestamp.
 
     Args:
-        ts (SqlExpr | date): DATE expression
+        ts (SqlExpr | date): `DATE` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -8779,7 +8780,7 @@ def minute(ts: SqlExpr | date) -> SqlExpr:
     """Extract the minute component from a date or timestamp.
 
     Args:
-        ts (SqlExpr | date): DATE expression
+        ts (SqlExpr | date): `DATE` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -8795,8 +8796,8 @@ def mismatches(s1: SqlExpr | str, s2: SqlExpr | str) -> SqlExpr:
     Characters of different cases (e.g., `a` and `A`) are considered different.
 
     Args:
-        s1 (SqlExpr | str): VARCHAR expression
-        s2 (SqlExpr | str): VARCHAR expression
+        s1 (SqlExpr | str): `VARCHAR` expression
+        s2 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -8808,8 +8809,8 @@ def mod(col0: SqlExpr | int, col1: SqlExpr | int) -> SqlExpr:
     """SQL mod function.
 
     Args:
-        col0 (SqlExpr | int): BIGINT expression
-        col1 (SqlExpr | int): BIGINT expression
+        col0 (SqlExpr | int): `BIGINT` expression
+        col1 (SqlExpr | int): `BIGINT` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -8821,7 +8822,7 @@ def month(ts: SqlExpr | date) -> SqlExpr:
     """Extract the month component from a date or timestamp.
 
     Args:
-        ts (SqlExpr | date): DATE expression
+        ts (SqlExpr | date): `DATE` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -8833,7 +8834,7 @@ def monthname(ts: SqlExpr | date) -> SqlExpr:
     """The (English) name of the month.
 
     Args:
-        ts (SqlExpr | date): DATE expression
+        ts (SqlExpr | date): `DATE` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -8845,8 +8846,8 @@ def multiply(col0: SqlExpr | int, col1: SqlExpr | int) -> SqlExpr:
     """SQL multiply function.
 
     Args:
-        col0 (SqlExpr | int): BIGINT expression
-        col1 (SqlExpr | int): BIGINT expression
+        col0 (SqlExpr | int): `BIGINT` expression
+        col1 (SqlExpr | int): `BIGINT` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -8858,7 +8859,7 @@ def nanosecond(tsns: SqlExpr | date) -> SqlExpr:
     """Extract the nanosecond component from a date or timestamp.
 
     Args:
-        tsns (SqlExpr | date): DATE expression
+        tsns (SqlExpr | date): `DATE` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -8870,8 +8871,8 @@ def nextafter(x: SqlExpr | float, y: SqlExpr | float) -> SqlExpr:
     """Returns the next floating point value after x in the direction of y.
 
     Args:
-        x (SqlExpr | float): DOUBLE expression
-        y (SqlExpr | float): DOUBLE expression
+        x (SqlExpr | float): `DOUBLE` expression
+        y (SqlExpr | float): `DOUBLE` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -8883,7 +8884,7 @@ def nextval(sequence_name: SqlExpr | str) -> SqlExpr:
     """Return the following value of the sequence.
 
     Args:
-        sequence_name (SqlExpr | str): VARCHAR expression
+        sequence_name (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -8897,7 +8898,7 @@ def nfc_normalize(string: SqlExpr | str) -> SqlExpr:
     Useful for comparisons and ordering if text data is mixed between NFC normalized and not.
 
     Args:
-        string (SqlExpr | str): VARCHAR expression
+        string (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -8909,7 +8910,7 @@ def normalized_interval(interval: SqlExpr | timedelta) -> SqlExpr:
     """Normalizes an INTERVAL to an equivalent interval.
 
     Args:
-        interval (SqlExpr | timedelta): INTERVAL expression
+        interval (SqlExpr | timedelta): `INTERVAL` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -8927,9 +8928,9 @@ def not_ilike_escape(
     `escape_character` is used to search for wildcard characters in the `string`.
 
     Args:
-        string (SqlExpr | str): VARCHAR expression
-        like_specifier (SqlExpr | str): VARCHAR expression
-        escape_character (SqlExpr | str): VARCHAR expression
+        string (SqlExpr | str): `VARCHAR` expression
+        like_specifier (SqlExpr | str): `VARCHAR` expression
+        escape_character (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -8947,9 +8948,9 @@ def not_like_escape(
     `escape_character` is used to search for wildcard characters in the `string`.
 
     Args:
-        string (SqlExpr | str): VARCHAR expression
-        like_specifier (SqlExpr | str): VARCHAR expression
-        escape_character (SqlExpr | str): VARCHAR expression
+        string (SqlExpr | str): `VARCHAR` expression
+        like_specifier (SqlExpr | str): `VARCHAR` expression
+        escape_character (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -8970,7 +8971,7 @@ def octet_length(bitstring: SqlExpr | bytes) -> SqlExpr:
     """Returns the number of bytes in the `bitstring`.
 
     Args:
-        bitstring (SqlExpr | bytes): BIT expression
+        bitstring (SqlExpr | bytes): `BIT` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -8982,7 +8983,7 @@ def ord(string: SqlExpr | str) -> SqlExpr:
     """Returns an `INTEGER` representing the `unicode` codepoint of the first character in the `string`.
 
     Args:
-        string (SqlExpr | str): VARCHAR expression
+        string (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -8998,8 +8999,8 @@ def parse_dirname(
     `separator` options: `system`, `both_slash` (default), `forward_slash`, `backslash`.
 
     Args:
-        path (SqlExpr | str): VARCHAR expression
-        separator (SqlExpr | str): VARCHAR expression
+        path (SqlExpr | str): `VARCHAR` expression
+        separator (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -9015,8 +9016,8 @@ def parse_dirpath(
     `separator` options: `system`, `both_slash` (default), `forward_slash`, `backslash`.
 
     Args:
-        path (SqlExpr | str): VARCHAR expression
-        separator (SqlExpr | str): VARCHAR expression
+        path (SqlExpr | str): `VARCHAR` expression
+        separator (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -9030,8 +9031,8 @@ def parse_duckdb_log_message(
     """Parse the message into the expected logical type.
 
     Args:
-        type_arg (SqlExpr | str): VARCHAR expression
-        message (SqlExpr | str): VARCHAR expression
+        type_arg (SqlExpr | str): `VARCHAR` expression
+        message (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -9052,9 +9053,9 @@ def parse_filename(
     `separator` options: `system`, `both_slash` (default), `forward_slash`, `backslash`.
 
     Args:
-        string (SqlExpr | str): VARCHAR expression
-        trim_extension (SqlExpr | bool): BOOLEAN expression
-        separator (SqlExpr | str): VARCHAR expression
+        string (SqlExpr | str): `VARCHAR` expression
+        trim_extension (SqlExpr | bool): `BOOLEAN` expression
+        separator (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -9068,8 +9069,8 @@ def parse_path(path: SqlExpr | str, separator: SqlExpr | str | None = None) -> S
     `separator` options: `system`, `both_slash` (default), `forward_slash`, `backslash`.
 
     Args:
-        path (SqlExpr | str): VARCHAR expression
-        separator (SqlExpr | str): VARCHAR expression
+        path (SqlExpr | str): `VARCHAR` expression
+        separator (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -9092,8 +9093,8 @@ def position(string: SqlExpr | str, search_string: SqlExpr | str) -> SqlExpr:
     Returns 0 if no match found.
 
     Args:
-        string (SqlExpr | str): VARCHAR expression
-        search_string (SqlExpr | str): VARCHAR expression
+        string (SqlExpr | str): `VARCHAR` expression
+        search_string (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -9105,8 +9106,8 @@ def pow(x: SqlExpr | float, y: SqlExpr | float) -> SqlExpr:
     """Computes x to the power of y.
 
     Args:
-        x (SqlExpr | float): DOUBLE expression
-        y (SqlExpr | float): DOUBLE expression
+        x (SqlExpr | float): `DOUBLE` expression
+        y (SqlExpr | float): `DOUBLE` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -9118,8 +9119,8 @@ def power(x: SqlExpr | float, y: SqlExpr | float) -> SqlExpr:
     """Computes x to the power of y.
 
     Args:
-        x (SqlExpr | float): DOUBLE expression
-        y (SqlExpr | float): DOUBLE expression
+        x (SqlExpr | float): `DOUBLE` expression
+        y (SqlExpr | float): `DOUBLE` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -9131,8 +9132,8 @@ def prefix(string: SqlExpr | str, search_string: SqlExpr | str) -> SqlExpr:
     """Returns `true` if `string` starts with `search_string`.
 
     Args:
-        string (SqlExpr | str): VARCHAR expression
-        search_string (SqlExpr | str): VARCHAR expression
+        string (SqlExpr | str): `VARCHAR` expression
+        search_string (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -9144,8 +9145,8 @@ def printf(format_arg: SqlExpr | str, *args: SqlExpr) -> SqlExpr:
     """Formats a `string` using printf syntax.
 
     Args:
-        format_arg (SqlExpr | str): VARCHAR expression
-        *args (SqlExpr): ANY expression
+        format_arg (SqlExpr | str): `VARCHAR` expression
+        *args (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -9157,7 +9158,7 @@ def quarter(ts: SqlExpr | date) -> SqlExpr:
     """Extract the quarter component from a date or timestamp.
 
     Args:
-        ts (SqlExpr | date): DATE expression
+        ts (SqlExpr | date): `DATE` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -9169,7 +9170,7 @@ def radians(x: SqlExpr | float) -> SqlExpr:
     """Converts degrees to radians.
 
     Args:
-        x (SqlExpr | float): DOUBLE expression
+        x (SqlExpr | float): `DOUBLE` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -9194,9 +9195,9 @@ def range(
     """Creates a list of values between `start` and `stop` - the stop parameter is exclusive.
 
     Args:
-        start (SqlExpr | int): BIGINT expression
-        stop (SqlExpr | int): BIGINT expression
-        step (SqlExpr | int): BIGINT expression
+        start (SqlExpr | int): `BIGINT` expression
+        stop (SqlExpr | int): `BIGINT` expression
+        step (SqlExpr | int): `BIGINT` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -9212,9 +9213,9 @@ def reduce(
     The `lambda` function has an optional `initial_value` argument.
 
     Args:
-        list_arg (SqlExpr): ANY[] expression
-        lambda_arg (SqlExpr): LAMBDA expression
-        initial_value (SqlExpr): ANY expression
+        list_arg (SqlExpr): `ANY[]` expression
+        lambda_arg (SqlExpr): `LAMBDA` expression
+        initial_value (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -9228,10 +9229,10 @@ def remap_struct(
     """Map a struct to another struct type, potentially re-ordering, renaming and casting members and filling in defaults for missing values.
 
     Args:
-        input_arg (SqlExpr): ANY expression
-        target_type (SqlExpr): ANY expression
-        mapping (SqlExpr): ANY expression
-        defaults (SqlExpr): ANY expression
+        input_arg (SqlExpr): `ANY` expression
+        target_type (SqlExpr): `ANY` expression
+        mapping (SqlExpr): `ANY` expression
+        defaults (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -9243,8 +9244,8 @@ def repeat(blob: SqlExpr | bytes, count: SqlExpr | int) -> SqlExpr:
     """Repeats the `blob` `count` number of times.
 
     Args:
-        blob (SqlExpr | bytes): BLOB expression
-        count (SqlExpr | int): BIGINT expression
+        blob (SqlExpr | bytes): `BLOB` expression
+        count (SqlExpr | int): `BIGINT` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -9258,9 +9259,9 @@ def replace(
     """Replaces any occurrences of the `source` with `target` in `string`.
 
     Args:
-        string (SqlExpr | str): VARCHAR expression
-        source (SqlExpr | str): VARCHAR expression
-        target (SqlExpr | str): VARCHAR expression
+        string (SqlExpr | str): `VARCHAR` expression
+        source (SqlExpr | str): `VARCHAR` expression
+        target (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -9272,9 +9273,9 @@ def replace_type(param: SqlExpr, type1: SqlExpr, type2: SqlExpr) -> SqlExpr:
     """Casts all fields of type1 to type2.
 
     Args:
-        param (SqlExpr): ANY expression
-        type1 (SqlExpr): ANY expression
-        type2 (SqlExpr): ANY expression
+        param (SqlExpr): `ANY` expression
+        type1 (SqlExpr): `ANY` expression
+        type2 (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -9286,7 +9287,7 @@ def reverse(string: SqlExpr | str) -> SqlExpr:
     """Reverses the `string`.
 
     Args:
-        string (SqlExpr | str): VARCHAR expression
+        string (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -9298,8 +9299,8 @@ def right(string: SqlExpr | str, count: SqlExpr | int) -> SqlExpr:
     """Extract the right-most `count` characters.
 
     Args:
-        string (SqlExpr | str): VARCHAR expression
-        count (SqlExpr | int): BIGINT expression
+        string (SqlExpr | str): `VARCHAR` expression
+        count (SqlExpr | int): `BIGINT` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -9311,8 +9312,8 @@ def right_grapheme(string: SqlExpr | str, count: SqlExpr | int) -> SqlExpr:
     """Extracts the right-most `count` grapheme clusters.
 
     Args:
-        string (SqlExpr | str): VARCHAR expression
-        count (SqlExpr | int): BIGINT expression
+        string (SqlExpr | str): `VARCHAR` expression
+        count (SqlExpr | int): `BIGINT` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -9324,8 +9325,8 @@ def round(x: SqlExpr | int, precision: SqlExpr | int | None = None) -> SqlExpr:
     """Rounds x to s decimal places.
 
     Args:
-        x (SqlExpr | int): BIGINT expression
-        precision (SqlExpr | int): INTEGER expression
+        x (SqlExpr | int): `BIGINT` expression
+        precision (SqlExpr | int): `INTEGER` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -9337,7 +9338,7 @@ def row(*args: SqlExpr) -> SqlExpr:
     """Create an unnamed STRUCT (tuple) containing the argument values.
 
     Args:
-        *args (SqlExpr): ANY expression
+        *args (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -9349,7 +9350,7 @@ def row_to_json(*args: SqlExpr) -> SqlExpr:
     """SQL row_to_json function.
 
     Args:
-        *args (SqlExpr): ANY expression
+        *args (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -9365,9 +9366,9 @@ def rpad(
     Truncates the `string` on the right if it has more than `count` characters.
 
     Args:
-        string (SqlExpr | str): VARCHAR expression
-        count (SqlExpr | int): INTEGER expression
-        character (SqlExpr | str): VARCHAR expression
+        string (SqlExpr | str): `VARCHAR` expression
+        count (SqlExpr | int): `INTEGER` expression
+        character (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -9381,8 +9382,8 @@ def rtrim(string: SqlExpr | str, characters: SqlExpr | str | None = None) -> Sql
     `characters` defaults to `space`.
 
     Args:
-        string (SqlExpr | str): VARCHAR expression
-        characters (SqlExpr | str): VARCHAR expression
+        string (SqlExpr | str): `VARCHAR` expression
+        characters (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -9394,7 +9395,7 @@ def second(ts: SqlExpr | date) -> SqlExpr:
     """Extract the second component from a date or timestamp.
 
     Args:
-        ts (SqlExpr | date): DATE expression
+        ts (SqlExpr | date): `DATE` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -9410,9 +9411,9 @@ def set_bit(
     Returns a new bitstring.
 
     Args:
-        bitstring (SqlExpr | bytes): BIT expression
-        index (SqlExpr | int): INTEGER expression
-        new_value (SqlExpr | int): INTEGER expression
+        bitstring (SqlExpr | bytes): `BIT` expression
+        index (SqlExpr | int): `INTEGER` expression
+        new_value (SqlExpr | int): `INTEGER` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -9424,7 +9425,7 @@ def setseed(col0: SqlExpr | float) -> SqlExpr:
     """Sets the seed to be used for the random function.
 
     Args:
-        col0 (SqlExpr | float): DOUBLE expression
+        col0 (SqlExpr | float): `DOUBLE` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -9436,7 +9437,7 @@ def sha1(blob: SqlExpr | bytes) -> SqlExpr:
     """Returns a `VARCHAR` with the SHA-1 hash of the `blob`.
 
     Args:
-        blob (SqlExpr | bytes): BLOB expression
+        blob (SqlExpr | bytes): `BLOB` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -9448,7 +9449,7 @@ def sha256(blob: SqlExpr | bytes) -> SqlExpr:
     """Returns a `VARCHAR` with the SHA-256 hash of the `blob`.
 
     Args:
-        blob (SqlExpr | bytes): BLOB expression
+        blob (SqlExpr | bytes): `BLOB` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -9460,7 +9461,7 @@ def sign(x: SqlExpr | int) -> SqlExpr:
     """Returns the sign of x as -1, 0 or 1.
 
     Args:
-        x (SqlExpr | int): BIGINT expression
+        x (SqlExpr | int): `BIGINT` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -9472,7 +9473,7 @@ def signbit(x: SqlExpr | float) -> SqlExpr:
     """Returns whether the signbit is set or not.
 
     Args:
-        x (SqlExpr | float): DOUBLE expression
+        x (SqlExpr | float): `DOUBLE` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -9484,7 +9485,7 @@ def sin(x: SqlExpr | float) -> SqlExpr:
     """Computes the sin of x.
 
     Args:
-        x (SqlExpr | float): DOUBLE expression
+        x (SqlExpr | float): `DOUBLE` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -9496,7 +9497,7 @@ def sinh(x: SqlExpr | float) -> SqlExpr:
     """Computes the hyperbolic sin of x.
 
     Args:
-        x (SqlExpr | float): DOUBLE expression
+        x (SqlExpr | float): `DOUBLE` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -9508,8 +9509,8 @@ def split(string: SqlExpr | str, separator: SqlExpr | str) -> SqlExpr:
     """Splits the `string` along the `separator`.
 
     Args:
-        string (SqlExpr | str): VARCHAR expression
-        separator (SqlExpr | str): VARCHAR expression
+        string (SqlExpr | str): `VARCHAR` expression
+        separator (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -9521,7 +9522,7 @@ def sqrt(x: SqlExpr | float) -> SqlExpr:
     """Returns the square root of x.
 
     Args:
-        x (SqlExpr | float): DOUBLE expression
+        x (SqlExpr | float): `DOUBLE` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -9533,8 +9534,8 @@ def starts_with(string: SqlExpr | str, search_string: SqlExpr | str) -> SqlExpr:
     """Returns `true` if `string` begins with `search_string`.
 
     Args:
-        string (SqlExpr | str): VARCHAR expression
-        search_string (SqlExpr | str): VARCHAR expression
+        string (SqlExpr | str): `VARCHAR` expression
+        search_string (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -9548,7 +9549,7 @@ def stats(expression: SqlExpr) -> SqlExpr:
     Expression can be a column, constant, or SQL expression.
 
     Args:
-        expression (SqlExpr): ANY expression
+        expression (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -9560,8 +9561,8 @@ def str_split(string: SqlExpr | str, separator: SqlExpr | str) -> SqlExpr:
     """Splits the `string` along the `separator`.
 
     Args:
-        string (SqlExpr | str): VARCHAR expression
-        separator (SqlExpr | str): VARCHAR expression
+        string (SqlExpr | str): `VARCHAR` expression
+        separator (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -9577,9 +9578,9 @@ def str_split_regex(
     A set of optional regex `options` can be set.
 
     Args:
-        string (SqlExpr | str): VARCHAR expression
-        regex (SqlExpr | str): VARCHAR expression
-        options (SqlExpr | str): VARCHAR expression
+        string (SqlExpr | str): `VARCHAR` expression
+        regex (SqlExpr | str): `VARCHAR` expression
+        options (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -9591,8 +9592,8 @@ def strftime(data: SqlExpr | date, format_arg: SqlExpr | str) -> SqlExpr:
     """Converts a `date` to a string according to the format string.
 
     Args:
-        data (SqlExpr | date): DATE expression
-        format_arg (SqlExpr | str): VARCHAR expression
+        data (SqlExpr | date): `DATE` expression
+        format_arg (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -9604,7 +9605,7 @@ def strip_accents(string: SqlExpr | str) -> SqlExpr:
     """Strips accents from `string`.
 
     Args:
-        string (SqlExpr | str): VARCHAR expression
+        string (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -9616,7 +9617,7 @@ def strlen(string: SqlExpr | str) -> SqlExpr:
     """Number of bytes in `string`.
 
     Args:
-        string (SqlExpr | str): VARCHAR expression
+        string (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -9630,8 +9631,8 @@ def strpos(string: SqlExpr | str, search_string: SqlExpr | str) -> SqlExpr:
     Returns 0 if no match found.
 
     Args:
-        string (SqlExpr | str): VARCHAR expression
-        search_string (SqlExpr | str): VARCHAR expression
+        string (SqlExpr | str): `VARCHAR` expression
+        search_string (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -9647,8 +9648,8 @@ def strptime(text: SqlExpr | str, format_arg: SqlExpr | str) -> SqlExpr:
     To return `NULL` on failure, use try_strptime.
 
     Args:
-        text (SqlExpr | str): VARCHAR expression
-        format_arg (SqlExpr | str): VARCHAR expression
+        text (SqlExpr | str): `VARCHAR` expression
+        format_arg (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -9666,9 +9667,9 @@ def substr(
     Note that a `start` value of `1` refers to the first character of the `string`.
 
     Args:
-        string (SqlExpr | str): VARCHAR expression
-        start (SqlExpr | int): BIGINT expression
-        length (SqlExpr | int): BIGINT expression
+        string (SqlExpr | str): `VARCHAR` expression
+        start (SqlExpr | int): `BIGINT` expression
+        length (SqlExpr | int): `BIGINT` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -9686,9 +9687,9 @@ def substring(
     Note that a `start` value of `1` refers to the first character of the `string`.
 
     Args:
-        string (SqlExpr | str): VARCHAR expression
-        start (SqlExpr | int): BIGINT expression
-        length (SqlExpr | int): BIGINT expression
+        string (SqlExpr | str): `VARCHAR` expression
+        start (SqlExpr | int): `BIGINT` expression
+        length (SqlExpr | int): `BIGINT` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -9706,9 +9707,9 @@ def substring_grapheme(
     Note that a `start` value of `1` refers to the `first` character of the `string`.
 
     Args:
-        string (SqlExpr | str): VARCHAR expression
-        start (SqlExpr | int): BIGINT expression
-        length (SqlExpr | int): BIGINT expression
+        string (SqlExpr | str): `VARCHAR` expression
+        start (SqlExpr | int): `BIGINT` expression
+        length (SqlExpr | int): `BIGINT` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -9720,8 +9721,8 @@ def subtract(col0: SqlExpr | int, col1: SqlExpr | int | None = None) -> SqlExpr:
     """SQL subtract function.
 
     Args:
-        col0 (SqlExpr | int): BIGINT expression
-        col1 (SqlExpr | int): BIGINT expression
+        col0 (SqlExpr | int): `BIGINT` expression
+        col1 (SqlExpr | int): `BIGINT` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -9733,8 +9734,8 @@ def suffix(string: SqlExpr | str, search_string: SqlExpr | str) -> SqlExpr:
     """Returns `true` if `string` ends with `search_string`.
 
     Args:
-        string (SqlExpr | str): VARCHAR expression
-        search_string (SqlExpr | str): VARCHAR expression
+        string (SqlExpr | str): `VARCHAR` expression
+        search_string (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -9746,7 +9747,7 @@ def tan(x: SqlExpr | float) -> SqlExpr:
     """Computes the tan of x.
 
     Args:
-        x (SqlExpr | float): DOUBLE expression
+        x (SqlExpr | float): `DOUBLE` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -9758,7 +9759,7 @@ def tanh(x: SqlExpr | float) -> SqlExpr:
     """Computes the hyperbolic tan of x.
 
     Args:
-        x (SqlExpr | float): DOUBLE expression
+        x (SqlExpr | float): `DOUBLE` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -9783,9 +9784,9 @@ def translate(
     If `from` is longer than `to`, occurrences of the extra characters in `from` are deleted.
 
     Args:
-        string (SqlExpr | str): VARCHAR expression
-        from_arg (SqlExpr | str): VARCHAR expression
-        to (SqlExpr | str): VARCHAR expression
+        string (SqlExpr | str): `VARCHAR` expression
+        from_arg (SqlExpr | str): `VARCHAR` expression
+        to (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -9799,8 +9800,8 @@ def trim(string: SqlExpr | str, characters: SqlExpr | str | None = None) -> SqlE
     `characters` defaults to `space`.
 
     Args:
-        string (SqlExpr | str): VARCHAR expression
-        characters (SqlExpr | str): VARCHAR expression
+        string (SqlExpr | str): `VARCHAR` expression
+        characters (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -9812,8 +9813,8 @@ def trunc(x: SqlExpr | int, col1: SqlExpr | int | None = None) -> SqlExpr:
     """Truncates the number.
 
     Args:
-        x (SqlExpr | int): BIGINT expression
-        col1 (SqlExpr | int): INTEGER expression
+        x (SqlExpr | int): `BIGINT` expression
+        col1 (SqlExpr | int): `INTEGER` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -9827,8 +9828,8 @@ def try_strptime(text: SqlExpr | str, format_arg: SqlExpr | str) -> SqlExpr:
     Returns `NULL` on failure.
 
     Args:
-        text (SqlExpr | str): VARCHAR expression
-        format_arg (SqlExpr | str): VARCHAR expression
+        text (SqlExpr | str): `VARCHAR` expression
+        format_arg (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -9851,7 +9852,7 @@ def typeof(expression: SqlExpr) -> SqlExpr:
     """Returns the name of the data type of the result of the expression.
 
     Args:
-        expression (SqlExpr): ANY expression
+        expression (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -9863,7 +9864,7 @@ def ucase(string: SqlExpr | str) -> SqlExpr:
     """Converts `string` to upper case.
 
     Args:
-        string (SqlExpr | str): VARCHAR expression
+        string (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -9875,7 +9876,7 @@ def unbin(value: SqlExpr | str) -> SqlExpr:
     """Converts a `value` from binary representation to a blob.
 
     Args:
-        value (SqlExpr | str): VARCHAR expression
+        value (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -9887,7 +9888,7 @@ def unhex(value: SqlExpr | str) -> SqlExpr:
     """Converts a `value` from hexadecimal representation to a blob.
 
     Args:
-        value (SqlExpr | str): VARCHAR expression
+        value (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -9899,7 +9900,7 @@ def unicode(string: SqlExpr | str) -> SqlExpr:
     """Returns an `INTEGER` representing the `unicode` codepoint of the first character in the `string`.
 
     Args:
-        string (SqlExpr | str): VARCHAR expression
+        string (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -9911,7 +9912,7 @@ def unpivot_list(*args: SqlExpr) -> SqlExpr:
     """Identical to list_value, but generated as part of unpivot for better error messages.
 
     Args:
-        *args (SqlExpr): ANY expression
+        *args (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -9923,7 +9924,7 @@ def upper(string: SqlExpr | str) -> SqlExpr:
     """Converts `string` to upper case.
 
     Args:
-        string (SqlExpr | str): VARCHAR expression
+        string (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -9935,7 +9936,7 @@ def url_decode(string: SqlExpr | str) -> SqlExpr:
     """Decodes a URL from a representation using Percent-Encoding.
 
     Args:
-        string (SqlExpr | str): VARCHAR expression
+        string (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -9947,7 +9948,7 @@ def url_encode(string: SqlExpr | str) -> SqlExpr:
     """Encodes a URL to a representation using Percent-Encoding.
 
     Args:
-        string (SqlExpr | str): VARCHAR expression
+        string (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -9968,7 +9969,7 @@ def uuid_extract_timestamp(uuid: SqlExpr | str) -> SqlExpr:
     """Extract the timestamp for the given UUID v7.
 
     Args:
-        uuid (SqlExpr | str): UUID expression
+        uuid (SqlExpr | str): `UUID` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -9980,7 +9981,7 @@ def uuid_extract_version(uuid: SqlExpr | str) -> SqlExpr:
     """Extract a version for the given UUID.
 
     Args:
-        uuid (SqlExpr | str): UUID expression
+        uuid (SqlExpr | str): `UUID` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -10010,8 +10011,8 @@ def variant_extract(col0: SqlExpr, col1: SqlExpr | int) -> SqlExpr:
     """SQL variant_extract function.
 
     Args:
-        col0 (SqlExpr): VARIANT expression
-        col1 (SqlExpr | int): UINTEGER expression
+        col0 (SqlExpr): `VARIANT` expression
+        col1 (SqlExpr | int): `UINTEGER` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -10023,7 +10024,7 @@ def variant_typeof(input_variant: SqlExpr) -> SqlExpr:
     """Returns the internal type of the `input_variant`.
 
     Args:
-        input_variant (SqlExpr): VARIANT expression
+        input_variant (SqlExpr): `VARIANT` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -10035,7 +10036,7 @@ def vector_type(col: SqlExpr) -> SqlExpr:
     """Returns the VectorType of a given column.
 
     Args:
-        col (SqlExpr): ANY expression
+        col (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -10056,7 +10057,7 @@ def week(ts: SqlExpr | date) -> SqlExpr:
     """Extract the week component from a date or timestamp.
 
     Args:
-        ts (SqlExpr | date): DATE expression
+        ts (SqlExpr | date): `DATE` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -10068,7 +10069,7 @@ def weekday(ts: SqlExpr | date) -> SqlExpr:
     """Extract the weekday component from a date or timestamp.
 
     Args:
-        ts (SqlExpr | date): DATE expression
+        ts (SqlExpr | date): `DATE` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -10080,7 +10081,7 @@ def weekofyear(ts: SqlExpr | date) -> SqlExpr:
     """Extract the weekofyear component from a date or timestamp.
 
     Args:
-        ts (SqlExpr | date): DATE expression
+        ts (SqlExpr | date): `DATE` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -10092,8 +10093,8 @@ def write_log(string: SqlExpr | str, *args: SqlExpr) -> SqlExpr:
     """Writes to the logger.
 
     Args:
-        string (SqlExpr | str): VARCHAR expression
-        *args (SqlExpr): ANY expression
+        string (SqlExpr | str): `VARCHAR` expression
+        *args (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -10105,8 +10106,8 @@ def xor(left: SqlExpr | int, right: SqlExpr | int) -> SqlExpr:
     """Bitwise XOR.
 
     Args:
-        left (SqlExpr | int): BIGINT expression
-        right (SqlExpr | int): BIGINT expression
+        left (SqlExpr | int): `BIGINT` expression
+        right (SqlExpr | int): `BIGINT` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -10118,7 +10119,7 @@ def year(ts: SqlExpr | date) -> SqlExpr:
     """Extract the year component from a date or timestamp.
 
     Args:
-        ts (SqlExpr | date): DATE expression
+        ts (SqlExpr | date): `DATE` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -10130,7 +10131,7 @@ def yearweek(ts: SqlExpr | date) -> SqlExpr:
     """Extract the yearweek component from a date or timestamp.
 
     Args:
-        ts (SqlExpr | date): DATE expression
+        ts (SqlExpr | date): `DATE` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -10147,7 +10148,7 @@ def struct_concat(*args: SqlExpr) -> SqlExpr:
     """Merge the multiple STRUCTs into a single STRUCT.
 
     Args:
-        *args (SqlExpr): ANY expression
+        *args (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -10155,12 +10156,12 @@ def struct_concat(*args: SqlExpr) -> SqlExpr:
     return func("struct_concat", *args)
 
 
-def struct_contains(struct: SqlExpr, entry: SqlExpr) -> SqlExpr:
+def struct_contains(struct: SqlExpr | dict[object, object], entry: SqlExpr) -> SqlExpr:
     """Check if an unnamed STRUCT contains the value.
 
     Args:
-        struct (SqlExpr): STRUCT expression
-        entry (SqlExpr): ANY expression
+        struct (SqlExpr | dict[object, object]): `STRUCT` expression
+        entry (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -10168,12 +10169,14 @@ def struct_contains(struct: SqlExpr, entry: SqlExpr) -> SqlExpr:
     return func("struct_contains", struct, entry)
 
 
-def struct_extract(struct: SqlExpr, entry: SqlExpr | int) -> SqlExpr:
+def struct_extract(
+    struct: SqlExpr | dict[object, object], entry: SqlExpr | int
+) -> SqlExpr:
     """Extract the named entry from the STRUCT.
 
     Args:
-        struct (SqlExpr): STRUCT expression
-        entry (SqlExpr | int): BIGINT expression
+        struct (SqlExpr | dict[object, object]): `STRUCT` expression
+        entry (SqlExpr | int): `BIGINT` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -10181,12 +10184,14 @@ def struct_extract(struct: SqlExpr, entry: SqlExpr | int) -> SqlExpr:
     return func("struct_extract", struct, entry)
 
 
-def struct_extract_at(struct: SqlExpr, entry: SqlExpr | int) -> SqlExpr:
+def struct_extract_at(
+    struct: SqlExpr | dict[object, object], entry: SqlExpr | int
+) -> SqlExpr:
     """Extract the entry from the STRUCT by position (starts at 1!).
 
     Args:
-        struct (SqlExpr): STRUCT expression
-        entry (SqlExpr | int): BIGINT expression
+        struct (SqlExpr | dict[object, object]): `STRUCT` expression
+        entry (SqlExpr | int): `BIGINT` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -10194,12 +10199,12 @@ def struct_extract_at(struct: SqlExpr, entry: SqlExpr | int) -> SqlExpr:
     return func("struct_extract_at", struct, entry)
 
 
-def struct_has(struct: SqlExpr, entry: SqlExpr) -> SqlExpr:
+def struct_has(struct: SqlExpr | dict[object, object], entry: SqlExpr) -> SqlExpr:
     """Check if an unnamed STRUCT contains the value.
 
     Args:
-        struct (SqlExpr): STRUCT expression
-        entry (SqlExpr): ANY expression
+        struct (SqlExpr | dict[object, object]): `STRUCT` expression
+        entry (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -10207,12 +10212,12 @@ def struct_has(struct: SqlExpr, entry: SqlExpr) -> SqlExpr:
     return func("struct_has", struct, entry)
 
 
-def struct_indexof(struct: SqlExpr, entry: SqlExpr) -> SqlExpr:
+def struct_indexof(struct: SqlExpr | dict[object, object], entry: SqlExpr) -> SqlExpr:
     """Get the position of the entry in an unnamed STRUCT, starting at 1.
 
     Args:
-        struct (SqlExpr): STRUCT expression
-        entry (SqlExpr): ANY expression
+        struct (SqlExpr | dict[object, object]): `STRUCT` expression
+        entry (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -10226,7 +10231,7 @@ def struct_insert(*args: SqlExpr) -> SqlExpr:
     The entry name(s) will be the bound variable name(s).
 
     Args:
-        *args (SqlExpr): ANY expression
+        *args (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -10240,7 +10245,7 @@ def struct_pack(*args: SqlExpr) -> SqlExpr:
     The entry name will be the bound variable name.
 
     Args:
-        *args (SqlExpr): ANY expression
+        *args (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -10248,12 +10253,12 @@ def struct_pack(*args: SqlExpr) -> SqlExpr:
     return func("struct_pack", *args)
 
 
-def struct_position(struct: SqlExpr, entry: SqlExpr) -> SqlExpr:
+def struct_position(struct: SqlExpr | dict[object, object], entry: SqlExpr) -> SqlExpr:
     """Get the position of the entry in an unnamed STRUCT, starting at 1.
 
     Args:
-        struct (SqlExpr): STRUCT expression
-        entry (SqlExpr): ANY expression
+        struct (SqlExpr | dict[object, object]): `STRUCT` expression
+        entry (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -10267,7 +10272,7 @@ def struct_update(*args: SqlExpr) -> SqlExpr:
     The entry name(s) will be the bound variable name(s).
 
     Args:
-        *args (SqlExpr): ANY expression
+        *args (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -10284,8 +10289,8 @@ def string_agg(str_arg: SqlExpr, arg: SqlExpr | str | None = None) -> SqlExpr:
     """Concatenates the column string values with an optional separator.
 
     Args:
-        str_arg (SqlExpr): ANY expression
-        arg (SqlExpr | str): VARCHAR expression
+        str_arg (SqlExpr): `ANY` expression
+        arg (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -10297,8 +10302,8 @@ def string_split(string: SqlExpr | str, separator: SqlExpr | str) -> SqlExpr:
     """Splits the `string` along the `separator`.
 
     Args:
-        string (SqlExpr | str): VARCHAR expression
-        separator (SqlExpr | str): VARCHAR expression
+        string (SqlExpr | str): `VARCHAR` expression
+        separator (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -10314,9 +10319,9 @@ def string_split_regex(
     A set of optional regex `options` can be set.
 
     Args:
-        string (SqlExpr | str): VARCHAR expression
-        regex (SqlExpr | str): VARCHAR expression
-        options (SqlExpr | str): VARCHAR expression
+        string (SqlExpr | str): `VARCHAR` expression
+        regex (SqlExpr | str): `VARCHAR` expression
+        options (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -10328,8 +10333,8 @@ def string_to_array(string: SqlExpr | str, separator: SqlExpr | str) -> SqlExpr:
     """Splits the `string` along the `separator`.
 
     Args:
-        string (SqlExpr | str): VARCHAR expression
-        separator (SqlExpr | str): VARCHAR expression
+        string (SqlExpr | str): `VARCHAR` expression
+        separator (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -10354,9 +10359,9 @@ def time_bucket(
     The origin defaults to 2000-01-03 00:00:00+00 for buckets that do not include a month or year interval, and to 2000-01-01 00:00:00+00 for month and year buckets.
 
     Args:
-        bucket_width (SqlExpr | timedelta): INTERVAL expression
-        timestamp (SqlExpr | date): DATE expression
-        origin (SqlExpr | date): DATE expression
+        bucket_width (SqlExpr | timedelta): `INTERVAL` expression
+        timestamp (SqlExpr | date): `DATE` expression
+        origin (SqlExpr | date): `DATE` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -10368,7 +10373,7 @@ def timetz_byte_comparable(time_tz: SqlExpr) -> SqlExpr:
     """Converts a TIME WITH TIME ZONE to an integer sort key.
 
     Args:
-        time_tz (SqlExpr): TIME WITH TIME ZONE expression
+        time_tz (SqlExpr): `TIME WITH TIME ZONE` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -10380,8 +10385,8 @@ def timezone(ts: SqlExpr | timedelta, col1: SqlExpr | None = None) -> SqlExpr:
     """Extract the timezone component from a date or timestamp.
 
     Args:
-        ts (SqlExpr | timedelta): INTERVAL expression
-        col1 (SqlExpr): TIME WITH TIME ZONE expression
+        ts (SqlExpr | timedelta): `INTERVAL` expression
+        col1 (SqlExpr): `TIME WITH TIME ZONE` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -10393,7 +10398,7 @@ def timezone_hour(ts: SqlExpr | date) -> SqlExpr:
     """Extract the timezone_hour component from a date or timestamp.
 
     Args:
-        ts (SqlExpr | date): DATE expression
+        ts (SqlExpr | date): `DATE` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -10405,7 +10410,7 @@ def timezone_minute(ts: SqlExpr | date) -> SqlExpr:
     """Extract the timezone_minute component from a date or timestamp.
 
     Args:
-        ts (SqlExpr | date): DATE expression
+        ts (SqlExpr | date): `DATE` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -10424,8 +10429,8 @@ def union_extract(union: SqlExpr, tag: SqlExpr | str) -> SqlExpr:
     NULL if the tag is not currently selected.
 
     Args:
-        union (SqlExpr): UNION expression
-        tag (SqlExpr | str): VARCHAR expression
+        union (SqlExpr): `UNION` expression
+        tag (SqlExpr | str): `VARCHAR` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -10437,7 +10442,7 @@ def union_tag(union: SqlExpr) -> SqlExpr:
     """Retrieve the currently selected tag of the union as an ENUM.
 
     Args:
-        union (SqlExpr): UNION expression
+        union (SqlExpr): `UNION` expression
 
     Returns:
         SqlExpr: Result expression.
@@ -10451,7 +10456,7 @@ def union_value(*args: SqlExpr) -> SqlExpr:
     The tag of the value will be the bound variable name.
 
     Args:
-        *args (SqlExpr): ANY expression
+        *args (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr: Result expression.

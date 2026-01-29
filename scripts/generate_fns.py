@@ -51,6 +51,8 @@ class PyTypes(StrEnum):
     TIME = auto()
     DATETIME = auto()
     TIMEDELTA = auto()
+    LIST = "list[object]"
+    DICT = "dict[object, object]"
     EXPR = "SqlExpr"
 
 
@@ -80,12 +82,11 @@ DUCKDB_TYPE_MAP = pc.Dict.from_kwargs(
     BIT=PyTypes.BYTES,
     UUID=PyTypes.STR,
     JSON=PyTypes.STR,
-    # Generic/complex types - default to SqlExpr
     ANY=PyTypes.EXPR,
-    LIST=PyTypes.EXPR,
-    MAP=PyTypes.EXPR,
-    STRUCT=PyTypes.EXPR,
-    ARRAY=PyTypes.EXPR,
+    LIST=PyTypes.LIST,
+    MAP=PyTypes.DICT,
+    STRUCT=PyTypes.DICT,
+    ARRAY=PyTypes.LIST,
     UNION=PyTypes.EXPR,
 )
 
@@ -100,8 +101,8 @@ FN_CATEGORY = pc.Dict.from_kwargs(
 KWORDS = pc.Set(keyword.kwlist)
 """Python reserved keywords that need renaming when generating function names."""
 BUILTINS = pc.Set(dir(__builtins__))
-
-SHADOWERS = KWORDS.union(BUILTINS)
+AMBIGUOUS = pc.Set("l")
+SHADOWERS = KWORDS.union(BUILTINS).union(AMBIGUOUS)
 """Python built-in names."""
 SKIP_FUNCTIONS = pc.Set(
     {
@@ -314,9 +315,9 @@ def _format_arg_doc(name: str, dtype: str) -> str:
     py_type = _duckdb_param_py_type(dtype)
     match py_type:
         case PyTypes.EXPR:
-            return f"        {name} (SqlExpr): {dtype} expression"
+            return f"        {name} (SqlExpr): `{dtype}` expression"
         case _:
-            return f"        {name} (SqlExpr | {py_type}): {dtype} expression"
+            return f"        {name} (SqlExpr | {py_type}): `{dtype}` expression"
 
 
 def _format_varargs_type(dtype: str) -> str:
