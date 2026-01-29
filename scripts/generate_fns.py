@@ -97,9 +97,12 @@ FN_CATEGORY = pc.Dict.from_kwargs(
     macro="Macro Functions",
 )
 """Mapping of DuckDB function types to categories."""
-RESERVED_NAMES = pc.Set(keyword.kwlist)
+KWORDS = pc.Set(keyword.kwlist)
 """Python reserved keywords that need renaming when generating function names."""
+BUILTINS = pc.Set(dir(__builtins__))
 
+SHADOWERS = KWORDS.union(BUILTINS)
+"""Python built-in names."""
 SKIP_FUNCTIONS = pc.Set(
     {
         # Internal functions
@@ -160,9 +163,12 @@ def _run_pipeline() -> str:
                 python_name=row[3],
                 category=row[4],
                 parameters=pc.Seq(row[5]),
-                parameter_types=pc.Seq(row[6]),
-                description=row[7],
-                min_param_count=row[8],
+                parameter_types=pc.Iter(row[6])
+                .map(lambda dtype: pc.Option(dtype).unwrap_or("ANY"))
+                .collect(),
+                varargs=pc.Option(row[7]),
+                description=pc.Option(row[8]),
+                min_param_count=row[9],
             )
         )
         .collect()
@@ -210,24 +216,34 @@ class FunctionInfo:
     category: str
     parameters: pc.Seq[str]
     parameter_types: pc.Seq[str]
-    description: str | None
+    varargs: pc.Option[str]
+    description: pc.Option[str]
     min_param_count: int
 
     def _docstring(self) -> str:
         """Generate docstring for function."""
-        desc = _format_description(self.description or f"SQL {self.name} function.")
+        desc = (
+            self.description.map(lambda d: d.strip().replace("\u2019", "'").split(". "))
+            .map(lambda s: pc.Iter(s).join(".\n\n    ").rstrip("."))
+            .map(lambda spaced: f"{spaced}.")
+            .unwrap_or(f"SQL {self.name} function.")
+        )
 
+        args_lines = self.parameters.then(
+            lambda p: p.into(_deduplicate_param_names)
+        ).map(
+            lambda seq: seq.iter()
+            .zip(self.parameter_types)
+            .filter_star(lambda name, _: bool(name))
+            .map_star(_format_arg_doc)
+            .join("\n")
+        )
+        varargs_line = self.varargs.map(lambda dtype: _format_arg_doc("*args", dtype))
         args_doc = (
-            self.parameters.then_some()
-            .map(
-                lambda p: p.into(_deduplicate_param_names)
-                .iter()
-                .zip(self.parameter_types)
-                .filter_star(lambda name, _: bool(name))
-                .map_star(_format_arg_doc)
-                .join("\n")
-            )
-            .map(lambda lines: f"\n\n    Args:\n{lines}" if lines else "")
+            pc.Iter((args_lines, varargs_line))
+            .filter_map(lambda x: x)
+            .then(lambda x: x.join("\n"))
+            .map(lambda lines: f"\n\n    Args:\n{lines}")
             .unwrap_or("")
         )
 
@@ -235,33 +251,43 @@ class FunctionInfo:
 
     def _body(self) -> str:
         """Generate function body."""
+        varargs = self.varargs.map(lambda _: "*args")
+        base_args = self.parameters.then_some().map(
+            lambda p: p.into(_deduplicate_param_names).join(", ")
+        )
+        args = pc.Iter((base_args, varargs)).filter_map(lambda x: x).join(", ")
         return (
-            self.parameters.then_some()
-            .map(lambda p: p.into(_deduplicate_param_names).join(", "))
-            .map(lambda args: f'    return func("{self.name}", {args})')
-            .unwrap_or(f'    return func("{self.name}")')
+            f'    return func("{self.name}", {args})'
+            if args
+            else f'    return func("{self.name}")'
         )
 
     def _signature(self) -> str:
         """Generate function signature with type hints."""
-        return (
-            self.parameters.then_some()
-            .map(
-                lambda p: p.into(_deduplicate_param_names)
-                .iter()
-                .enumerate()
-                .zip(self.parameter_types)
-                .map_star(
-                    lambda idx_name, dtype: ParamInfos(
-                        idx_name[1],
-                        dtype,
-                        idx_name[0] >= self.min_param_count,
-                        _duckdb_param_py_type(dtype) == PyTypes.BOOL,
-                    )
+        has_varargs = self.varargs.map(lambda _: 1).unwrap_or(0) == 1
+        varargs = self.varargs.map(
+            lambda dtype: f"*args: {_format_varargs_type(dtype)}"
+        )
+        base_args = self.parameters.then_some().map(
+            lambda p: p.into(_deduplicate_param_names)
+            .iter()
+            .enumerate()
+            .zip(self.parameter_types)
+            .map_star(
+                lambda idx_name, dtype: ParamInfos(
+                    idx_name[1],
+                    dtype,
+                    idx_name[0] >= self.min_param_count,
+                    (not has_varargs) and _duckdb_param_py_type(dtype) == PyTypes.BOOL,
                 )
-                .fold(_SignatureState(), _signature_step)
-                .parts.join(", ")
             )
+            .fold(_SignatureState(), _signature_step)
+            .parts.join(", ")
+        )
+        return (
+            pc.Iter((base_args, varargs))
+            .filter_map(lambda x: x)
+            .then(lambda x: x.join(", "))
             .map(lambda args: f"def {self.python_name}({args}) -> SqlExpr:")
             .unwrap_or(f"def {self.python_name}() -> SqlExpr:")
         )
@@ -286,7 +312,6 @@ def _signature_step(state: _SignatureState, param: ParamInfos) -> _SignatureStat
 
 
 def _format_arg_doc(name: str, dtype: str) -> str:
-    """Format a single argument doc line."""
     py_type = _duckdb_param_py_type(dtype)
     match py_type:
         case PyTypes.EXPR:
@@ -295,14 +320,13 @@ def _format_arg_doc(name: str, dtype: str) -> str:
             return f"        {name} (SqlExpr | {py_type}): {dtype} expression"
 
 
-def _format_description(description: str) -> str:
-    """Format description with blank lines between sentences."""
-    spaced = (
-        pc.Iter(description.strip().replace("\u2019", "'").split(". "))
-        .join(".\n\n    ")
-        .rstrip(".")
-    )
-    return f"{spaced}."
+def _format_varargs_type(dtype: str) -> str:
+    py_type = _duckdb_param_py_type(dtype)
+    match py_type:
+        case PyTypes.EXPR:
+            return py_type
+        case _:
+            return f"SqlExpr | {py_type}"
 
 
 def _duckdb_param_py_type(dtype: str) -> PyTypes:
@@ -345,7 +369,7 @@ def _sanitize_param_name(name: str, idx: int) -> str:
         return f"arg{idx}"
     clean = name.strip("'\"").split("(")[0].replace("...", "")
     match clean:
-        case shadower if keyword.iskeyword(clean) or clean in dir(__builtins__):
+        case shadower if clean in SHADOWERS:
             return f"{shadower}_arg"
         case identifier if identifier.isidentifier():
             return clean
@@ -391,7 +415,7 @@ def _get_query() -> str:
         .map_star(lambda ftype, label: f"WHEN function_type = '{ftype}' THEN '{label}'")
         .join("\n")
     )
-    reserved_names = RESERVED_NAMES.iter().map(lambda name: f"'{name}'").join(", ")
+    reserved_names = KWORDS.iter().map(lambda name: f"'{name}'").join(", ")
     skipped_funcs = SKIP_FUNCTIONS.iter().map(lambda name: f"'{name}'").join(", ")
 
     return f"""
@@ -414,10 +438,11 @@ def _get_query() -> str:
                 ) AS python_name,
                 coalesce(parameters, []) AS parameters,
                 coalesce(parameter_types, []) AS parameter_types,
+                varargs,
                 description,
                 coalesce(list_count(parameters), 0) AS param_len
             FROM duckdb_functions()
-            WHERE function_type IN ('scalar', 'aggregate')
+            WHERE function_type IN ('scalar', 'aggregate', 'macro')
               AND function_name NOT LIKE '%##%'
               AND function_name NOT LIKE '\\_%' ESCAPE '\\'
               AND function_name ~ '^[A-Za-z_][A-Za-z0-9_]*$'
@@ -430,6 +455,7 @@ def _get_query() -> str:
                 python_name,
                 parameters,
                 parameter_types,
+                varargs,
                 description,
                 min(param_len) OVER (PARTITION BY function_name) AS min_param_len,
                 row_number() OVER (
@@ -450,6 +476,7 @@ def _get_query() -> str:
             END AS category,
             parameters,
             parameter_types,
+            varargs,
             description,
             min_param_len
         FROM ranked
