@@ -19,6 +19,26 @@ type Grouped = pc.Dict[str, pc.Seq[FunctionInfo]]
 """Grouped functions by category."""
 
 
+DEFAULT_OUTPUT = Path("src", "pql", "sql", "_generated_fns.py")
+
+app = typer.Typer(add_completion=False)
+
+
+@app.command()
+def main(
+    output: Annotated[Path, typer.Option("--output", "-o")] = DEFAULT_OUTPUT,
+) -> None:
+    """Generate typed DuckDB function wrappers."""
+    typer.echo("Fetching functions from DuckDB...")
+    content = _run_pipeline()
+
+    output.parent.mkdir(parents=True, exist_ok=True)
+    output.write_text(content, encoding="utf-8")
+    typer.echo(f"Generated {output}")
+    _run_ruff(output)
+    typer.echo("Done!")
+
+
 class PyTypes(StrEnum):
     """Python type names for DuckDB type mapping."""
 
@@ -119,26 +139,6 @@ CATEGORY_PATTERNS: pc.Seq[tuple[str, str]] = pc.Seq(
     )
 )
 """Patterns to categorize functions based on their name prefixes."""
-
-
-DEFAULT_OUTPUT = Path("src", "pql", "sql", "_generated_fns.py")
-
-app = typer.Typer(add_completion=False)
-
-
-@app.command()
-def main(
-    output: Annotated[Path, typer.Option("--output", "-o")] = DEFAULT_OUTPUT,
-) -> None:
-    """Generate typed DuckDB function wrappers."""
-    typer.echo("Fetching functions from DuckDB...")
-    content = _run_pipeline()
-
-    output.parent.mkdir(parents=True, exist_ok=True)
-    output.write_text(content, encoding="utf-8")
-    typer.echo(f"Generated {output}")
-    _run_ruff(output)
-    typer.echo("Done!")
 
 
 def _run_ruff(output: Path) -> None:
