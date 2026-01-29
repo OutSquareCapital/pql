@@ -418,7 +418,7 @@ def _get_query() -> str:
     reserved_names = KWORDS.iter().map(lambda name: f"'{name}'").join(", ")
     skipped_funcs = SKIP_FUNCTIONS.iter().map(lambda name: f"'{name}'").join(", ")
 
-    return f"""
+    return f"""--sql
         WITH raw AS (
             SELECT
                 function_name,
@@ -443,10 +443,10 @@ def _get_query() -> str:
                 coalesce(list_count(parameters), 0) AS param_len
             FROM duckdb_functions()
             WHERE function_type IN ('scalar', 'aggregate', 'macro')
-              AND function_name NOT LIKE '%##%'
-              AND function_name NOT LIKE '\\_%' ESCAPE '\\'
-              AND function_name ~ '^[A-Za-z_][A-Za-z0-9_]*$'
-              AND function_name NOT IN ({skipped_funcs})
+            AND function_name NOT LIKE '%##%'
+            AND function_name NOT LIKE '\\_%' ESCAPE '\\'
+            AND function_name ~ '^[A-Za-z_][A-Za-z0-9_]*$'
+            AND function_name NOT IN ({skipped_funcs})
         ), ranked AS (
             SELECT
                 function_name,
