@@ -294,9 +294,7 @@ class LazyFrame:
         return self.__from_lf__(
             self._rel.aggregate(
                 self.columns.iter().map(
-                    lambda c: sql.fns.count_if(
-                        sql.col(c).isnull(),
-                    ).alias(c)
+                    lambda c: sql.fns.count_if(arg=sql.col(c).isnull()).alias(c)
                 )
             )
         )

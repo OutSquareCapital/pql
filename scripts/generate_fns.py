@@ -116,7 +116,6 @@ SKIP_FUNCTIONS = pc.Set(
         "**",
         "!",
         # Already exposed differently
-        "main.coalesce",
         "main.if",
     }
 )
