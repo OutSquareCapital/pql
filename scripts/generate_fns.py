@@ -1,25 +1,22 @@
-"""Generate typed SQL function wrappers from DuckDB introspection.
-
-This script queries DuckDB's `duckdb_functions()` to extract all available
-functions with their signatures, then generates a properly typed `fns.py`.
-
-Usage:
-    uv run scripts/generate_fns.py
-    uv run scripts/generate_fns.py --output src/pql/sql/fns.py
-"""
+"""Generate typed SQL function wrappers from DuckDB introspection."""
 
 from __future__ import annotations
 
 import keyword
+import subprocess
 from dataclasses import dataclass, field
 from enum import StrEnum, auto
+from functools import partial
 from pathlib import Path
 from textwrap import dedent
-from typing import Annotated
+from typing import Annotated, NamedTuple
 
 import duckdb
 import pyochain as pc
 import typer
+
+type Grouped = pc.Dict[str, pc.Seq[FunctionInfo]]
+"""Python type names for DuckDB type mapping."""
 
 
 class PyTypes(StrEnum):
@@ -72,87 +69,18 @@ DUCKDB_TYPE_MAP = pc.Dict.from_kwargs(
     UNION=PyTypes.EXPR,
 )
 
+
 FN_CATEGORY = pc.Dict.from_kwargs(
     scalar="Scalar Functions",
     aggregate="Aggregate Functions",
     table="Table Functions",
     macro="Macro Functions",
 )
+"""Mapping of DuckDB function types to categories."""
+RESERVED_NAMES = pc.Set(keyword.kwlist)
+"""Python reserved keywords that need renaming when generating function names."""
 
-RESERVED = pc.Set(
-    {
-        "list",
-        "map",
-        "filter",
-        "from",
-        "lambda",
-        "type",
-        "format",
-        "input",
-        "min",
-        "max",
-        "str",
-        "any",
-        "all",
-    }
-)
-# Python reserved keywords that need renaming
-RESERVED_NAMES: pc.Set[str] = pc.Set(
-    {
-        "all",
-        "and",
-        "as",
-        "assert",
-        "async",
-        "await",
-        "break",
-        "class",
-        "continue",
-        "def",
-        "del",
-        "elif",
-        "else",
-        "except",
-        "finally",
-        "for",
-        "from",
-        "global",
-        "if",
-        "import",
-        "in",
-        "is",
-        "lambda",
-        "not",
-        "or",
-        "pass",
-        "raise",
-        "return",
-        "try",
-        "while",
-        "with",
-        "yield",
-        # Builtins we don't want to shadow
-        "sum",
-        "min",
-        "max",
-        "abs",
-        "len",
-        "map",
-        "range",
-        "round",
-        "format",
-        "hash",
-        "bin",
-        "hex",
-        "chr",
-        "ascii",
-        "pow",
-        "any",
-    }
-)
-
-# Functions to skip (internal, deprecated, or not useful via Python API)
-SKIP_FUNCTIONS: pc.Set[str] = pc.Set(
+SKIP_FUNCTIONS = pc.Set(
     {
         # Internal functions
         "~~",
@@ -169,6 +97,7 @@ SKIP_FUNCTIONS: pc.Set[str] = pc.Set(
         "main.if",
     }
 )
+"""Functions to skip (internal, deprecated, or not useful via Python API)."""
 CATEGORY_PATTERNS: pc.Seq[tuple[str, str]] = pc.Seq(
     (
         ("list_", "List Functions"),
@@ -189,6 +118,7 @@ CATEGORY_PATTERNS: pc.Seq[tuple[str, str]] = pc.Seq(
         ("bit_", "Bitwise Functions"),
     )
 )
+"""Patterns to categorize functions based on their name prefixes."""
 
 
 @dataclass(slots=True)
@@ -208,7 +138,7 @@ class FunctionInfo:
 
     def _docstring(self) -> str:
         """Generate docstring for function."""
-        desc = self.description or f"SQL {self.name} function."
+        desc = _format_description(self.description or f"SQL {self.name} function.")
 
         args_doc = (
             self.parameters.then_some()
@@ -217,7 +147,7 @@ class FunctionInfo:
                 .iter()
                 .zip(self.parameter_types)
                 .filter_star(lambda name, _: bool(name))
-                .map_star(lambda name, typ: f"        {name}: {typ} expression")
+                .map_star(_format_arg_doc)
                 .join("\n")
             )
             .map(lambda lines: f"\n\n    Args:\n{lines}" if lines else "")
@@ -243,22 +173,62 @@ class FunctionInfo:
                 lambda p: _deduplicate_param_names(p)
                 .iter()
                 .enumerate()
+                .zip(self.parameter_types)
                 .map_star(
-                    lambda idx, name: (
-                        f"{name}: SqlExpr"
-                        if idx < self.min_param_count
-                        else f"{name}: SqlExpr | None = None"
+                    lambda idx_name, dtype: ParamInfos(
+                        idx_name[1],
+                        dtype,
+                        idx_name[0] >= self.min_param_count,
+                        _is_bool_type(dtype),
                     )
                 )
-                .join(", ")
+                .fold(_SignatureState(), _signature_step)
+                .parts.join(", ")
             )
-            .map(lambda args: f"def {self.python_name}({args}, /) -> SqlExpr:")
+            .map(lambda args: f"def {self.python_name}({args}) -> SqlExpr:")
             .unwrap_or(f"def {self.python_name}() -> SqlExpr:")
         )
 
     def generate_function(self) -> str:
         """Generate complete function definition."""
         return f"{self._signature()}\n{self._docstring()}\n{self._body()}"
+
+
+def _normalize_duckdb_type(dtype: str) -> str:
+    """Normalize DuckDB type for lookup."""
+    return dtype.split("(")[0].split("[")[0].strip().upper()
+
+
+def _duckdb_param_py_type(dtype: str) -> PyTypes:
+    """Map a DuckDB type string to a Python type name."""
+    return DUCKDB_TYPE_MAP.get_item(_normalize_duckdb_type(dtype)).unwrap_or(
+        PyTypes.EXPR
+    )
+
+
+def _format_arg_doc(name: str, dtype: str) -> str:
+    """Format a single argument doc line."""
+    py_type = _duckdb_param_py_type(dtype)
+    match py_type:
+        case PyTypes.EXPR:
+            return f"        {name} (SqlExpr): {dtype} expression"
+        case _:
+            return f"        {name} (SqlExpr | {py_type}): {dtype} expression"
+
+
+def _format_description(description: str) -> str:
+    """Format description with blank lines between sentences."""
+    spaced = (
+        pc.Iter(description.strip().replace("\u2019", "'").split(". "))
+        .join(".\n\n    ")
+        .rstrip(".")
+    )
+    return f"{spaced}."
+
+
+def _is_bool_type(dtype: str) -> bool:
+    """Check whether a DuckDB type maps to bool."""
+    return _duckdb_param_py_type(dtype) == PyTypes.BOOL
 
 
 @dataclass(slots=True)
@@ -269,6 +239,14 @@ class _ParamNameState:
     names: pc.Vec[str] = field(default_factory=lambda: pc.Vec[str].new())
 
 
+@dataclass(slots=True)
+class _SignatureState:
+    """Accumulator for signature building."""
+
+    parts: pc.Vec[str] = field(default_factory=lambda: pc.Vec[str].new())
+    has_kw_marker: bool = False
+
+
 def _sanitize_param_name(name: str, idx: int) -> str:
     """Sanitize parameter name to be a valid Python identifier."""
     if not name:
@@ -276,8 +254,8 @@ def _sanitize_param_name(name: str, idx: int) -> str:
     # Remove quotes, parentheses, and other problematic chars
     clean = name.strip("'\"").split("(")[0].replace("...", "")
     match clean:
-        case kword if keyword.iskeyword(clean) or clean in RESERVED:
-            return f"{kword}_"
+        case shadower if keyword.iskeyword(clean) or clean in dir(__builtins__):
+            return f"{shadower}_arg"
         case identifier if identifier.isidentifier():
             return clean
         case _:
@@ -307,7 +285,39 @@ def _deduplicate_param_names_step(
     return state
 
 
-def _fetch_functions() -> pc.Seq[FunctionInfo]:
+class ParamInfos(NamedTuple):
+    """Signature metadata for a parameter."""
+
+    name: str
+    dtype: str
+    optional: bool
+    is_bool: bool
+
+    def to_formatted(self) -> str:
+        """Format a single parameter signature entry."""
+        py_type = _duckdb_param_py_type(self.dtype)
+        match py_type:
+            case PyTypes.EXPR:
+                base_type = py_type
+            case _:
+                base_type = f"SqlExpr | {py_type}"
+        return (
+            f"{self.name}: {base_type} | None = None"
+            if self.optional
+            else f"{self.name}: {base_type}"
+        )
+
+
+def _signature_step(state: _SignatureState, param: ParamInfos) -> _SignatureState:
+    """Fold step for signature assembly with keyword-only bools."""
+    if param.is_bool and not state.has_kw_marker:
+        state.parts.insert(state.parts.length(), "*")
+        state.has_kw_marker = True
+    state.parts.insert(state.parts.length(), param.to_formatted())
+    return state
+
+
+def _get_query() -> str:
     """Fetch all functions from DuckDB."""
     category_cases = (
         CATEGORY_PATTERNS.iter()
@@ -323,18 +333,26 @@ def _fetch_functions() -> pc.Seq[FunctionInfo]:
         .join("\n")
     )
     reserved_names = RESERVED_NAMES.iter().map(lambda name: f"'{name}'").join(", ")
+    skipped_funcs = SKIP_FUNCTIONS.iter().map(lambda name: f"'{name}'").join(", ")
 
-    query = f"""
+    return f"""
         WITH raw AS (
             SELECT
                 function_name,
                 function_type,
                 return_type,
-                CASE
-                    WHEN function_name IN ({reserved_names})
-                        THEN function_name || '_func'
-                    ELSE function_name
-                END AS python_name,
+                lower(
+                    regexp_replace(
+                        CASE
+                            WHEN function_name IN ({reserved_names})
+                                THEN function_name || '_func'
+                            ELSE function_name
+                        END,
+                        '([a-z0-9])([A-Z])',
+                        '\\1_\\2',
+                        'g'
+                    )
+                ) AS python_name,
                 coalesce(parameters, []) AS parameters,
                 coalesce(parameter_types, []) AS parameter_types,
                 description,
@@ -344,7 +362,7 @@ def _fetch_functions() -> pc.Seq[FunctionInfo]:
               AND function_name NOT LIKE '%##%'
               AND function_name NOT LIKE '\\_%' ESCAPE '\\'
               AND function_name ~ '^[A-Za-z_][A-Za-z0-9_]*$'
-              AND function_name NOT IN ({SKIP_FUNCTIONS.iter().map(lambda name: f"'{name}'").join(", ")})
+              AND function_name NOT IN ({skipped_funcs})
         ), ranked AS (
             SELECT
                 function_name,
@@ -380,8 +398,10 @@ def _fetch_functions() -> pc.Seq[FunctionInfo]:
         ORDER BY function_name, parameter_types, function_type
     """
 
+
+def _fetch_functions() -> pc.Seq[FunctionInfo]:
     return (
-        pc.Iter(duckdb.sql(query).fetchall())
+        pc.Iter(duckdb.sql(_get_query()).fetchall())
         .map(
             lambda row: FunctionInfo(
                 name=row[0],
@@ -399,54 +419,13 @@ def _fetch_functions() -> pc.Seq[FunctionInfo]:
     )
 
 
-def _group_by_category(
-    functions: pc.Seq[FunctionInfo],
-) -> pc.Dict[str, pc.Seq[FunctionInfo]]:
-    """Group functions by category."""
-    return functions.iter().fold(
-        pc.Dict[str, pc.Seq[FunctionInfo]].new(),
-        _group_by_category_step,
-    )
-
-
-def _group_by_category_step(
-    grouped: pc.Dict[str, pc.Seq[FunctionInfo]],
-    func: FunctionInfo,
-) -> pc.Dict[str, pc.Seq[FunctionInfo]]:
-    """Fold step for grouping functions by category."""
-    return grouped.insert(
-        func.category,
-        grouped.get_item(func.category)
-        .map(lambda seq: pc.Seq((*seq, func)))
-        .unwrap_or(pc.Seq((func,))),
-    ).into(lambda _: grouped)
-
-
 def _generate_file_content(functions: pc.Seq[FunctionInfo]) -> str:
-    """Generate the complete fns.py file content."""
-    header = dedent('''\
-        """DuckDB SQL function wrappers with type hints.
-
-        This file is AUTO-GENERATED by scripts/generate_fns.py
-        Do not edit manually - regenerate with:
-            uv run scripts/generate_fns.py
-
-        Functions are extracted from DuckDB's duckdb_functions() introspection.
-        """
-
-        from __future__ import annotations
-
-        from ._exprs import SqlExpr, func
-
-        __all__ = [
-    ''')
-
-    # Generate __all__ list
     all_names = functions.iter().map(lambda f: f'    "{f.python_name}",').join("\n")
+    init: partial[Grouped] = partial(pc.Dict.new)
 
-    # Group and generate functions
     sections = (
-        functions.into(_group_by_category)
+        functions.iter()
+        .fold(init(), _group_by_category_step)
         .items()
         .iter()
         .sort(key=lambda kv: kv[0])
@@ -458,33 +437,65 @@ def _generate_file_content(functions: pc.Seq[FunctionInfo]) -> str:
         .join("")
     )
 
-    return f"{header}{all_names}\n]{sections}\n"
+    return f"{_header()}{all_names}\n]{sections}\n"
 
 
-DEFAULT_OUTPUT = Path("src/pql/sql/_generated_fns.py")
+def _group_by_category_step(grouped: Grouped, func: FunctionInfo) -> Grouped:
+    return grouped.insert(
+        func.category,
+        grouped.get_item(func.category)
+        .map(lambda seq: pc.Seq((*seq, func)))
+        .unwrap_or(pc.Seq((func,))),
+    ).into(lambda _: grouped)
+
+
+def _header() -> str:
+    return dedent('''\
+        """DuckDB SQL function wrappers with type hints.
+
+        This file is AUTO-GENERATED by scripts/generate_fns.py
+        Do not edit manually - regenerate with:
+            uv run scripts/generate_fns.py
+
+        Functions are extracted from DuckDB's duckdb_functions() introspection.
+        """
+
+        from __future__ import annotations
+
+        from datetime import date, datetime, time, timedelta
+
+        from ._exprs import SqlExpr, func
+
+        __all__ = [
+    ''')
+
+
+DEFAULT_OUTPUT = Path("src", "pql", "sql", "_generated_fns.py")
 
 app = typer.Typer(add_completion=False)
 
 
 @app.command()
 def main(
-    *,
     output: Annotated[Path, typer.Option("--output", "-o")] = DEFAULT_OUTPUT,
-    dry_run: Annotated[bool, typer.Option("--dry-run", "-n")] = False,
 ) -> None:
     """Generate typed DuckDB function wrappers."""
     typer.echo("Fetching functions from DuckDB...")
     functions = _fetch_functions()
     typer.echo(f"Found {functions.length()} function signatures")
-    content = _generate_file_content(functions)
+    content = functions.into(_generate_file_content)
 
-    if dry_run:
-        typer.echo("\n" + "=" * 60)
-        typer.echo(content)
-    else:
-        output.parent.mkdir(parents=True, exist_ok=True)
-        output.write_text(content, encoding="utf-8")
-        typer.echo(f"Generated {output}")
+    output.parent.mkdir(parents=True, exist_ok=True)
+    output.write_text(content, encoding="utf-8")
+    typer.echo(f"Generated {output}")
+
+    typer.echo("Running Ruff checks and format...")
+    uv_args = ["uv", "run", "ruff"]
+    run_ruff = partial(subprocess.run, check=False)
+    run_ruff([*uv_args, "check", "--fix", "--unsafe-fixes", str(output)])
+    run_ruff([*uv_args, "format", str(output)])
+
+    typer.echo("Done!")
 
 
 if __name__ == "__main__":
