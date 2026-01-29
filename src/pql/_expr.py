@@ -245,7 +245,7 @@ class Expr(SqlExprHandler):
             case "half_to_even":
                 rounding_func = sql.fns.round_even
             case "half_away_from_zero":
-                rounding_func = sql.fns.round_half
+                rounding_func = sql.fns.round
         return self.__class__(rounding_func(self._expr, sql.lit(decimals)))
 
     def sqrt(self) -> Self:
@@ -400,7 +400,7 @@ class Expr(SqlExprHandler):
         """Repeat values by count, returning a list."""
         return self.__class__(
             sql.fns.list_transform(
-                sql.fns.range_func(sql.from_value(by)),
+                sql.fns.range(sql.from_value(by)),
                 sql.fn_once("_", self._expr),
             )
         )

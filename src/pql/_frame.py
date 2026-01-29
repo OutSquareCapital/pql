@@ -235,7 +235,7 @@ class LazyFrame:
         """Aggregate the sum of each column."""
         return self.__from_lf__(
             self._rel.aggregate(
-                self.columns.iter().map(lambda c: sql.fns.sum_func(sql.col(c)).alias(c))
+                self.columns.iter().map(lambda c: sql.fns.sum(sql.col(c)).alias(c))
             )
         )
 
