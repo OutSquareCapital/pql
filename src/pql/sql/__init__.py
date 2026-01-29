@@ -1,6 +1,6 @@
 """SQL expression functions and converters."""
 
-from . import fns
+from . import datatypes, fns
 from ._converters import from_args_kwargs, from_expr, from_iter, from_value
 from ._exprs import (
     Relation,
@@ -25,6 +25,7 @@ __all__ = [
     "all",
     "coalesce",
     "col",
+    "datatypes",
     "fn_once",
     "fns",
     "from_args_kwargs",

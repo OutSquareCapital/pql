@@ -3,7 +3,7 @@
 from . import sql
 from ._expr import Expr, all, col
 from ._frame import LazyFrame
-from .datatypes import (
+from .sql.datatypes import (
     Boolean,
     Float32,
     Float64,

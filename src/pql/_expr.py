@@ -10,7 +10,7 @@ from typing import TYPE_CHECKING, Any, Concatenate, Self
 import duckdb
 import pyochain as pc
 
-from . import datatypes, sql
+from . import sql
 
 if TYPE_CHECKING:
     from ._types import IntoExpr, RoundMode
@@ -214,7 +214,7 @@ class Expr(SqlExprHandler):
         """Check if the expression is not NULL."""
         return self.__class__(self._expr.isnotnull())
 
-    def cast(self, dtype: datatypes.DataType) -> Self:
+    def cast(self, dtype: sql.datatypes.DataType) -> Self:
         """Cast to a different data type."""
         return self.__class__(self._expr.cast(dtype))
 
@@ -602,18 +602,24 @@ class ExprStringNameSpace:
         """Convert string to date."""
         match format:
             case None:
-                return Expr(self._expr.cast(datatypes.Date))
+                return Expr(self._expr.cast(sql.datatypes.Date))
             case _:
                 return Expr(
-                    sql.fns.strptime(self._expr, sql.lit(format)).cast(datatypes.Date)
+                    sql.fns.strptime(self._expr, sql.lit(format)).cast(
+                        sql.datatypes.Date
+                    )
                 )
 
-    def to_datetime(self, format: str | None = None, *, time_unit: str = "us") -> Expr:  # noqa: A002
+    def to_datetime(
+        self,
+        format: str | None = None,  # noqa: A002
+        *,
+        time_unit: sql.datatypes.TimeUnit = "us",
+    ) -> Expr:
         """Convert string to datetime."""
-        precision_map = {"ns": "TIMESTAMP_NS", "us": "TIMESTAMP", "ms": "TIMESTAMP_MS"}
         match format:
             case None:
-                base_expr = self._expr.cast(precision_map.get(time_unit, "TIMESTAMP"))
+                base_expr = self._expr.cast(sql.datatypes.PRECISION_MAP[time_unit])
             case _:
                 base_expr = sql.fns.strptime(self._expr, sql.lit(format))
         return Expr(base_expr)
@@ -622,10 +628,12 @@ class ExprStringNameSpace:
         """Convert string to time."""
         match format:
             case None:
-                return Expr(self._expr.cast(datatypes.Time))
+                return Expr(self._expr.cast(sql.datatypes.Time))
             case _:
                 return Expr(
-                    sql.fns.strptime(self._expr, sql.lit(format)).cast(datatypes.Time)
+                    sql.fns.strptime(self._expr, sql.lit(format)).cast(
+                        sql.datatypes.Time
+                    )
                 )
 
     def to_decimal(self, *, scale: int = 38) -> Expr:

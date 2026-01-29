@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import Literal
+
 from duckdb import sqltypes
 
 DataType = sqltypes.DuckDBPyType
@@ -22,3 +24,11 @@ Date = sqltypes.DATE
 Time = sqltypes.TIME
 Datetime = sqltypes.TIMESTAMP
 Timestamp = sqltypes.TIMESTAMP
+
+TimeUnit = Literal["s", "ms", "us", "ns"]
+PRECISION_MAP: dict[TimeUnit, DataType] = {
+    "s": sqltypes.TIMESTAMP_S,
+    "ms": sqltypes.TIMESTAMP_MS,
+    "us": sqltypes.TIMESTAMP,
+    "ns": sqltypes.TIMESTAMP_NS,
+}
