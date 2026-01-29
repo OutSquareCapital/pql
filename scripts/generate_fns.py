@@ -9,7 +9,7 @@ from enum import StrEnum, auto
 from functools import partial
 from pathlib import Path
 from textwrap import dedent
-from typing import Annotated, NamedTuple
+from typing import Annotated, NamedTuple, Self
 
 import duckdb
 import pyochain as pc
@@ -143,10 +143,10 @@ CATEGORY_PATTERNS: pc.Seq[tuple[str, str]] = pc.Seq(
 
 def _run_ruff(output: Path) -> None:
     typer.echo("Running Ruff checks and format...")
-    uv_args = ["uv", "run", "ruff"]
+    uv_args = ("uv", "run", "ruff")
     run_ruff = partial(subprocess.run, check=False)
-    run_ruff([*uv_args, "check", "--fix", "--unsafe-fixes", str(output)])
-    run_ruff([*uv_args, "format", str(output)])
+    run_ruff((*uv_args, "check", "--fix", "--unsafe-fixes", str(output)))
+    run_ruff((*uv_args, "format", str(output)))
 
 
 def _run_pipeline() -> str:
@@ -176,6 +176,14 @@ def _all_names(functions: pc.Seq[FunctionInfo]) -> str:
 
 
 def _sections(functions: pc.Seq[FunctionInfo]) -> str:
+    def _group_by_category_step(grouped: Grouped, func: FunctionInfo) -> Grouped:
+        return grouped.insert(
+            func.category,
+            grouped.get_item(func.category)
+            .map(lambda seq: pc.Seq((*seq, func)))
+            .unwrap_or(pc.Seq((func,))),
+        ).into(lambda _: grouped)
+
     return (
         functions.iter()
         .fold(pc.Dict[str, pc.Seq[FunctionInfo]].new(), _group_by_category_step)
@@ -212,7 +220,7 @@ class FunctionInfo:
         args_doc = (
             self.parameters.then_some()
             .map(
-                lambda p: _deduplicate_param_names(p)
+                lambda p: p.into(_deduplicate_param_names)
                 .iter()
                 .zip(self.parameter_types)
                 .filter_star(lambda name, _: bool(name))
@@ -229,7 +237,7 @@ class FunctionInfo:
         """Generate function body."""
         return (
             self.parameters.then_some()
-            .map(lambda p: _deduplicate_param_names(p).iter().join(", "))
+            .map(lambda p: p.into(_deduplicate_param_names).join(", "))
             .map(lambda args: f'    return func("{self.name}", {args})')
             .unwrap_or(f'    return func("{self.name}")')
         )
@@ -239,7 +247,7 @@ class FunctionInfo:
         return (
             self.parameters.then_some()
             .map(
-                lambda p: _deduplicate_param_names(p)
+                lambda p: p.into(_deduplicate_param_names)
                 .iter()
                 .enumerate()
                 .zip(self.parameter_types)
@@ -248,7 +256,7 @@ class FunctionInfo:
                         idx_name[1],
                         dtype,
                         idx_name[0] >= self.min_param_count,
-                        _is_bool_type(dtype),
+                        _duckdb_param_py_type(dtype) == PyTypes.BOOL,
                     )
                 )
                 .fold(_SignatureState(), _signature_step)
@@ -263,16 +271,18 @@ class FunctionInfo:
         return f"{self._signature()}\n{self._docstring()}\n{self._body()}"
 
 
-def _normalize_duckdb_type(dtype: str) -> str:
-    """Normalize DuckDB type for lookup."""
-    return dtype.split("(")[0].split("[")[0].strip().upper()
+def _deduplicate_param_names(params: pc.Seq[str]) -> pc.Vec[str]:
+    """Ensure all parameter names are unique by appending index if needed."""
+    return params.iter().enumerate().fold(_ParamNameState(), _ParamNameState.step).names
 
 
-def _duckdb_param_py_type(dtype: str) -> PyTypes:
-    """Map a DuckDB type string to a Python type name."""
-    return DUCKDB_TYPE_MAP.get_item(_normalize_duckdb_type(dtype)).unwrap_or(
-        PyTypes.EXPR
-    )
+def _signature_step(state: _SignatureState, param: ParamInfos) -> _SignatureState:
+    """Fold step for signature assembly with keyword-only bools."""
+    if param.is_bool and not state.has_kw_marker:
+        state.parts.insert(state.parts.length(), "*")
+        state.has_kw_marker = True
+    state.parts.insert(state.parts.length(), param.to_formatted())
+    return state
 
 
 def _format_arg_doc(name: str, dtype: str) -> str:
@@ -295,9 +305,11 @@ def _format_description(description: str) -> str:
     return f"{spaced}."
 
 
-def _is_bool_type(dtype: str) -> bool:
-    """Check whether a DuckDB type maps to bool."""
-    return _duckdb_param_py_type(dtype) == PyTypes.BOOL
+def _duckdb_param_py_type(dtype: str) -> PyTypes:
+    """Map a DuckDB type string to a Python type name."""
+    return DUCKDB_TYPE_MAP.get_item(
+        dtype.split("(")[0].split("[")[0].strip().upper()
+    ).unwrap_or(PyTypes.EXPR)
 
 
 @dataclass(slots=True)
@@ -306,6 +318,17 @@ class _ParamNameState:
 
     seen: pc.Dict[str, int] = field(default_factory=lambda: pc.Dict[str, int].new())
     names: pc.Vec[str] = field(default_factory=lambda: pc.Vec[str].new())
+
+    def step(self, idx_param: tuple[int, str]) -> Self:
+        """Fold step for parameter name de-duplication."""
+        idx, param = idx_param
+        clean = _sanitize_param_name(param, idx)
+        count = self.seen.get_item(clean).unwrap_or(-1) + 1
+        self.seen.insert(clean, count)
+        self.names.insert(
+            self.names.length(), f"{clean}{count}" if count > 0 else clean
+        )
+        return self
 
 
 @dataclass(slots=True)
@@ -320,7 +343,6 @@ def _sanitize_param_name(name: str, idx: int) -> str:
     """Sanitize parameter name to be a valid Python identifier."""
     if not name:
         return f"arg{idx}"
-    # Remove quotes, parentheses, and other problematic chars
     clean = name.strip("'\"").split("(")[0].replace("...", "")
     match clean:
         case shadower if keyword.iskeyword(clean) or clean in dir(__builtins__):
@@ -329,29 +351,6 @@ def _sanitize_param_name(name: str, idx: int) -> str:
             return clean
         case _:
             return f"arg{idx}"
-
-
-def _deduplicate_param_names(params: pc.Seq[str]) -> pc.Vec[str]:
-    """Ensure all parameter names are unique by appending index if needed."""
-    return (
-        params.iter()
-        .enumerate()
-        .fold(_ParamNameState(), _deduplicate_param_names_step)
-        .names
-    )
-
-
-def _deduplicate_param_names_step(
-    state: _ParamNameState,
-    idx_param: tuple[int, str],
-) -> _ParamNameState:
-    """Fold step for parameter name de-duplication."""
-    idx, param = idx_param
-    clean = _sanitize_param_name(param, idx)
-    count = state.seen.get_item(clean).unwrap_or(-1) + 1
-    state.seen.insert(clean, count)
-    state.names.insert(state.names.length(), f"{clean}{count}" if count > 0 else clean)
-    return state
 
 
 class ParamInfos(NamedTuple):
@@ -375,15 +374,6 @@ class ParamInfos(NamedTuple):
             if self.optional
             else f"{self.name}: {base_type}"
         )
-
-
-def _signature_step(state: _SignatureState, param: ParamInfos) -> _SignatureState:
-    """Fold step for signature assembly with keyword-only bools."""
-    if param.is_bool and not state.has_kw_marker:
-        state.parts.insert(state.parts.length(), "*")
-        state.has_kw_marker = True
-    state.parts.insert(state.parts.length(), param.to_formatted())
-    return state
 
 
 def _get_query() -> str:
@@ -466,15 +456,6 @@ def _get_query() -> str:
         WHERE rn = 1
         ORDER BY function_name, parameter_types, function_type
     """
-
-
-def _group_by_category_step(grouped: Grouped, func: FunctionInfo) -> Grouped:
-    return grouped.insert(
-        func.category,
-        grouped.get_item(func.category)
-        .map(lambda seq: pc.Seq((*seq, func)))
-        .unwrap_or(pc.Seq((func,))),
-    ).into(lambda _: grouped)
 
 
 def _header() -> str:
