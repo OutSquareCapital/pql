@@ -41,6 +41,7 @@
         "TD002",
         "TD003",
         "TID252",
+        "T203"
     ]
     lint.select = ["ALL"]
     [tool.ruff.format]
