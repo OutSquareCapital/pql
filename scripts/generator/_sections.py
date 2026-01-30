@@ -101,7 +101,9 @@ class FunctionInfo:
                     idx_name[0] >= self.min_param_count,
                     (
                         self.varargs.is_none()
-                        and _duckdb_param_py_type(dtype) == PyTypes.BOOL
+                        and DUCKDB_TYPE_MAP.get_item(dtype)
+                        .map(lambda d: d == PyTypes.BOOL)
+                        .unwrap_or(default=False)
                     ),
                 )
             )
@@ -127,21 +129,19 @@ def _deduplicate_param_names(params: pc.Seq[pc.Option[str]]) -> pc.Vec[str]:
 
 
 def _format_arg_doc(name: str, dtype: str) -> str:
-    py_type = _duckdb_param_py_type(dtype)
-    match py_type:
+    match DUCKDB_TYPE_MAP.get_item(dtype).unwrap_or(PyTypes.EXPR):
         case PyTypes.EXPR:
             return f"        {name} (SqlExpr): `{dtype}` expression"
         case _:
-            return f"        {name} (SqlExpr | {py_type}): `{dtype}` expression"
+            return f"        {name} (SqlExpr | {dtype}): `{dtype}` expression"
 
 
 def _format_varargs_type(dtype: str) -> str:
-    py_type = _duckdb_param_py_type(dtype)
-    match py_type:
+    match DUCKDB_TYPE_MAP.get_item(dtype).unwrap_or(PyTypes.EXPR):
         case PyTypes.EXPR:
-            return py_type
+            return dtype
         case _:
-            return f"SqlExpr | {py_type}"
+            return f"SqlExpr | {dtype}"
 
 
 @dataclass(slots=True)
@@ -181,7 +181,7 @@ class _SignatureState:
 
 def _sanitize_param_name(name: pc.Option[str], idx: int) -> str:
     """Sanitize parameter name to be a valid Python identifier."""
-    match name.map(lambda n: n.strip("'\"").split("(")[0].replace("...", "")):
+    match name:
         case pc.NONE:
             return f"arg{idx}"
         case pc.Some(shadower) if shadower in SHADOWERS:
@@ -202,21 +202,17 @@ class ParamInfos(NamedTuple):
 
     def to_formatted(self) -> str:
         """Format a single parameter signature entry."""
-        py_type = _duckdb_param_py_type(self.dtype)
-        match py_type:
-            case PyTypes.EXPR:
-                base_type = py_type
-            case _:
-                base_type = f"SqlExpr | {py_type}"
-        return (
-            f"{self.name}: {base_type} | None = None"
-            if self.optional
-            else f"{self.name}: {base_type}"
-        )
+        match self.optional:
+            case True:
+                return f"{self.name}: {_base_type(self.dtype)} | None = None"
+            case False:
+                return f"{self.name}: {_base_type(self.dtype)}"
 
 
-def _duckdb_param_py_type(dtype: str) -> PyTypes:
-    """Map a DuckDB type string to a Python type name."""
-    return DUCKDB_TYPE_MAP.get_item(
-        dtype.split("(")[0].split("[")[0].strip().upper()
-    ).unwrap_or(PyTypes.EXPR)
+def _base_type(dtype: str) -> str:
+    py_type = DUCKDB_TYPE_MAP.get_item(dtype).unwrap_or(PyTypes.EXPR)
+    match py_type:
+        case PyTypes.EXPR:
+            return py_type
+        case _:
+            return f"SqlExpr | {py_type}"

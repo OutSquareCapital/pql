@@ -54,8 +54,22 @@ def get_df() -> pl.DataFrame:
             "return_type",
             "python_name",
             "category",
-            "parameters",
-            "parameter_types",
+            pl.col("parameters").list.eval(
+                pl.element()
+                .str.strip_chars("'\"")
+                .str.split("(")
+                .list.get(0)
+                .str.replace_all("...", "")
+            ),
+            pl.col("parameter_types").list.eval(
+                pl.element()
+                .str.split("(")
+                .list.get(0)
+                .str.split("[")
+                .list.get(0)
+                .str.strip_chars()
+                .str.to_uppercase()
+            ),
             "varargs",
             pl.col("description").str.strip_chars().str.replace_all("\u2019", "'"),
             "min_param_len",
