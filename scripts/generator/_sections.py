@@ -45,7 +45,7 @@ class FunctionInfo:
 
     def _docstring(self) -> str:
         desc = (
-            self.description.map(lambda d: d.strip().replace("\u2019", "'").split(". "))
+            self.description.map(lambda d: d.split(". "))
             .map(lambda s: pc.Iter(s).join(".\n\n    ").rstrip("."))
             .map(lambda spaced: f"{spaced}.")
             .unwrap_or(f"SQL {self.name} function.")

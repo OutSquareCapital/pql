@@ -57,7 +57,7 @@ def get_df() -> pl.DataFrame:
             "parameters",
             "parameter_types",
             "varargs",
-            "description",
+            pl.col("description").str.strip_chars().str.replace_all("\u2019", "'"),
             "min_param_len",
         )
         .sort("category", "function_name")
