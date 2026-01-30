@@ -45,7 +45,7 @@ class FunctionInfo:
     return_type: str
     python_name: str
     category: str
-    parameters: pc.Seq[str]
+    parameters: pc.Seq[pc.Option[str]]
     parameter_types: pc.Seq[str]
     varargs: pc.Option[str]
     description: pc.Option[str]
@@ -59,7 +59,7 @@ class FunctionInfo:
             return_type=row[2] or "ANY",
             python_name=row[3],
             category=row[4],
-            parameters=pc.Seq(row[5]),
+            parameters=pc.Iter(row[5]).map(pc.Option.if_some).collect(),
             parameter_types=pc.Iter(row[6])
             .map(lambda dtype: pc.Option(dtype).unwrap_or("ANY"))
             .collect(),
@@ -69,7 +69,6 @@ class FunctionInfo:
         )
 
     def _docstring(self) -> str:
-        """Generate docstring for function."""
         desc = (
             self.description.map(lambda d: d.strip().replace("\u2019", "'").split(". "))
             .map(lambda s: pc.Iter(s).join(".\n\n    ").rstrip("."))
@@ -77,20 +76,17 @@ class FunctionInfo:
             .unwrap_or(f"SQL {self.name} function.")
         )
 
-        args_lines = self.parameters.then(
-            lambda p: p.into(_deduplicate_param_names)
-        ).map(
-            lambda seq: seq.iter()
-            .zip(self.parameter_types)
-            .filter_star(lambda name, _: bool(name))
-            .map_star(_format_arg_doc)
-            .join("\n")
-        )
-        varargs_line = self.varargs.map(lambda dtype: _format_arg_doc("*args", dtype))
         args_doc = (
-            pc.Iter((args_lines, varargs_line))
-            .filter_map(lambda x: x)
-            .then(lambda x: x.join("\n"))
+            self.parameters.then(
+                lambda p: p.into(_deduplicate_param_names)
+                .iter()
+                .zip(self.parameter_types)
+                .filter_star(lambda name, _: bool(name))
+                .map_star(_format_arg_doc)
+                .join("\n")
+            )
+            .zip(self.varargs.map(lambda dtype: _format_arg_doc("*args", dtype)))
+            .map(lambda lines: pc.Iter(lines).join("\n"))
             .map(lambda lines: f"\n\n    Args:\n{lines}")
             .unwrap_or("")
         )
@@ -98,21 +94,19 @@ class FunctionInfo:
         return f'    """{desc}{args_doc}\n\n    Returns:\n        SqlExpr: Result expression.\n    """'
 
     def _body(self) -> str:
-        """Generate function body."""
-        varargs = self.varargs.map(lambda _: "*args")
-        base_args = self.parameters.then_some().map(
-            lambda p: p.into(_deduplicate_param_names).join(", ")
-        )
-        args = pc.Iter((base_args, varargs)).filter_map(lambda x: x).join(", ")
         return (
-            f'    return func("{self.name}", {args})'
-            if args
-            else f'    return func("{self.name}")'
+            self.varargs.map(lambda _: "*args")
+            .zip(
+                self.parameters.then(
+                    lambda p: p.into(_deduplicate_param_names).join(", ")
+                )
+            )
+            .map(lambda pair: pc.Iter(pair).join(", "))
+            .map(lambda args: f'    return func("{self.name}", {args})')
+            .unwrap_or(f'    return func("{self.name}")')
         )
 
     def _signature(self) -> str:
-        """Generate function signature with type hints."""
-        has_varargs = self.varargs.map(lambda _: 1).unwrap_or(0) == 1
         varargs = self.varargs.map(
             lambda dtype: f"*args: {_format_varargs_type(dtype)}"
         )
@@ -126,7 +120,10 @@ class FunctionInfo:
                     idx_name[1],
                     dtype,
                     idx_name[0] >= self.min_param_count,
-                    (not has_varargs) and _duckdb_param_py_type(dtype) == PyTypes.BOOL,
+                    (
+                        self.varargs.is_none()
+                        and _duckdb_param_py_type(dtype) == PyTypes.BOOL
+                    ),
                 )
             )
             .fold(_SignatureState(), _SignatureState.step)
@@ -145,7 +142,7 @@ class FunctionInfo:
         return f"{self._signature()}\n{self._docstring()}\n{self._body()}"
 
 
-def _deduplicate_param_names(params: pc.Seq[str]) -> pc.Vec[str]:
+def _deduplicate_param_names(params: pc.Seq[pc.Option[str]]) -> pc.Vec[str]:
     """Ensure all parameter names are unique by appending index if needed."""
     return params.iter().enumerate().fold(_ParamNameState(), _ParamNameState.step).names
 
@@ -175,7 +172,7 @@ class _ParamNameState:
     seen: pc.Dict[str, int] = field(default_factory=lambda: pc.Dict[str, int].new())
     names: pc.Vec[str] = field(default_factory=lambda: pc.Vec[str].new())
 
-    def step(self, idx_param: tuple[int, str]) -> Self:
+    def step(self, idx_param: tuple[int, pc.Option[str]]) -> Self:
         """Fold step for parameter name de-duplication."""
         idx, param = idx_param
         clean = _sanitize_param_name(param, idx)
@@ -203,16 +200,15 @@ class _SignatureState:
         return self
 
 
-def _sanitize_param_name(name: str, idx: int) -> str:
+def _sanitize_param_name(name: pc.Option[str], idx: int) -> str:
     """Sanitize parameter name to be a valid Python identifier."""
-    if not name:
-        return f"arg{idx}"
-    clean = name.strip("'\"").split("(")[0].replace("...", "")
-    match clean:
-        case shadower if clean in SHADOWERS:
+    match name.map(lambda n: n.strip("'\"").split("(")[0].replace("...", "")):
+        case pc.NONE:
+            return f"arg{idx}"
+        case pc.Some(shadower) if shadower in SHADOWERS:
             return f"{shadower}_arg"
-        case identifier if identifier.isidentifier():
-            return clean
+        case pc.Some(identifier) if identifier.isidentifier():
+            return identifier
         case _:
             return f"arg{idx}"
 
