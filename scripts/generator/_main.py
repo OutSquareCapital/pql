@@ -11,7 +11,7 @@ from typing import Annotated
 import pyochain as pc
 import typer
 
-from ._query import get_df, sql_query
+from ._query import get_df
 from ._sections import FunctionInfo, sections
 
 DEFAULT_OUTPUT = Path("src", "pql", "sql", "fns.py")
@@ -37,9 +37,10 @@ def main(
 @app.command()
 def explore() -> None:
     """Explore data from the table."""
-    return (
-        sql_query().pl(lazy=True).select("return_type").drop_nulls().unique().show(100)
-    )
+    import polars as pl
+
+    # sql_query().pl(lazy=True).select("return_type").drop_nulls().unique().show(100)
+    return get_df().explode(pl.selectors.list()).show(100)
 
 
 def _run_ruff(output: Path) -> None:
@@ -51,17 +52,18 @@ def _run_ruff(output: Path) -> None:
 
 
 def _run_pipeline() -> str:
+    df = get_df()
+
+    typer.echo(f"Found {df.height} function signatures")
     return (
         get_df()
         .pipe(lambda df: pc.Iter(df.iter_rows()))
         .map(FunctionInfo.from_row)
-        .collect()
-        .inspect(lambda fns: typer.echo(f"Found {fns.length()} function signatures"))
         .into(_build_file)
     )
 
 
-def _build_file(fns: pc.Seq[FunctionInfo]) -> str:
+def _build_file(fns: pc.Iter[FunctionInfo]) -> str:
     all_names = fns.iter().map(lambda f: f'    "{f.python_name}",').join("\n")
     return f"{_header()}{all_names}\n]{sections(fns)}\n"
 

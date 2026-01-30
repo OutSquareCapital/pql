@@ -11,7 +11,7 @@ type Grouped = pc.Dict[str, pc.Seq[FunctionInfo]]
 """Grouped functions by category."""
 
 
-def sections(functions: pc.Seq[FunctionInfo]) -> str:
+def sections(functions: pc.Iter[FunctionInfo]) -> str:
     def _group_by_category_step(grouped: Grouped, func: FunctionInfo) -> Grouped:
         return grouped.insert(
             func.category,
@@ -21,8 +21,9 @@ def sections(functions: pc.Seq[FunctionInfo]) -> str:
         ).into(lambda _: grouped)
 
     return (
-        functions.iter()
-        .fold(pc.Dict[str, pc.Seq[FunctionInfo]].new(), _group_by_category_step)
+        functions.fold(
+            pc.Dict[str, pc.Seq[FunctionInfo]].new(), _group_by_category_step
+        )
         .items()
         .iter()
         .sort(key=lambda kv: kv[0])
