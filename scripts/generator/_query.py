@@ -60,6 +60,7 @@ def get_df() -> pl.DataFrame:
             "description",
             "min_param_len",
         )
+        .sort("category", "function_name")
         .collect()
     )
 

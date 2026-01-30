@@ -12,25 +12,11 @@ type Grouped = pc.Dict[str, pc.Seq[FunctionInfo]]
 
 
 def sections(functions: pc.Iter[FunctionInfo]) -> str:
-    def _group_by_category_step(grouped: Grouped, func: FunctionInfo) -> Grouped:
-        return grouped.insert(
-            func.category,
-            grouped.get_item(func.category)
-            .map(lambda seq: pc.Seq((*seq, func)))
-            .unwrap_or(pc.Seq((func,))),
-        ).into(lambda _: grouped)
-
     return (
-        functions.fold(
-            pc.Dict[str, pc.Seq[FunctionInfo]].new(), _group_by_category_step
-        )
-        .items()
-        .iter()
-        .sort(key=lambda kv: kv[0])
-        .iter()
+        functions.group_by(lambda f: f.category)
         .map_star(
             lambda category, funcs: f"\n\n# {'=' * 60}\n# {category}\n# {'=' * 60}\n\n"
-            + funcs.iter().map(lambda f: f.generate_function()).join("\n\n\n")
+            + funcs.map(lambda f: f.generate_function()).join("\n\n\n")
         )
         .join("")
     )
