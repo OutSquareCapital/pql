@@ -12,7 +12,7 @@ import pyochain as pc
 import typer
 
 from ._query import get_df
-from ._sections import FunctionInfo, sections
+from ._sections import FunctionInfo
 
 DEFAULT_OUTPUT = Path("src", "pql", "sql", "fns.py")
 
@@ -66,7 +66,16 @@ def _run_pipeline() -> str:
 
 def _build_file(fns: pc.Seq[FunctionInfo]) -> str:
     all_names = fns.iter().map(lambda f: f'    "{f.python_name}",').join("\n")
-    return f"{_header()}{all_names}\n]{fns.iter().into(sections)}\n"
+    sections = (
+        fns.iter()
+        .group_by(lambda f: f.category)
+        .map_star(
+            lambda category, funcs: f"\n\n# {'=' * 60}\n# {category}\n# {'=' * 60}\n\n"
+            + funcs.map(lambda f: f.generate_function()).join("\n\n\n")
+        )
+        .join("")
+    )
+    return f"{_header()}{all_names}\n]{sections}\n"
 
 
 def _header() -> str:

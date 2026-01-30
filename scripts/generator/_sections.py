@@ -11,17 +11,6 @@ type Grouped = pc.Dict[str, pc.Seq[FunctionInfo]]
 """Grouped functions by category."""
 
 
-def sections(functions: pc.Iter[FunctionInfo]) -> str:
-    return (
-        functions.group_by(lambda f: f.category)
-        .map_star(
-            lambda category, funcs: f"\n\n# {'=' * 60}\n# {category}\n# {'=' * 60}\n\n"
-            + funcs.map(lambda f: f.generate_function()).join("\n\n\n")
-        )
-        .join("")
-    )
-
-
 @dataclass(slots=True)
 class FunctionInfo:
     """Metadata for a DuckDB function."""
