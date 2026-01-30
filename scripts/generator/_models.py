@@ -77,40 +77,76 @@ class PyTypes(StrEnum):
     EXPR = "SqlExpr"
 
 
-# DuckDB type -> Python type hint mapping
-DUCKDB_TYPE_MAP = pc.Dict.from_kwargs(
-    VARCHAR=PyTypes.STR,
-    INTEGER=PyTypes.INT,
-    BIGINT=PyTypes.INT,
-    SMALLINT=PyTypes.INT,
-    TINYINT=PyTypes.INT,
-    HUGEINT=PyTypes.INT,
-    UINTEGER=PyTypes.INT,
-    UBIGINT=PyTypes.INT,
-    USMALLINT=PyTypes.INT,
-    UTINYINT=PyTypes.INT,
-    UHUGEINT=PyTypes.INT,
-    DOUBLE=PyTypes.FLOAT,
-    FLOAT=PyTypes.FLOAT,
-    REAL=PyTypes.FLOAT,
-    DECIMAL=PyTypes.FLOAT,
-    BOOLEAN=PyTypes.BOOL,
-    DATE=PyTypes.DATE,
-    TIME=PyTypes.TIME,
-    TIMESTAMP=PyTypes.DATETIME,
-    INTERVAL=PyTypes.TIMEDELTA,
-    BLOB=PyTypes.BYTES,
-    BIT=PyTypes.BYTES,
-    UUID=PyTypes.STR,
-    JSON=PyTypes.STR,
-    ANY=PyTypes.EXPR,
-    LIST=PyTypes.LIST,
-    MAP=PyTypes.DICT,
-    STRUCT=PyTypes.DICT,
-    ARRAY=PyTypes.LIST,
-    UNION=PyTypes.EXPR,
-)
+class DuckDbTypes(StrEnum):
+    """DuckDB type names."""
 
+    VARCHAR = auto()
+    INTEGER = auto()
+    BIGINT = auto()
+    SMALLINT = auto()
+    TINYINT = auto()
+    HUGEINT = auto()
+    UINTEGER = auto()
+    UBIGINT = auto()
+    USMALLINT = auto()
+    UTINYINT = auto()
+    UHUGEINT = auto()
+    DOUBLE = auto()
+    FLOAT = auto()
+    REAL = auto()
+    DECIMAL = auto()
+    BOOLEAN = auto()
+    DATE = auto()
+    TIME = auto()
+    TIMESTAMP = auto()
+    INTERVAL = auto()
+    BLOB = auto()
+    BIT = auto()
+    UUID = auto()
+    JSON = auto()
+    ANY = auto()
+    LIST = auto()
+    MAP = auto()
+    STRUCT = auto()
+    ARRAY = auto()
+    UNION = auto()
+
+
+CONVERSION_MAP: pc.Dict[DuckDbTypes, PyTypes] = pc.Dict(
+    {
+        DuckDbTypes.VARCHAR: PyTypes.STR,
+        DuckDbTypes.INTEGER: PyTypes.INT,
+        DuckDbTypes.BIGINT: PyTypes.INT,
+        DuckDbTypes.SMALLINT: PyTypes.INT,
+        DuckDbTypes.TINYINT: PyTypes.INT,
+        DuckDbTypes.HUGEINT: PyTypes.INT,
+        DuckDbTypes.UINTEGER: PyTypes.INT,
+        DuckDbTypes.UBIGINT: PyTypes.INT,
+        DuckDbTypes.USMALLINT: PyTypes.INT,
+        DuckDbTypes.UTINYINT: PyTypes.INT,
+        DuckDbTypes.UHUGEINT: PyTypes.INT,
+        DuckDbTypes.DOUBLE: PyTypes.FLOAT,
+        DuckDbTypes.FLOAT: PyTypes.FLOAT,
+        DuckDbTypes.REAL: PyTypes.FLOAT,
+        DuckDbTypes.DECIMAL: PyTypes.FLOAT,
+        DuckDbTypes.BOOLEAN: PyTypes.BOOL,
+        DuckDbTypes.DATE: PyTypes.DATE,
+        DuckDbTypes.TIME: PyTypes.TIME,
+        DuckDbTypes.TIMESTAMP: PyTypes.DATETIME,
+        DuckDbTypes.INTERVAL: PyTypes.TIMEDELTA,
+        DuckDbTypes.BLOB: PyTypes.BYTES,
+        DuckDbTypes.BIT: PyTypes.BYTES,
+        DuckDbTypes.UUID: PyTypes.STR,
+        DuckDbTypes.JSON: PyTypes.STR,
+        DuckDbTypes.ANY: PyTypes.EXPR,
+        DuckDbTypes.LIST: PyTypes.LIST,
+        DuckDbTypes.MAP: PyTypes.DICT,
+        DuckDbTypes.STRUCT: PyTypes.DICT,
+        DuckDbTypes.ARRAY: PyTypes.LIST,
+        DuckDbTypes.UNION: PyTypes.EXPR,
+    }
+)
+"""DuckDB type -> Python type hint mapping."""
 
 FN_CATEGORY = pc.Dict.from_kwargs(
     scalar="Scalar Functions",
