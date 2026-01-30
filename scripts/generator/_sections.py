@@ -76,17 +76,20 @@ class FunctionInfo:
             .unwrap_or(f"SQL {self.name} function.")
         )
 
+        base_args_doc = self.parameters.then(
+            lambda p: p.into(_deduplicate_param_names)
+            .iter()
+            .zip(self.parameter_types)
+            .filter_star(lambda name, _: bool(name))
+            .map_star(_format_arg_doc)
+            .join("\n")
+        )
+        varargs_doc = self.varargs.map(lambda dtype: _format_arg_doc("*args", dtype))
+
         args_doc = (
-            self.parameters.then(
-                lambda p: p.into(_deduplicate_param_names)
-                .iter()
-                .zip(self.parameter_types)
-                .filter_star(lambda name, _: bool(name))
-                .map_star(_format_arg_doc)
-                .join("\n")
-            )
-            .zip(self.varargs.map(lambda dtype: _format_arg_doc("*args", dtype)))
-            .map(lambda lines: pc.Iter(lines).join("\n"))
+            pc.Iter((base_args_doc, varargs_doc))
+            .filter_map(lambda x: x)
+            .then(lambda x: x.join("\n"))
             .map(lambda lines: f"\n\n    Args:\n{lines}")
             .unwrap_or("")
         )
@@ -94,14 +97,15 @@ class FunctionInfo:
         return f'    """{desc}{args_doc}\n\n    Returns:\n        SqlExpr: Result expression.\n    """'
 
     def _body(self) -> str:
+        base_params = self.parameters.then(
+            lambda p: p.into(_deduplicate_param_names).join(", ")
+        )
+        varargs_part = self.varargs.map(lambda _: "*args")
+
         return (
-            self.varargs.map(lambda _: "*args")
-            .zip(
-                self.parameters.then(
-                    lambda p: p.into(_deduplicate_param_names).join(", ")
-                )
-            )
-            .map(lambda pair: pc.Iter(pair).join(", "))
+            pc.Iter((base_params, varargs_part))
+            .filter_map(lambda x: x)
+            .then(lambda x: x.join(", "))
             .map(lambda args: f'    return func("{self.name}", {args})')
             .unwrap_or(f'    return func("{self.name}")')
         )

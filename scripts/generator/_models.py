@@ -1,3 +1,4 @@
+import builtins
 import keyword
 from enum import StrEnum, auto
 
@@ -120,10 +121,11 @@ FN_CATEGORY = pc.Dict.from_kwargs(
 """Mapping of DuckDB function types to categories."""
 KWORDS = pc.Set(keyword.kwlist)
 """Python reserved keywords that need renaming when generating function names."""
-BUILTINS = pc.Set(dir(__builtins__))
+BUILTINS = pc.Set(dir(builtins))
+"""Python built-in names."""
 AMBIGUOUS = pc.Set("l")
 SHADOWERS = KWORDS.union(BUILTINS).union(AMBIGUOUS)
-"""Python built-in names."""
+"""Names that should be renamed to avoid shadowing."""
 SKIP_FUNCTIONS = pc.Set(
     {
         # Internal functions

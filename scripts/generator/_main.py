@@ -16,11 +16,11 @@ from ._sections import FunctionInfo, sections
 
 DEFAULT_OUTPUT = Path("src", "pql", "sql", "fns.py")
 
-app = typer.Typer(add_completion=False)
+app = typer.Typer()
 
 
 @app.command()
-def main(
+def generate(
     output: Annotated[Path, typer.Option("--output", "-o")] = DEFAULT_OUTPUT,
 ) -> None:
     """Generate typed DuckDB function wrappers."""
@@ -35,11 +35,11 @@ def main(
 
 
 @app.command()
-def explore() -> None:
+def debug() -> None:
     """Explore data from the table."""
     import polars as pl
 
-    # sql_query().pl(lazy=True).select("return_type").drop_nulls().unique().show(100)
+    # sql_query().pl(lazy=True).select("return_type").drop_nulls().unique().show(100)  # noqa: ERA001
     return get_df().explode(pl.selectors.list()).show(100)
 
 
@@ -59,13 +59,14 @@ def _run_pipeline() -> str:
         get_df()
         .pipe(lambda df: pc.Iter(df.iter_rows()))
         .map(FunctionInfo.from_row)
+        .collect()
         .into(_build_file)
     )
 
 
-def _build_file(fns: pc.Iter[FunctionInfo]) -> str:
+def _build_file(fns: pc.Seq[FunctionInfo]) -> str:
     all_names = fns.iter().map(lambda f: f'    "{f.python_name}",').join("\n")
-    return f"{_header()}{all_names}\n]{sections(fns)}\n"
+    return f"{_header()}{all_names}\n]{fns.iter().into(sections)}\n"
 
 
 def _header() -> str:

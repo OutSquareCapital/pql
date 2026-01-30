@@ -1,4 +1,7 @@
-"""script entry point."""
+"""script entry point.
+
+Run with: `uv run -m scripts`
+"""
 
 from .generator import app
 
