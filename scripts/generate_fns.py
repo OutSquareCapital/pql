@@ -281,7 +281,7 @@ class FunctionInfo:
                     (not has_varargs) and _duckdb_param_py_type(dtype) == PyTypes.BOOL,
                 )
             )
-            .fold(_SignatureState(), _signature_step)
+            .fold(_SignatureState(), _SignatureState.step)
             .parts.join(", ")
         )
         return (
@@ -300,15 +300,6 @@ class FunctionInfo:
 def _deduplicate_param_names(params: pc.Seq[str]) -> pc.Vec[str]:
     """Ensure all parameter names are unique by appending index if needed."""
     return params.iter().enumerate().fold(_ParamNameState(), _ParamNameState.step).names
-
-
-def _signature_step(state: _SignatureState, param: ParamInfos) -> _SignatureState:
-    """Fold step for signature assembly with keyword-only bools."""
-    if param.is_bool and not state.has_kw_marker:
-        state.parts.insert(state.parts.length(), "*")
-        state.has_kw_marker = True
-    state.parts.insert(state.parts.length(), param.to_formatted())
-    return state
 
 
 def _format_arg_doc(name: str, dtype: str) -> str:
@@ -361,6 +352,14 @@ class _SignatureState:
 
     parts: pc.Vec[str] = field(default_factory=lambda: pc.Vec[str].new())
     has_kw_marker: bool = False
+
+    def step(self, param: ParamInfos) -> Self:
+        """Fold step for signature assembly with keyword-only bools."""
+        if param.is_bool and not self.has_kw_marker:
+            self.parts.insert(self.parts.length(), "*")
+            self.has_kw_marker = True
+        self.parts.insert(self.parts.length(), param.to_formatted())
+        return self
 
 
 def _sanitize_param_name(name: str, idx: int) -> str:
