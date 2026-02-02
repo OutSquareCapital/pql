@@ -26,9 +26,8 @@ def sql_query() -> duckdb.DuckDBPyRelation:
     return duckdb.sql(qry)
 
 
-def get_df() -> pl.DataFrame:
+def get_df() -> pl.LazyFrame:
     fn_name = pl.col("function_name")
-    fn_type = pl.col("function_type")
     params = pl.col("parameters")
     py_name = pl.col("python_name")
     py_types = pl.col("py_types")
@@ -44,9 +43,14 @@ def get_df() -> pl.DataFrame:
     return (
         sql_query()
         .pl(lazy=True)
+        .filter(
+            pl.col("function_type")
+            .cast(FuncTypes)
+            .is_in((FuncTypes.SCALAR, FuncTypes.AGGREGATE, FuncTypes.MACRO))
+            .and_(fn_name.str.starts_with("__").not_())
+        )
         .select(
             fn_name,
-            fn_type.cast(FuncTypes),
             return_type,
             params,
             param_types.list.eval(pl.element().fill_null("ANY")),
@@ -56,11 +60,6 @@ def get_df() -> pl.DataFrame:
             fn_name.pipe(_python_name).pipe(_category),
             params.list.len().alias("param_len"),
             params.list.len().min().over(fn_name).alias("min_param_len"),
-        )
-        .filter(
-            fn_type.is_in(
-                (FuncTypes.SCALAR, FuncTypes.AGGREGATE, FuncTypes.MACRO)
-            ).and_(fn_name.str.starts_with("__").not_())
         )
         .sort(by=[fn_name, "param_len"], descending=[False, True])
         .unique(subset=py_name, keep="first")
@@ -126,7 +125,6 @@ def get_df() -> pl.DataFrame:
             ),
         )
         .sort(category, py_name)
-        .collect()
     )
 
 

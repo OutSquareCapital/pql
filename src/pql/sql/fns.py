@@ -10,6 +10,7 @@ Functions are extracted from DuckDB's duckdb_functions() introspection.
 from __future__ import annotations
 
 from datetime import date, datetime, time, timedelta
+from decimal import Decimal
 
 from ._exprs import SqlExpr, func
 
@@ -775,13 +776,13 @@ __all__ = [
 # ============================================================
 
 
-def any_value(arg: SqlExpr | float) -> SqlExpr:
+def any_value(arg: SqlExpr | Decimal) -> SqlExpr:
     """Returns the first non-NULL value from arg.
 
     This function is affected by ordering.
 
     Args:
-        arg (SqlExpr | float): `DECIMAL` expression
+        arg (SqlExpr | Decimal): `DECIMAL` expression
 
     Returns:
         SqlExpr: `DECIMAL` expression.
@@ -1079,13 +1080,13 @@ def favg(x: SqlExpr | float) -> SqlExpr:
     return func("favg", x)
 
 
-def first(arg: SqlExpr | float) -> SqlExpr:
+def first(arg: SqlExpr | Decimal) -> SqlExpr:
     """Returns the first value (NULL or non-NULL) from arg.
 
     This function is affected by ordering.
 
     Args:
-        arg (SqlExpr | float): `DECIMAL` expression
+        arg (SqlExpr | Decimal): `DECIMAL` expression
 
     Returns:
         SqlExpr: `DECIMAL` expression.
@@ -1180,13 +1181,13 @@ def kurtosis_pop(x: SqlExpr | float) -> SqlExpr:
     return func("kurtosis_pop", x)
 
 
-def last(arg: SqlExpr | float) -> SqlExpr:
+def last(arg: SqlExpr | Decimal) -> SqlExpr:
     """Returns the last value of a column.
 
     This function is affected by ordering.
 
     Args:
-        arg (SqlExpr | float): `DECIMAL` expression
+        arg (SqlExpr | Decimal): `DECIMAL` expression
 
     Returns:
         SqlExpr: `DECIMAL` expression.
@@ -1239,11 +1240,11 @@ def max_by(arg: SqlExpr, val: SqlExpr, col2: SqlExpr | int | None = None) -> Sql
     return func("max_by", arg, val, col2)
 
 
-def mean(x: SqlExpr | float) -> SqlExpr:
+def mean(x: SqlExpr | Decimal) -> SqlExpr:
     """Calculates the average value for all tuples in x.
 
     Args:
-        x (SqlExpr | float): `DECIMAL` expression
+        x (SqlExpr | Decimal): `DECIMAL` expression
 
     Returns:
         SqlExpr: `DECIMAL` expression.
@@ -1576,13 +1577,13 @@ def sum(*, arg: SqlExpr | bool) -> SqlExpr:
     return func("sum", arg)
 
 
-def sum_no_overflow(arg: SqlExpr | float) -> SqlExpr:
+def sum_no_overflow(arg: SqlExpr | Decimal) -> SqlExpr:
     """Internal only.
 
     Calculates the sum value for all tuples in arg without overflow checks.
 
     Args:
-        arg (SqlExpr | float): `DECIMAL` expression
+        arg (SqlExpr | Decimal): `DECIMAL` expression
 
     Returns:
         SqlExpr: `DECIMAL` expression.
@@ -9596,11 +9597,11 @@ def right_shift(input_arg: SqlExpr | int, col1: SqlExpr | int) -> SqlExpr:
     return func(">>", input_arg, col1)
 
 
-def round(x: SqlExpr | float, precision: SqlExpr | int | None = None) -> SqlExpr:
+def round(x: SqlExpr | Decimal, precision: SqlExpr | int | None = None) -> SqlExpr:
     """Rounds x to s decimal places.
 
     Args:
-        x (SqlExpr | float): `DECIMAL` expression
+        x (SqlExpr | Decimal): `DECIMAL` expression
         precision (SqlExpr | int | None): `INTEGER` expression
 
     Returns:
@@ -9956,7 +9957,7 @@ def strpos(string: SqlExpr | str, search_string: SqlExpr | str) -> SqlExpr:
     return func("strpos", string, search_string)
 
 
-def strptime(text: SqlExpr | str, arg2: SqlExpr | str) -> SqlExpr:
+def strptime(text: SqlExpr | str, _arg2: SqlExpr | str) -> SqlExpr:
     """Converts the `string` text to timestamp applying the format strings in the list until one succeeds.
 
     Throws an error on failure.
@@ -9965,12 +9966,12 @@ def strptime(text: SqlExpr | str, arg2: SqlExpr | str) -> SqlExpr:
 
     Args:
         text (SqlExpr | str): `VARCHAR` expression
-        arg2 (SqlExpr | str): `VARCHAR[]` expression
+        _arg2 (SqlExpr | str): `VARCHAR[]` expression
 
     Returns:
         SqlExpr: `TIMESTAMP` expression.
     """
-    return func("strptime", text, arg2)
+    return func("strptime", text, _arg2)
 
 
 def substr(
