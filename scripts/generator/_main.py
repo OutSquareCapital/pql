@@ -7,6 +7,7 @@ from functools import partial
 from pathlib import Path
 from typing import Annotated
 
+import duckdb
 import pyochain as pc
 import typer
 
@@ -34,9 +35,9 @@ def generate(
 
 
 @app.command()
-def debug() -> None:
+def debug(qry: str) -> None:
     """Explore data from the table."""
-    return get_df().show(100)
+    return duckdb.sql(qry).pl().show(10)
 
 
 def _run_ruff(output: Path) -> None:

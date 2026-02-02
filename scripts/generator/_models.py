@@ -1,6 +1,7 @@
 import builtins
 import keyword
 from enum import StrEnum, auto
+from typing import Literal, NamedTuple
 
 import polars as pl
 import pyochain as pc
@@ -148,55 +149,90 @@ CONVERSION_MAP: pc.Dict[DuckDbTypes, PyTypes] = pc.Dict(
 )
 """DuckDB type -> Python type hint mapping."""
 
-FN_CATEGORY = pc.Dict.from_kwargs(
-    scalar="Scalar Functions",
-    aggregate="Aggregate Functions",
-    table="Table Functions",
-    macro="Macro Functions",
-)
-"""Mapping of DuckDB function types to categories."""
 KWORDS = pc.Set(keyword.kwlist)
 """Python reserved keywords that need renaming when generating function names."""
-BUILTINS = pc.Set(dir(builtins))
-"""Python built-in names."""
-AMBIGUOUS = pc.Set("l")
-SHADOWERS = KWORDS.union(BUILTINS).union(AMBIGUOUS)
+SHADOWERS = KWORDS.union(pc.Set(dir(builtins))).union(
+    pc.Set(("l", "date", "time", "datetime", "timedelta"))
+)
 """Names that should be renamed to avoid shadowing."""
-SKIP_FUNCTIONS = pc.Set(
+OPERATOR_MAP: pc.Dict[str, str] = pc.Dict(
     {
-        # Internal functions
-        "~~",
-        "!~~",
-        "~~~",
-        "!~~~",
-        "^@",
-        "@",
-        "||",
-        "**",
-        "!",
-        # Already exposed differently
-        "main.if",
+        # Arithmetic
+        "+": "add",
+        "-": "subtract",
+        "*": "multiply",
+        "/": "divide",
+        "//": "floor_divide",
+        "%": "modulo",
+        "**": "power",
+        # Logical/Bitwise
+        "&": "bitwise_and",
+        "|": "bitwise_or",
+        "^": "bitwise_xor",
+        "~": "bitwise_not",
+        "&&": "logical_and",
+        "||": "logical_or",
+        # Comparison/Special
+        "@": "at_operator",
+        "^@": "starts_with_operator",
+        "@>": "contains_operator",
+        "<@": "contained_by_operator",
+        "<->": "distance_operator",
+        "<=>": "spaceship_operator",
+        "<<": "left_shift",
+        ">>": "right_shift",
+        "->>": "json_extract_text",
+        # Pattern matching
+        "~~": "like_operator",
+        "!~~": "not_like_operator",
+        "~~*": "ilike_operator",
+        "!~~*": "not_ilike_operator",
+        "~~~": "similar_to_operator",
+        # Postfix
+        "!__postfix": "factorial_postfix",
+        "!": "factorial",
     }
 )
-"""Functions to skip (internal, deprecated, or not useful via Python API)."""
-CATEGORY_PATTERNS: pc.Seq[tuple[str, str]] = pc.Seq(
+"""Mapping of SQL operators to Python function names."""
+
+
+class CatRule(NamedTuple):
+    rule_type: Literal["prefix", "type"]
+    pattern: str
+    label: str
+
+    def into_expr(self, expr: pl.Expr) -> pl.Expr:
+        match self.rule_type:
+            case "prefix":
+                return pl.when(expr.str.starts_with(self.pattern)).then(
+                    pl.lit(self.label)
+                )
+            case "type":
+                return pl.when(pl.col("function_type").eq(self.pattern)).then(
+                    pl.lit(self.label)
+                )
+
+
+CATEGORY_RULES: pc.Seq[CatRule] = pc.Seq(
     (
-        ("list_", "List Functions"),
-        ("array_", "Array Functions"),
-        ("map_", "Map Functions"),
-        ("struct_", "Struct Functions"),
-        ("regexp_", "Regular Expression Functions"),
-        ("string_", "Text Functions"),
-        ("date_", "Date Functions"),
-        ("time_", "Time Functions"),
-        ("timestamp_", "Timestamp Functions"),
-        ("enum_", "Enum Functions"),
-        ("union_", "Union Functions"),
-        ("json_", "JSON Functions"),
-        ("to_", "Conversion Functions"),
-        ("from_", "Conversion Functions"),
-        ("is", "Predicate Functions"),
-        ("bit_", "Bitwise Functions"),
+        CatRule("prefix", "list", "List"),
+        CatRule("prefix", "array", "Array"),
+        CatRule("prefix", "map", "Map"),
+        CatRule("prefix", "struct", "Struct"),
+        CatRule("prefix", "regexp", "Regular Expression"),
+        CatRule("prefix", "string", "Text"),
+        CatRule("prefix", "date", "Date"),
+        CatRule("prefix", "time", "Time"),
+        CatRule("prefix", "enum_", "Enum"),
+        CatRule("prefix", "union", "Union"),
+        CatRule("prefix", "json", "JSON"),
+        CatRule("prefix", "to_", "Conversion"),
+        CatRule("prefix", "from_", "Conversion"),
+        CatRule("prefix", "is", "Predicate"),
+        CatRule("prefix", "bit", "Bitwise"),
+        CatRule("type", FuncTypes.SCALAR, "Scalar"),
+        CatRule("type", FuncTypes.AGGREGATE, "Aggregate"),
+        CatRule("type", FuncTypes.MACRO, "Macro"),
     )
 )
-"""Patterns to categorize functions based on their name prefixes."""
+"""Rules to categorize functions by name prefix or function type."""
