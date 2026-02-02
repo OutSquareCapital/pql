@@ -1,5 +1,5 @@
 from collections.abc import Callable, Iterable
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from functools import partial
 
 import duckdb
@@ -15,6 +15,8 @@ from ._models import (
     PyTypes,
 )
 
+# TODO: ensure that all overloads (params) are taken into account. E.g regexp_extract -> same category, different params, different description
+# TODO: check pk suffix généré alors que ca devrait pas (e.g array_extract_)
 _EMPTY_STR = pl.lit("")
 
 
@@ -40,6 +42,10 @@ def get_df() -> pl.LazyFrame:
     has_varargs = pl.col("has_varargs")
     has_params = pl.col("has_params")
 
+    duckdb_cats = pl.col("categories")
+    fn_name = pl.col("function_name")
+    alias_of = pl.col("alias_of")
+
     return (
         sql_query()
         .pl(lazy=True)
@@ -48,7 +54,10 @@ def get_df() -> pl.LazyFrame:
             .cast(FuncTypes)
             .is_in((FuncTypes.SCALAR, FuncTypes.AGGREGATE, FuncTypes.MACRO))
             .and_(fn_name.str.starts_with("__").not_())
+            .and_(fn_name.is_in(OPERATOR_MAP).not_())
+            .and_(alias_of.is_null().or_(alias_of.is_in(OPERATOR_MAP)))
         )
+        .with_columns(_py_name(fn_name, duckdb_cats))
         .select(
             fn_name,
             return_type,
@@ -56,57 +65,70 @@ def get_df() -> pl.LazyFrame:
             param_types.list.eval(pl.element().fill_null("ANY")),
             varargs,
             description,
-            fn_name.pipe(_python_name),
-            fn_name.pipe(_python_name).pipe(_category),
+            py_name,
+            py_name.pipe(_category),
             params.list.len().alias("param_len"),
             params.list.len().min().over(fn_name).alias("min_param_len"),
         )
-        .sort(by=[fn_name, "param_len"], descending=[False, True])
-        .unique(subset=py_name, keep="first")
+        .with_row_index("sig_id")
+        .explode("parameters", "parameter_types")
         .with_columns(
-            param_types.list.eval(
-                pl.element().pipe(_convert_duckdb_type_to_python)
-            ).alias("py_types"),
+            pl.int_range(pl.len()).over("sig_id").alias("param_idx"),
+            param_types.pipe(_convert_duckdb_type_to_python).alias("py_types"),
             varargs.pipe(_convert_duckdb_type_to_python).alias("varargs_py_type"),
         )
-        .explode("parameters", "parameter_types", "py_types")
         .with_columns(
             params.pipe(_clean_param_name, py_name).alias("param_names"),
-            params.cum_count().over(py_name).sub(1).alias("param_idx"),
             py_types.str.contains(r"\bbool\b").alias("param_is_bool"),
+        )
+        .group_by(py_name, "param_idx", maintain_order=True)
+        .agg(
+            pl.all()
+            .exclude(
+                "param_names",
+                "param_doc_join",
+                "py_types",
+                "parameter_types",
+                "param_is_bool",
+            )
+            .first(),
+            param_names.drop_nulls().first(),
+            param_types.drop_nulls()
+            .unique()
+            .str.join(" | ")
+            .alias("param_types_union"),
+            py_types.drop_nulls().unique().str.join(" | ").alias("py_types_union"),
+            pl.col("param_is_bool").drop_nulls().first(),
         )
         .sort(by=[py_name, "param_idx"])
         .group_by(py_name, maintain_order=True)
         .agg(
             pl.all().exclude("param_names", "param_doc_join").first(),
             pl.col("param_is_bool")
-            .filter(params.is_not_null())
+            .filter(param_names.is_not_null())
             .alias("param_is_bool_list"),
-            *param_names.filter(params.is_not_null()).pipe(
-                _build_func_join, param_types, py_types.pipe(_make_type_union)
-            ),
+            *FuncJoinParts(
+                param_names.filter(param_names.is_not_null()),
+                pl.col("param_types_union"),
+                pl.col("py_types_union").pipe(_make_type_union),
+            ).build(),
         )
         .with_columns(
             varargs.is_not_null().alias("has_varargs"),
             pl.col("param_names_list").list.len().cast(pl.Boolean).alias("has_params"),
         )
         .with_columns(
-            VarArgsParts(
+            *VarArgsParts(
                 has_varargs,
                 has_params,
                 varargs,
                 pl.col("varargs_py_type").pipe(_make_type_union),
-            ).into_exprs()
+            ).build()
         )
         .select(
             category,
             py_name,
-            SigParts(
-                has_varargs,
-                pl.col("param_sig_list"),
-                pl.col("param_is_bool_list"),
-                pl.col("sig_varargs_part"),
-            ).into_expr(has_params.or_(has_varargs), py_name),
+            SigParts(has_varargs).build(has_params.or_(has_varargs), py_name),
             pl.concat_str(
                 pl.lit('    """'),
                 description.pipe(_description_section, fn_name),
@@ -137,61 +159,88 @@ def _make_type_union(py_type: pl.Expr) -> pl.Expr:
     )
 
 
-def _build_func_join(
-    params_filter: pl.Expr, param_type: pl.Expr, py_type: pl.Expr
-) -> Iterable[pl.Expr]:
-    def _optional_suffix(suffix: str) -> pl.Expr:
+@dataclass(slots=True)
+class FuncJoinParts:
+    params_filter: pl.Expr
+    param_type: pl.Expr
+    py_type: pl.Expr
+
+    def _optional_suffix(self, suffix: str) -> pl.Expr:
         return (
             pl.when(pl.col("param_idx").ge(pl.col("min_param_len")))
             .then(pl.lit(suffix))
             .otherwise(_EMPTY_STR)
         )
 
-    def _build_param_sig(expr: pl.Expr, py_type: pl.Expr) -> pl.Expr:
+    def _build_param_sig(self, expr: pl.Expr, py_type: pl.Expr) -> pl.Expr:
         return pl.concat_str(
             expr,
             pl.lit(": "),
             py_type,
-            _optional_suffix(" | None"),
-            _optional_suffix(" = None"),
+            self._optional_suffix(" | None"),
+            self._optional_suffix(" = None"),
         )
 
     def _build_param_doc(
-        expr: pl.Expr, param_type: pl.Expr, py_type: pl.Expr
+        self, expr: pl.Expr, param_type: pl.Expr, py_type: pl.Expr
     ) -> pl.Expr:
         return pl.concat_str(
             pl.lit("        "),
             expr,
             pl.lit(" ("),
             py_type,
-            _optional_suffix(" | None"),
+            self._optional_suffix(" | None"),
             pl.lit("): `"),
             param_type,
             pl.lit("` expression"),
         )
 
-    return (
-        params_filter.alias("param_names_list"),
-        params_filter.str.join(", ").alias("param_names_join"),
-        params_filter.pipe(_build_param_sig, py_type).alias("param_sig_list"),
-        params_filter.pipe(_build_param_doc, param_type, py_type)
-        .str.join("\n")
-        .alias("param_doc_join"),
-    )
+    def build(self) -> Iterable[pl.Expr]:
+        return (
+            self.params_filter.alias("param_names_list"),
+            self.params_filter.str.join(", ").alias("param_names_join"),
+            self.params_filter.pipe(self._build_param_sig, self.py_type).alias(
+                "param_sig_list"
+            ),
+            self.params_filter.pipe(
+                self._build_param_doc, self.param_type, self.py_type
+            )
+            .str.join("\n")
+            .alias("param_doc_join"),
+        )
 
 
 @dataclass(slots=True)
-class ExprBuilder:
+class VarArgsParts:
     has_varargs: pl.Expr
-
-
-@dataclass(slots=True)
-class VarArgsParts(ExprBuilder):
     has_params: pl.Expr
     varargs: pl.Expr
     varargs_py_type: pl.Expr
 
-    def _build(self, expr_fn: Callable[[], pl.Expr]) -> pl.Expr:
+    @property
+    def _if_params(self):  # noqa: ANN202
+        return pl.when(self.has_params).then
+
+    def _sig(self) -> pl.Expr:
+        return pl.concat_str(
+            self._if_params(pl.lit(", *args: ")).otherwise(pl.lit("*args: ")),
+            self.varargs_py_type,
+        )
+
+    def _body(self) -> pl.Expr:
+        return self._if_params(pl.lit(", *args")).otherwise(pl.lit("*args"))
+
+    def _doc(self) -> pl.Expr:
+        return pl.concat_str(
+            self._if_params(pl.lit("\n        ")).otherwise(pl.lit("        ")),
+            pl.lit("*args ("),
+            self.varargs_py_type,
+            pl.lit("): `"),
+            self.varargs,
+            pl.lit("` expression"),
+        )
+
+    def _get_expr(self, expr_fn: Callable[[], pl.Expr]) -> pl.Expr:
         return (
             pl.when(self.has_varargs)
             .then(expr_fn())
@@ -199,29 +248,12 @@ class VarArgsParts(ExprBuilder):
             .alias(f"{expr_fn.__name__.removeprefix('_')}_varargs_part")
         )
 
-    def into_exprs(self) -> Iterable[pl.Expr]:
-        _if_params = pl.when(self.has_params).then
-
-        def _sig() -> pl.Expr:
-            return pl.concat_str(
-                _if_params(pl.lit(", *args: ")).otherwise(pl.lit("*args: ")),
-                self.varargs_py_type,
-            )
-
-        def _body() -> pl.Expr:
-            return _if_params(pl.lit(", *args")).otherwise(pl.lit("*args"))
-
-        def _doc() -> pl.Expr:
-            return pl.concat_str(
-                _if_params(pl.lit("\n        ")).otherwise(pl.lit("        ")),
-                pl.lit("*args ("),
-                self.varargs_py_type,
-                pl.lit("): `"),
-                self.varargs,
-                pl.lit("` expression"),
-            )
-
-        return (self._build(_sig), self._build(_body), self._build(_doc))
+    def build(self) -> Iterable[pl.Expr]:
+        return (
+            self._get_expr(self._sig),
+            self._get_expr(self._body),
+            self._get_expr(self._doc),
+        )
 
 
 def _convert_duckdb_type_to_python(param_type: pl.Expr) -> pl.Expr:
@@ -240,10 +272,11 @@ def _convert_duckdb_type_to_python(param_type: pl.Expr) -> pl.Expr:
 
 
 @dataclass(slots=True)
-class SigParts(ExprBuilder):
-    param_sig_list: pl.Expr
-    param_is_bool_list: pl.Expr
-    sig_varargs: pl.Expr
+class SigParts:
+    has_varargs: pl.Expr
+    param_sig_list: pl.Expr = field(default=pl.col("param_sig_list"))
+    param_is_bool_list: pl.Expr = field(default=pl.col("param_is_bool_list"))
+    sig_varargs: pl.Expr = field(default=pl.col("sig_varargs_part"))
 
     def _param_sig_with_kw(self) -> pl.Expr:
         has_bool = self.param_is_bool_list.list.any()
@@ -267,7 +300,7 @@ class SigParts(ExprBuilder):
             .list.join(", ")
         )
 
-    def into_expr(self, cond: pl.Expr, py_name: pl.Expr) -> pl.Expr:
+    def build(self, cond: pl.Expr, py_name: pl.Expr) -> pl.Expr:
         _signature = partial(pl.concat_str, pl.lit("def "), py_name)
 
         return (
@@ -384,13 +417,22 @@ def _clean_param_name(expr: pl.Expr, py_name: pl.Expr) -> pl.Expr:
 
 def _python_name(expr: pl.Expr) -> pl.Expr:
     return (
-        pl.when(expr.is_in(OPERATOR_MAP.keys()))
-        .then(expr.replace(OPERATOR_MAP, default=expr, return_dtype=pl.String))
-        .when(expr.is_in(KWORDS))
+        pl.when(expr.is_in(KWORDS))
         .then(pl.concat_str(expr, pl.lit("_func")))
         .otherwise(expr)
         .str.replace_all(r"([a-z0-9])([A-Z])", r"$1_$2")
         .str.to_lowercase()
+        .alias("python_name")
+    )
+
+
+def _py_name(fn_name: pl.Expr, duckdb_cats: pl.Expr) -> pl.Expr:
+    cat_str = duckdb_cats.list.join("_").fill_null("unknown").alias("cats_str")
+
+    return (
+        pl.when(cat_str.n_unique().over(fn_name).gt(1))
+        .then(pl.concat_str(fn_name.pipe(_python_name), pl.lit("_"), cat_str))
+        .otherwise(fn_name.pipe(_python_name))
         .alias("python_name")
     )
 

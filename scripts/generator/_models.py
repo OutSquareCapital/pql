@@ -156,42 +156,37 @@ SHADOWERS = KWORDS.union(pc.Set(dir(builtins))).union(
     pc.Set(("l", "date", "time", "datetime", "timedelta"))
 )
 """Names that should be renamed to avoid shadowing."""
-OPERATOR_MAP: pc.Dict[str, str] = pc.Dict(
+OPERATOR_MAP = pc.Set(
     {
-        # Arithmetic
-        "+": "add",
-        "-": "subtract",
-        "*": "multiply",
-        "/": "divide",
-        "//": "floor_divide",
-        "%": "modulo",
-        "**": "power",
-        # Logical/Bitwise
-        "&": "bitwise_and",
-        "|": "bitwise_or",
-        "^": "bitwise_xor",
-        "~": "bitwise_not",
-        "&&": "logical_and",
-        "||": "logical_or",
-        # Comparison/Special
-        "@": "at_operator",
-        "^@": "starts_with_operator",
-        "@>": "contains_operator",
-        "<@": "contained_by_operator",
-        "<->": "distance_operator",
-        "<=>": "spaceship_operator",
-        "<<": "left_shift",
-        ">>": "right_shift",
-        "->>": "json_extract_text",
-        # Pattern matching
-        "~~": "like_operator",
-        "!~~": "not_like_operator",
-        "~~*": "ilike_operator",
-        "!~~*": "not_ilike_operator",
-        "~~~": "similar_to_operator",
-        # Postfix
-        "!__postfix": "factorial_postfix",
-        "!": "factorial",
+        "+",
+        "-",
+        "*",
+        "/",
+        "//",
+        "%",
+        "**",
+        "&",
+        "|",
+        "^",
+        "~",
+        "&&",
+        "||",
+        "@",
+        "^@",
+        "@>",
+        "<@",
+        "<->",
+        "<=>",
+        "<<",
+        ">>",
+        "->>",
+        "~~",
+        "!~~",
+        "~~*",
+        "!~~*",
+        "~~~",
+        "!__postfix",
+        "!",
     }
 )
 """Mapping of SQL operators to Python function names."""
