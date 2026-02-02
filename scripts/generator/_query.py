@@ -31,6 +31,7 @@ def get_df() -> pl.DataFrame:
     fn_type = pl.col("function_type")
     params = pl.col("parameters")
     py_name = pl.col("python_name")
+    py_types = pl.col("py_types")
     param_types = pl.col("parameter_types")
     param_names = pl.col("param_names")
     category = pl.col("category")
@@ -73,7 +74,7 @@ def get_df() -> pl.DataFrame:
         .with_columns(
             params.pipe(_clean_param_name, py_name).alias("param_names"),
             params.cum_count().over(py_name).sub(1).alias("param_idx"),
-            pl.col("py_types").str.contains(r"\bbool\b").alias("param_is_bool"),
+            py_types.str.contains(r"\bbool\b").alias("param_is_bool"),
         )
         .sort(by=[py_name, "param_idx"])
         .group_by(py_name, maintain_order=True)
@@ -83,9 +84,7 @@ def get_df() -> pl.DataFrame:
             .filter(params.is_not_null())
             .alias("param_is_bool_list"),
             *param_names.filter(params.is_not_null()).pipe(
-                _build_func_join,
-                param_types,
-                pl.col("py_types").pipe(_make_type_union),
+                _build_func_join, param_types, py_types.pipe(_make_type_union)
             ),
         )
         .with_columns(
@@ -132,10 +131,11 @@ def get_df() -> pl.DataFrame:
 
 
 def _make_type_union(py_type: pl.Expr) -> pl.Expr:
+    expr_val = pl.lit(PyTypes.EXPR.value)
     return (
-        pl.when(py_type.eq(PyTypes.EXPR.value))
+        pl.when(py_type.eq(expr_val))
         .then(py_type)
-        .otherwise(pl.concat_str(pl.lit(PyTypes.EXPR.value), pl.lit(" | "), py_type))
+        .otherwise(pl.concat_str(expr_val, pl.lit(" | "), py_type))
     )
 
 
@@ -336,10 +336,12 @@ def _get_body(
 
 
 def _clean_param_name(expr: pl.Expr, py_name: pl.Expr) -> pl.Expr:
+    arg = pl.lit("_arg")
+
     def _handle_python_keywords(expr: pl.Expr) -> pl.Expr:
         return (
             pl.when(expr.is_in(SHADOWERS))
-            .then(pl.concat_str(expr, pl.lit("_arg")))
+            .then(pl.concat_str(expr, arg))
             .otherwise(expr)
         )
 
@@ -353,11 +355,7 @@ def _clean_param_name(expr: pl.Expr, py_name: pl.Expr) -> pl.Expr:
     def _generate_fallback_names(expr: pl.Expr) -> pl.Expr:
         return (
             pl.when(expr.eq(_EMPTY_STR))
-            .then(
-                pl.concat_str(
-                    pl.lit("arg"), expr.cum_count().over(py_name).cast(pl.String)
-                )
-            )
+            .then(pl.concat_str(arg, expr.cum_count().over(py_name).cast(pl.String)))
             .otherwise(expr)
         )
 
