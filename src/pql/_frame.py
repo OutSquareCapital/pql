@@ -406,11 +406,11 @@ class LazyFrame:
             .project("* EXCLUDE (__rn__)")
         )
 
-    def top_k(self, k: int, *, by: IntoExpr, reverse: bool = False) -> Self:
+    def top_k(self, k: int, *, by: IntoExprs, reverse: bool = False) -> Self:
         """Return top k rows by column(s)."""
         return self.sort(by, descending=not reverse).head(k)
 
-    def bottom_k(self, k: int, *, by: IntoExpr, reverse: bool = False) -> Self:
+    def bottom_k(self, k: int, *, by: IntoExprs, reverse: bool = False) -> Self:
         """Return bottom k rows by column(s)."""
         return self.sort(by, descending=reverse).head(k)
 
