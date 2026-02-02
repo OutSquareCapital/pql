@@ -51,6 +51,7 @@ def _header() -> str:
         from __future__ import annotations
 
         from datetime import date, datetime, time, timedelta
+        from decimal import Decimal
 
         from ._exprs import SqlExpr, func
 

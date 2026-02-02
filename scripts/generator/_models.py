@@ -69,6 +69,7 @@ class PyTypes(StrEnum):
     INT = auto()
     DATE = auto()
     FLOAT = auto()
+    DECIMAL = "Decimal"
     BYTES = auto()
     TIME = auto()
     DATETIME = auto()
@@ -129,7 +130,7 @@ CONVERSION_MAP: pc.Dict[DuckDbTypes, PyTypes] = pc.Dict(
         DuckDbTypes.DOUBLE: PyTypes.FLOAT,
         DuckDbTypes.FLOAT: PyTypes.FLOAT,
         DuckDbTypes.REAL: PyTypes.FLOAT,
-        DuckDbTypes.DECIMAL: PyTypes.FLOAT,
+        DuckDbTypes.DECIMAL: PyTypes.DECIMAL,
         DuckDbTypes.BOOLEAN: PyTypes.BOOL,
         DuckDbTypes.DATE: PyTypes.DATE,
         DuckDbTypes.TIME: PyTypes.TIME,
