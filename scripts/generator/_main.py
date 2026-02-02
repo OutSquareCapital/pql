@@ -57,7 +57,7 @@ def debug(qry: str) -> None:
 
 
 def _run_pipeline() -> str:
-    df = get_df()
+    df = get_df().collect()
 
     typer.echo(f"Found {df.height} function signatures")
     return (
