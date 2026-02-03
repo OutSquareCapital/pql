@@ -60,12 +60,7 @@ def _run_pipeline() -> str:
     df = get_df().collect()
 
     typer.echo(f"Found {df.height} function signatures")
-    return (
-        pc.Iter(df.iter_rows())
-        .map(lambda x: FunctionInfo(*x))
-        .collect()
-        .into(build_file)
-    )
+    return pc.Iter(df.iter_rows()).map_star(FunctionInfo).collect().into(build_file)
 
 
 if __name__ == "__main__":

@@ -14,13 +14,7 @@ class FunctionInfo:
 
     category: str
     python_name: str
-    signature: str
-    docstring: str
-    body: str
-
-    def generate_function(self) -> str:
-        """Assemble complete function definition."""
-        return f"{self.signature}\n{self.docstring}\n{self.body}"
+    func: str
 
 
 def build_file(fns: pc.Seq[FunctionInfo]) -> str:
@@ -30,7 +24,7 @@ def build_file(fns: pc.Seq[FunctionInfo]) -> str:
         .group_by(lambda f: f.category)
         .map_star(
             lambda category, funcs: f"\n\n# {'=' * 60}\n# {category}\n# {'=' * 60}\n\n"
-            + funcs.map(lambda f: f.generate_function()).join("\n\n\n")
+            + funcs.map(lambda f: f.func).join("\n\n\n")
         )
         .join("")
     )
