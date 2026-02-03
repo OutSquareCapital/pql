@@ -270,9 +270,6 @@ def _to_py_name(
                     .otherwise(pl.lit([], dtype=pl.List(pl.String)))
                     .list.join("_")
                     .str.to_lowercase()
-                    .str.replace_all(r"[^A-Za-z0-9_]+", "_")
-                    .str.replace_all(r"_+", "_")
-                    .str.strip_chars("_")
                     .max()
                     .over(fn_name, duckdb_cats, description),
                 )
