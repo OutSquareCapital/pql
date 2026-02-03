@@ -189,11 +189,6 @@ def _to_param_names(_params: pl.Expr, _py_name: pl.Expr) -> pl.Expr:
             .otherwise(expr)
         )
         .pipe(
-            lambda expr: pl.when(expr.str.contains(r"^[A-Za-z_][A-Za-z0-9_]*$").not_())
-            .then(_EMPTY_STR)
-            .otherwise(expr)
-        )
-        .pipe(
             lambda expr: (
                 pl.when(expr.eq(_EMPTY_STR))
                 .then(
