@@ -1,7 +1,8 @@
 import builtins
 import keyword
+from abc import ABC, abstractmethod
+from dataclasses import dataclass
 from enum import StrEnum, auto
-from typing import Literal, NamedTuple
 
 import polars as pl
 import pyochain as pc
@@ -35,6 +36,9 @@ class FuncTypes(StrEnum):
     SCALAR = auto()
 
 
+FUNC_TYPES = pl.Enum(FuncTypes)
+
+
 @schema
 class TableSchema:
     """Schema for DuckDB functions table."""
@@ -44,7 +48,7 @@ class TableSchema:
     schema_name = pl.String
     function_name = pl.String
     alias_of = pl.String()
-    function_type = pl.Enum(FuncTypes)
+    function_type = FUNC_TYPES
     description = pl.String()
     comment = pl.String()
     tags = pl.List(pl.Struct({"key": pl.String, "value": pl.String}))
@@ -192,43 +196,47 @@ OPERATOR_MAP = pc.Set(
 """Mapping of SQL operators to Python function names."""
 
 
-class CatRule(NamedTuple):
-    rule_type: Literal["prefix", "type"]
-    pattern: str
+@dataclass(slots=True)
+class CatRule[T](ABC):
+    pattern: T
     label: str
 
+    @abstractmethod
+    def into_expr(self, expr: pl.Expr) -> pl.Expr: ...
+
+
+class Prefix(CatRule[str]):
     def into_expr(self, expr: pl.Expr) -> pl.Expr:
-        match self.rule_type:
-            case "prefix":
-                return pl.when(expr.str.starts_with(self.pattern)).then(
-                    pl.lit(self.label)
-                )
-            case "type":
-                return pl.when(pl.col("function_type").eq(self.pattern)).then(
-                    pl.lit(self.label)
-                )
+        return pl.when(expr.str.starts_with(self.pattern)).then(pl.lit(self.label))
 
 
-CATEGORY_RULES: pc.Seq[CatRule] = pc.Seq(
+class TypeRule(CatRule[FuncTypes]):
+    def into_expr(self, expr: pl.Expr) -> pl.Expr:  # noqa: ARG002
+        return pl.when(
+            pl.col("function_type").eq(pl.lit(self.pattern, dtype=FUNC_TYPES))
+        ).then(pl.lit(self.label))
+
+
+CATEGORY_RULES = pc.Seq(
     (
-        CatRule("prefix", "list", "List"),
-        CatRule("prefix", "array", "Array"),
-        CatRule("prefix", "map", "Map"),
-        CatRule("prefix", "struct", "Struct"),
-        CatRule("prefix", "regexp", "Regular Expression"),
-        CatRule("prefix", "string", "Text"),
-        CatRule("prefix", "date", "Date"),
-        CatRule("prefix", "time", "Time"),
-        CatRule("prefix", "enum_", "Enum"),
-        CatRule("prefix", "union", "Union"),
-        CatRule("prefix", "json", "JSON"),
-        CatRule("prefix", "to_", "Conversion"),
-        CatRule("prefix", "from_", "Conversion"),
-        CatRule("prefix", "is", "Predicate"),
-        CatRule("prefix", "bit", "Bitwise"),
-        CatRule("type", FuncTypes.SCALAR, "Scalar"),
-        CatRule("type", FuncTypes.AGGREGATE, "Aggregate"),
-        CatRule("type", FuncTypes.MACRO, "Macro"),
+        Prefix("list", "List"),
+        Prefix("array", "Array"),
+        Prefix("map", "Map"),
+        Prefix("struct", "Struct"),
+        Prefix("regexp", "Regular Expression"),
+        Prefix("string", "Text"),
+        Prefix("date", "Date"),
+        Prefix("time", "Time"),
+        Prefix("enum_", "Enum"),
+        Prefix("union", "Union"),
+        Prefix("json", "JSON"),
+        Prefix("to_", "Conversion"),
+        Prefix("from_", "Conversion"),
+        Prefix("is", "Predicate"),
+        Prefix("bit", "Bitwise"),
+        TypeRule(FuncTypes.SCALAR, "Scalar"),
+        TypeRule(FuncTypes.AGGREGATE, "Aggregate"),
+        TypeRule(FuncTypes.MACRO, "Macro"),
     )
 )
 """Rules to categorize functions by name prefix or function type."""
