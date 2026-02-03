@@ -4,6 +4,7 @@ import polars as pl
 from ._models import (
     CATEGORY_RULES,
     CONVERSION_MAP,
+    FUNC_TYPES,
     KWORDS,
     OPERATOR_MAP,
     SHADOWERS,
@@ -34,8 +35,6 @@ def get_df() -> pl.LazyFrame:
     _description = pl.col("description")
     _varargs = pl.col("varargs")
     _has_varargs = pl.col("has_varargs")
-    _has_params = pl.col("has_params")
-
     _duckdb_cats = pl.col("categories")
     _param_len = pl.col("param_len")
     _min_param_len = pl.col("min_param_len")
@@ -49,7 +48,7 @@ def get_df() -> pl.LazyFrame:
         .pl()
         .filter(
             pl.col("function_type")
-            .cast(FuncTypes)
+            .cast(FUNC_TYPES)
             .is_in((FuncTypes.SCALAR, FuncTypes.AGGREGATE, FuncTypes.MACRO))
             .and_(_fn_name.str.starts_with("__").not_())
             .and_(_fn_name.is_in(OPERATOR_MAP).not_())
@@ -115,8 +114,7 @@ def get_df() -> pl.LazyFrame:
                                     )
                                 )
                             )
-                            .otherwise(pl.lit([]))
-                            .list.eval(pl.element().cast(pl.String))
+                            .otherwise(pl.lit([], dtype=pl.List(pl.String)))
                             .list.join("_")
                             .str.to_lowercase()
                             .str.replace_all(r"[^A-Za-z0-9_]+", "_")
@@ -144,7 +142,10 @@ def get_df() -> pl.LazyFrame:
         .with_columns(
             pl.int_range(pl.len()).over("sig_id").alias("param_idx"),
             _param_types.pipe(_convert_duckdb_type_to_python).alias("py_types"),
-            _varargs.pipe(_convert_duckdb_type_to_python).alias("varargs_py_type"),
+            _varargs.pipe(_convert_duckdb_type_to_python)
+            .pipe(_make_type_union)
+            .alias("varargs_py_type"),
+            _varargs.is_not_null().alias("has_varargs"),
         )
         .with_columns(
             _params.str.strip_chars_start("'\"[")
@@ -203,10 +204,7 @@ def get_df() -> pl.LazyFrame:
             )
             .first(),
             _param_names.drop_nulls().first(),
-            _param_types.drop_nulls()
-            .unique()
-            .str.join(" | ")
-            .alias("param_types_union"),
+            _param_types.unique().str.join(" | ").alias("param_types_union"),
             _py_types.drop_nulls().unique().str.join(" | ").alias("py_types_union"),
             _param_is_bool.drop_nulls().first(),
         )
@@ -253,136 +251,138 @@ def get_df() -> pl.LazyFrame:
                 )
             ),
         )
-        .with_columns(
-            _varargs.is_not_null().alias("has_varargs"),
-            pl.col("param_names_list").list.len().cast(pl.Boolean).alias("has_params"),
-        )
-        .with_columns(
-            pl.col("varargs_py_type")
-            .pipe(_make_type_union)
-            .pipe(
-                lambda py_type: (
-                    pl.when(_has_varargs)
-                    .then(
-                        pl.concat_str(
-                            pl.when(_has_params)
-                            .then(pl.lit(", *args: "))
-                            .otherwise(pl.lit("*args: ")),
-                            py_type,
-                        )
-                    )
-                    .otherwise(_EMPTY_STR)
-                    .alias("sig_varargs_part"),
-                    pl.when(_has_varargs)
-                    .then(
-                        pl.when(_has_params)
-                        .then(pl.lit(", *args"))
-                        .otherwise(pl.lit("*args"))
-                    )
-                    .otherwise(_EMPTY_STR)
-                    .alias("body_varargs_part"),
-                    pl.when(_has_varargs)
-                    .then(
-                        pl.concat_str(
-                            pl.when(_has_params)
-                            .then(pl.lit("\n        "))
-                            .otherwise(pl.lit("        ")),
-                            pl.lit("*args ("),
-                            py_type,
-                            pl.lit("): `"),
-                            _varargs,
-                            pl.lit("` expression"),
-                        )
-                    )
-                    .otherwise(_EMPTY_STR)
-                    .alias("doc_varargs_part"),
-                )
-            ),
-        )
         .select(
             _category,
             _py_name,
-            pl.when(_has_params.or_(_has_varargs))
-            .then(
-                pl.concat_str(
-                    pl.lit("def "),
-                    _py_name,
-                    pl.lit("("),
-                    pl.when(pl.col("param_is_bool_list").list.any())
-                    .then(pl.col("param_is_bool_list").list.arg_max())
-                    .otherwise(pl.lit(0))
-                    .pipe(
-                        lambda first_bool_idx: pl.when(
-                            pl.col("param_is_bool_list")
-                            .list.any()
-                            .and_(_has_varargs.not_())
+            *pl.col("param_names_list")
+            .list.len()
+            .cast(pl.Boolean)
+            .pipe(
+                lambda has_params: (
+                    pl.when(has_params.or_(_has_varargs))
+                    .then(
+                        pl.concat_str(
+                            pl.lit("def "),
+                            _py_name,
+                            pl.lit("("),
+                            pl.col("param_is_bool_list").pipe(
+                                lambda p_is_bool_list: (
+                                    pl.when(p_is_bool_list.list.any())
+                                    .then(p_is_bool_list.list.arg_max())
+                                    .otherwise(pl.lit(0))
+                                    .pipe(
+                                        lambda first_bool_idx: pl.when(
+                                            p_is_bool_list.list.any().and_(
+                                                _has_varargs.not_()
+                                            )
+                                        )
+                                        .then(
+                                            pl.col("param_sig_list").pipe(
+                                                lambda p_sig_list: pl.concat_list(
+                                                    p_sig_list.list.slice(
+                                                        0, first_bool_idx
+                                                    ),
+                                                    pl.lit(["*"]),
+                                                    p_sig_list.list.slice(
+                                                        first_bool_idx,
+                                                        p_sig_list.list.len(),
+                                                    ),
+                                                )
+                                            )
+                                        )
+                                        .otherwise(pl.col("param_sig_list"))
+                                        .list.join(", ")
+                                    )
+                                )
+                            ),
+                            pl.when(_has_varargs)
+                            .then(
+                                pl.concat_str(
+                                    pl.when(has_params)
+                                    .then(pl.lit(", *args: "))
+                                    .otherwise(pl.lit("*args: ")),
+                                    pl.col("varargs_py_type"),
+                                )
+                            )
+                            .otherwise(_EMPTY_STR),
+                            pl.lit(f") -> {PyTypes.EXPR}:"),
                         )
+                    )
+                    .otherwise(
+                        pl.concat_str(
+                            pl.lit("def "), _py_name, pl.lit(f"() -> {PyTypes.EXPR}:")
+                        )
+                    )
+                    .alias("signature"),
+                    pl.concat_str(
+                        pl.lit('    """'),
+                        pl.when(_description.is_not_null())
                         .then(
-                            pl.concat_list(
-                                pl.col("param_sig_list").list.slice(0, first_bool_idx),
-                                pl.lit(["*"]),
-                                pl.col("param_sig_list").list.slice(
-                                    first_bool_idx, pl.col("param_sig_list").list.len()
-                                ),
+                            _description.str.strip_chars()
+                            .str.replace_all("\u2019", "'")
+                            .str.replace_all(r"\. ", ".\n\n    ")
+                            .str.strip_chars_end(".")
+                            .add(pl.lit("."))
+                        )
+                        .otherwise(
+                            pl.concat_str(
+                                pl.lit("SQL "), _fn_name, pl.lit(" function.")
+                            )
+                        ),
+                        pl.when(has_params.or_(_has_varargs))
+                        .then(
+                            pl.concat_str(
+                                pl.lit("\n\n    Args:\n"),
+                                pl.col("param_doc_join"),
+                                pl.when(_has_varargs)
+                                .then(
+                                    pl.concat_str(
+                                        pl.when(has_params)
+                                        .then(pl.lit("\n        "))
+                                        .otherwise(pl.lit("        ")),
+                                        pl.lit("*args ("),
+                                        pl.col("varargs_py_type"),
+                                        pl.lit("): `"),
+                                        _varargs,
+                                        pl.lit("` expression"),
+                                    )
+                                )
+                                .otherwise(_EMPTY_STR),
                             )
                         )
-                        .otherwise(pl.col("param_sig_list"))
-                        .list.join(", ")
-                    ),
-                    pl.col("sig_varargs_part"),
-                    pl.lit(f") -> {PyTypes.EXPR}:"),
-                )
-            )
-            .otherwise(
-                pl.concat_str(
-                    pl.lit("def "), _py_name, pl.lit(f"() -> {PyTypes.EXPR}:")
-                )
-            )
-            .alias("signature"),
-            pl.concat_str(
-                pl.lit('    """'),
-                pl.when(_description.is_not_null())
-                .then(
-                    _description.str.strip_chars()
-                    .str.replace_all("\u2019", "'")
-                    .str.replace_all(r"\. ", ".\n\n    ")
-                    .str.strip_chars_end(".")
-                    .add(pl.lit("."))
-                )
-                .otherwise(
-                    pl.concat_str(pl.lit("SQL "), _fn_name, pl.lit(" function."))
-                ),
-                pl.when(_has_params.or_(_has_varargs))
-                .then(
+                        .otherwise(_EMPTY_STR)
+                        .alias("doc_args_section"),
+                        pl.concat_str(
+                            pl.lit(f"\n\n    Returns:\n        {PyTypes.EXPR}: `"),
+                            pl.col("return_type").fill_null(
+                                DuckDbTypes.ANY.value.upper()
+                            ),
+                            pl.lit('` expression.\n    """'),
+                        ),
+                    ).alias("docstring"),
                     pl.concat_str(
-                        pl.lit("\n\n    Args:\n"),
-                        pl.col("param_doc_join"),
-                        pl.col("doc_varargs_part"),
-                    )
+                        pl.lit('    return func("'),
+                        _fn_name,
+                        pl.lit('"'),
+                        pl.when(has_params.or_(_has_varargs))
+                        .then(
+                            pl.concat_str(
+                                pl.lit(", "),
+                                pl.col("param_names_join"),
+                                pl.when(_has_varargs)
+                                .then(
+                                    pl.when(has_params)
+                                    .then(pl.lit(", *args"))
+                                    .otherwise(pl.lit("*args"))
+                                )
+                                .otherwise(_EMPTY_STR),
+                            )
+                        )
+                        .otherwise(_EMPTY_STR),
+                        pl.lit(")"),
+                    ).alias("body"),
                 )
-                .otherwise(_EMPTY_STR)
-                .alias("doc_args_section"),
-                pl.concat_str(
-                    pl.lit(f"\n\n    Returns:\n        {PyTypes.EXPR}: `"),
-                    pl.col("return_type").fill_null(DuckDbTypes.ANY.value.upper()),
-                    pl.lit('` expression.\n    """'),
-                ),
-            ).alias("docstring"),
-            pl.concat_str(
-                pl.lit('    return func("'),
-                _fn_name,
-                pl.lit('"'),
-                pl.when(_has_params.or_(_has_varargs))
-                .then(
-                    pl.concat_str(
-                        pl.lit(", "),
-                        pl.col("param_names_join"),
-                        pl.col("body_varargs_part"),
-                    )
-                )
-                .otherwise(_EMPTY_STR),
-                pl.lit(")"),
-            ).alias("body"),
+            ),
         )
         .sort(_category, _py_name)
         .lazy()
