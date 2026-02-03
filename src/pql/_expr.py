@@ -332,7 +332,7 @@ class Expr(SqlExprHandler):
         """Fill null values with the last non-null value."""
         return self.__class__(
             sql.WindowExpr(rows_end=pc.Some(0), ignore_nulls=True).call(
-                sql.fns.last_value(self._expr),
+                sql.fns.last_value(self._expr)
             )
         )
 
@@ -400,8 +400,7 @@ class Expr(SqlExprHandler):
         """Repeat values by count, returning a list."""
         return self.__class__(
             sql.fns.list_transform(
-                sql.fns.range(sql.from_value(by)),
-                sql.fn_once("_", self._expr),
+                sql.fns.range(sql.from_value(by)), sql.fn_once("_", self._expr)
             )
         )
 
@@ -410,7 +409,7 @@ class Expr(SqlExprHandler):
         return self.__class__(
             sql.WindowExpr(partition_by=pc.Seq((self._expr,)))
             .call(sql.fns.count(sql.all()))
-            .__gt__(sql.lit(1)),
+            .__gt__(sql.lit(1))
         )
 
     def is_unique(self) -> Self:
@@ -418,7 +417,7 @@ class Expr(SqlExprHandler):
         return self.__class__(
             sql.WindowExpr(partition_by=pc.Seq((self._expr,)))
             .call(sql.fns.count(sql.all()))
-            .__eq__(sql.lit(1)),
+            .__eq__(sql.lit(1))
         )
 
     def is_first_distinct(self) -> Self:
@@ -478,12 +477,7 @@ class ExprStringNameSpace:
         return Expr(sql.fns.suffix(self._expr, sql.lit(suffix)))
 
     def replace(
-        self,
-        pattern: str,
-        value: str | IntoExpr,
-        *,
-        literal: bool = False,
-        n: int = 1,
+        self, pattern: str, value: str | IntoExpr, *, literal: bool = False, n: int = 1
     ) -> Expr:
         """Replace first matching substring with a new string value."""
         value_expr = sql.from_value(value)
@@ -498,10 +492,7 @@ class ExprStringNameSpace:
             case n_val if n_val < 0:
                 return Expr(
                     sql.fns.regexp_replace(
-                        self._expr,
-                        pattern_expr,
-                        value_expr,
-                        sql.lit("g"),
+                        self._expr, pattern_expr, value_expr, sql.lit("g")
                     )
                 )
             case _:
@@ -551,11 +542,7 @@ class ExprStringNameSpace:
             case None:
                 args = (self._expr, sql.lit(offset + 1))
             case _:
-                args = (
-                    self._expr,
-                    sql.lit(offset + 1),
-                    sql.lit(length),
-                )
+                args = (self._expr, sql.lit(offset + 1), sql.lit(length))
         return Expr(sql.fns.substring(*args))
 
     def len_bytes(self) -> Expr:
@@ -577,10 +564,7 @@ class ExprStringNameSpace:
             case False:
                 return Expr(
                     sql.fns.length_list(
-                        sql.fns.regexp_extract_all(
-                            self._expr,
-                            pattern_expr,
-                        ),
+                        sql.fns.regexp_extract_all(self._expr, pattern_expr),
                     )
                 )
             case True:
@@ -588,11 +572,7 @@ class ExprStringNameSpace:
                     sql.fns.length_string(self._expr)
                     .__sub__(
                         sql.fns.length_string(
-                            sql.fns.replace(
-                                self._expr,
-                                pattern_expr,
-                                sql.lit(""),
-                            ),
+                            sql.fns.replace(self._expr, pattern_expr, sql.lit("")),
                         )
                     )
                     .__truediv__(sql.fns.length_string(pattern_expr))
@@ -672,9 +652,7 @@ class ExprStringNameSpace:
             case str() as suffix_str:
                 return Expr(
                     sql.fns.regexp_replace(
-                        self._expr,
-                        sql.lit(f"{re.escape(suffix_str)}$"),
-                        sql.lit(""),
+                        self._expr, sql.lit(f"{re.escape(suffix_str)}$"), sql.lit("")
                     )
                 )
             case _:
@@ -737,8 +715,7 @@ class ExprStringNameSpace:
             sql.fns.list_aggregate(
                 sql.fns.list_transform(
                     sql.fns.regexp_extract_all(
-                        sql.fns.lower(self._expr),
-                        sql.lit(r"[a-z]*[^a-z]*"),
+                        sql.fns.lower(self._expr), sql.lit(r"[a-z]*[^a-z]*")
                     ),
                     sql.fn_once(
                         "_",
@@ -767,14 +744,8 @@ class ExprListNameSpace(SqlExprHandler):
         distinct_expr = sql.fns.list_distinct(self._expr)
         return Expr(
             sql.when(
-                sql.fns.list_position(
-                    self._expr,
-                    sql.lit(None),
-                ).isnotnull(),
-                sql.fns.list_append(
-                    distinct_expr,
-                    sql.lit(None),
-                ),
+                sql.fns.list_position(self._expr, sql.lit(None)).isnotnull(),
+                sql.fns.list_append(distinct_expr, sql.lit(None)),
             ).otherwise(distinct_expr)
         )
 
