@@ -70,72 +70,20 @@ def get_df() -> pl.LazyFrame:
             )
         )
         .with_columns(
-            _duckdb_cats.list.join("_")
-            .fill_null(_EMPTY_STR)
-            .alias("cats_str")
-            .pipe(
-                lambda cat_str: _fn_name.pipe(
-                    lambda expr: (
-                        pl.when(expr.is_in(KWORDS))
-                        .then(pl.concat_str(expr, pl.lit("_func")))
-                        .otherwise(expr)
-                        .str.replace_all(r"([a-z0-9])([A-Z])", r"$1_$2")
-                        .str.to_lowercase()
-                    )
-                )
-                .pipe(
-                    lambda base_name: pl.when(
-                        cat_str.n_unique()
-                        .over(_fn_name)
-                        .gt(1)
-                        .and_(cat_str.ne(_EMPTY_STR))
-                    )
-                    .then(pl.concat_str(base_name, pl.lit("_"), cat_str))
-                    .otherwise(base_name)
-                )
-                .pipe(
-                    lambda base: pl.when(
-                        _description.n_unique()
-                        .over(_fn_name, _duckdb_cats)
-                        .gt(1)
-                        .and_(_min_param_len_desc.gt(_min_param_len))
-                    )
-                    .then(
-                        pl.concat_str(
-                            base,
-                            pl.lit("_"),
-                            pl.when(_param_len.eq(_min_param_len_desc))
-                            .then(
-                                pl.when(_min_param_len_desc.eq(_min_param_len))
-                                .then(_params)
-                                .otherwise(
-                                    _params.list.slice(
-                                        _min_param_len, _param_len.sub(_min_param_len)
-                                    )
-                                )
-                            )
-                            .otherwise(pl.lit([], dtype=pl.List(pl.String)))
-                            .list.join("_")
-                            .str.to_lowercase()
-                            .str.replace_all(r"[^A-Za-z0-9_]+", "_")
-                            .str.replace_all(r"_+", "_")
-                            .str.strip_chars("_")
-                            .max()
-                            .over(_fn_name, _duckdb_cats, _description),
-                        )
-                    )
-                    .otherwise(base)
-                )
-                .alias("python_name")
+            _duckdb_cats.pipe(
+                _to_py_name,
+                _fn_name,
+                _description,
+                _param_len,
+                _min_param_len_desc,
+                _min_param_len,
+                _params,
             )
         )
         .with_columns(
             _param_types.list.eval(
                 pl.element().fill_null(DuckDbTypes.ANY.value.upper())
-            ),
-            pl.coalesce(
-                CATEGORY_RULES.iter().map(lambda cat: cat.into_expr(_py_name))
-            ).alias("category"),
+            )
         )
         .with_row_index("sig_id")
         .explode("parameters", "parameter_types")
@@ -148,48 +96,7 @@ def get_df() -> pl.LazyFrame:
             _varargs.is_not_null().alias("has_varargs"),
         )
         .with_columns(
-            _params.str.strip_chars_start("'\"[")
-            .str.strip_chars_end("'\"[]")
-            .str.replace(r"\(.*$", _EMPTY_STR)
-            .str.replace_all(r"\.\.\.", _EMPTY_STR)
-            .pipe(
-                lambda expr: pl.when(expr.is_in(SHADOWERS))
-                .then(pl.concat_str(expr, pl.lit("_arg")))
-                .otherwise(expr)
-            )
-            .pipe(
-                lambda expr: pl.when(
-                    expr.str.contains(r"^[A-Za-z_][A-Za-z0-9_]*$").not_()
-                )
-                .then(_EMPTY_STR)
-                .otherwise(expr)
-            )
-            .pipe(
-                lambda expr: (
-                    pl.when(expr.eq(_EMPTY_STR))
-                    .then(
-                        pl.concat_str(
-                            pl.lit("_arg"),
-                            expr.cum_count().over(_py_name).cast(pl.String),
-                        )
-                    )
-                    .otherwise(expr)
-                )
-            )
-            .pipe(
-                lambda expr: (
-                    pl.when(expr.cum_count().over(_py_name, expr).gt(1))
-                    .then(
-                        pl.concat_str(
-                            expr,
-                            pl.lit("_"),
-                            expr.cum_count().over(_py_name, expr).cast(pl.String),
-                        )
-                    )
-                    .otherwise(expr)
-                )
-            )
-            .alias("param_names"),
+            _params.pipe(_to_param_names, _py_name),
             _py_types.str.contains(r"\bbool\b").alias("param_is_bool"),
         )
         .group_by(_py_name, _param_idx, maintain_order=True)
@@ -252,136 +159,12 @@ def get_df() -> pl.LazyFrame:
             ),
         )
         .select(
-            _category,
+            pl.coalesce(
+                CATEGORY_RULES.iter().map(lambda cat: cat.into_expr(_py_name))
+            ).alias("category"),
             _py_name,
-            *pl.col("param_names_list")
-            .list.len()
-            .cast(pl.Boolean)
-            .pipe(
-                lambda has_params: (
-                    pl.when(has_params.or_(_has_varargs))
-                    .then(
-                        pl.concat_str(
-                            pl.lit("def "),
-                            _py_name,
-                            pl.lit("("),
-                            pl.col("param_is_bool_list").pipe(
-                                lambda p_is_bool_list: (
-                                    pl.when(p_is_bool_list.list.any())
-                                    .then(p_is_bool_list.list.arg_max())
-                                    .otherwise(pl.lit(0))
-                                    .pipe(
-                                        lambda first_bool_idx: pl.when(
-                                            p_is_bool_list.list.any().and_(
-                                                _has_varargs.not_()
-                                            )
-                                        )
-                                        .then(
-                                            pl.col("param_sig_list").pipe(
-                                                lambda p_sig_list: pl.concat_list(
-                                                    p_sig_list.list.slice(
-                                                        0, first_bool_idx
-                                                    ),
-                                                    pl.lit(["*"]),
-                                                    p_sig_list.list.slice(
-                                                        first_bool_idx,
-                                                        p_sig_list.list.len(),
-                                                    ),
-                                                )
-                                            )
-                                        )
-                                        .otherwise(pl.col("param_sig_list"))
-                                        .list.join(", ")
-                                    )
-                                )
-                            ),
-                            pl.when(_has_varargs)
-                            .then(
-                                pl.concat_str(
-                                    pl.when(has_params)
-                                    .then(pl.lit(", *args: "))
-                                    .otherwise(pl.lit("*args: ")),
-                                    pl.col("varargs_py_type"),
-                                )
-                            )
-                            .otherwise(_EMPTY_STR),
-                            pl.lit(f") -> {PyTypes.EXPR}:"),
-                        )
-                    )
-                    .otherwise(
-                        pl.concat_str(
-                            pl.lit("def "), _py_name, pl.lit(f"() -> {PyTypes.EXPR}:")
-                        )
-                    )
-                    .alias("signature"),
-                    pl.concat_str(
-                        pl.lit('    """'),
-                        pl.when(_description.is_not_null())
-                        .then(
-                            _description.str.strip_chars()
-                            .str.replace_all("\u2019", "'")
-                            .str.replace_all(r"\. ", ".\n\n    ")
-                            .str.strip_chars_end(".")
-                            .add(pl.lit("."))
-                        )
-                        .otherwise(
-                            pl.concat_str(
-                                pl.lit("SQL "), _fn_name, pl.lit(" function.")
-                            )
-                        ),
-                        pl.when(has_params.or_(_has_varargs))
-                        .then(
-                            pl.concat_str(
-                                pl.lit("\n\n    Args:\n"),
-                                pl.col("param_doc_join"),
-                                pl.when(_has_varargs)
-                                .then(
-                                    pl.concat_str(
-                                        pl.when(has_params)
-                                        .then(pl.lit("\n        "))
-                                        .otherwise(pl.lit("        ")),
-                                        pl.lit("*args ("),
-                                        pl.col("varargs_py_type"),
-                                        pl.lit("): `"),
-                                        _varargs,
-                                        pl.lit("` expression"),
-                                    )
-                                )
-                                .otherwise(_EMPTY_STR),
-                            )
-                        )
-                        .otherwise(_EMPTY_STR)
-                        .alias("doc_args_section"),
-                        pl.concat_str(
-                            pl.lit(f"\n\n    Returns:\n        {PyTypes.EXPR}: `"),
-                            pl.col("return_type").fill_null(
-                                DuckDbTypes.ANY.value.upper()
-                            ),
-                            pl.lit('` expression.\n    """'),
-                        ),
-                    ).alias("docstring"),
-                    pl.concat_str(
-                        pl.lit('    return func("'),
-                        _fn_name,
-                        pl.lit('"'),
-                        pl.when(has_params.or_(_has_varargs))
-                        .then(
-                            pl.concat_str(
-                                pl.lit(", "),
-                                pl.col("param_names_join"),
-                                pl.when(_has_varargs)
-                                .then(
-                                    pl.when(has_params)
-                                    .then(pl.lit(", *args"))
-                                    .otherwise(pl.lit("*args"))
-                                )
-                                .otherwise(_EMPTY_STR),
-                            )
-                        )
-                        .otherwise(_EMPTY_STR),
-                        pl.lit(")"),
-                    ).alias("body"),
-                )
+            pl.col("param_names_list").pipe(
+                _to_func, _py_name, _description, _has_varargs, _varargs, _fn_name
             ),
         )
         .sort(_category, _py_name)
@@ -409,4 +192,258 @@ def _convert_duckdb_type_to_python(param_type: pl.Expr) -> pl.Expr:
             return_dtype=pl.String,
         )
         .fill_null(PyTypes.EXPR.value)
+    )
+
+
+def _to_param_names(_params: pl.Expr, _py_name: pl.Expr) -> pl.Expr:
+    return (
+        _params.str.strip_chars_start("'\"[")
+        .str.strip_chars_end("'\"[]")
+        .str.replace(r"\(.*$", _EMPTY_STR)
+        .str.replace_all(r"\.\.\.", _EMPTY_STR)
+        .pipe(
+            lambda expr: pl.when(expr.is_in(SHADOWERS))
+            .then(pl.concat_str(expr, pl.lit("_arg")))
+            .otherwise(expr)
+        )
+        .pipe(
+            lambda expr: pl.when(expr.str.contains(r"^[A-Za-z_][A-Za-z0-9_]*$").not_())
+            .then(_EMPTY_STR)
+            .otherwise(expr)
+        )
+        .pipe(
+            lambda expr: (
+                pl.when(expr.eq(_EMPTY_STR))
+                .then(
+                    pl.concat_str(
+                        pl.lit("_arg"),
+                        expr.cum_count().over(_py_name).cast(pl.String),
+                    )
+                )
+                .otherwise(expr)
+            )
+        )
+        .pipe(
+            lambda expr: (
+                pl.when(expr.cum_count().over(_py_name, expr).gt(1))
+                .then(
+                    pl.concat_str(
+                        expr,
+                        pl.lit("_"),
+                        expr.cum_count().over(_py_name, expr).cast(pl.String),
+                    )
+                )
+                .otherwise(expr)
+            )
+        )
+        .alias("param_names")
+    )
+
+
+def _to_py_name(
+    duckdb_cats: pl.Expr,
+    fn_name: pl.Expr,
+    description: pl.Expr,
+    param_len: pl.Expr,
+    min_param_len_desc: pl.Expr,
+    min_param_len: pl.Expr,
+    params: pl.Expr,
+) -> pl.Expr:
+    return (
+        duckdb_cats.list.join("_")
+        .fill_null(_EMPTY_STR)
+        .pipe(
+            lambda cat_str: fn_name.pipe(
+                lambda expr: (
+                    pl.when(expr.is_in(KWORDS))
+                    .then(pl.concat_str(expr, pl.lit("_func")))
+                    .otherwise(expr)
+                    .str.replace_all(r"([a-z0-9])([A-Z])", r"$1_$2")
+                    .str.to_lowercase()
+                )
+            )
+            .pipe(
+                lambda base_name: pl.when(
+                    cat_str.n_unique().over(fn_name).gt(1).and_(cat_str.ne(_EMPTY_STR))
+                )
+                .then(pl.concat_str(base_name, pl.lit("_"), cat_str))
+                .otherwise(base_name)
+            )
+            .pipe(
+                lambda base: pl.when(
+                    description.n_unique()
+                    .over(fn_name, duckdb_cats)
+                    .gt(1)
+                    .and_(min_param_len_desc.gt(min_param_len))
+                )
+                .then(
+                    pl.concat_str(
+                        base,
+                        pl.lit("_"),
+                        pl.when(param_len.eq(min_param_len_desc))
+                        .then(
+                            pl.when(min_param_len_desc.eq(min_param_len))
+                            .then(params)
+                            .otherwise(
+                                params.list.slice(
+                                    min_param_len, param_len.sub(min_param_len)
+                                )
+                            )
+                        )
+                        .otherwise(pl.lit([], dtype=pl.List(pl.String)))
+                        .list.join("_")
+                        .str.to_lowercase()
+                        .str.replace_all(r"[^A-Za-z0-9_]+", "_")
+                        .str.replace_all(r"_+", "_")
+                        .str.strip_chars("_")
+                        .max()
+                        .over(fn_name, duckdb_cats, description),
+                    )
+                )
+                .otherwise(base)
+            )
+            .alias("python_name")
+        )
+    )
+
+
+def _to_func(
+    expr: pl.Expr,
+    py_name: pl.Expr,
+    description: pl.Expr,
+    has_varargs: pl.Expr,
+    varargs: pl.Expr,
+    fn_name: pl.Expr,
+) -> pl.Expr:
+    def _signature(has_params: pl.Expr) -> pl.Expr:
+        return pl.concat_str(
+            pl.when(has_params.or_(has_varargs))
+            .then(
+                pl.concat_str(
+                    pl.lit("def "),
+                    py_name,
+                    pl.lit("("),
+                    pl.col("param_is_bool_list").pipe(
+                        lambda p_is_bool_list: (
+                            pl.when(p_is_bool_list.list.any())
+                            .then(p_is_bool_list.list.arg_max())
+                            .otherwise(pl.lit(0))
+                            .pipe(
+                                lambda first_bool_idx: pl.when(
+                                    p_is_bool_list.list.any().and_(has_varargs.not_())
+                                )
+                                .then(
+                                    pl.col("param_sig_list").pipe(
+                                        lambda p_sig_list: pl.concat_list(
+                                            p_sig_list.list.slice(0, first_bool_idx),
+                                            pl.lit(["*"]),
+                                            p_sig_list.list.slice(
+                                                first_bool_idx,
+                                                p_sig_list.list.len(),
+                                            ),
+                                        )
+                                    )
+                                )
+                                .otherwise(pl.col("param_sig_list"))
+                                .list.join(", ")
+                            )
+                        )
+                    ),
+                    pl.when(has_varargs)
+                    .then(
+                        pl.concat_str(
+                            pl.when(has_params)
+                            .then(pl.lit(", *args: "))
+                            .otherwise(pl.lit("*args: ")),
+                            pl.col("varargs_py_type"),
+                        )
+                    )
+                    .otherwise(_EMPTY_STR),
+                    pl.lit(f") -> {PyTypes.EXPR}:"),
+                )
+            )
+            .otherwise(
+                pl.concat_str(pl.lit("def "), py_name, pl.lit(f"() -> {PyTypes.EXPR}:"))
+            )
+        )
+
+    def _description() -> pl.Expr:
+        return (
+            pl.when(description.is_not_null())
+            .then(
+                description.str.strip_chars()
+                .str.replace_all("\u2019", "'")
+                .str.replace_all(r"\. ", ".\n\n    ")
+                .str.strip_chars_end(".")
+                .add(pl.lit("."))
+            )
+            .otherwise(pl.concat_str(pl.lit("SQL "), fn_name, pl.lit(" function.")))
+        )
+
+    def _args_section(has_params: pl.Expr) -> pl.Expr:
+        return (
+            pl.when(has_params.or_(has_varargs))
+            .then(
+                pl.concat_str(
+                    pl.lit("\n\n    Args:\n"),
+                    pl.col("param_doc_join"),
+                    pl.when(has_varargs)
+                    .then(
+                        pl.concat_str(
+                            pl.when(has_params)
+                            .then(pl.lit("\n        "))
+                            .otherwise(pl.lit("        ")),
+                            pl.lit("*args ("),
+                            pl.col("varargs_py_type"),
+                            pl.lit("): `"),
+                            varargs,
+                            pl.lit("` expression"),
+                        )
+                    )
+                    .otherwise(_EMPTY_STR),
+                )
+            )
+            .otherwise(_EMPTY_STR)
+        )
+
+    def _body(has_params: pl.Expr) -> pl.Expr:
+        return (
+            pl.when(has_params.or_(has_varargs))
+            .then(
+                pl.concat_str(
+                    pl.lit(", "),
+                    pl.col("param_names_join"),
+                    pl.when(has_varargs)
+                    .then(
+                        pl.when(has_params)
+                        .then(pl.lit(", *args"))
+                        .otherwise(pl.lit("*args"))
+                    )
+                    .otherwise(_EMPTY_STR),
+                )
+            )
+            .otherwise(_EMPTY_STR)
+        )
+
+    return (
+        expr.list.len()
+        .cast(pl.Boolean)
+        .pipe(
+            lambda has_params: pl.concat_str(
+                _signature(has_params),
+                pl.lit("\n"),
+                pl.lit('    """'),
+                _description(),
+                _args_section(has_params),
+                pl.lit(f"\n\n    Returns:\n        {PyTypes.EXPR}: `"),
+                pl.col("return_type").fill_null(DuckDbTypes.ANY.value.upper()),
+                pl.lit('` expression.\n    """'),
+                pl.lit("\n"),
+                pl.lit('    return func("'),
+                fn_name,
+                pl.lit('"'),
+                _body(has_params),
+                pl.lit(")"),
+            )
+        )
     )
