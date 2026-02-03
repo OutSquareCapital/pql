@@ -216,11 +216,11 @@ __all__ = [
     "floor",
     "fmod",
     "force_checkpoint",
-    "formareadabldecimasize",
     "format",
     "format_bytes",
     "format_pg_type",
     "format_type",
+    "formatreadabledecimalsize",
     "from_base64",
     "from_json",
     "from_json_strict",
@@ -7945,18 +7945,6 @@ def floor(x: SqlExpr | float | Decimal) -> SqlExpr:
     return func("floor", x)
 
 
-def formareadabldecimasize(integer: SqlExpr | int) -> SqlExpr:
-    """Converts `integer` to a human-readable representation using units based on powers of 10 (KB, MB, GB, etc.).
-
-    Args:
-        integer (SqlExpr | int): `BIGINT` expression
-
-    Returns:
-        SqlExpr: `VARCHAR` expression.
-    """
-    return func("formatReadableDecimalSize", integer)
-
-
 def format(format_arg: SqlExpr | str, *args: SqlExpr) -> SqlExpr:
     """Formats a string using the fmt syntax.
 
@@ -7980,6 +7968,18 @@ def format_bytes(integer: SqlExpr | int) -> SqlExpr:
         SqlExpr: `VARCHAR` expression.
     """
     return func("format_bytes", integer)
+
+
+def formatreadabledecimalsize(integer: SqlExpr | int) -> SqlExpr:
+    """Converts `integer` to a human-readable representation using units based on powers of 10 (KB, MB, GB, etc.).
+
+    Args:
+        integer (SqlExpr | int): `BIGINT` expression
+
+    Returns:
+        SqlExpr: `VARCHAR` expression.
+    """
+    return func("formatReadableDecimalSize", integer)
 
 
 def gamma(x: SqlExpr | float) -> SqlExpr:

@@ -235,7 +235,6 @@ def _to_py_name(
                 pl.when(expr.is_in(KWORDS))
                 .then(pl.concat_str(expr, pl.lit("_func")))
                 .otherwise(expr)
-                .str.replace_all(r"([a-z0-9])([A-Z])", r"$1_$2")
                 .str.to_lowercase()
             )
         )
