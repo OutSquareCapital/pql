@@ -7705,7 +7705,7 @@ def ltrim(string: SqlExpr | str, characters: SqlExpr | str | None = None) -> Sql
 
 
 def make_date(col0: SqlExpr | int | dict[object, object]) -> SqlExpr:
-    """SQL make_date function.
+    """The date for the given struct.
 
     Args:
         col0 (SqlExpr | int | dict[object, object]): `INTEGER | STRUCT("year" BIGINT, "month" BIGINT, "day" BIGINT)` expression

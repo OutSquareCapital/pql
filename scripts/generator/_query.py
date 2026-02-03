@@ -1,3 +1,5 @@
+from dataclasses import dataclass, field
+
 import duckdb
 import polars as pl
 
@@ -24,6 +26,13 @@ def sql_query() -> duckdb.DuckDBPyRelation:
     return duckdb.sql(qry)
 
 
+@dataclass(slots=True)
+class ParamLens:
+    by_func: pl.Expr = field(default=pl.col("p_len_by_func"))
+    by_func_and_cat: pl.Expr = field(default=pl.col("p_len_by_func_and_cat"))
+    by_func_cat_and_desc: pl.Expr = field(default=pl.col("p_len_by_func_cat_and_desc"))
+
+
 def get_df() -> pl.LazyFrame:
     _fn_name = pl.col("function_name")
     _params = pl.col("parameters")
@@ -36,12 +45,10 @@ def get_df() -> pl.LazyFrame:
     _varargs = pl.col("varargs")
     _has_varargs = pl.col("has_varargs")
     _duckdb_cats = pl.col("categories")
-    _param_len = pl.col("param_len")
-    _min_param_len = pl.col("min_param_len")
-    _min_param_len_desc = pl.col("min_param_len_desc")
     _param_is_bool = pl.col("param_is_bool")
     _param_idx = pl.col("param_idx")
     _py_type_union = pl.col("py_types_union")
+    p_lens = ParamLens()
 
     return (
         sql_query()
@@ -61,11 +68,11 @@ def get_df() -> pl.LazyFrame:
         .with_columns(
             _params.list.len().pipe(
                 lambda expr_len: (
-                    expr_len.alias("param_len"),
-                    expr_len.min().over(_fn_name).alias("min_param_len"),
+                    expr_len.alias("p_len_by_func"),
+                    expr_len.min().over(_fn_name).alias("p_len_by_func_and_cat"),
                     expr_len.min()
                     .over(_fn_name, _duckdb_cats, _description)
-                    .alias("min_param_len_desc"),
+                    .alias("p_len_by_func_cat_and_desc"),
                 )
             )
         )
@@ -74,46 +81,35 @@ def get_df() -> pl.LazyFrame:
                 _to_py_name,
                 _fn_name,
                 _description,
-                _param_len,
-                _min_param_len_desc,
-                _min_param_len,
+                p_lens,
                 _params,
             )
         )
         .with_columns(
             _param_types.list.eval(
                 pl.element().fill_null(DuckDbTypes.ANY.value.upper())
-            )
+            ),
+            _varargs.pipe(_convert_duckdb_type_to_python)
+            .pipe(_make_type_union)
+            .alias("varargs_py_type"),
+            _varargs.is_not_null().alias("has_varargs"),
         )
         .with_row_index("sig_id")
         .explode("parameters", "parameter_types")
         .with_columns(
             pl.int_range(pl.len()).over("sig_id").alias("param_idx"),
             _param_types.pipe(_convert_duckdb_type_to_python).alias("py_types"),
-            _varargs.pipe(_convert_duckdb_type_to_python)
-            .pipe(_make_type_union)
-            .alias("varargs_py_type"),
-            _varargs.is_not_null().alias("has_varargs"),
-        )
-        .with_columns(
             _params.pipe(_to_param_names, _py_name),
-            _py_types.str.contains(r"\bbool\b").alias("param_is_bool"),
         )
+        .with_columns(_py_types.str.contains(r"\bbool\b").alias("param_is_bool"))
         .group_by(_py_name, _param_idx, maintain_order=True)
         .agg(
             pl.all()
-            .exclude(
-                "param_names",
-                "param_doc_join",
-                "py_types",
-                "parameter_types",
-                "param_is_bool",
-            )
+            .exclude("param_doc_join", "py_types", "parameter_types")
+            .drop_nulls()
             .first(),
-            _param_names.drop_nulls().first(),
             _param_types.unique().str.join(" | ").alias("param_types_union"),
-            _py_types.drop_nulls().unique().str.join(" | ").alias("py_types_union"),
-            _param_is_bool.drop_nulls().first(),
+            _py_types.unique().str.join(" | ").alias("py_types_union"),
         )
         .sort(_py_name, _param_idx)
         .group_by(_py_name, maintain_order=True)
@@ -126,7 +122,7 @@ def get_df() -> pl.LazyFrame:
                 lambda expr: (
                     expr.alias("param_names_list"),
                     expr.str.join(", ").alias("param_names_join"),
-                    *_param_idx.ge(_min_param_len).pipe(
+                    *_param_idx.ge(p_lens.by_func_and_cat).pipe(
                         lambda cond: (
                             pl.concat_str(
                                 expr,
@@ -181,17 +177,13 @@ def _make_type_union(py_type: pl.Expr) -> pl.Expr:
 
 
 def _convert_duckdb_type_to_python(param_type: pl.Expr) -> pl.Expr:
-    return (
-        param_type.str.extract(r"^([A-Z]+)", 1)
-        .replace_strict(
-            CONVERSION_MAP.items()
-            .iter()
-            .map_star(lambda k, v: (k.value.upper(), v.value))
-            .collect(dict),
-            default=PyTypes.EXPR.value,
-            return_dtype=pl.String,
-        )
-        .fill_null(PyTypes.EXPR.value)
+    return param_type.str.extract(r"^([A-Z]+)", 1).replace_strict(
+        CONVERSION_MAP.items()
+        .iter()
+        .map_star(lambda k, v: (k.value.upper(), v.value))
+        .collect(dict),
+        default=PyTypes.EXPR.value,
+        return_dtype=pl.String,
     )
 
 
@@ -244,66 +236,61 @@ def _to_py_name(
     duckdb_cats: pl.Expr,
     fn_name: pl.Expr,
     description: pl.Expr,
-    param_len: pl.Expr,
-    min_param_len_desc: pl.Expr,
-    min_param_len: pl.Expr,
+    p_lens: ParamLens,
     params: pl.Expr,
 ) -> pl.Expr:
-    return (
-        duckdb_cats.list.join("_")
-        .fill_null(_EMPTY_STR)
+    return duckdb_cats.list.join("_").pipe(
+        lambda cat_str: fn_name.pipe(
+            lambda expr: (
+                pl.when(expr.is_in(KWORDS))
+                .then(pl.concat_str(expr, pl.lit("_func")))
+                .otherwise(expr)
+                .str.replace_all(r"([a-z0-9])([A-Z])", r"$1_$2")
+                .str.to_lowercase()
+            )
+        )
         .pipe(
-            lambda cat_str: fn_name.pipe(
-                lambda expr: (
-                    pl.when(expr.is_in(KWORDS))
-                    .then(pl.concat_str(expr, pl.lit("_func")))
-                    .otherwise(expr)
-                    .str.replace_all(r"([a-z0-9])([A-Z])", r"$1_$2")
-                    .str.to_lowercase()
-                )
+            lambda base_name: pl.when(
+                cat_str.n_unique().over(fn_name).gt(1).and_(cat_str.ne(_EMPTY_STR))
             )
-            .pipe(
-                lambda base_name: pl.when(
-                    cat_str.n_unique().over(fn_name).gt(1).and_(cat_str.ne(_EMPTY_STR))
-                )
-                .then(pl.concat_str(base_name, pl.lit("_"), cat_str))
-                .otherwise(base_name)
+            .then(pl.concat_str(base_name, pl.lit("_"), cat_str))
+            .otherwise(base_name)
+        )
+        .pipe(
+            lambda base: pl.when(
+                description.n_unique()
+                .over(fn_name, duckdb_cats)
+                .gt(1)
+                .and_(p_lens.by_func_cat_and_desc.gt(p_lens.by_func_and_cat))
             )
-            .pipe(
-                lambda base: pl.when(
-                    description.n_unique()
-                    .over(fn_name, duckdb_cats)
-                    .gt(1)
-                    .and_(min_param_len_desc.gt(min_param_len))
-                )
-                .then(
-                    pl.concat_str(
-                        base,
-                        pl.lit("_"),
-                        pl.when(param_len.eq(min_param_len_desc))
-                        .then(
-                            pl.when(min_param_len_desc.eq(min_param_len))
-                            .then(params)
-                            .otherwise(
-                                params.list.slice(
-                                    min_param_len, param_len.sub(min_param_len)
-                                )
+            .then(
+                pl.concat_str(
+                    base,
+                    pl.lit("_"),
+                    pl.when(p_lens.by_func.eq(p_lens.by_func_cat_and_desc))
+                    .then(
+                        pl.when(p_lens.by_func_cat_and_desc.eq(p_lens.by_func_and_cat))
+                        .then(params)
+                        .otherwise(
+                            params.list.slice(
+                                p_lens.by_func_and_cat,
+                                p_lens.by_func.sub(p_lens.by_func_and_cat),
                             )
                         )
-                        .otherwise(pl.lit([], dtype=pl.List(pl.String)))
-                        .list.join("_")
-                        .str.to_lowercase()
-                        .str.replace_all(r"[^A-Za-z0-9_]+", "_")
-                        .str.replace_all(r"_+", "_")
-                        .str.strip_chars("_")
-                        .max()
-                        .over(fn_name, duckdb_cats, description),
                     )
+                    .otherwise(pl.lit([], dtype=pl.List(pl.String)))
+                    .list.join("_")
+                    .str.to_lowercase()
+                    .str.replace_all(r"[^A-Za-z0-9_]+", "_")
+                    .str.replace_all(r"_+", "_")
+                    .str.strip_chars("_")
+                    .max()
+                    .over(fn_name, duckdb_cats, description),
                 )
-                .otherwise(base)
             )
-            .alias("python_name")
+            .otherwise(base)
         )
+        .alias("python_name")
     )
 
 
