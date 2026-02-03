@@ -34,7 +34,7 @@ __all__ = [
     "array_cosine_similarity",
     "array_cross_product",
     "array_distance",
-    "array_extract_",
+    "array_extract",
     "array_extract_string",
     "array_extract_struct",
     "array_inner_product",
@@ -84,7 +84,7 @@ __all__ = [
     "concat",
     "concat_ws",
     "constant_or_null",
-    "contains_",
+    "contains",
     "contains_string",
     "corr",
     "cos",
@@ -556,7 +556,7 @@ __all__ = [
     "regr_sxy",
     "regr_syy",
     "remap_struct",
-    "repeat_",
+    "repeat",
     "repeat_blob",
     "repeat_string",
     "replace",
@@ -1472,7 +1472,7 @@ def array_distance(array1: SqlExpr | float, array2: SqlExpr | float) -> SqlExpr:
     return func("array_distance", array1, array2)
 
 
-def array_extract_(col0: SqlExpr, col1: SqlExpr | int) -> SqlExpr:
+def array_extract(col0: SqlExpr, col1: SqlExpr | int) -> SqlExpr:
     """SQL array_extract function.
 
     Args:
@@ -4967,7 +4967,7 @@ def constant_or_null(arg1: SqlExpr, arg2: SqlExpr, *args: SqlExpr) -> SqlExpr:
     return func("constant_or_null", arg1, arg2, *args)
 
 
-def contains_(col0: SqlExpr | dict[object, object], col1: SqlExpr) -> SqlExpr:
+def contains(col0: SqlExpr | dict[object, object], col1: SqlExpr) -> SqlExpr:
     """SQL contains function.
 
     Args:
@@ -8264,7 +8264,7 @@ def remap_struct(
     return func("remap_struct", input_arg, target_type, mapping, defaults)
 
 
-def repeat_(col0: SqlExpr, col1: SqlExpr | int) -> SqlExpr:
+def repeat(col0: SqlExpr, col1: SqlExpr | int) -> SqlExpr:
     """SQL repeat function.
 
     Args:

@@ -16,7 +16,6 @@ from ._models import (
 )
 
 # TODO: ensure that all overloads (params) are taken into account. E.g regexp_extract -> same category, different params, different description
-# TODO: check pk suffix généré alors que ca devrait pas (e.g array_extract_)
 _EMPTY_STR = pl.lit("")
 
 
@@ -214,8 +213,8 @@ class FuncJoinParts:
 class VarArgsParts:
     has_varargs: pl.Expr
     has_params: pl.Expr
-    varargs: pl.Expr
-    varargs_py_type: pl.Expr
+    values: pl.Expr
+    py_type: pl.Expr
 
     @property
     def _if_params(self):  # noqa: ANN202
@@ -224,7 +223,7 @@ class VarArgsParts:
     def _sig(self) -> pl.Expr:
         return pl.concat_str(
             self._if_params(pl.lit(", *args: ")).otherwise(pl.lit("*args: ")),
-            self.varargs_py_type,
+            self.py_type,
         )
 
     def _body(self) -> pl.Expr:
@@ -234,9 +233,9 @@ class VarArgsParts:
         return pl.concat_str(
             self._if_params(pl.lit("\n        ")).otherwise(pl.lit("        ")),
             pl.lit("*args ("),
-            self.varargs_py_type,
+            self.py_type,
             pl.lit("): `"),
-            self.varargs,
+            self.values,
             pl.lit("` expression"),
         )
 
@@ -257,17 +256,17 @@ class VarArgsParts:
 
 
 def _convert_duckdb_type_to_python(param_type: pl.Expr) -> pl.Expr:
+    converter = (
+        CONVERSION_MAP.items()
+        .iter()
+        .map_star(lambda k, v: (k.value.upper(), v.value))
+        .collect(dict)
+    )
+    val = PyTypes.EXPR.value
     return (
         param_type.str.extract(r"^([A-Z]+)", 1)
-        .replace(
-            CONVERSION_MAP.items()
-            .iter()
-            .map_star(lambda k, v: (k.value.upper(), v.value))
-            .collect(dict),
-            default=PyTypes.EXPR.value,
-            return_dtype=pl.String,
-        )
-        .fill_null(PyTypes.EXPR.value)
+        .replace_strict(converter, default=val, return_dtype=pl.String)
+        .fill_null(val)
     )
 
 
@@ -391,15 +390,12 @@ def _clean_param_name(expr: pl.Expr, py_name: pl.Expr) -> pl.Expr:
         )
 
     def _deduplicate_within_function(expr: pl.Expr) -> pl.Expr:
+        enumerated = pl.concat_str(
+            expr, pl.lit("_"), expr.cum_count().over(py_name, expr).cast(pl.String)
+        )
         return (
             pl.when(expr.cum_count().over([py_name, expr]).gt(1))
-            .then(
-                pl.concat_str(
-                    expr,
-                    pl.lit("_"),
-                    expr.cum_count().over(py_name, expr).cast(pl.String),
-                )
-            )
+            .then(enumerated)
             .otherwise(expr)
         )
 
@@ -427,10 +423,10 @@ def _python_name(expr: pl.Expr) -> pl.Expr:
 
 
 def _py_name(fn_name: pl.Expr, duckdb_cats: pl.Expr) -> pl.Expr:
-    cat_str = duckdb_cats.list.join("_").fill_null("unknown").alias("cats_str")
+    cat_str = duckdb_cats.list.join("_").fill_null(_EMPTY_STR).alias("cats_str")
 
     return (
-        pl.when(cat_str.n_unique().over(fn_name).gt(1))
+        pl.when(cat_str.n_unique().over(fn_name).gt(1).and_(cat_str.ne(_EMPTY_STR)))
         .then(pl.concat_str(fn_name.pipe(_python_name), pl.lit("_"), cat_str))
         .otherwise(fn_name.pipe(_python_name))
         .alias("python_name")
