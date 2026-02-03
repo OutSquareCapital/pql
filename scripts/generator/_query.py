@@ -6,12 +6,10 @@ import polars as pl
 from ._models import (
     CATEGORY_RULES,
     CONVERSION_MAP,
-    FUNC_TYPES,
     KWORDS,
     OPERATOR_MAP,
     SHADOWERS,
     DuckDbTypes,
-    FuncTypes,
     PyTypes,
 )
 
@@ -52,10 +50,8 @@ def get_df() -> pl.LazyFrame:
         sql_query()
         .pl()
         .filter(
-            pl.col("function_type")
-            .cast(FUNC_TYPES)
-            .is_in((FuncTypes.SCALAR, FuncTypes.AGGREGATE, FuncTypes.MACRO))
-            .and_(_fn_name.str.starts_with("__").not_())
+            _fn_name.str.starts_with("__")
+            .not_()
             .and_(_fn_name.is_in(OPERATOR_MAP).not_())
             .and_(
                 pl.col("alias_of").pipe(
