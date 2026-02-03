@@ -1339,7 +1339,7 @@ def stddev_samp(x: SqlExpr | float) -> SqlExpr:
     return func("stddev_samp", x)
 
 
-def sum(arg: SqlExpr | Decimal | bool | float) -> SqlExpr:
+def sum(*, arg: SqlExpr | Decimal | bool | float) -> SqlExpr:
     """Calculates the sum value for all tuples in arg.
 
     Args:
@@ -3422,16 +3422,17 @@ def list_unique(list_arg: SqlExpr) -> SqlExpr:
     return func("list_unique", list_arg)
 
 
-def list_value(any_arg: SqlExpr | None = None) -> SqlExpr:
+def list_value(any_arg: SqlExpr | None = None, *args: SqlExpr) -> SqlExpr:
     """Creates a LIST containing the argument values.
 
     Args:
         any_arg (SqlExpr | None): `T` expression
+        *args (SqlExpr): `T` expression
 
     Returns:
         SqlExpr: `"NULL"[]` expression.
     """
-    return func("list_value", any_arg)
+    return func("list_value", any_arg, *args)
 
 
 def list_var_pop(l_arg: SqlExpr) -> SqlExpr:
@@ -4698,17 +4699,19 @@ def acosh(x: SqlExpr | float) -> SqlExpr:
 def add(
     col0: SqlExpr | float | Decimal | date | timedelta | time | datetime | None = None,
     col1: SqlExpr | float | Decimal | date | timedelta | time | datetime | None = None,
+    *args: SqlExpr,
 ) -> SqlExpr:
     """SQL add function.
 
     Args:
         col0 (SqlExpr | int | float | Decimal | date | timedelta | time | datetime | SqlExpr | None): `TINYINT | SMALLINT | INTEGER | BIGINT | HUGEINT | FLOAT | DOUBLE | DECIMAL | UTINYINT | USMALLINT | UINTEGER | UBIGINT | UHUGEINT | DATE | INTERVAL | TIME | TIMESTAMP | TIME WITH TIME ZONE | BIGNUM` expression
         col1 (SqlExpr | int | float | Decimal | date | timedelta | time | datetime | SqlExpr | None): `TINYINT | SMALLINT | INTEGER | BIGINT | HUGEINT | FLOAT | DOUBLE | DECIMAL | UTINYINT | USMALLINT | UINTEGER | UBIGINT | UHUGEINT | DATE | INTERVAL | TIME | TIMESTAMP | TIME WITH TIME ZONE | BIGNUM` expression
+        *args (SqlExpr): `ANY[]` expression
 
     Returns:
         SqlExpr: `TINYINT` expression.
     """
-    return func("add", col0, col1)
+    return func("add", col0, col1, *args)
 
 
 def age(
@@ -8151,6 +8154,7 @@ def parse_duckdb_log_message(
 
 def parse_filename(
     string: SqlExpr | str,
+    *,
     trim_extension: SqlExpr | str | bool | None = None,
     separator: SqlExpr | str | None = None,
 ) -> SqlExpr:

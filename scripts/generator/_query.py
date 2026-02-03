@@ -43,9 +43,7 @@ def get_df() -> pl.LazyFrame:
     _category = pl.col("category")
     _description = pl.col("description")
     _varargs = pl.col("varargs")
-    _has_varargs = pl.col("has_varargs")
     _duckdb_cats = pl.col("categories")
-    _param_is_bool = pl.col("param_is_bool")
     _param_idx = pl.col("param_idx")
     _py_type_union = pl.col("py_types_union")
     p_lens = ParamLens()
@@ -66,7 +64,10 @@ def get_df() -> pl.LazyFrame:
             )
         )
         .with_columns(
-            _params.list.len().pipe(
+            _param_types.list.eval(
+                pl.element().fill_null(DuckDbTypes.ANY.value.upper())
+            ),
+            *_params.list.len().pipe(
                 lambda expr_len: (
                     expr_len.alias("p_len_by_func"),
                     expr_len.min().over(_fn_name).alias("p_len_by_func_and_cat"),
@@ -74,25 +75,13 @@ def get_df() -> pl.LazyFrame:
                     .over(_fn_name, _duckdb_cats, _description)
                     .alias("p_len_by_func_cat_and_desc"),
                 )
-            )
-        )
-        .with_columns(
-            _duckdb_cats.pipe(
-                _to_py_name,
-                _fn_name,
-                _description,
-                p_lens,
-                _params,
-            )
-        )
-        .with_columns(
-            _param_types.list.eval(
-                pl.element().fill_null(DuckDbTypes.ANY.value.upper())
             ),
             _varargs.pipe(_convert_duckdb_type_to_python)
             .pipe(_make_type_union)
             .alias("varargs_py_type"),
-            _varargs.is_not_null().alias("has_varargs"),
+        )
+        .with_columns(
+            _duckdb_cats.pipe(_to_py_name, _fn_name, _description, p_lens, _params)
         )
         .with_row_index("sig_id")
         .explode("parameters", "parameter_types")
@@ -101,7 +90,6 @@ def get_df() -> pl.LazyFrame:
             _param_types.pipe(_convert_duckdb_type_to_python).alias("py_types"),
             _params.pipe(_to_param_names, _py_name),
         )
-        .with_columns(_py_types.str.contains(r"\bbool\b").alias("param_is_bool"))
         .group_by(_py_name, _param_idx, maintain_order=True)
         .agg(
             pl.all()
@@ -115,9 +103,9 @@ def get_df() -> pl.LazyFrame:
         .group_by(_py_name, maintain_order=True)
         .agg(
             pl.all().exclude("param_names", "param_doc_join").first(),
-            _param_is_bool.filter(_param_names.is_not_null()).alias(
-                "param_is_bool_list"
-            ),
+            _py_type_union.str.contains(r"\bbool\b")
+            .filter(_param_names.is_not_null())
+            .alias("param_is_bool"),
             *_param_names.filter(_param_names.is_not_null()).pipe(
                 lambda expr: (
                     expr.alias("param_names_list"),
@@ -160,7 +148,13 @@ def get_df() -> pl.LazyFrame:
             ).alias("category"),
             _py_name,
             pl.col("param_names_list").pipe(
-                _to_func, _py_name, _description, _has_varargs, _varargs, _fn_name
+                _to_func,
+                _py_name,
+                _description,
+                _varargs.is_not_null(),
+                _varargs,
+                _fn_name,
+                pl.col("param_is_bool"),
             ),
         )
         .sort(_category, _py_name)
@@ -301,6 +295,7 @@ def _to_func(
     has_varargs: pl.Expr,
     varargs: pl.Expr,
     fn_name: pl.Expr,
+    is_bool: pl.Expr,
 ) -> pl.Expr:
     def _signature(has_params: pl.Expr) -> pl.Expr:
         return pl.concat_str(
@@ -310,7 +305,7 @@ def _to_func(
                     pl.lit("def "),
                     py_name,
                     pl.lit("("),
-                    pl.col("param_is_bool_list").pipe(
+                    is_bool.pipe(
                         lambda p_is_bool_list: (
                             pl.when(p_is_bool_list.list.any())
                             .then(p_is_bool_list.list.arg_max())
