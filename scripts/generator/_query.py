@@ -56,7 +56,31 @@ def get_df() -> pl.LazyFrame:
             .and_(fn_name.is_in(OPERATOR_MAP).not_())
             .and_(alias_of.is_null().or_(alias_of.is_in(OPERATOR_MAP)))
         )
-        .with_columns(_py_name(fn_name, duckdb_cats))
+        .with_columns(
+            params.list.len().alias("param_len"),
+            params.list.len().min().over(fn_name).alias("min_param_len"),
+            params.list.len()
+            .min()
+            .over(fn_name, duckdb_cats, description)
+            .alias("min_param_len_desc"),
+        )
+        .with_columns(
+            fn_name.pipe(
+                _py_name,
+                duckdb_cats,
+                params.pipe(
+                    _param_suffix,
+                    pl.col("param_len"),
+                    pl.col("min_param_len"),
+                    pl.col("min_param_len_desc"),
+                ).alias("param_suffix"),
+                description.n_unique()
+                .over(fn_name, duckdb_cats)
+                .gt(1)
+                .and_(pl.col("min_param_len_desc").gt(pl.col("min_param_len")))
+                .alias("should_suffix"),
+            )
+        )
         .select(
             fn_name,
             return_type,
@@ -66,8 +90,8 @@ def get_df() -> pl.LazyFrame:
             description,
             py_name,
             py_name.pipe(_category),
-            params.list.len().alias("param_len"),
-            params.list.len().min().over(fn_name).alias("min_param_len"),
+            pl.col("param_len"),
+            pl.col("min_param_len"),
         )
         .with_row_index("sig_id")
         .explode("parameters", "parameter_types")
@@ -411,24 +435,62 @@ def _clean_param_name(expr: pl.Expr, py_name: pl.Expr) -> pl.Expr:
     )
 
 
-def _python_name(expr: pl.Expr) -> pl.Expr:
+def _param_suffix(
+    params: pl.Expr,
+    param_len: pl.Expr,
+    min_param_len: pl.Expr,
+    min_param_len_desc: pl.Expr,
+) -> pl.Expr:
     return (
-        pl.when(expr.is_in(KWORDS))
-        .then(pl.concat_str(expr, pl.lit("_func")))
-        .otherwise(expr)
-        .str.replace_all(r"([a-z0-9])([A-Z])", r"$1_$2")
+        pl.when(param_len.eq(min_param_len_desc))
+        .then(
+            pl.when(min_param_len_desc.eq(min_param_len))
+            .then(params)
+            .otherwise(params.list.slice(min_param_len, param_len.sub(min_param_len)))
+        )
+        .otherwise(pl.lit([]))
+        .list.eval(pl.element().cast(pl.String))
+        .list.join("_")
         .str.to_lowercase()
-        .alias("python_name")
+        .str.replace_all(r"[^A-Za-z0-9_]+", "_")
+        .str.replace_all(r"_+", "_")
+        .str.strip_chars("_")
+        .max()
+        .over(pl.col("function_name"), pl.col("categories"), pl.col("description"))
     )
 
 
-def _py_name(fn_name: pl.Expr, duckdb_cats: pl.Expr) -> pl.Expr:
+def _py_name(
+    fn_name: pl.Expr,
+    duckdb_cats: pl.Expr,
+    param_suffix: pl.Expr,
+    should_suffix: pl.Expr,
+) -> pl.Expr:
+    def _python_name(expr: pl.Expr) -> pl.Expr:
+        return (
+            pl.when(expr.is_in(KWORDS))
+            .then(pl.concat_str(expr, pl.lit("_func")))
+            .otherwise(expr)
+            .str.replace_all(r"([a-z0-9])([A-Z])", r"$1_$2")
+            .str.to_lowercase()
+        )
+
     cat_str = duckdb_cats.list.join("_").fill_null(_EMPTY_STR).alias("cats_str")
 
     return (
-        pl.when(cat_str.n_unique().over(fn_name).gt(1).and_(cat_str.ne(_EMPTY_STR)))
-        .then(pl.concat_str(fn_name.pipe(_python_name), pl.lit("_"), cat_str))
-        .otherwise(fn_name.pipe(_python_name))
+        fn_name.pipe(_python_name)
+        .pipe(
+            lambda base_name: pl.when(
+                cat_str.n_unique().over(fn_name).gt(1).and_(cat_str.ne(_EMPTY_STR))
+            )
+            .then(pl.concat_str(base_name, pl.lit("_"), cat_str))
+            .otherwise(base_name)
+        )
+        .pipe(
+            lambda base: pl.when(should_suffix)
+            .then(pl.concat_str(base, pl.lit("_"), param_suffix))
+            .otherwise(base)
+        )
         .alias("python_name")
     )
 

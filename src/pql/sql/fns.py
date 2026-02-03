@@ -40,6 +40,7 @@ __all__ = [
     "array_inner_product",
     "array_intersect",
     "array_length",
+    "array_length_dimension",
     "array_negative_inner_product",
     "array_pop_back",
     "array_pop_front",
@@ -454,6 +455,7 @@ __all__ = [
     "ltrim",
     "mad",
     "make_date",
+    "make_date_month_day",
     "make_time",
     "make_timestamp",
     "make_timestamp_ms",
@@ -542,6 +544,7 @@ __all__ = [
     "regexp_escape",
     "regexp_extract",
     "regexp_extract_all",
+    "regexp_extract_name_list",
     "regexp_full_match",
     "regexp_matches",
     "regexp_replace",
@@ -1543,8 +1546,22 @@ def array_intersect(l1: SqlExpr, l2: SqlExpr) -> SqlExpr:
     return func("array_intersect", l1, l2)
 
 
-def array_length(list_arg: SqlExpr, dimension: SqlExpr | int | None = None) -> SqlExpr:
+def array_length(list_arg: SqlExpr) -> SqlExpr:
     """Returns the length of the `list`.
+
+    Args:
+        list_arg (SqlExpr): `ANY[]` expression
+
+    Returns:
+        SqlExpr: `BIGINT` expression.
+    """
+    return func("array_length", list_arg)
+
+
+def array_length_dimension(
+    list_arg: SqlExpr, dimension: SqlExpr | int | None = None
+) -> SqlExpr:
+    """`array_length` for lists with dimensions other than 1 not implemented.
 
     Args:
         list_arg (SqlExpr): `ANY[]` expression
@@ -4499,7 +4516,7 @@ def regexp_escape(string: SqlExpr | str) -> SqlExpr:
 def regexp_extract(
     string: SqlExpr | str,
     regex: SqlExpr | str,
-    group: SqlExpr | int | str | None = None,
+    group: SqlExpr | int | None = None,
     options: SqlExpr | str | None = None,
 ) -> SqlExpr:
     """If `string` contains the `regex` pattern, returns the capturing group specified by optional parameter `group`; otherwise, returns the empty string.
@@ -4513,7 +4530,7 @@ def regexp_extract(
     Args:
         string (SqlExpr | str): `VARCHAR` expression
         regex (SqlExpr | str): `VARCHAR` expression
-        group (SqlExpr | int | str | None): `INTEGER | VARCHAR[]` expression
+        group (SqlExpr | int | None): `INTEGER` expression
         options (SqlExpr | str | None): `VARCHAR` expression
 
     Returns:
@@ -4542,6 +4559,28 @@ def regexp_extract_all(
         SqlExpr: `VARCHAR[]` expression.
     """
     return func("regexp_extract_all", string, regex, group, options)
+
+
+def regexp_extract_name_list(
+    string: SqlExpr | str,
+    regex: SqlExpr | str,
+    name_list: SqlExpr | str | None = None,
+    options: SqlExpr | str | None = None,
+) -> SqlExpr:
+    """If `string` contains the `regex` pattern, returns the capturing groups as a struct with corresponding names from `name_list`; otherwise, returns a struct with the same keys and empty strings as values.
+
+    A set of optional regex `options` can be set.
+
+    Args:
+        string (SqlExpr | str): `VARCHAR` expression
+        regex (SqlExpr | str): `VARCHAR` expression
+        name_list (SqlExpr | str | None): `VARCHAR[]` expression
+        options (SqlExpr | str | None): `VARCHAR` expression
+
+    Returns:
+        SqlExpr: `VARCHAR` expression.
+    """
+    return func("regexp_extract", string, regex, name_list, options)
 
 
 def regexp_full_match(
@@ -7665,22 +7704,34 @@ def ltrim(string: SqlExpr | str, characters: SqlExpr | str | None = None) -> Sql
     return func("ltrim", string, characters)
 
 
-def make_date(
-    col0: SqlExpr | int | dict[object, object],
-    month: SqlExpr | int | None = None,
-    day: SqlExpr | int | None = None,
-) -> SqlExpr:
+def make_date(col0: SqlExpr | int | dict[object, object]) -> SqlExpr:
     """SQL make_date function.
 
     Args:
-        col0 (SqlExpr | int | dict[object, object]): `INTEGER | BIGINT | STRUCT("year" BIGINT, "month" BIGINT, "day" BIGINT)` expression
+        col0 (SqlExpr | int | dict[object, object]): `INTEGER | STRUCT("year" BIGINT, "month" BIGINT, "day" BIGINT)` expression
+
+    Returns:
+        SqlExpr: `DATE` expression.
+    """
+    return func("make_date", col0)
+
+
+def make_date_month_day(
+    year: SqlExpr | int,
+    month: SqlExpr | int | None = None,
+    day: SqlExpr | int | None = None,
+) -> SqlExpr:
+    """The date for the given parts.
+
+    Args:
+        year (SqlExpr | int): `BIGINT` expression
         month (SqlExpr | int | None): `BIGINT` expression
         day (SqlExpr | int | None): `BIGINT` expression
 
     Returns:
         SqlExpr: `DATE` expression.
     """
-    return func("make_date", col0, month, day)
+    return func("make_date", year, month, day)
 
 
 def make_time(
