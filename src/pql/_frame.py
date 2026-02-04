@@ -230,7 +230,7 @@ class LazyFrame:
 
     def sum(self) -> Self:
         """Aggregate the sum of each column."""
-        return self._iter_slct(lambda c: sql.fns.sum(sql.col(c)).alias(c))
+        return self._iter_agg(lambda c: sql.fns.sum(sql.col(c)).alias(c))
 
     def mean(self) -> Self:
         """Aggregate the mean of each column."""

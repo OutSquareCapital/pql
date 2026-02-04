@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Iterable
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     from .._types import IntoExpr
@@ -88,6 +88,11 @@ def from_args_kwargs(*exprs: IterExpr, **named_exprs: IntoExpr) -> pc.Iter[SqlEx
     )
 
 
-def func(name: str, *args: object) -> SqlExpr:
+def func(name: str, *args: Any) -> SqlExpr:  # noqa: ANN401
     """Create a SQL function expression."""
-    return FunctionExpression(name, *map(from_expr, args))  # pyright: ignore[reportArgumentType]
+    return (
+        pc.Iter(args)
+        .filter(lambda a: a is not None)
+        .map(from_expr)
+        .into(lambda args: FunctionExpression(name, *args))
+    )
