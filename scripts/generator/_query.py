@@ -186,13 +186,20 @@ def _make_type_union(py_type: pl.Expr) -> pl.Expr:
 
 
 def _convert_duckdb_type_to_python(param_type: pl.Expr) -> pl.Expr:
-    return param_type.str.extract(r"^([A-Z]+)", 1).replace_strict(
-        CONVERSION_MAP.items()
-        .iter()
-        .map_star(lambda k, v: (k.value.upper(), v.value))
-        .collect(dict),
-        default=PyTypes.EXPR.value,
-        return_dtype=pl.String,
+    def _replace(pattern: str) -> pl.Expr:
+        return param_type.str.extract(pattern, 1).replace_strict(
+            CONVERSION_MAP.items()
+            .iter()
+            .map_star(lambda k, v: (k.value.upper(), v.value))
+            .collect(dict),
+            default=PyTypes.EXPR.value,
+            return_dtype=pl.String,
+        )
+
+    return (
+        pl.when(param_type.str.contains(r"\[\]$"))
+        .then(pl.concat_str(pl.lit("list["), _replace(r"^([A-Z]+)\[\]$"), pl.lit("]")))
+        .otherwise(_replace(r"^([A-Z]+)"))
     )
 
 

@@ -1450,11 +1450,11 @@ def generate_series(
     return func("generate_series", col0, col1, col2)
 
 
-def glob(col0: SqlExpr | str) -> SqlExpr:
+def glob(col0: SqlExpr | str | list[str]) -> SqlExpr:
     """SQL glob function.
 
     Args:
-        col0 (SqlExpr | str): `VARCHAR | VARCHAR[]` expression
+        col0 (SqlExpr | str | list[str]): `VARCHAR | VARCHAR[]` expression
 
     Returns:
         SqlExpr: `ANY` expression.
@@ -1542,12 +1542,12 @@ def pandas_scan(col0: SqlExpr) -> SqlExpr:
 
 
 def parquet_bloom_probe(
-    col0: SqlExpr | str, col1: SqlExpr | str, col2: SqlExpr
+    col0: SqlExpr | str | list[str], col1: SqlExpr | str, col2: SqlExpr
 ) -> SqlExpr:
     """SQL parquet_bloom_probe function.
 
     Args:
-        col0 (SqlExpr | str): `VARCHAR | VARCHAR[]` expression
+        col0 (SqlExpr | str | list[str]): `VARCHAR | VARCHAR[]` expression
         col1 (SqlExpr | str): `VARCHAR` expression
         col2 (SqlExpr): `ANY` expression
 
@@ -1557,11 +1557,11 @@ def parquet_bloom_probe(
     return func("parquet_bloom_probe", col0, col1, col2)
 
 
-def parquet_file_metadata(col0: SqlExpr | str) -> SqlExpr:
+def parquet_file_metadata(col0: SqlExpr | str | list[str]) -> SqlExpr:
     """SQL parquet_file_metadata function.
 
     Args:
-        col0 (SqlExpr | str): `VARCHAR | VARCHAR[]` expression
+        col0 (SqlExpr | str | list[str]): `VARCHAR | VARCHAR[]` expression
 
     Returns:
         SqlExpr: `ANY` expression.
@@ -1569,11 +1569,11 @@ def parquet_file_metadata(col0: SqlExpr | str) -> SqlExpr:
     return func("parquet_file_metadata", col0)
 
 
-def parquet_kv_metadata(col0: SqlExpr | str) -> SqlExpr:
+def parquet_kv_metadata(col0: SqlExpr | str | list[str]) -> SqlExpr:
     """SQL parquet_kv_metadata function.
 
     Args:
-        col0 (SqlExpr | str): `VARCHAR | VARCHAR[]` expression
+        col0 (SqlExpr | str | list[str]): `VARCHAR | VARCHAR[]` expression
 
     Returns:
         SqlExpr: `ANY` expression.
@@ -1581,11 +1581,11 @@ def parquet_kv_metadata(col0: SqlExpr | str) -> SqlExpr:
     return func("parquet_kv_metadata", col0)
 
 
-def parquet_metadata(col0: SqlExpr | str) -> SqlExpr:
+def parquet_metadata(col0: SqlExpr | str | list[str]) -> SqlExpr:
     """SQL parquet_metadata function.
 
     Args:
-        col0 (SqlExpr | str): `VARCHAR | VARCHAR[]` expression
+        col0 (SqlExpr | str | list[str]): `VARCHAR | VARCHAR[]` expression
 
     Returns:
         SqlExpr: `ANY` expression.
@@ -1594,7 +1594,7 @@ def parquet_metadata(col0: SqlExpr | str) -> SqlExpr:
 
 
 def parquet_scan(
-    col0: SqlExpr | str,
+    col0: SqlExpr | str | list[str],
     filename: SqlExpr,
     hive_partitioning: SqlExpr | bool,
     union_by_name: SqlExpr | bool,
@@ -1613,7 +1613,7 @@ def parquet_scan(
     """SQL parquet_scan function.
 
     Args:
-        col0 (SqlExpr | str): `VARCHAR | VARCHAR[]` expression
+        col0 (SqlExpr | str | list[str]): `VARCHAR | VARCHAR[]` expression
         filename (SqlExpr): `ANY` expression
         hive_partitioning (SqlExpr | bool): `BOOLEAN` expression
         union_by_name (SqlExpr | bool): `BOOLEAN` expression
@@ -1652,11 +1652,11 @@ def parquet_scan(
     )
 
 
-def parquet_schema(col0: SqlExpr | str) -> SqlExpr:
+def parquet_schema(col0: SqlExpr | str | list[str]) -> SqlExpr:
     """SQL parquet_schema function.
 
     Args:
-        col0 (SqlExpr | str): `VARCHAR | VARCHAR[]` expression
+        col0 (SqlExpr | str | list[str]): `VARCHAR | VARCHAR[]` expression
 
     Returns:
         SqlExpr: `ANY` expression.
@@ -1801,11 +1801,13 @@ def query(col0: SqlExpr | str) -> SqlExpr:
     return func("query", col0)
 
 
-def query_table(col0: SqlExpr | str, col1: SqlExpr | bool | None = None) -> SqlExpr:
+def query_table(
+    col0: SqlExpr | str | list[str], col1: SqlExpr | bool | None = None
+) -> SqlExpr:
     """SQL query_table function.
 
     Args:
-        col0 (SqlExpr | str): `VARCHAR | VARCHAR[]` expression
+        col0 (SqlExpr | str | list[str]): `VARCHAR | VARCHAR[]` expression
         col1 (SqlExpr | bool | None): `BOOLEAN` expression
 
     Returns:
@@ -1832,11 +1834,11 @@ def range(
     return func("range", col0, col1, col2)
 
 
-def read_blob(col0: SqlExpr | str) -> SqlExpr:
+def read_blob(col0: SqlExpr | str | list[str]) -> SqlExpr:
     """SQL read_blob function.
 
     Args:
-        col0 (SqlExpr | str): `VARCHAR | VARCHAR[]` expression
+        col0 (SqlExpr | str | list[str]): `VARCHAR | VARCHAR[]` expression
 
     Returns:
         SqlExpr: `ANY` expression.
@@ -1845,7 +1847,7 @@ def read_blob(col0: SqlExpr | str) -> SqlExpr:
 
 
 def read_csv(
-    col0: SqlExpr | str,
+    col0: SqlExpr | str | list[str],
     filename: SqlExpr | str,
     skip: SqlExpr | int,
     comment: SqlExpr | str,
@@ -1866,7 +1868,7 @@ def read_csv(
     columns: SqlExpr | str,
     maximum_line_size: SqlExpr | str,
     auto_type_candidates: SqlExpr | bool,
-    column_names: SqlExpr | str,
+    column_names: SqlExpr | list[str],
     strict_mode: SqlExpr | bool,
     header: SqlExpr | bool,
     auto_detect: SqlExpr | bool,
@@ -1882,20 +1884,20 @@ def read_csv(
     types: SqlExpr | bool,
     rejects_table: SqlExpr | str,
     rejects_scan: SqlExpr | str,
-    force_not_null: SqlExpr | str | int,
-    files_to_sniff: SqlExpr | int | str,
+    force_not_null: SqlExpr | list[str] | int,
+    files_to_sniff: SqlExpr | int | list[str],
     buffer_size: SqlExpr | int,
     decimal_separator: SqlExpr | str,
     null_padding: SqlExpr | bool,
     allow_quoted_nulls: SqlExpr | bool,
     column_types: SqlExpr,
     dtypes: SqlExpr,
-    names: SqlExpr | str,
+    names: SqlExpr | list[str],
 ) -> SqlExpr:
     """SQL read_csv function.
 
     Args:
-        col0 (SqlExpr | str): `VARCHAR | VARCHAR[]` expression
+        col0 (SqlExpr | str | list[str]): `VARCHAR | VARCHAR[]` expression
         filename (SqlExpr | SqlExpr | str): `ANY | VARCHAR` expression
         skip (SqlExpr | int): `BIGINT` expression
         comment (SqlExpr | str | SqlExpr): `VARCHAR | ANY` expression
@@ -1916,7 +1918,7 @@ def read_csv(
         columns (SqlExpr | SqlExpr | str): `ANY | VARCHAR` expression
         maximum_line_size (SqlExpr | str | SqlExpr): `VARCHAR | ANY` expression
         auto_type_candidates (SqlExpr | SqlExpr | bool): `ANY | BOOLEAN` expression
-        column_names (SqlExpr | str): `VARCHAR[]` expression
+        column_names (SqlExpr | list[str]): `VARCHAR[]` expression
         strict_mode (SqlExpr | bool | SqlExpr): `BOOLEAN | ANY` expression
         header (SqlExpr | bool): `BOOLEAN` expression
         auto_detect (SqlExpr | bool): `BOOLEAN` expression
@@ -1932,15 +1934,15 @@ def read_csv(
         types (SqlExpr | SqlExpr | bool): `ANY | BOOLEAN` expression
         rejects_table (SqlExpr | str): `VARCHAR` expression
         rejects_scan (SqlExpr | str): `VARCHAR` expression
-        force_not_null (SqlExpr | str | int): `VARCHAR[] | BIGINT` expression
-        files_to_sniff (SqlExpr | int | str): `BIGINT | VARCHAR[]` expression
+        force_not_null (SqlExpr | list[str] | int): `VARCHAR[] | BIGINT` expression
+        files_to_sniff (SqlExpr | int | list[str]): `BIGINT | VARCHAR[]` expression
         buffer_size (SqlExpr | int): `UBIGINT` expression
         decimal_separator (SqlExpr | str): `VARCHAR` expression
         null_padding (SqlExpr | bool): `BOOLEAN` expression
         allow_quoted_nulls (SqlExpr | bool): `BOOLEAN` expression
         column_types (SqlExpr): `ANY` expression
         dtypes (SqlExpr): `ANY` expression
-        names (SqlExpr | str): `VARCHAR[]` expression
+        names (SqlExpr | list[str]): `VARCHAR[]` expression
 
     Returns:
         SqlExpr: `ANY` expression.
@@ -1997,7 +1999,7 @@ def read_csv(
 
 
 def read_csv_auto(
-    col0: SqlExpr | str,
+    col0: SqlExpr | str | list[str],
     filename: SqlExpr | str,
     skip: SqlExpr | int,
     comment: SqlExpr | str,
@@ -2018,7 +2020,7 @@ def read_csv_auto(
     columns: SqlExpr | str,
     maximum_line_size: SqlExpr | str,
     auto_type_candidates: SqlExpr | bool,
-    column_names: SqlExpr | str,
+    column_names: SqlExpr | list[str],
     strict_mode: SqlExpr | bool,
     header: SqlExpr | bool,
     auto_detect: SqlExpr | bool,
@@ -2034,20 +2036,20 @@ def read_csv_auto(
     types: SqlExpr | bool,
     rejects_table: SqlExpr | str,
     rejects_scan: SqlExpr | str,
-    force_not_null: SqlExpr | str | int,
-    files_to_sniff: SqlExpr | int | str,
+    force_not_null: SqlExpr | list[str] | int,
+    files_to_sniff: SqlExpr | int | list[str],
     buffer_size: SqlExpr | int,
     decimal_separator: SqlExpr | str,
     null_padding: SqlExpr | bool,
     allow_quoted_nulls: SqlExpr | bool,
     column_types: SqlExpr,
     dtypes: SqlExpr,
-    names: SqlExpr | str,
+    names: SqlExpr | list[str],
 ) -> SqlExpr:
     """SQL read_csv_auto function.
 
     Args:
-        col0 (SqlExpr | str): `VARCHAR | VARCHAR[]` expression
+        col0 (SqlExpr | str | list[str]): `VARCHAR | VARCHAR[]` expression
         filename (SqlExpr | SqlExpr | str): `ANY | VARCHAR` expression
         skip (SqlExpr | int): `BIGINT` expression
         comment (SqlExpr | str | SqlExpr): `VARCHAR | ANY` expression
@@ -2068,7 +2070,7 @@ def read_csv_auto(
         columns (SqlExpr | SqlExpr | str): `ANY | VARCHAR` expression
         maximum_line_size (SqlExpr | str | SqlExpr): `VARCHAR | ANY` expression
         auto_type_candidates (SqlExpr | SqlExpr | bool): `ANY | BOOLEAN` expression
-        column_names (SqlExpr | str): `VARCHAR[]` expression
+        column_names (SqlExpr | list[str]): `VARCHAR[]` expression
         strict_mode (SqlExpr | bool | SqlExpr): `BOOLEAN | ANY` expression
         header (SqlExpr | bool): `BOOLEAN` expression
         auto_detect (SqlExpr | bool): `BOOLEAN` expression
@@ -2084,15 +2086,15 @@ def read_csv_auto(
         types (SqlExpr | SqlExpr | bool): `ANY | BOOLEAN` expression
         rejects_table (SqlExpr | str): `VARCHAR` expression
         rejects_scan (SqlExpr | str): `VARCHAR` expression
-        force_not_null (SqlExpr | str | int): `VARCHAR[] | BIGINT` expression
-        files_to_sniff (SqlExpr | int | str): `BIGINT | VARCHAR[]` expression
+        force_not_null (SqlExpr | list[str] | int): `VARCHAR[] | BIGINT` expression
+        files_to_sniff (SqlExpr | int | list[str]): `BIGINT | VARCHAR[]` expression
         buffer_size (SqlExpr | int): `UBIGINT` expression
         decimal_separator (SqlExpr | str): `VARCHAR` expression
         null_padding (SqlExpr | bool): `BOOLEAN` expression
         allow_quoted_nulls (SqlExpr | bool): `BOOLEAN` expression
         column_types (SqlExpr): `ANY` expression
         dtypes (SqlExpr): `ANY` expression
-        names (SqlExpr | str): `VARCHAR[]` expression
+        names (SqlExpr | list[str]): `VARCHAR[]` expression
 
     Returns:
         SqlExpr: `ANY` expression.
@@ -2149,7 +2151,7 @@ def read_csv_auto(
 
 
 def read_json(
-    col0: SqlExpr | str,
+    col0: SqlExpr | str | list[str],
     format_arg: SqlExpr | str,
     filename: SqlExpr | str,
     hive_partitioning: SqlExpr | bool | str,
@@ -2176,7 +2178,7 @@ def read_json(
     """SQL read_json function.
 
     Args:
-        col0 (SqlExpr | str): `VARCHAR | VARCHAR[]` expression
+        col0 (SqlExpr | str | list[str]): `VARCHAR | VARCHAR[]` expression
         format_arg (SqlExpr | str | SqlExpr): `VARCHAR | ANY` expression
         filename (SqlExpr | SqlExpr | str): `ANY | VARCHAR` expression
         hive_partitioning (SqlExpr | bool | str): `BOOLEAN | VARCHAR` expression
@@ -2232,7 +2234,7 @@ def read_json(
 
 
 def read_json_auto(
-    col0: SqlExpr | str,
+    col0: SqlExpr | str | list[str],
     format_arg: SqlExpr | str,
     filename: SqlExpr | str,
     hive_partitioning: SqlExpr | bool | str,
@@ -2259,7 +2261,7 @@ def read_json_auto(
     """SQL read_json_auto function.
 
     Args:
-        col0 (SqlExpr | str): `VARCHAR | VARCHAR[]` expression
+        col0 (SqlExpr | str | list[str]): `VARCHAR | VARCHAR[]` expression
         format_arg (SqlExpr | str | SqlExpr): `VARCHAR | ANY` expression
         filename (SqlExpr | SqlExpr | str): `ANY | VARCHAR` expression
         hive_partitioning (SqlExpr | bool | str): `BOOLEAN | VARCHAR` expression
@@ -2315,7 +2317,7 @@ def read_json_auto(
 
 
 def read_json_objects(
-    col0: SqlExpr | str,
+    col0: SqlExpr | str | list[str],
     format_arg: SqlExpr | str,
     filename: SqlExpr | str,
     hive_partitioning: SqlExpr | bool,
@@ -2329,7 +2331,7 @@ def read_json_objects(
     """SQL read_json_objects function.
 
     Args:
-        col0 (SqlExpr | str): `VARCHAR | VARCHAR[]` expression
+        col0 (SqlExpr | str | list[str]): `VARCHAR | VARCHAR[]` expression
         format_arg (SqlExpr | str | SqlExpr): `VARCHAR | ANY` expression
         filename (SqlExpr | SqlExpr | str): `ANY | VARCHAR` expression
         hive_partitioning (SqlExpr | bool): `BOOLEAN` expression
@@ -2359,7 +2361,7 @@ def read_json_objects(
 
 
 def read_json_objects_auto(
-    col0: SqlExpr | str,
+    col0: SqlExpr | str | list[str],
     format_arg: SqlExpr | str,
     filename: SqlExpr | str,
     hive_partitioning: SqlExpr | bool,
@@ -2373,7 +2375,7 @@ def read_json_objects_auto(
     """SQL read_json_objects_auto function.
 
     Args:
-        col0 (SqlExpr | str): `VARCHAR | VARCHAR[]` expression
+        col0 (SqlExpr | str | list[str]): `VARCHAR | VARCHAR[]` expression
         format_arg (SqlExpr | str | SqlExpr): `VARCHAR | ANY` expression
         filename (SqlExpr | SqlExpr | str): `ANY | VARCHAR` expression
         hive_partitioning (SqlExpr | bool): `BOOLEAN` expression
@@ -2403,7 +2405,7 @@ def read_json_objects_auto(
 
 
 def read_ndjson(
-    col0: SqlExpr | str,
+    col0: SqlExpr | str | list[str],
     format_arg: SqlExpr | str,
     filename: SqlExpr | str,
     hive_partitioning: SqlExpr | bool | str,
@@ -2430,7 +2432,7 @@ def read_ndjson(
     """SQL read_ndjson function.
 
     Args:
-        col0 (SqlExpr | str): `VARCHAR | VARCHAR[]` expression
+        col0 (SqlExpr | str | list[str]): `VARCHAR | VARCHAR[]` expression
         format_arg (SqlExpr | str | SqlExpr): `VARCHAR | ANY` expression
         filename (SqlExpr | SqlExpr | str): `ANY | VARCHAR` expression
         hive_partitioning (SqlExpr | bool | str): `BOOLEAN | VARCHAR` expression
@@ -2486,7 +2488,7 @@ def read_ndjson(
 
 
 def read_ndjson_auto(
-    col0: SqlExpr | str,
+    col0: SqlExpr | str | list[str],
     format_arg: SqlExpr | str,
     filename: SqlExpr | str,
     hive_partitioning: SqlExpr | bool | str,
@@ -2513,7 +2515,7 @@ def read_ndjson_auto(
     """SQL read_ndjson_auto function.
 
     Args:
-        col0 (SqlExpr | str): `VARCHAR | VARCHAR[]` expression
+        col0 (SqlExpr | str | list[str]): `VARCHAR | VARCHAR[]` expression
         format_arg (SqlExpr | str | SqlExpr): `VARCHAR | ANY` expression
         filename (SqlExpr | SqlExpr | str): `ANY | VARCHAR` expression
         hive_partitioning (SqlExpr | bool | str): `BOOLEAN | VARCHAR` expression
@@ -2569,7 +2571,7 @@ def read_ndjson_auto(
 
 
 def read_ndjson_objects(
-    col0: SqlExpr | str,
+    col0: SqlExpr | str | list[str],
     format_arg: SqlExpr | str,
     filename: SqlExpr | str,
     hive_partitioning: SqlExpr | bool,
@@ -2583,7 +2585,7 @@ def read_ndjson_objects(
     """SQL read_ndjson_objects function.
 
     Args:
-        col0 (SqlExpr | str): `VARCHAR | VARCHAR[]` expression
+        col0 (SqlExpr | str | list[str]): `VARCHAR | VARCHAR[]` expression
         format_arg (SqlExpr | str | SqlExpr): `VARCHAR | ANY` expression
         filename (SqlExpr | SqlExpr | str): `ANY | VARCHAR` expression
         hive_partitioning (SqlExpr | bool): `BOOLEAN` expression
@@ -2613,7 +2615,7 @@ def read_ndjson_objects(
 
 
 def read_parquet(
-    col0: SqlExpr | str,
+    col0: SqlExpr | str | list[str],
     filename: SqlExpr,
     hive_partitioning: SqlExpr | bool,
     union_by_name: SqlExpr | bool,
@@ -2632,7 +2634,7 @@ def read_parquet(
     """SQL read_parquet function.
 
     Args:
-        col0 (SqlExpr | str): `VARCHAR | VARCHAR[]` expression
+        col0 (SqlExpr | str | list[str]): `VARCHAR | VARCHAR[]` expression
         filename (SqlExpr): `ANY` expression
         hive_partitioning (SqlExpr | bool): `BOOLEAN` expression
         union_by_name (SqlExpr | bool): `BOOLEAN` expression
@@ -2671,11 +2673,11 @@ def read_parquet(
     )
 
 
-def read_text(col0: SqlExpr | str) -> SqlExpr:
+def read_text(col0: SqlExpr | str | list[str]) -> SqlExpr:
     """SQL read_text function.
 
     Args:
-        col0 (SqlExpr | str): `VARCHAR | VARCHAR[]` expression
+        col0 (SqlExpr | str | list[str]): `VARCHAR | VARCHAR[]` expression
 
     Returns:
         SqlExpr: `ANY` expression.
@@ -2683,11 +2685,11 @@ def read_text(col0: SqlExpr | str) -> SqlExpr:
     return func("read_text", col0)
 
 
-def repeat(col0: SqlExpr, col1: SqlExpr | int) -> SqlExpr:
+def repeat(col0: SqlExpr | list[SqlExpr], col1: SqlExpr | int) -> SqlExpr:
     """SQL repeat function.
 
     Args:
-        col0 (SqlExpr): `ANY | T[]` expression
+        col0 (SqlExpr | SqlExpr | list[SqlExpr]): `ANY | T[]` expression
         col1 (SqlExpr | int): `BIGINT` expression
 
     Returns:
@@ -2771,7 +2773,7 @@ def sniff_csv(
     columns: SqlExpr,
     maximum_line_size: SqlExpr | str,
     auto_type_candidates: SqlExpr,
-    column_names: SqlExpr | str,
+    column_names: SqlExpr | list[str],
     strict_mode: SqlExpr | bool,
     header: SqlExpr | bool,
     auto_detect: SqlExpr | bool,
@@ -2792,7 +2794,7 @@ def sniff_csv(
     rejects_scan: SqlExpr | str,
     rejects_limit: SqlExpr | int,
     union_by_name: SqlExpr | bool,
-    force_not_null: SqlExpr | str,
+    force_not_null: SqlExpr | list[str],
     files_to_sniff: SqlExpr | int,
     buffer_size: SqlExpr | int,
     decimal_separator: SqlExpr | str,
@@ -2800,7 +2802,7 @@ def sniff_csv(
     allow_quoted_nulls: SqlExpr | bool,
     column_types: SqlExpr,
     dtypes: SqlExpr,
-    names: SqlExpr | str,
+    names: SqlExpr | list[str],
     hive_partitioning: SqlExpr | bool,
     hive_types: SqlExpr,
     hive_types_autocast: SqlExpr | bool,
@@ -2822,7 +2824,7 @@ def sniff_csv(
         columns (SqlExpr): `ANY` expression
         maximum_line_size (SqlExpr | str): `VARCHAR` expression
         auto_type_candidates (SqlExpr): `ANY` expression
-        column_names (SqlExpr | str): `VARCHAR[]` expression
+        column_names (SqlExpr | list[str]): `VARCHAR[]` expression
         strict_mode (SqlExpr | bool): `BOOLEAN` expression
         header (SqlExpr | bool): `BOOLEAN` expression
         auto_detect (SqlExpr | bool): `BOOLEAN` expression
@@ -2843,7 +2845,7 @@ def sniff_csv(
         rejects_scan (SqlExpr | str): `VARCHAR` expression
         rejects_limit (SqlExpr | int): `BIGINT` expression
         union_by_name (SqlExpr | bool): `BOOLEAN` expression
-        force_not_null (SqlExpr | str): `VARCHAR[]` expression
+        force_not_null (SqlExpr | list[str]): `VARCHAR[]` expression
         files_to_sniff (SqlExpr | int): `BIGINT` expression
         buffer_size (SqlExpr | int): `UBIGINT` expression
         decimal_separator (SqlExpr | str): `VARCHAR` expression
@@ -2851,7 +2853,7 @@ def sniff_csv(
         allow_quoted_nulls (SqlExpr | bool): `BOOLEAN` expression
         column_types (SqlExpr): `ANY` expression
         dtypes (SqlExpr): `ANY` expression
-        names (SqlExpr | str): `VARCHAR[]` expression
+        names (SqlExpr | list[str]): `VARCHAR[]` expression
         hive_partitioning (SqlExpr | bool): `BOOLEAN` expression
         hive_types (SqlExpr): `ANY` expression
         hive_types_autocast (SqlExpr | bool): `BOOLEAN` expression
@@ -3090,13 +3092,14 @@ def approx_count_distinct(any_arg: SqlExpr) -> SqlExpr:
 
 
 def approx_quantile(
-    x: SqlExpr | Decimal | float | date | time | datetime, pos: SqlExpr | float
+    x: SqlExpr | Decimal | float | date | time | datetime,
+    pos: SqlExpr | float | list[float],
 ) -> SqlExpr:
     """Computes the approximate quantile using T-Digest.
 
     Args:
         x (SqlExpr | Decimal | int | float | date | time | datetime): `DECIMAL | SMALLINT | INTEGER | BIGINT | HUGEINT | DOUBLE | DATE | TIME | TIME WITH TIME ZONE | TIMESTAMP | TIMESTAMP WITH TIME ZONE | TINYINT | FLOAT` expression
-        pos (SqlExpr | float): `FLOAT | FLOAT[]` expression
+        pos (SqlExpr | float | list[float]): `FLOAT | FLOAT[]` expression
 
     Returns:
         SqlExpr: `DECIMAL` expression.
@@ -3339,12 +3342,12 @@ def first(arg: SqlExpr | Decimal) -> SqlExpr:
     return func("first", arg)
 
 
-def histogram(arg: SqlExpr, col1: SqlExpr | None = None) -> SqlExpr:
+def histogram(arg: SqlExpr, col1: SqlExpr | list[SqlExpr] | None = None) -> SqlExpr:
     """Returns a LIST of STRUCTs with the fields bucket and count.
 
     Args:
         arg (SqlExpr): `ANY` expression
-        col1 (SqlExpr | None): `ANY[]` expression
+        col1 (SqlExpr | list[SqlExpr] | None): `ANY[]` expression
 
     Returns:
         SqlExpr: `MAP` expression.
@@ -3352,12 +3355,12 @@ def histogram(arg: SqlExpr, col1: SqlExpr | None = None) -> SqlExpr:
     return func("histogram", arg, col1)
 
 
-def histogram_exact(arg: SqlExpr, bins: SqlExpr) -> SqlExpr:
+def histogram_exact(arg: SqlExpr, bins: SqlExpr | list[SqlExpr]) -> SqlExpr:
     """Returns a LIST of STRUCTs with the fields bucket and count matching the buckets exactly.
 
     Args:
         arg (SqlExpr): `ANY` expression
-        bins (SqlExpr): `ANY[]` expression
+        bins (SqlExpr | list[SqlExpr]): `ANY[]` expression
 
     Returns:
         SqlExpr: `MAP` expression.
@@ -3502,7 +3505,8 @@ def product(arg: SqlExpr | float) -> SqlExpr:
 
 
 def quantile_cont(
-    x: SqlExpr | Decimal | float | date | datetime | time, pos: SqlExpr | float
+    x: SqlExpr | Decimal | float | date | datetime | time,
+    pos: SqlExpr | float | list[float],
 ) -> SqlExpr:
     """Returns the interpolated quantile number between 0 and 1 .
 
@@ -3510,7 +3514,7 @@ def quantile_cont(
 
     Args:
         x (SqlExpr | Decimal | int | float | date | datetime | time): `DECIMAL | TINYINT | SMALLINT | INTEGER | BIGINT | HUGEINT | FLOAT | DOUBLE | DATE | TIMESTAMP | TIME | TIMESTAMP WITH TIME ZONE | TIME WITH TIME ZONE` expression
-        pos (SqlExpr | float): `DOUBLE | DOUBLE[]` expression
+        pos (SqlExpr | float | list[float]): `DOUBLE | DOUBLE[]` expression
 
     Returns:
         SqlExpr: `DECIMAL` expression.
@@ -3518,14 +3522,16 @@ def quantile_cont(
     return func("quantile_cont", x, pos)
 
 
-def quantile_disc(x: SqlExpr, pos: SqlExpr | float | None = None) -> SqlExpr:
+def quantile_disc(
+    x: SqlExpr, pos: SqlExpr | float | list[float] | None = None
+) -> SqlExpr:
     """Returns the exact quantile number between 0 and 1 .
 
     If pos is a LIST of FLOATs, then the result is a LIST of the corresponding exact quantiles.
 
     Args:
         x (SqlExpr): `ANY` expression
-        pos (SqlExpr | float | None): `DOUBLE | DOUBLE[]` expression
+        pos (SqlExpr | float | list[float] | None): `DOUBLE | DOUBLE[]` expression
 
     Returns:
         SqlExpr: `ANY` expression.
@@ -3652,14 +3658,14 @@ def regr_syy(y: SqlExpr | float, x: SqlExpr | float) -> SqlExpr:
 
 def reservoir_quantile(
     x: SqlExpr | Decimal | float,
-    quantile: SqlExpr | float,
+    quantile: SqlExpr | float | list[float],
     sample_size: SqlExpr | int | None = None,
 ) -> SqlExpr:
     """Gives the approximate quantile using reservoir sampling, the sample size is optional and uses 8192 as a default size.
 
     Args:
         x (SqlExpr | Decimal | int | float): `DECIMAL | TINYINT | SMALLINT | INTEGER | BIGINT | HUGEINT | FLOAT | DOUBLE` expression
-        quantile (SqlExpr | float): `DOUBLE | DOUBLE[]` expression
+        quantile (SqlExpr | float | list[float]): `DOUBLE | DOUBLE[]` expression
         sample_size (SqlExpr | int | None): `INTEGER` expression
 
     Returns:
@@ -3852,11 +3858,11 @@ def array_distance(array1: SqlExpr | float, array2: SqlExpr | float) -> SqlExpr:
     return func("array_distance", array1, array2)
 
 
-def array_extract(col0: SqlExpr, col1: SqlExpr | int) -> SqlExpr:
+def array_extract(col0: SqlExpr | list[SqlExpr], col1: SqlExpr | int) -> SqlExpr:
     """SQL array_extract function.
 
     Args:
-        col0 (SqlExpr): `T[]` expression
+        col0 (SqlExpr | list[SqlExpr]): `T[]` expression
         col1 (SqlExpr | int): `BIGINT` expression
 
     Returns:
@@ -3923,11 +3929,11 @@ def array_intersect(l1: SqlExpr, l2: SqlExpr) -> SqlExpr:
     return func("array_intersect", l1, l2)
 
 
-def array_length(list_arg: SqlExpr) -> SqlExpr:
+def array_length(list_arg: SqlExpr | list[SqlExpr]) -> SqlExpr:
     """Returns the length of the `list`.
 
     Args:
-        list_arg (SqlExpr): `ANY[]` expression
+        list_arg (SqlExpr | list[SqlExpr]): `ANY[]` expression
 
     Returns:
         SqlExpr: `BIGINT` expression.
@@ -3936,12 +3942,12 @@ def array_length(list_arg: SqlExpr) -> SqlExpr:
 
 
 def array_length_dimension(
-    list_arg: SqlExpr, dimension: SqlExpr | int | None = None
+    list_arg: SqlExpr | list[SqlExpr], dimension: SqlExpr | int | None = None
 ) -> SqlExpr:
     """`array_length` for lists with dimensions other than 1 not implemented.
 
     Args:
-        list_arg (SqlExpr): `ANY[]` expression
+        list_arg (SqlExpr | list[SqlExpr]): `ANY[]` expression
         dimension (SqlExpr | int | None): `BIGINT` expression
 
     Returns:
@@ -4505,12 +4511,12 @@ def date_diff(
 
 
 def date_part(
-    ts: SqlExpr | str, col1: SqlExpr | date | timedelta | time | datetime
+    ts: SqlExpr | list[str] | str, col1: SqlExpr | date | timedelta | time | datetime
 ) -> SqlExpr:
     """Get subfield (equivalent to extract).
 
     Args:
-        ts (SqlExpr | str): `VARCHAR[] | VARCHAR` expression
+        ts (SqlExpr | list[str] | str): `VARCHAR[] | VARCHAR` expression
         col1 (SqlExpr | date | timedelta | time | datetime): `DATE | INTERVAL | TIME | TIMESTAMP | TIME WITH TIME ZONE | TIME_NS | TIMESTAMP WITH TIME ZONE` expression
 
     Returns:
@@ -4571,12 +4577,12 @@ def datediff(
 
 
 def datepart(
-    ts: SqlExpr | str, col1: SqlExpr | date | timedelta | time | datetime
+    ts: SqlExpr | list[str] | str, col1: SqlExpr | date | timedelta | time | datetime
 ) -> SqlExpr:
     """Get subfield (equivalent to extract).
 
     Args:
-        ts (SqlExpr | str): `VARCHAR[] | VARCHAR` expression
+        ts (SqlExpr | list[str] | str): `VARCHAR[] | VARCHAR` expression
         col1 (SqlExpr | date | timedelta | time | datetime): `DATE | INTERVAL | TIME | TIMESTAMP | TIME WITH TIME ZONE | TIME_NS | TIMESTAMP WITH TIME ZONE` expression
 
     Returns:
@@ -4720,13 +4726,13 @@ def json_array(*args: SqlExpr) -> SqlExpr:
 
 
 def json_array_length(
-    col0: SqlExpr | str, col1: SqlExpr | str | None = None
+    col0: SqlExpr | str, col1: SqlExpr | str | list[str] | None = None
 ) -> SqlExpr:
     """SQL json_array_length function.
 
     Args:
         col0 (SqlExpr | str): `VARCHAR | JSON` expression
-        col1 (SqlExpr | str | None): `VARCHAR | VARCHAR[]` expression
+        col1 (SqlExpr | str | list[str] | None): `VARCHAR | VARCHAR[]` expression
 
     Returns:
         SqlExpr: `UBIGINT` expression.
@@ -4784,12 +4790,12 @@ def json_execute_serialized_sql(col0: SqlExpr | str) -> SqlExpr:
     return func("json_execute_serialized_sql", col0)
 
 
-def json_exists(col0: SqlExpr | str, col1: SqlExpr | str) -> SqlExpr:
+def json_exists(col0: SqlExpr | str, col1: SqlExpr | str | list[str]) -> SqlExpr:
     """SQL json_exists function.
 
     Args:
         col0 (SqlExpr | str): `VARCHAR | JSON` expression
-        col1 (SqlExpr | str): `VARCHAR | VARCHAR[]` expression
+        col1 (SqlExpr | str | list[str]): `VARCHAR | VARCHAR[]` expression
 
     Returns:
         SqlExpr: `BOOLEAN` expression.
@@ -4797,12 +4803,12 @@ def json_exists(col0: SqlExpr | str, col1: SqlExpr | str) -> SqlExpr:
     return func("json_exists", col0, col1)
 
 
-def json_extract(col0: SqlExpr | str, col1: SqlExpr | int | str) -> SqlExpr:
+def json_extract(col0: SqlExpr | str, col1: SqlExpr | int | str | list[str]) -> SqlExpr:
     """SQL json_extract function.
 
     Args:
         col0 (SqlExpr | str): `VARCHAR | JSON` expression
-        col1 (SqlExpr | int | str): `BIGINT | VARCHAR | VARCHAR[]` expression
+        col1 (SqlExpr | int | str | list[str]): `BIGINT | VARCHAR | VARCHAR[]` expression
 
     Returns:
         SqlExpr: `JSON` expression.
@@ -4810,12 +4816,14 @@ def json_extract(col0: SqlExpr | str, col1: SqlExpr | int | str) -> SqlExpr:
     return func("json_extract", col0, col1)
 
 
-def json_extract_path(col0: SqlExpr | str, col1: SqlExpr | int | str) -> SqlExpr:
+def json_extract_path(
+    col0: SqlExpr | str, col1: SqlExpr | int | str | list[str]
+) -> SqlExpr:
     """SQL json_extract_path function.
 
     Args:
         col0 (SqlExpr | str): `VARCHAR | JSON` expression
-        col1 (SqlExpr | int | str): `BIGINT | VARCHAR | VARCHAR[]` expression
+        col1 (SqlExpr | int | str | list[str]): `BIGINT | VARCHAR | VARCHAR[]` expression
 
     Returns:
         SqlExpr: `JSON` expression.
@@ -4823,12 +4831,14 @@ def json_extract_path(col0: SqlExpr | str, col1: SqlExpr | int | str) -> SqlExpr
     return func("json_extract_path", col0, col1)
 
 
-def json_extract_path_text(col0: SqlExpr | str, col1: SqlExpr | int | str) -> SqlExpr:
+def json_extract_path_text(
+    col0: SqlExpr | str, col1: SqlExpr | int | str | list[str]
+) -> SqlExpr:
     """SQL json_extract_path_text function.
 
     Args:
         col0 (SqlExpr | str): `VARCHAR | JSON` expression
-        col1 (SqlExpr | int | str): `BIGINT | VARCHAR | VARCHAR[]` expression
+        col1 (SqlExpr | int | str | list[str]): `BIGINT | VARCHAR | VARCHAR[]` expression
 
     Returns:
         SqlExpr: `VARCHAR` expression.
@@ -4836,12 +4846,14 @@ def json_extract_path_text(col0: SqlExpr | str, col1: SqlExpr | int | str) -> Sq
     return func("json_extract_path_text", col0, col1)
 
 
-def json_extract_string(col0: SqlExpr | str, col1: SqlExpr | int | str) -> SqlExpr:
+def json_extract_string(
+    col0: SqlExpr | str, col1: SqlExpr | int | str | list[str]
+) -> SqlExpr:
     """SQL json_extract_string function.
 
     Args:
         col0 (SqlExpr | str): `VARCHAR | JSON` expression
-        col1 (SqlExpr | int | str): `BIGINT | VARCHAR | VARCHAR[]` expression
+        col1 (SqlExpr | int | str | list[str]): `BIGINT | VARCHAR | VARCHAR[]` expression
 
     Returns:
         SqlExpr: `VARCHAR` expression.
@@ -4886,12 +4898,14 @@ def json_group_structure(x: SqlExpr) -> SqlExpr:
     return func("json_group_structure", x)
 
 
-def json_keys(col0: SqlExpr | str, col1: SqlExpr | str | None = None) -> SqlExpr:
+def json_keys(
+    col0: SqlExpr | str, col1: SqlExpr | str | list[str] | None = None
+) -> SqlExpr:
     """SQL json_keys function.
 
     Args:
         col0 (SqlExpr | str): `VARCHAR | JSON` expression
-        col1 (SqlExpr | str | None): `VARCHAR | VARCHAR[]` expression
+        col1 (SqlExpr | str | list[str] | None): `VARCHAR | VARCHAR[]` expression
 
     Returns:
         SqlExpr: `VARCHAR[]` expression.
@@ -5046,12 +5060,14 @@ def json_tree(col0: SqlExpr | str, col1: SqlExpr | str | None = None) -> SqlExpr
     return func("json_tree", col0, col1)
 
 
-def json_type(col0: SqlExpr | str, col1: SqlExpr | str | None = None) -> SqlExpr:
+def json_type(
+    col0: SqlExpr | str, col1: SqlExpr | str | list[str] | None = None
+) -> SqlExpr:
     """SQL json_type function.
 
     Args:
         col0 (SqlExpr | str): `VARCHAR | JSON` expression
-        col1 (SqlExpr | str | None): `VARCHAR | VARCHAR[]` expression
+        col1 (SqlExpr | str | list[str] | None): `VARCHAR | VARCHAR[]` expression
 
     Returns:
         SqlExpr: `VARCHAR` expression.
@@ -5071,12 +5087,12 @@ def json_valid(col0: SqlExpr | str) -> SqlExpr:
     return func("json_valid", col0)
 
 
-def json_value(col0: SqlExpr | str, col1: SqlExpr | int | str) -> SqlExpr:
+def json_value(col0: SqlExpr | str, col1: SqlExpr | int | str | list[str]) -> SqlExpr:
     """SQL json_value function.
 
     Args:
         col0 (SqlExpr | str): `VARCHAR | JSON` expression
-        col1 (SqlExpr | int | str): `BIGINT | VARCHAR | VARCHAR[]` expression
+        col1 (SqlExpr | int | str | list[str]): `BIGINT | VARCHAR | VARCHAR[]` expression
 
     Returns:
         SqlExpr: `VARCHAR` expression.
@@ -5102,12 +5118,12 @@ def list(arg: SqlExpr) -> SqlExpr:
 
 
 def list_aggregate(
-    list_arg: SqlExpr, function_name: SqlExpr | str, *args: SqlExpr
+    list_arg: SqlExpr | list[SqlExpr], function_name: SqlExpr | str, *args: SqlExpr
 ) -> SqlExpr:
     """Executes the aggregate function `function_name` on the elements of `list`.
 
     Args:
-        list_arg (SqlExpr): `ANY[]` expression
+        list_arg (SqlExpr | list[SqlExpr]): `ANY[]` expression
         function_name (SqlExpr | str): `VARCHAR` expression
         *args (SqlExpr): `ANY` expression
 
@@ -5226,7 +5242,7 @@ def list_bool_or(l_arg: SqlExpr) -> SqlExpr:
     return func("list_bool_or", l_arg)
 
 
-def list_concat(*args: SqlExpr) -> SqlExpr:
+def list_concat(*args: SqlExpr | list[SqlExpr]) -> SqlExpr:
     """Concatenates lists.
 
     `NULL` inputs are skipped.
@@ -5234,7 +5250,7 @@ def list_concat(*args: SqlExpr) -> SqlExpr:
     See also operator `||`.
 
     Args:
-        *args (SqlExpr): `ANY[]` expression
+        *args (SqlExpr | list[SqlExpr]): `ANY[]` expression
 
     Returns:
         SqlExpr: `ANY[]` expression.
@@ -5242,11 +5258,11 @@ def list_concat(*args: SqlExpr) -> SqlExpr:
     return func("list_concat", *args)
 
 
-def list_contains(list_arg: SqlExpr, element: SqlExpr) -> SqlExpr:
+def list_contains(list_arg: SqlExpr | list[SqlExpr], element: SqlExpr) -> SqlExpr:
     """Returns true if the list contains the element.
 
     Args:
-        list_arg (SqlExpr): `T[]` expression
+        list_arg (SqlExpr | list[SqlExpr]): `T[]` expression
         element (SqlExpr): `T` expression
 
     Returns:
@@ -5255,12 +5271,14 @@ def list_contains(list_arg: SqlExpr, element: SqlExpr) -> SqlExpr:
     return func("list_contains", list_arg, element)
 
 
-def list_cosine_distance(list1: SqlExpr | float, list2: SqlExpr | float) -> SqlExpr:
+def list_cosine_distance(
+    list1: SqlExpr | list[float], list2: SqlExpr | list[float]
+) -> SqlExpr:
     """Computes the cosine distance between two same-sized lists.
 
     Args:
-        list1 (SqlExpr | float): `FLOAT[] | DOUBLE[]` expression
-        list2 (SqlExpr | float): `FLOAT[] | DOUBLE[]` expression
+        list1 (SqlExpr | list[float]): `FLOAT[] | DOUBLE[]` expression
+        list2 (SqlExpr | list[float]): `FLOAT[] | DOUBLE[]` expression
 
     Returns:
         SqlExpr: `FLOAT` expression.
@@ -5268,12 +5286,14 @@ def list_cosine_distance(list1: SqlExpr | float, list2: SqlExpr | float) -> SqlE
     return func("list_cosine_distance", list1, list2)
 
 
-def list_cosine_similarity(list1: SqlExpr | float, list2: SqlExpr | float) -> SqlExpr:
+def list_cosine_similarity(
+    list1: SqlExpr | list[float], list2: SqlExpr | list[float]
+) -> SqlExpr:
     """Computes the cosine similarity between two same-sized lists.
 
     Args:
-        list1 (SqlExpr | float): `FLOAT[] | DOUBLE[]` expression
-        list2 (SqlExpr | float): `FLOAT[] | DOUBLE[]` expression
+        list1 (SqlExpr | list[float]): `FLOAT[] | DOUBLE[]` expression
+        list2 (SqlExpr | list[float]): `FLOAT[] | DOUBLE[]` expression
 
     Returns:
         SqlExpr: `FLOAT` expression.
@@ -5293,12 +5313,14 @@ def list_count(l_arg: SqlExpr) -> SqlExpr:
     return func("list_count", l_arg)
 
 
-def list_distance(list1: SqlExpr | float, list2: SqlExpr | float) -> SqlExpr:
+def list_distance(
+    list1: SqlExpr | list[float], list2: SqlExpr | list[float]
+) -> SqlExpr:
     """Calculates the Euclidean distance between two points with coordinates given in two inputs lists of equal length.
 
     Args:
-        list1 (SqlExpr | float): `FLOAT[] | DOUBLE[]` expression
-        list2 (SqlExpr | float): `FLOAT[] | DOUBLE[]` expression
+        list1 (SqlExpr | list[float]): `FLOAT[] | DOUBLE[]` expression
+        list2 (SqlExpr | list[float]): `FLOAT[] | DOUBLE[]` expression
 
     Returns:
         SqlExpr: `FLOAT` expression.
@@ -5306,13 +5328,13 @@ def list_distance(list1: SqlExpr | float, list2: SqlExpr | float) -> SqlExpr:
     return func("list_distance", list1, list2)
 
 
-def list_distinct(list_arg: SqlExpr) -> SqlExpr:
+def list_distinct(list_arg: SqlExpr | list[SqlExpr]) -> SqlExpr:
     """Removes all duplicates and `NULL` values from a list.
 
     Does not preserve the original order.
 
     Args:
-        list_arg (SqlExpr): `T[]` expression
+        list_arg (SqlExpr | list[SqlExpr]): `T[]` expression
 
     Returns:
         SqlExpr: `T[]` expression.
@@ -5332,11 +5354,13 @@ def list_entropy(l_arg: SqlExpr) -> SqlExpr:
     return func("list_entropy", l_arg)
 
 
-def list_extract(list_arg: SqlExpr | str, index: SqlExpr | int) -> SqlExpr:
+def list_extract(
+    list_arg: SqlExpr | list[SqlExpr] | str, index: SqlExpr | int
+) -> SqlExpr:
     """Extract the `index`th (1-based) value from the list.
 
     Args:
-        list_arg (SqlExpr | SqlExpr | str): `T[] | VARCHAR` expression
+        list_arg (SqlExpr | list[SqlExpr] | str): `T[] | VARCHAR` expression
         index (SqlExpr | int): `BIGINT` expression
 
     Returns:
@@ -5345,7 +5369,7 @@ def list_extract(list_arg: SqlExpr | str, index: SqlExpr | int) -> SqlExpr:
     return func("list_extract", list_arg, index)
 
 
-def list_filter(list_arg: SqlExpr, lambda_arg: SqlExpr) -> SqlExpr:
+def list_filter(list_arg: SqlExpr | list[SqlExpr], lambda_arg: SqlExpr) -> SqlExpr:
     """Constructs a list from those elements of the input `list` for which the `lambda` function returns `true`.
 
     DuckDB must be able to cast the `lambda` function's return type to `BOOL`.
@@ -5353,7 +5377,7 @@ def list_filter(list_arg: SqlExpr, lambda_arg: SqlExpr) -> SqlExpr:
     The return type of `list_filter` is the same as the input list's.
 
     Args:
-        list_arg (SqlExpr): `ANY[]` expression
+        list_arg (SqlExpr | list[SqlExpr]): `ANY[]` expression
         lambda_arg (SqlExpr): `LAMBDA` expression
 
     Returns:
@@ -5375,14 +5399,14 @@ def list_first(l_arg: SqlExpr) -> SqlExpr:
 
 
 def list_grade_up(
-    list_arg: SqlExpr,
+    list_arg: SqlExpr | list[SqlExpr],
     col1: SqlExpr | str | None = None,
     col2: SqlExpr | str | None = None,
 ) -> SqlExpr:
     """Works like list_sort, but the results are the indexes that correspond to the position in the original list instead of the actual values.
 
     Args:
-        list_arg (SqlExpr): `ANY[]` expression
+        list_arg (SqlExpr | list[SqlExpr]): `ANY[]` expression
         col1 (SqlExpr | str | None): `VARCHAR` expression
         col2 (SqlExpr | str | None): `VARCHAR` expression
 
@@ -5392,14 +5416,16 @@ def list_grade_up(
     return func("list_grade_up", list_arg, col1, col2)
 
 
-def list_has_all(list1: SqlExpr, list2: SqlExpr) -> SqlExpr:
+def list_has_all(
+    list1: SqlExpr | list[SqlExpr], list2: SqlExpr | list[SqlExpr]
+) -> SqlExpr:
     """Returns true if all elements of list2 are in list1.
 
     NULLs are ignored.
 
     Args:
-        list1 (SqlExpr): `T[]` expression
-        list2 (SqlExpr): `T[]` expression
+        list1 (SqlExpr | list[SqlExpr]): `T[]` expression
+        list2 (SqlExpr | list[SqlExpr]): `T[]` expression
 
     Returns:
         SqlExpr: `BOOLEAN` expression.
@@ -5407,14 +5433,16 @@ def list_has_all(list1: SqlExpr, list2: SqlExpr) -> SqlExpr:
     return func("list_has_all", list1, list2)
 
 
-def list_has_any(list1: SqlExpr, list2: SqlExpr) -> SqlExpr:
+def list_has_any(
+    list1: SqlExpr | list[SqlExpr], list2: SqlExpr | list[SqlExpr]
+) -> SqlExpr:
     """Returns true if the lists have any element in common.
 
     NULLs are ignored.
 
     Args:
-        list1 (SqlExpr): `T[]` expression
-        list2 (SqlExpr): `T[]` expression
+        list1 (SqlExpr | list[SqlExpr]): `T[]` expression
+        list2 (SqlExpr | list[SqlExpr]): `T[]` expression
 
     Returns:
         SqlExpr: `BOOLEAN` expression.
@@ -5434,12 +5462,14 @@ def list_histogram(l_arg: SqlExpr) -> SqlExpr:
     return func("list_histogram", l_arg)
 
 
-def list_inner_product(list1: SqlExpr | float, list2: SqlExpr | float) -> SqlExpr:
+def list_inner_product(
+    list1: SqlExpr | list[float], list2: SqlExpr | list[float]
+) -> SqlExpr:
     """Computes the inner product between two same-sized lists.
 
     Args:
-        list1 (SqlExpr | float): `FLOAT[] | DOUBLE[]` expression
-        list2 (SqlExpr | float): `FLOAT[] | DOUBLE[]` expression
+        list1 (SqlExpr | list[float]): `FLOAT[] | DOUBLE[]` expression
+        list2 (SqlExpr | list[float]): `FLOAT[] | DOUBLE[]` expression
 
     Returns:
         SqlExpr: `FLOAT` expression.
@@ -5557,13 +5587,13 @@ def list_mode(l_arg: SqlExpr) -> SqlExpr:
 
 
 def list_negative_inner_product(
-    list1: SqlExpr | float, list2: SqlExpr | float
+    list1: SqlExpr | list[float], list2: SqlExpr | list[float]
 ) -> SqlExpr:
     """Computes the negative inner product between two same-sized lists.
 
     Args:
-        list1 (SqlExpr | float): `FLOAT[] | DOUBLE[]` expression
-        list2 (SqlExpr | float): `FLOAT[] | DOUBLE[]` expression
+        list1 (SqlExpr | list[float]): `FLOAT[] | DOUBLE[]` expression
+        list2 (SqlExpr | list[float]): `FLOAT[] | DOUBLE[]` expression
 
     Returns:
         SqlExpr: `FLOAT` expression.
@@ -5571,13 +5601,13 @@ def list_negative_inner_product(
     return func("list_negative_inner_product", list1, list2)
 
 
-def list_position(list_arg: SqlExpr, element: SqlExpr) -> SqlExpr:
+def list_position(list_arg: SqlExpr | list[SqlExpr], element: SqlExpr) -> SqlExpr:
     """Returns the index of the `element` if the `list` contains the `element`.
 
     If the `element` is not found, it returns `NULL`.
 
     Args:
-        list_arg (SqlExpr): `T[]` expression
+        list_arg (SqlExpr | list[SqlExpr]): `T[]` expression
         element (SqlExpr): `T` expression
 
     Returns:
@@ -5612,14 +5642,16 @@ def list_product(l_arg: SqlExpr) -> SqlExpr:
 
 
 def list_reduce(
-    list_arg: SqlExpr, lambda_arg: SqlExpr, initial_value: SqlExpr | None = None
+    list_arg: SqlExpr | list[SqlExpr],
+    lambda_arg: SqlExpr,
+    initial_value: SqlExpr | None = None,
 ) -> SqlExpr:
     """Reduces all elements of the input `list` into a single scalar value by executing the `lambda` function on a running result and the next list element.
 
     The `lambda` function has an optional `initial_value` argument.
 
     Args:
-        list_arg (SqlExpr): `ANY[]` expression
+        list_arg (SqlExpr | list[SqlExpr]): `ANY[]` expression
         lambda_arg (SqlExpr): `LAMBDA` expression
         initial_value (SqlExpr | None): `ANY` expression
 
@@ -5630,14 +5662,14 @@ def list_reduce(
 
 
 def list_resize(
-    list_arg: SqlExpr, size: SqlExpr, value: SqlExpr | None = None
+    list_arg: SqlExpr | list[SqlExpr], size: SqlExpr, value: SqlExpr | None = None
 ) -> SqlExpr:
     """Resizes the `list` to contain `size` elements.
 
     Initializes new elements with `value` or `NULL` if `value` is not set.
 
     Args:
-        list_arg (SqlExpr): `ANY[]` expression
+        list_arg (SqlExpr | list[SqlExpr]): `ANY[]` expression
         size (SqlExpr): `ANY` expression
         value (SqlExpr | None): `ANY` expression
 
@@ -5659,11 +5691,13 @@ def list_reverse(l_arg: SqlExpr) -> SqlExpr:
     return func("list_reverse", l_arg)
 
 
-def list_reverse_sort(list_arg: SqlExpr, col1: SqlExpr | str | None = None) -> SqlExpr:
+def list_reverse_sort(
+    list_arg: SqlExpr | list[SqlExpr], col1: SqlExpr | str | None = None
+) -> SqlExpr:
     """Sorts the elements of the list in reverse order.
 
     Args:
-        list_arg (SqlExpr): `ANY[]` expression
+        list_arg (SqlExpr | list[SqlExpr]): `ANY[]` expression
         col1 (SqlExpr | str | None): `VARCHAR` expression
 
     Returns:
@@ -5672,12 +5706,14 @@ def list_reverse_sort(list_arg: SqlExpr, col1: SqlExpr | str | None = None) -> S
     return func("list_reverse_sort", list_arg, col1)
 
 
-def list_select(value_list: SqlExpr, index_list: SqlExpr | int) -> SqlExpr:
+def list_select(
+    value_list: SqlExpr | list[SqlExpr], index_list: SqlExpr | list[int]
+) -> SqlExpr:
     """Returns a list based on the elements selected by the `index_list`.
 
     Args:
-        value_list (SqlExpr): `T[]` expression
-        index_list (SqlExpr | int): `BIGINT[]` expression
+        value_list (SqlExpr | list[SqlExpr]): `T[]` expression
+        index_list (SqlExpr | list[int]): `BIGINT[]` expression
 
     Returns:
         SqlExpr: `T[]` expression.
@@ -5743,14 +5779,14 @@ def list_slice_list_string(list_arg: SqlExpr, begin: SqlExpr, end: SqlExpr) -> S
 
 
 def list_sort(
-    list_arg: SqlExpr,
+    list_arg: SqlExpr | list[SqlExpr],
     col1: SqlExpr | str | None = None,
     col2: SqlExpr | str | None = None,
 ) -> SqlExpr:
     """Sorts the elements of the list.
 
     Args:
-        list_arg (SqlExpr): `ANY[]` expression
+        list_arg (SqlExpr | list[SqlExpr]): `ANY[]` expression
         col1 (SqlExpr | str | None): `VARCHAR` expression
         col2 (SqlExpr | str | None): `VARCHAR` expression
 
@@ -5808,13 +5844,13 @@ def list_sum(l_arg: SqlExpr) -> SqlExpr:
     return func("list_sum", l_arg)
 
 
-def list_transform(list_arg: SqlExpr, lambda_arg: SqlExpr) -> SqlExpr:
+def list_transform(list_arg: SqlExpr | list[SqlExpr], lambda_arg: SqlExpr) -> SqlExpr:
     """Returns a list that is the result of applying the `lambda` function to each element of the input `list`.
 
     The return type is defined by the return type of the `lambda` function.
 
     Args:
-        list_arg (SqlExpr): `ANY[]` expression
+        list_arg (SqlExpr | list[SqlExpr]): `ANY[]` expression
         lambda_arg (SqlExpr): `LAMBDA` expression
 
     Returns:
@@ -5823,11 +5859,11 @@ def list_transform(list_arg: SqlExpr, lambda_arg: SqlExpr) -> SqlExpr:
     return func("list_transform", list_arg, lambda_arg)
 
 
-def list_unique(list_arg: SqlExpr) -> SqlExpr:
+def list_unique(list_arg: SqlExpr | list[SqlExpr]) -> SqlExpr:
     """Counts the unique elements of a `list`.
 
     Args:
-        list_arg (SqlExpr): `ANY[]` expression
+        list_arg (SqlExpr | list[SqlExpr]): `ANY[]` expression
 
     Returns:
         SqlExpr: `UBIGINT` expression.
@@ -5872,12 +5908,14 @@ def list_var_samp(l_arg: SqlExpr) -> SqlExpr:
     return func("list_var_samp", l_arg)
 
 
-def list_where(value_list: SqlExpr, mask_list: SqlExpr | bool) -> SqlExpr:
+def list_where(
+    value_list: SqlExpr | list[SqlExpr], mask_list: SqlExpr | list[bool]
+) -> SqlExpr:
     """Returns a list with the `BOOLEAN`s in `mask_list` applied as a mask to the `value_list`.
 
     Args:
-        value_list (SqlExpr): `T[]` expression
-        mask_list (SqlExpr | bool): `BOOLEAN[]` expression
+        value_list (SqlExpr | list[SqlExpr]): `T[]` expression
+        mask_list (SqlExpr | list[bool]): `BOOLEAN[]` expression
 
     Returns:
         SqlExpr: `T[]` expression.
@@ -6678,12 +6716,15 @@ def weighted_avg(value: SqlExpr, weight: SqlExpr) -> SqlExpr:
 # ============================================================
 
 
-def map(keys: SqlExpr | None = None, values: SqlExpr | None = None) -> SqlExpr:
+def map(
+    keys: SqlExpr | list[SqlExpr] | None = None,
+    values: SqlExpr | list[SqlExpr] | None = None,
+) -> SqlExpr:
     """Creates a map from a set of keys and values.
 
     Args:
-        keys (SqlExpr | None): `K[]` expression
-        values (SqlExpr | None): `V[]` expression
+        keys (SqlExpr | SqlExpr | list[SqlExpr] | None): `K[]` expression
+        values (SqlExpr | list[SqlExpr] | None): `V[]` expression
 
     Returns:
         SqlExpr: `MAP("NULL", "NULL")` expression.
@@ -6785,11 +6826,11 @@ def map_extract_value(map_arg: SqlExpr, key: SqlExpr) -> SqlExpr:
     return func("map_extract_value", map_arg, key)
 
 
-def map_from_entries(map_arg: SqlExpr | dict[object, object]) -> SqlExpr:
+def map_from_entries(map_arg: SqlExpr | list[SqlExpr]) -> SqlExpr:
     """Returns a map created from the entries of the array.
 
     Args:
-        map_arg (SqlExpr | dict[object, object]): `STRUCT(K, V)[]` expression
+        map_arg (SqlExpr | list[SqlExpr]): `STRUCT(K, V)[]` expression
 
     Returns:
         SqlExpr: `MAP(K, V)` expression.
@@ -6978,7 +7019,7 @@ def regexp_extract_all(
 def regexp_extract_name_list(
     string: SqlExpr | str,
     regex: SqlExpr | str,
-    name_list: SqlExpr | str | None = None,
+    name_list: SqlExpr | list[str] | None = None,
     options: SqlExpr | str | None = None,
 ) -> SqlExpr:
     """If `string` contains the `regex` pattern, returns the capturing groups as a struct with corresponding names from `name_list`; otherwise, returns a struct with the same keys and empty strings as values.
@@ -6988,7 +7029,7 @@ def regexp_extract_name_list(
     Args:
         string (SqlExpr | str): `VARCHAR` expression
         regex (SqlExpr | str): `VARCHAR` expression
-        name_list (SqlExpr | str | None): `VARCHAR[]` expression
+        name_list (SqlExpr | list[str] | None): `VARCHAR[]` expression
         options (SqlExpr | str | None): `VARCHAR` expression
 
     Returns:
@@ -7422,11 +7463,13 @@ def constant_or_null(arg1: SqlExpr, arg2: SqlExpr, *args: SqlExpr) -> SqlExpr:
     return func("constant_or_null", arg1, arg2, *args)
 
 
-def contains(col0: SqlExpr | dict[object, object], col1: SqlExpr) -> SqlExpr:
+def contains(
+    col0: SqlExpr | list[SqlExpr] | dict[object, object], col1: SqlExpr
+) -> SqlExpr:
     """SQL contains function.
 
     Args:
-        col0 (SqlExpr | SqlExpr | dict[object, object]): `T[] | MAP(K, V) | STRUCT` expression
+        col0 (SqlExpr | list[SqlExpr] | SqlExpr | dict[object, object]): `T[] | MAP(K, V) | STRUCT` expression
         col1 (SqlExpr): `T | K | ANY` expression
 
     Returns:
@@ -7906,11 +7949,11 @@ def finalize(col0: SqlExpr) -> SqlExpr:
     return func("finalize", col0)
 
 
-def flatten(nested_list: SqlExpr) -> SqlExpr:
+def flatten(nested_list: SqlExpr | list[SqlExpr]) -> SqlExpr:
     """Flattens a nested list by one level.
 
     Args:
-        nested_list (SqlExpr): `T[][]` expression
+        nested_list (SqlExpr | list[SqlExpr]): `T[][]` expression
 
     Returns:
         SqlExpr: `T[]` expression.
@@ -9940,11 +9983,11 @@ def length_grapheme(string: SqlExpr | str) -> SqlExpr:
     return func("length_grapheme", string)
 
 
-def length_list(list_arg: SqlExpr) -> SqlExpr:
+def length_list(list_arg: SqlExpr | list[SqlExpr]) -> SqlExpr:
     """Returns the length of the `list`.
 
     Args:
-        list_arg (SqlExpr): `ANY[]` expression
+        list_arg (SqlExpr | list[SqlExpr]): `ANY[]` expression
 
     Returns:
         SqlExpr: `BIGINT` expression.
@@ -11112,7 +11155,7 @@ def strlen(string: SqlExpr | str) -> SqlExpr:
     return func("strlen", string)
 
 
-def strptime(text: SqlExpr | str, format_arg: SqlExpr | str) -> SqlExpr:
+def strptime(text: SqlExpr | str, format_arg: SqlExpr | str | list[str]) -> SqlExpr:
     """Converts the `string` text to timestamp according to the format string.
 
     Throws an error on failure.
@@ -11121,7 +11164,7 @@ def strptime(text: SqlExpr | str, format_arg: SqlExpr | str) -> SqlExpr:
 
     Args:
         text (SqlExpr | str): `VARCHAR` expression
-        format_arg (SqlExpr | str): `VARCHAR | VARCHAR[]` expression
+        format_arg (SqlExpr | str | list[str]): `VARCHAR | VARCHAR[]` expression
 
     Returns:
         SqlExpr: `TIMESTAMP` expression.
@@ -11277,14 +11320,14 @@ def trunc(x: SqlExpr | float | Decimal, col1: SqlExpr | int | None = None) -> Sq
     return func("trunc", x, col1)
 
 
-def try_strptime(text: SqlExpr | str, format_arg: SqlExpr | str) -> SqlExpr:
+def try_strptime(text: SqlExpr | str, format_arg: SqlExpr | str | list[str]) -> SqlExpr:
     """Converts the `string` text to timestamp according to the format string.
 
     Returns `NULL` on failure.
 
     Args:
         text (SqlExpr | str): `VARCHAR` expression
-        format_arg (SqlExpr | str): `VARCHAR | VARCHAR[]` expression
+        format_arg (SqlExpr | str | list[str]): `VARCHAR | VARCHAR[]` expression
 
     Returns:
         SqlExpr: `TIMESTAMP` expression.
