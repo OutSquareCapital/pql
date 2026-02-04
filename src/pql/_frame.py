@@ -15,9 +15,6 @@ if TYPE_CHECKING:
     from ._expr import Expr
     from ._types import FrameInit, IntoExpr
 
-type IntoExprColumn = Iterable[sql.SqlExpr] | sql.SqlExpr | str
-type IntoExprs = IntoExpr | Iterable[IntoExpr]
-
 
 class LazyFrame:
     """LazyFrame providing Polars-like API over DuckDB relations."""
@@ -49,10 +46,12 @@ class LazyFrame:
         instance._rel = rel
         return instance
 
-    def _select(self, exprs: IntoExprColumn, groups: str = "") -> Self:
-        return self.__from_lf__(self._rel.select(*exprs, groups=groups))  # pyright: ignore[reportUnknownArgumentType, reportGeneralTypeIssues]
+    def _select(self, exprs: sql.IntoExprColumn, groups: str = "") -> Self:
+        return self.__from_lf__(self._rel.select(*sql.from_cols(exprs), groups=groups))
 
-    def _agg(self, exprs: IntoExprColumn, group_expr: sql.SqlExpr | str = "") -> Self:
+    def _agg(
+        self, exprs: sql.IntoExprColumn, group_expr: sql.SqlExpr | str = ""
+    ) -> Self:
         return self.__from_lf__(self._rel.aggregate(exprs, group_expr))  # pyright: ignore[reportArgumentType]
 
     def _iter_slct(self, func: Callable[[str], sql.SqlExpr]) -> Self:
@@ -74,11 +73,11 @@ class LazyFrame:
         """Execute the query and return a Polars DataFrame."""
         return self._rel.pl()
 
-    def select(self, *exprs: IntoExprs, **named_exprs: IntoExpr) -> Self:
+    def select(self, *exprs: sql.IterExpr, **named_exprs: IntoExpr) -> Self:
         """Select columns or expressions."""
         return self._select(sql.from_args_kwargs(*exprs, **named_exprs))
 
-    def with_columns(self, *exprs: IntoExprs, **named_exprs: IntoExpr) -> Self:
+    def with_columns(self, *exprs: sql.IterExpr, **named_exprs: IntoExpr) -> Self:
         """Add or replace columns."""
         return (
             sql.from_args_kwargs(*exprs, **named_exprs)
@@ -94,7 +93,7 @@ class LazyFrame:
 
     def sort(
         self,
-        *by: IntoExprs,
+        *by: sql.IterExpr,
         descending: bool | Iterable[bool] = False,
         nulls_last: bool | Iterable[bool] = False,
     ) -> Self:
@@ -408,11 +407,11 @@ class LazyFrame:
             .project("* EXCLUDE (__rn__)")
         )
 
-    def top_k(self, k: int, *, by: IntoExprs, reverse: bool = False) -> Self:
+    def top_k(self, k: int, *, by: sql.IterExpr, reverse: bool = False) -> Self:
         """Return top k rows by column(s)."""
         return self.sort(by, descending=not reverse).head(k)
 
-    def bottom_k(self, k: int, *, by: IntoExprs, reverse: bool = False) -> Self:
+    def bottom_k(self, k: int, *, by: sql.IterExpr, reverse: bool = False) -> Self:
         """Return bottom k rows by column(s)."""
         return self.sort(by, descending=reverse).head(k)
 

@@ -2,6 +2,8 @@
 
 from . import datatypes, fns
 from ._core import (
+    IntoExprColumn,
+    IterExpr,
     Relation,
     SqlExpr,
     all,
@@ -10,6 +12,7 @@ from ._core import (
     fn_once,
     from_args_kwargs,
     from_arrow,
+    from_cols,
     from_expr,
     from_iter,
     from_query,
@@ -22,6 +25,8 @@ from ._core import (
 from ._windows import WindowExpr
 
 __all__ = [
+    "IntoExprColumn",
+    "IterExpr",
     "Relation",
     "SqlExpr",
     "WindowExpr",
@@ -33,6 +38,7 @@ __all__ = [
     "fns",
     "from_args_kwargs",
     "from_arrow",
+    "from_cols",
     "from_expr",
     "from_iter",
     "from_query",

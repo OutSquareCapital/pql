@@ -25,6 +25,8 @@ from duckdb import (
 
 type IterExpr = IntoExpr | Iterable[IntoExpr]
 
+type IntoExprColumn = Iterable[SqlExpr] | SqlExpr | str
+
 
 def from_expr(value: IntoExpr) -> SqlExpr:
     """Convert a value to a DuckDB Expression (strings become columns for select/group_by)."""
@@ -52,6 +54,15 @@ def from_value(value: IntoExpr) -> SqlExpr:
             return value.expr
         case _:
             return lit(value)
+
+
+def from_cols(exprs: IntoExprColumn) -> Iterable[SqlExpr | str]:
+    """Convert one or more values or iterables of values to an iterable of DuckDB Expressions or strings."""
+    match exprs:
+        case str() | SqlExpr():
+            return (exprs,)
+        case Iterable():
+            return exprs
 
 
 def from_iter(*values: IterExpr) -> pc.Iter[SqlExpr]:
