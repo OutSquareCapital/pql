@@ -43,17 +43,19 @@ class WindowExpr:
         return (
             self.order_by.then_some()
             .map(
-                lambda x: x.iter()
-                .zip(
-                    self._get_clauses(self.descending),
-                    self._get_clauses(self.nulls_last),
+                lambda x: (
+                    x.iter()
+                    .zip(
+                        self._get_clauses(self.descending),
+                        self._get_clauses(self.nulls_last),
+                    )
+                    .map_star(
+                        lambda item, desc, nl: (
+                            f"{item} {'desc' if desc else 'asc'} {'nulls last' if nl else 'nulls first'}"
+                        )
+                    )
+                    .join(", ")
                 )
-                .map_star(
-                    lambda item,
-                    desc,
-                    nl: f"{item} {'desc' if desc else 'asc'} {'nulls last' if nl else 'nulls first'}"
-                )
-                .join(", ")
             )
             .map(lambda s: "order by " + s)
             .unwrap_or("")

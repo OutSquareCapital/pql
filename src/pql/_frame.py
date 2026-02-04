@@ -305,9 +305,11 @@ class LazyFrame:
     def fill_nan(self, value: float | Expr | None) -> Self:
         """Fill NaN values."""
         return self._iter_slct(
-            lambda c: sql.when(sql.fns.isnan(sql.col(c)), sql.from_expr(value))
-            .otherwise(sql.col(c))
-            .alias(c)
+            lambda c: (
+                sql.when(sql.fns.isnan(sql.col(c)), sql.from_expr(value))
+                .otherwise(sql.col(c))
+                .alias(c)
+            )
         )
 
     def drop_nulls(self, subset: str | Iterable[str] | None = None) -> Self:

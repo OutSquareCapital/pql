@@ -214,9 +214,11 @@ def _to_param_names(_params: pl.Expr, _py_name: pl.Expr) -> pl.Expr:
         .str.replace(r"\(.*$", _EMPTY_STR)
         .str.replace_all(r"\.\.\.", _EMPTY_STR)
         .pipe(
-            lambda expr: pl.when(expr.is_in(SHADOWERS))
-            .then(pl.concat_str(expr, pl.lit("_arg")))
-            .otherwise(expr)
+            lambda expr: (
+                pl.when(expr.is_in(SHADOWERS))
+                .then(pl.concat_str(expr, pl.lit("_arg")))
+                .otherwise(expr)
+            )
         )
         .pipe(
             lambda expr: (
@@ -237,52 +239,62 @@ def _to_param_names(_params: pl.Expr, _py_name: pl.Expr) -> pl.Expr:
 
 def _to_py_name(dk: DuckCols, p_lens: ParamLens) -> pl.Expr:
     return dk.cats.list.join("_").pipe(
-        lambda cat_str: dk.name.pipe(
-            lambda expr: (
-                pl.when(expr.is_in(KWORDS))
-                .then(pl.concat_str(expr, pl.lit("_fn")))
-                .otherwise(expr)
-                .str.to_lowercase()
-            )
-        )
-        .pipe(
-            lambda base_name: pl.when(
-                cat_str.n_unique().over(dk.name).gt(1).and_(cat_str.ne(_EMPTY_STR))
-            )
-            .then(pl.concat_str(cat_str, pl.lit("_"), base_name))
-            .otherwise(base_name)
-        )
-        .pipe(
-            lambda base: pl.when(
-                dk.description.n_unique()
-                .over(dk.name, dk.cats)
-                .gt(1)
-                .and_(p_lens.by_fn_cat_desc.gt(p_lens.by_fn_cat))
-            )
-            .then(
-                pl.concat_str(
-                    base,
-                    pl.lit("_"),
-                    pl.when(p_lens.by_fn.eq(p_lens.by_fn_cat_desc))
-                    .then(
-                        pl.when(p_lens.by_fn_cat_desc.eq(p_lens.by_fn_cat))
-                        .then(dk.params)
-                        .otherwise(
-                            dk.params.list.slice(
-                                p_lens.by_fn_cat, p_lens.by_fn.sub(p_lens.by_fn_cat)
-                            )
-                        )
-                    )
-                    .otherwise(pl.lit([], dtype=pl.List(pl.String)))
-                    .list.join("_")
+        lambda cat_str: (
+            dk.name.pipe(
+                lambda expr: (
+                    pl.when(expr.is_in(KWORDS))
+                    .then(pl.concat_str(expr, pl.lit("_fn")))
+                    .otherwise(expr)
                     .str.to_lowercase()
-                    .max()
-                    .over(dk.name, dk.cats, dk.description),
                 )
             )
-            .otherwise(base)
+            .pipe(
+                lambda base_name: (
+                    pl.when(
+                        cat_str.n_unique()
+                        .over(dk.name)
+                        .gt(1)
+                        .and_(cat_str.ne(_EMPTY_STR))
+                    )
+                    .then(pl.concat_str(cat_str, pl.lit("_"), base_name))
+                    .otherwise(base_name)
+                )
+            )
+            .pipe(
+                lambda base: (
+                    pl.when(
+                        dk.description.n_unique()
+                        .over(dk.name, dk.cats)
+                        .gt(1)
+                        .and_(p_lens.by_fn_cat_desc.gt(p_lens.by_fn_cat))
+                    )
+                    .then(
+                        pl.concat_str(
+                            base,
+                            pl.lit("_"),
+                            pl.when(p_lens.by_fn.eq(p_lens.by_fn_cat_desc))
+                            .then(
+                                pl.when(p_lens.by_fn_cat_desc.eq(p_lens.by_fn_cat))
+                                .then(dk.params)
+                                .otherwise(
+                                    dk.params.list.slice(
+                                        p_lens.by_fn_cat,
+                                        p_lens.by_fn.sub(p_lens.by_fn_cat),
+                                    )
+                                )
+                            )
+                            .otherwise(pl.lit([], dtype=pl.List(pl.String)))
+                            .list.join("_")
+                            .str.to_lowercase()
+                            .max()
+                            .over(dk.name, dk.cats, dk.description),
+                        )
+                    )
+                    .otherwise(base)
+                )
+            )
+            .alias("py_name")
         )
-        .alias("py_name")
     )
 
 

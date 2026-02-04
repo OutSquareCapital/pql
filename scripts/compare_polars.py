@@ -108,9 +108,11 @@ def _summary_widths(rows: pc.Seq[pc.Seq[str]]) -> pc.Seq[int]:
     return (
         pc.Iter(range(_summary_header().length()))
         .map(
-            lambda idx: rows.iter()
-            .map(lambda row: len(row[idx]))
-            .fold(0, lambda acc, length: max(length, acc))
+            lambda idx: (
+                rows.iter()
+                .map(lambda row: len(row[idx]))
+                .fold(0, lambda acc, length: max(length, acc))
+            )
         )
         .collect()
     )
@@ -580,9 +582,11 @@ def _extra_vs_narwhals(results: pc.Vec[ComparisonResult]) -> pc.Seq[ComparisonRe
     return (
         results.iter()
         .filter(
-            lambda r: r.infos.pql_info.is_some()
-            and r.infos.narwhals.is_none()
-            and r.infos.polars.is_some()
+            lambda r: (
+                r.infos.pql_info.is_some()
+                and r.infos.narwhals.is_none()
+                and r.infos.polars.is_some()
+            )
         )
         .collect()
     )
