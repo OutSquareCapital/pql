@@ -28,11 +28,17 @@ type IterExpr = IntoExpr | Iterable[IntoExpr]
 
 def from_expr(value: IntoExpr) -> SqlExpr:
     """Convert a value to a DuckDB Expression (strings become columns for select/group_by)."""
+    from .._expr import Expr
+
     match value:
+        case SqlExpr():
+            return value
+        case Expr():
+            return value.expr
         case str():
             return col(value)
         case _:
-            return from_value(value)
+            return lit(value)
 
 
 def from_value(value: IntoExpr) -> SqlExpr:
@@ -40,6 +46,8 @@ def from_value(value: IntoExpr) -> SqlExpr:
     from .._expr import Expr
 
     match value:
+        case SqlExpr():
+            return value
         case Expr():
             return value.expr
         case _:

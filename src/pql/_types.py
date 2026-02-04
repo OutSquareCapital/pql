@@ -1,9 +1,10 @@
 from datetime import date, datetime, time, timedelta
 from typing import TYPE_CHECKING, Literal
 
-import duckdb
 import polars as pl
 from polars._typing import FrameInitTypes
+
+from .sql import Relation, SqlExpr
 
 if TYPE_CHECKING:
     from ._expr import Expr
@@ -22,7 +23,5 @@ type PyLiteral = (
     | bytearray
     | None
 )
-type FrameInit = (
-    duckdb.DuckDBPyRelation | pl.DataFrame | pl.LazyFrame | None | FrameInitTypes
-)
-type IntoExpr = PyLiteral | Expr
+type FrameInit = Relation | pl.DataFrame | pl.LazyFrame | None | FrameInitTypes
+type IntoExpr = PyLiteral | Expr | SqlExpr
