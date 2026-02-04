@@ -1433,15 +1433,15 @@ def functions() -> SqlExpr:
 
 
 def generate_series(
-    col0: SqlExpr | int | datetime,
-    col1: SqlExpr | int | datetime | None = None,
+    col0: SqlExpr | datetime | int,
+    col1: SqlExpr | datetime | int | None = None,
     col2: SqlExpr | int | timedelta | None = None,
 ) -> SqlExpr:
     """SQL generate_series function.
 
     Args:
-        col0 (SqlExpr | int | datetime): `BIGINT | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
-        col1 (SqlExpr | int | datetime | None): `BIGINT | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
+        col0 (SqlExpr | datetime | int): `BIGINT | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
+        col1 (SqlExpr | datetime | int | None): `BIGINT | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
         col2 (SqlExpr | int | timedelta | None): `BIGINT | INTERVAL` expression
 
     Returns:
@@ -1450,11 +1450,11 @@ def generate_series(
     return func("generate_series", col0, col1, col2)
 
 
-def glob(col0: SqlExpr | str | list[str]) -> SqlExpr:
+def glob(col0: SqlExpr | list[str] | str) -> SqlExpr:
     """SQL glob function.
 
     Args:
-        col0 (SqlExpr | str | list[str]): `VARCHAR | VARCHAR[]` expression
+        col0 (SqlExpr | list[str] | str): `VARCHAR | VARCHAR[]` expression
 
     Returns:
         SqlExpr: `ANY` expression.
@@ -1542,12 +1542,12 @@ def pandas_scan(col0: SqlExpr) -> SqlExpr:
 
 
 def parquet_bloom_probe(
-    col0: SqlExpr | str | list[str], col1: SqlExpr | str, col2: SqlExpr
+    col0: SqlExpr | list[str] | str, col1: SqlExpr | str, col2: SqlExpr
 ) -> SqlExpr:
     """SQL parquet_bloom_probe function.
 
     Args:
-        col0 (SqlExpr | str | list[str]): `VARCHAR | VARCHAR[]` expression
+        col0 (SqlExpr | list[str] | str): `VARCHAR | VARCHAR[]` expression
         col1 (SqlExpr | str): `VARCHAR` expression
         col2 (SqlExpr): `ANY` expression
 
@@ -1557,11 +1557,11 @@ def parquet_bloom_probe(
     return func("parquet_bloom_probe", col0, col1, col2)
 
 
-def parquet_file_metadata(col0: SqlExpr | str | list[str]) -> SqlExpr:
+def parquet_file_metadata(col0: SqlExpr | list[str] | str) -> SqlExpr:
     """SQL parquet_file_metadata function.
 
     Args:
-        col0 (SqlExpr | str | list[str]): `VARCHAR | VARCHAR[]` expression
+        col0 (SqlExpr | list[str] | str): `VARCHAR | VARCHAR[]` expression
 
     Returns:
         SqlExpr: `ANY` expression.
@@ -1569,11 +1569,11 @@ def parquet_file_metadata(col0: SqlExpr | str | list[str]) -> SqlExpr:
     return func("parquet_file_metadata", col0)
 
 
-def parquet_kv_metadata(col0: SqlExpr | str | list[str]) -> SqlExpr:
+def parquet_kv_metadata(col0: SqlExpr | list[str] | str) -> SqlExpr:
     """SQL parquet_kv_metadata function.
 
     Args:
-        col0 (SqlExpr | str | list[str]): `VARCHAR | VARCHAR[]` expression
+        col0 (SqlExpr | list[str] | str): `VARCHAR | VARCHAR[]` expression
 
     Returns:
         SqlExpr: `ANY` expression.
@@ -1581,11 +1581,11 @@ def parquet_kv_metadata(col0: SqlExpr | str | list[str]) -> SqlExpr:
     return func("parquet_kv_metadata", col0)
 
 
-def parquet_metadata(col0: SqlExpr | str | list[str]) -> SqlExpr:
+def parquet_metadata(col0: SqlExpr | list[str] | str) -> SqlExpr:
     """SQL parquet_metadata function.
 
     Args:
-        col0 (SqlExpr | str | list[str]): `VARCHAR | VARCHAR[]` expression
+        col0 (SqlExpr | list[str] | str): `VARCHAR | VARCHAR[]` expression
 
     Returns:
         SqlExpr: `ANY` expression.
@@ -1594,7 +1594,7 @@ def parquet_metadata(col0: SqlExpr | str | list[str]) -> SqlExpr:
 
 
 def parquet_scan(
-    col0: SqlExpr | str | list[str],
+    col0: SqlExpr | list[str] | str,
     filename: SqlExpr,
     hive_partitioning: SqlExpr | bool,
     union_by_name: SqlExpr | bool,
@@ -1605,7 +1605,7 @@ def parquet_scan(
     debug_use_openssl: SqlExpr | bool,
     compression: SqlExpr | str,
     can_have_nan: SqlExpr | bool | int,
-    explicit_cardinality: SqlExpr | int | bool,
+    explicit_cardinality: SqlExpr | bool | int,
     schema: SqlExpr,
     encryption_config: SqlExpr,
     parquet_version: SqlExpr | str,
@@ -1613,18 +1613,18 @@ def parquet_scan(
     """SQL parquet_scan function.
 
     Args:
-        col0 (SqlExpr | str | list[str]): `VARCHAR | VARCHAR[]` expression
+        col0 (SqlExpr | list[str] | str): `VARCHAR | VARCHAR[]` expression
         filename (SqlExpr): `ANY` expression
         hive_partitioning (SqlExpr | bool): `BOOLEAN` expression
         union_by_name (SqlExpr | bool): `BOOLEAN` expression
         hive_types (SqlExpr | SqlExpr | bool): `ANY | BOOLEAN` expression
-        file_row_number (SqlExpr | bool | SqlExpr): `BOOLEAN | ANY` expression
+        file_row_number (SqlExpr | SqlExpr | bool): `ANY | BOOLEAN` expression
         hive_types_autocast (SqlExpr | bool): `BOOLEAN` expression
         binary_as_string (SqlExpr | bool): `BOOLEAN` expression
         debug_use_openssl (SqlExpr | bool): `BOOLEAN` expression
         compression (SqlExpr | str): `VARCHAR` expression
         can_have_nan (SqlExpr | bool | int): `BOOLEAN | UBIGINT` expression
-        explicit_cardinality (SqlExpr | int | bool): `UBIGINT | BOOLEAN` expression
+        explicit_cardinality (SqlExpr | bool | int): `BOOLEAN | UBIGINT` expression
         schema (SqlExpr): `ANY` expression
         encryption_config (SqlExpr): `ANY` expression
         parquet_version (SqlExpr | str): `VARCHAR` expression
@@ -1652,11 +1652,11 @@ def parquet_scan(
     )
 
 
-def parquet_schema(col0: SqlExpr | str | list[str]) -> SqlExpr:
+def parquet_schema(col0: SqlExpr | list[str] | str) -> SqlExpr:
     """SQL parquet_schema function.
 
     Args:
-        col0 (SqlExpr | str | list[str]): `VARCHAR | VARCHAR[]` expression
+        col0 (SqlExpr | list[str] | str): `VARCHAR | VARCHAR[]` expression
 
     Returns:
         SqlExpr: `ANY` expression.
@@ -1802,12 +1802,12 @@ def query(col0: SqlExpr | str) -> SqlExpr:
 
 
 def query_table(
-    col0: SqlExpr | str | list[str], col1: SqlExpr | bool | None = None
+    col0: SqlExpr | list[str] | str, col1: SqlExpr | bool | None = None
 ) -> SqlExpr:
     """SQL query_table function.
 
     Args:
-        col0 (SqlExpr | str | list[str]): `VARCHAR | VARCHAR[]` expression
+        col0 (SqlExpr | list[str] | str): `VARCHAR | VARCHAR[]` expression
         col1 (SqlExpr | bool | None): `BOOLEAN` expression
 
     Returns:
@@ -1817,15 +1817,15 @@ def query_table(
 
 
 def range(
-    col0: SqlExpr | int | datetime,
-    col1: SqlExpr | int | datetime | None = None,
+    col0: SqlExpr | datetime | int,
+    col1: SqlExpr | datetime | int | None = None,
     col2: SqlExpr | int | timedelta | None = None,
 ) -> SqlExpr:
     """SQL range function.
 
     Args:
-        col0 (SqlExpr | int | datetime): `BIGINT | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
-        col1 (SqlExpr | int | datetime | None): `BIGINT | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
+        col0 (SqlExpr | datetime | int): `BIGINT | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
+        col1 (SqlExpr | datetime | int | None): `BIGINT | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
         col2 (SqlExpr | int | timedelta | None): `BIGINT | INTERVAL` expression
 
     Returns:
@@ -1834,11 +1834,11 @@ def range(
     return func("range", col0, col1, col2)
 
 
-def read_blob(col0: SqlExpr | str | list[str]) -> SqlExpr:
+def read_blob(col0: SqlExpr | list[str] | str) -> SqlExpr:
     """SQL read_blob function.
 
     Args:
-        col0 (SqlExpr | str | list[str]): `VARCHAR | VARCHAR[]` expression
+        col0 (SqlExpr | list[str] | str): `VARCHAR | VARCHAR[]` expression
 
     Returns:
         SqlExpr: `ANY` expression.
@@ -1847,19 +1847,19 @@ def read_blob(col0: SqlExpr | str | list[str]) -> SqlExpr:
 
 
 def read_csv(
-    col0: SqlExpr | str | list[str],
+    col0: SqlExpr | list[str] | str,
     filename: SqlExpr | str,
     skip: SqlExpr | int,
     comment: SqlExpr | str,
     hive_partitioning: SqlExpr | bool,
     quote: SqlExpr | str,
     union_by_name: SqlExpr | bool | int,
-    rejects_limit: SqlExpr | int | bool,
+    rejects_limit: SqlExpr | bool | int,
     hive_types: SqlExpr,
     hive_types_autocast: SqlExpr | bool,
     sep: SqlExpr | str,
     delim: SqlExpr | str,
-    new_line: SqlExpr | str | bool,
+    new_line: SqlExpr | bool | str,
     normalize_names: SqlExpr | bool | str,
     escape: SqlExpr | str,
     encoding: SqlExpr | str,
@@ -1884,7 +1884,7 @@ def read_csv(
     types: SqlExpr | bool,
     rejects_table: SqlExpr | str,
     rejects_scan: SqlExpr | str,
-    force_not_null: SqlExpr | list[str] | int,
+    force_not_null: SqlExpr | int | list[str],
     files_to_sniff: SqlExpr | int | list[str],
     buffer_size: SqlExpr | int,
     decimal_separator: SqlExpr | str,
@@ -1897,29 +1897,29 @@ def read_csv(
     """SQL read_csv function.
 
     Args:
-        col0 (SqlExpr | str | list[str]): `VARCHAR | VARCHAR[]` expression
+        col0 (SqlExpr | list[str] | str): `VARCHAR | VARCHAR[]` expression
         filename (SqlExpr | SqlExpr | str): `ANY | VARCHAR` expression
         skip (SqlExpr | int): `BIGINT` expression
-        comment (SqlExpr | str | SqlExpr): `VARCHAR | ANY` expression
+        comment (SqlExpr | SqlExpr | str): `ANY | VARCHAR` expression
         hive_partitioning (SqlExpr | bool): `BOOLEAN` expression
         quote (SqlExpr | str): `VARCHAR` expression
-        union_by_name (SqlExpr | bool | int): `BOOLEAN | BIGINT` expression
-        rejects_limit (SqlExpr | int | bool): `BIGINT | BOOLEAN` expression
+        union_by_name (SqlExpr | bool | int): `BIGINT | BOOLEAN` expression
+        rejects_limit (SqlExpr | bool | int): `BIGINT | BOOLEAN` expression
         hive_types (SqlExpr): `ANY` expression
         hive_types_autocast (SqlExpr | bool): `BOOLEAN` expression
         sep (SqlExpr | str): `VARCHAR` expression
         delim (SqlExpr | str): `VARCHAR` expression
-        new_line (SqlExpr | str | bool): `VARCHAR | BOOLEAN` expression
+        new_line (SqlExpr | bool | str): `BOOLEAN | VARCHAR` expression
         normalize_names (SqlExpr | bool | str): `BOOLEAN | VARCHAR` expression
         escape (SqlExpr | str): `VARCHAR` expression
         encoding (SqlExpr | str): `VARCHAR` expression
         nullstr (SqlExpr | SqlExpr | bool): `ANY | BOOLEAN` expression
-        parallel (SqlExpr | bool | SqlExpr): `BOOLEAN | ANY` expression
+        parallel (SqlExpr | SqlExpr | bool): `ANY | BOOLEAN` expression
         columns (SqlExpr | SqlExpr | str): `ANY | VARCHAR` expression
-        maximum_line_size (SqlExpr | str | SqlExpr): `VARCHAR | ANY` expression
+        maximum_line_size (SqlExpr | SqlExpr | str): `ANY | VARCHAR` expression
         auto_type_candidates (SqlExpr | SqlExpr | bool): `ANY | BOOLEAN` expression
         column_names (SqlExpr | list[str]): `VARCHAR[]` expression
-        strict_mode (SqlExpr | bool | SqlExpr): `BOOLEAN | ANY` expression
+        strict_mode (SqlExpr | SqlExpr | bool): `ANY | BOOLEAN` expression
         header (SqlExpr | bool): `BOOLEAN` expression
         auto_detect (SqlExpr | bool): `BOOLEAN` expression
         sample_size (SqlExpr | int): `BIGINT` expression
@@ -1930,11 +1930,11 @@ def read_csv(
         max_line_size (SqlExpr | str): `VARCHAR` expression
         thousands (SqlExpr | str): `VARCHAR` expression
         ignore_errors (SqlExpr | bool): `BOOLEAN` expression
-        store_rejects (SqlExpr | bool | SqlExpr): `BOOLEAN | ANY` expression
+        store_rejects (SqlExpr | SqlExpr | bool): `ANY | BOOLEAN` expression
         types (SqlExpr | SqlExpr | bool): `ANY | BOOLEAN` expression
         rejects_table (SqlExpr | str): `VARCHAR` expression
         rejects_scan (SqlExpr | str): `VARCHAR` expression
-        force_not_null (SqlExpr | list[str] | int): `VARCHAR[] | BIGINT` expression
+        force_not_null (SqlExpr | int | list[str]): `BIGINT | VARCHAR[]` expression
         files_to_sniff (SqlExpr | int | list[str]): `BIGINT | VARCHAR[]` expression
         buffer_size (SqlExpr | int): `UBIGINT` expression
         decimal_separator (SqlExpr | str): `VARCHAR` expression
@@ -1999,19 +1999,19 @@ def read_csv(
 
 
 def read_csv_auto(
-    col0: SqlExpr | str | list[str],
+    col0: SqlExpr | list[str] | str,
     filename: SqlExpr | str,
     skip: SqlExpr | int,
     comment: SqlExpr | str,
     hive_partitioning: SqlExpr | bool,
     quote: SqlExpr | str,
     union_by_name: SqlExpr | bool | int,
-    rejects_limit: SqlExpr | int | bool,
+    rejects_limit: SqlExpr | bool | int,
     hive_types: SqlExpr,
     hive_types_autocast: SqlExpr | bool,
     sep: SqlExpr | str,
     delim: SqlExpr | str,
-    new_line: SqlExpr | str | bool,
+    new_line: SqlExpr | bool | str,
     normalize_names: SqlExpr | bool | str,
     escape: SqlExpr | str,
     encoding: SqlExpr | str,
@@ -2036,7 +2036,7 @@ def read_csv_auto(
     types: SqlExpr | bool,
     rejects_table: SqlExpr | str,
     rejects_scan: SqlExpr | str,
-    force_not_null: SqlExpr | list[str] | int,
+    force_not_null: SqlExpr | int | list[str],
     files_to_sniff: SqlExpr | int | list[str],
     buffer_size: SqlExpr | int,
     decimal_separator: SqlExpr | str,
@@ -2049,29 +2049,29 @@ def read_csv_auto(
     """SQL read_csv_auto function.
 
     Args:
-        col0 (SqlExpr | str | list[str]): `VARCHAR | VARCHAR[]` expression
+        col0 (SqlExpr | list[str] | str): `VARCHAR | VARCHAR[]` expression
         filename (SqlExpr | SqlExpr | str): `ANY | VARCHAR` expression
         skip (SqlExpr | int): `BIGINT` expression
-        comment (SqlExpr | str | SqlExpr): `VARCHAR | ANY` expression
+        comment (SqlExpr | SqlExpr | str): `ANY | VARCHAR` expression
         hive_partitioning (SqlExpr | bool): `BOOLEAN` expression
         quote (SqlExpr | str): `VARCHAR` expression
-        union_by_name (SqlExpr | bool | int): `BOOLEAN | BIGINT` expression
-        rejects_limit (SqlExpr | int | bool): `BIGINT | BOOLEAN` expression
+        union_by_name (SqlExpr | bool | int): `BIGINT | BOOLEAN` expression
+        rejects_limit (SqlExpr | bool | int): `BIGINT | BOOLEAN` expression
         hive_types (SqlExpr): `ANY` expression
         hive_types_autocast (SqlExpr | bool): `BOOLEAN` expression
         sep (SqlExpr | str): `VARCHAR` expression
         delim (SqlExpr | str): `VARCHAR` expression
-        new_line (SqlExpr | str | bool): `VARCHAR | BOOLEAN` expression
+        new_line (SqlExpr | bool | str): `BOOLEAN | VARCHAR` expression
         normalize_names (SqlExpr | bool | str): `BOOLEAN | VARCHAR` expression
         escape (SqlExpr | str): `VARCHAR` expression
         encoding (SqlExpr | str): `VARCHAR` expression
         nullstr (SqlExpr | SqlExpr | bool): `ANY | BOOLEAN` expression
-        parallel (SqlExpr | bool | SqlExpr): `BOOLEAN | ANY` expression
+        parallel (SqlExpr | SqlExpr | bool): `ANY | BOOLEAN` expression
         columns (SqlExpr | SqlExpr | str): `ANY | VARCHAR` expression
-        maximum_line_size (SqlExpr | str | SqlExpr): `VARCHAR | ANY` expression
+        maximum_line_size (SqlExpr | SqlExpr | str): `ANY | VARCHAR` expression
         auto_type_candidates (SqlExpr | SqlExpr | bool): `ANY | BOOLEAN` expression
         column_names (SqlExpr | list[str]): `VARCHAR[]` expression
-        strict_mode (SqlExpr | bool | SqlExpr): `BOOLEAN | ANY` expression
+        strict_mode (SqlExpr | SqlExpr | bool): `ANY | BOOLEAN` expression
         header (SqlExpr | bool): `BOOLEAN` expression
         auto_detect (SqlExpr | bool): `BOOLEAN` expression
         sample_size (SqlExpr | int): `BIGINT` expression
@@ -2082,11 +2082,11 @@ def read_csv_auto(
         max_line_size (SqlExpr | str): `VARCHAR` expression
         thousands (SqlExpr | str): `VARCHAR` expression
         ignore_errors (SqlExpr | bool): `BOOLEAN` expression
-        store_rejects (SqlExpr | bool | SqlExpr): `BOOLEAN | ANY` expression
+        store_rejects (SqlExpr | SqlExpr | bool): `ANY | BOOLEAN` expression
         types (SqlExpr | SqlExpr | bool): `ANY | BOOLEAN` expression
         rejects_table (SqlExpr | str): `VARCHAR` expression
         rejects_scan (SqlExpr | str): `VARCHAR` expression
-        force_not_null (SqlExpr | list[str] | int): `VARCHAR[] | BIGINT` expression
+        force_not_null (SqlExpr | int | list[str]): `BIGINT | VARCHAR[]` expression
         files_to_sniff (SqlExpr | int | list[str]): `BIGINT | VARCHAR[]` expression
         buffer_size (SqlExpr | int): `UBIGINT` expression
         decimal_separator (SqlExpr | str): `VARCHAR` expression
@@ -2151,11 +2151,11 @@ def read_csv_auto(
 
 
 def read_json(
-    col0: SqlExpr | str | list[str],
+    col0: SqlExpr | list[str] | str,
     format_arg: SqlExpr | str,
     filename: SqlExpr | str,
     hive_partitioning: SqlExpr | bool | str,
-    date_format: SqlExpr | str | bool,
+    date_format: SqlExpr | bool | str,
     union_by_name: SqlExpr | bool,
     maximum_object_size: SqlExpr | int,
     hive_types: SqlExpr,
@@ -2167,7 +2167,7 @@ def read_json(
     sample_size: SqlExpr | int,
     dateformat: SqlExpr | str,
     maximum_depth: SqlExpr | int | str,
-    timestampformat: SqlExpr | str | int,
+    timestampformat: SqlExpr | int | str,
     timestamp_format: SqlExpr | str,
     records: SqlExpr | str,
     maximum_sample_files: SqlExpr | int,
@@ -2178,11 +2178,11 @@ def read_json(
     """SQL read_json function.
 
     Args:
-        col0 (SqlExpr | str | list[str]): `VARCHAR | VARCHAR[]` expression
-        format_arg (SqlExpr | str | SqlExpr): `VARCHAR | ANY` expression
+        col0 (SqlExpr | list[str] | str): `VARCHAR | VARCHAR[]` expression
+        format_arg (SqlExpr | SqlExpr | str): `ANY | VARCHAR` expression
         filename (SqlExpr | SqlExpr | str): `ANY | VARCHAR` expression
         hive_partitioning (SqlExpr | bool | str): `BOOLEAN | VARCHAR` expression
-        date_format (SqlExpr | str | bool): `VARCHAR | BOOLEAN` expression
+        date_format (SqlExpr | bool | str): `BOOLEAN | VARCHAR` expression
         union_by_name (SqlExpr | bool): `BOOLEAN` expression
         maximum_object_size (SqlExpr | int): `UINTEGER` expression
         hive_types (SqlExpr): `ANY` expression
@@ -2194,7 +2194,7 @@ def read_json(
         sample_size (SqlExpr | int): `BIGINT` expression
         dateformat (SqlExpr | str): `VARCHAR` expression
         maximum_depth (SqlExpr | int | str): `BIGINT | VARCHAR` expression
-        timestampformat (SqlExpr | str | int): `VARCHAR | BIGINT` expression
+        timestampformat (SqlExpr | int | str): `BIGINT | VARCHAR` expression
         timestamp_format (SqlExpr | str): `VARCHAR` expression
         records (SqlExpr | str): `VARCHAR` expression
         maximum_sample_files (SqlExpr | int): `BIGINT` expression
@@ -2234,11 +2234,11 @@ def read_json(
 
 
 def read_json_auto(
-    col0: SqlExpr | str | list[str],
+    col0: SqlExpr | list[str] | str,
     format_arg: SqlExpr | str,
     filename: SqlExpr | str,
     hive_partitioning: SqlExpr | bool | str,
-    date_format: SqlExpr | str | bool,
+    date_format: SqlExpr | bool | str,
     union_by_name: SqlExpr | bool,
     maximum_object_size: SqlExpr | int,
     hive_types: SqlExpr,
@@ -2250,7 +2250,7 @@ def read_json_auto(
     sample_size: SqlExpr | int,
     dateformat: SqlExpr | str,
     maximum_depth: SqlExpr | int | str,
-    timestampformat: SqlExpr | str | int,
+    timestampformat: SqlExpr | int | str,
     timestamp_format: SqlExpr | str,
     records: SqlExpr | str,
     maximum_sample_files: SqlExpr | int,
@@ -2261,11 +2261,11 @@ def read_json_auto(
     """SQL read_json_auto function.
 
     Args:
-        col0 (SqlExpr | str | list[str]): `VARCHAR | VARCHAR[]` expression
-        format_arg (SqlExpr | str | SqlExpr): `VARCHAR | ANY` expression
+        col0 (SqlExpr | list[str] | str): `VARCHAR | VARCHAR[]` expression
+        format_arg (SqlExpr | SqlExpr | str): `ANY | VARCHAR` expression
         filename (SqlExpr | SqlExpr | str): `ANY | VARCHAR` expression
         hive_partitioning (SqlExpr | bool | str): `BOOLEAN | VARCHAR` expression
-        date_format (SqlExpr | str | bool): `VARCHAR | BOOLEAN` expression
+        date_format (SqlExpr | bool | str): `BOOLEAN | VARCHAR` expression
         union_by_name (SqlExpr | bool): `BOOLEAN` expression
         maximum_object_size (SqlExpr | int): `UINTEGER` expression
         hive_types (SqlExpr): `ANY` expression
@@ -2277,7 +2277,7 @@ def read_json_auto(
         sample_size (SqlExpr | int): `BIGINT` expression
         dateformat (SqlExpr | str): `VARCHAR` expression
         maximum_depth (SqlExpr | int | str): `BIGINT | VARCHAR` expression
-        timestampformat (SqlExpr | str | int): `VARCHAR | BIGINT` expression
+        timestampformat (SqlExpr | int | str): `BIGINT | VARCHAR` expression
         timestamp_format (SqlExpr | str): `VARCHAR` expression
         records (SqlExpr | str): `VARCHAR` expression
         maximum_sample_files (SqlExpr | int): `BIGINT` expression
@@ -2317,7 +2317,7 @@ def read_json_auto(
 
 
 def read_json_objects(
-    col0: SqlExpr | str | list[str],
+    col0: SqlExpr | list[str] | str,
     format_arg: SqlExpr | str,
     filename: SqlExpr | str,
     hive_partitioning: SqlExpr | bool,
@@ -2331,8 +2331,8 @@ def read_json_objects(
     """SQL read_json_objects function.
 
     Args:
-        col0 (SqlExpr | str | list[str]): `VARCHAR | VARCHAR[]` expression
-        format_arg (SqlExpr | str | SqlExpr): `VARCHAR | ANY` expression
+        col0 (SqlExpr | list[str] | str): `VARCHAR | VARCHAR[]` expression
+        format_arg (SqlExpr | SqlExpr | str): `ANY | VARCHAR` expression
         filename (SqlExpr | SqlExpr | str): `ANY | VARCHAR` expression
         hive_partitioning (SqlExpr | bool): `BOOLEAN` expression
         union_by_name (SqlExpr | bool): `BOOLEAN` expression
@@ -2361,7 +2361,7 @@ def read_json_objects(
 
 
 def read_json_objects_auto(
-    col0: SqlExpr | str | list[str],
+    col0: SqlExpr | list[str] | str,
     format_arg: SqlExpr | str,
     filename: SqlExpr | str,
     hive_partitioning: SqlExpr | bool,
@@ -2375,8 +2375,8 @@ def read_json_objects_auto(
     """SQL read_json_objects_auto function.
 
     Args:
-        col0 (SqlExpr | str | list[str]): `VARCHAR | VARCHAR[]` expression
-        format_arg (SqlExpr | str | SqlExpr): `VARCHAR | ANY` expression
+        col0 (SqlExpr | list[str] | str): `VARCHAR | VARCHAR[]` expression
+        format_arg (SqlExpr | SqlExpr | str): `ANY | VARCHAR` expression
         filename (SqlExpr | SqlExpr | str): `ANY | VARCHAR` expression
         hive_partitioning (SqlExpr | bool): `BOOLEAN` expression
         union_by_name (SqlExpr | bool): `BOOLEAN` expression
@@ -2405,11 +2405,11 @@ def read_json_objects_auto(
 
 
 def read_ndjson(
-    col0: SqlExpr | str | list[str],
+    col0: SqlExpr | list[str] | str,
     format_arg: SqlExpr | str,
     filename: SqlExpr | str,
     hive_partitioning: SqlExpr | bool | str,
-    date_format: SqlExpr | str | bool,
+    date_format: SqlExpr | bool | str,
     union_by_name: SqlExpr | bool,
     maximum_object_size: SqlExpr | int,
     hive_types: SqlExpr,
@@ -2421,7 +2421,7 @@ def read_ndjson(
     sample_size: SqlExpr | int,
     dateformat: SqlExpr | str,
     maximum_depth: SqlExpr | int | str,
-    timestampformat: SqlExpr | str | int,
+    timestampformat: SqlExpr | int | str,
     timestamp_format: SqlExpr | str,
     records: SqlExpr | str,
     maximum_sample_files: SqlExpr | int,
@@ -2432,11 +2432,11 @@ def read_ndjson(
     """SQL read_ndjson function.
 
     Args:
-        col0 (SqlExpr | str | list[str]): `VARCHAR | VARCHAR[]` expression
-        format_arg (SqlExpr | str | SqlExpr): `VARCHAR | ANY` expression
+        col0 (SqlExpr | list[str] | str): `VARCHAR | VARCHAR[]` expression
+        format_arg (SqlExpr | SqlExpr | str): `ANY | VARCHAR` expression
         filename (SqlExpr | SqlExpr | str): `ANY | VARCHAR` expression
         hive_partitioning (SqlExpr | bool | str): `BOOLEAN | VARCHAR` expression
-        date_format (SqlExpr | str | bool): `VARCHAR | BOOLEAN` expression
+        date_format (SqlExpr | bool | str): `BOOLEAN | VARCHAR` expression
         union_by_name (SqlExpr | bool): `BOOLEAN` expression
         maximum_object_size (SqlExpr | int): `UINTEGER` expression
         hive_types (SqlExpr): `ANY` expression
@@ -2448,7 +2448,7 @@ def read_ndjson(
         sample_size (SqlExpr | int): `BIGINT` expression
         dateformat (SqlExpr | str): `VARCHAR` expression
         maximum_depth (SqlExpr | int | str): `BIGINT | VARCHAR` expression
-        timestampformat (SqlExpr | str | int): `VARCHAR | BIGINT` expression
+        timestampformat (SqlExpr | int | str): `BIGINT | VARCHAR` expression
         timestamp_format (SqlExpr | str): `VARCHAR` expression
         records (SqlExpr | str): `VARCHAR` expression
         maximum_sample_files (SqlExpr | int): `BIGINT` expression
@@ -2488,11 +2488,11 @@ def read_ndjson(
 
 
 def read_ndjson_auto(
-    col0: SqlExpr | str | list[str],
+    col0: SqlExpr | list[str] | str,
     format_arg: SqlExpr | str,
     filename: SqlExpr | str,
     hive_partitioning: SqlExpr | bool | str,
-    date_format: SqlExpr | str | bool,
+    date_format: SqlExpr | bool | str,
     union_by_name: SqlExpr | bool,
     maximum_object_size: SqlExpr | int,
     hive_types: SqlExpr,
@@ -2504,7 +2504,7 @@ def read_ndjson_auto(
     sample_size: SqlExpr | int,
     dateformat: SqlExpr | str,
     maximum_depth: SqlExpr | int | str,
-    timestampformat: SqlExpr | str | int,
+    timestampformat: SqlExpr | int | str,
     timestamp_format: SqlExpr | str,
     records: SqlExpr | str,
     maximum_sample_files: SqlExpr | int,
@@ -2515,11 +2515,11 @@ def read_ndjson_auto(
     """SQL read_ndjson_auto function.
 
     Args:
-        col0 (SqlExpr | str | list[str]): `VARCHAR | VARCHAR[]` expression
-        format_arg (SqlExpr | str | SqlExpr): `VARCHAR | ANY` expression
+        col0 (SqlExpr | list[str] | str): `VARCHAR | VARCHAR[]` expression
+        format_arg (SqlExpr | SqlExpr | str): `ANY | VARCHAR` expression
         filename (SqlExpr | SqlExpr | str): `ANY | VARCHAR` expression
         hive_partitioning (SqlExpr | bool | str): `BOOLEAN | VARCHAR` expression
-        date_format (SqlExpr | str | bool): `VARCHAR | BOOLEAN` expression
+        date_format (SqlExpr | bool | str): `BOOLEAN | VARCHAR` expression
         union_by_name (SqlExpr | bool): `BOOLEAN` expression
         maximum_object_size (SqlExpr | int): `UINTEGER` expression
         hive_types (SqlExpr): `ANY` expression
@@ -2531,7 +2531,7 @@ def read_ndjson_auto(
         sample_size (SqlExpr | int): `BIGINT` expression
         dateformat (SqlExpr | str): `VARCHAR` expression
         maximum_depth (SqlExpr | int | str): `BIGINT | VARCHAR` expression
-        timestampformat (SqlExpr | str | int): `VARCHAR | BIGINT` expression
+        timestampformat (SqlExpr | int | str): `BIGINT | VARCHAR` expression
         timestamp_format (SqlExpr | str): `VARCHAR` expression
         records (SqlExpr | str): `VARCHAR` expression
         maximum_sample_files (SqlExpr | int): `BIGINT` expression
@@ -2571,7 +2571,7 @@ def read_ndjson_auto(
 
 
 def read_ndjson_objects(
-    col0: SqlExpr | str | list[str],
+    col0: SqlExpr | list[str] | str,
     format_arg: SqlExpr | str,
     filename: SqlExpr | str,
     hive_partitioning: SqlExpr | bool,
@@ -2585,8 +2585,8 @@ def read_ndjson_objects(
     """SQL read_ndjson_objects function.
 
     Args:
-        col0 (SqlExpr | str | list[str]): `VARCHAR | VARCHAR[]` expression
-        format_arg (SqlExpr | str | SqlExpr): `VARCHAR | ANY` expression
+        col0 (SqlExpr | list[str] | str): `VARCHAR | VARCHAR[]` expression
+        format_arg (SqlExpr | SqlExpr | str): `ANY | VARCHAR` expression
         filename (SqlExpr | SqlExpr | str): `ANY | VARCHAR` expression
         hive_partitioning (SqlExpr | bool): `BOOLEAN` expression
         union_by_name (SqlExpr | bool): `BOOLEAN` expression
@@ -2615,7 +2615,7 @@ def read_ndjson_objects(
 
 
 def read_parquet(
-    col0: SqlExpr | str | list[str],
+    col0: SqlExpr | list[str] | str,
     filename: SqlExpr,
     hive_partitioning: SqlExpr | bool,
     union_by_name: SqlExpr | bool,
@@ -2626,7 +2626,7 @@ def read_parquet(
     debug_use_openssl: SqlExpr | bool,
     compression: SqlExpr | str,
     can_have_nan: SqlExpr | bool | int,
-    explicit_cardinality: SqlExpr | int | bool,
+    explicit_cardinality: SqlExpr | bool | int,
     schema: SqlExpr,
     encryption_config: SqlExpr,
     parquet_version: SqlExpr | str,
@@ -2634,18 +2634,18 @@ def read_parquet(
     """SQL read_parquet function.
 
     Args:
-        col0 (SqlExpr | str | list[str]): `VARCHAR | VARCHAR[]` expression
+        col0 (SqlExpr | list[str] | str): `VARCHAR | VARCHAR[]` expression
         filename (SqlExpr): `ANY` expression
         hive_partitioning (SqlExpr | bool): `BOOLEAN` expression
         union_by_name (SqlExpr | bool): `BOOLEAN` expression
         hive_types (SqlExpr | SqlExpr | bool): `ANY | BOOLEAN` expression
-        file_row_number (SqlExpr | bool | SqlExpr): `BOOLEAN | ANY` expression
+        file_row_number (SqlExpr | SqlExpr | bool): `ANY | BOOLEAN` expression
         hive_types_autocast (SqlExpr | bool): `BOOLEAN` expression
         binary_as_string (SqlExpr | bool): `BOOLEAN` expression
         debug_use_openssl (SqlExpr | bool): `BOOLEAN` expression
         compression (SqlExpr | str): `VARCHAR` expression
         can_have_nan (SqlExpr | bool | int): `BOOLEAN | UBIGINT` expression
-        explicit_cardinality (SqlExpr | int | bool): `UBIGINT | BOOLEAN` expression
+        explicit_cardinality (SqlExpr | bool | int): `BOOLEAN | UBIGINT` expression
         schema (SqlExpr): `ANY` expression
         encryption_config (SqlExpr): `ANY` expression
         parquet_version (SqlExpr | str): `VARCHAR` expression
@@ -2673,11 +2673,11 @@ def read_parquet(
     )
 
 
-def read_text(col0: SqlExpr | str | list[str]) -> SqlExpr:
+def read_text(col0: SqlExpr | list[str] | str) -> SqlExpr:
     """SQL read_text function.
 
     Args:
-        col0 (SqlExpr | str | list[str]): `VARCHAR | VARCHAR[]` expression
+        col0 (SqlExpr | list[str] | str): `VARCHAR | VARCHAR[]` expression
 
     Returns:
         SqlExpr: `ANY` expression.
@@ -3071,7 +3071,7 @@ def any_value(arg: SqlExpr | Decimal) -> SqlExpr:
     This function is affected by ordering.
 
     Args:
-        arg (SqlExpr | Decimal | SqlExpr): `DECIMAL | ANY` expression
+        arg (SqlExpr | Decimal | SqlExpr): `ANY | DECIMAL` expression
 
     Returns:
         SqlExpr: `DECIMAL` expression.
@@ -3092,13 +3092,13 @@ def approx_count_distinct(any_arg: SqlExpr) -> SqlExpr:
 
 
 def approx_quantile(
-    x: SqlExpr | Decimal | float | date | time | datetime,
+    x: SqlExpr | Decimal | date | datetime | float | time,
     pos: SqlExpr | float | list[float],
 ) -> SqlExpr:
     """Computes the approximate quantile using T-Digest.
 
     Args:
-        x (SqlExpr | Decimal | int | float | date | time | datetime): `DECIMAL | SMALLINT | INTEGER | BIGINT | HUGEINT | DOUBLE | DATE | TIME | TIME WITH TIME ZONE | TIMESTAMP | TIMESTAMP WITH TIME ZONE | TINYINT | FLOAT` expression
+        x (SqlExpr | Decimal | date | datetime | float | int | time): `BIGINT | DATE | DECIMAL | DOUBLE | FLOAT | HUGEINT | INTEGER | SMALLINT | TIME | TIME WITH TIME ZONE | TIMESTAMP | TIMESTAMP WITH TIME ZONE | TINYINT` expression
         pos (SqlExpr | float | list[float]): `FLOAT | FLOAT[]` expression
 
     Returns:
@@ -3121,8 +3121,8 @@ def approx_top_k(val: SqlExpr, k: SqlExpr | int) -> SqlExpr:
 
 
 def arg_max(
-    arg: SqlExpr | float | str | date | datetime | bytes | Decimal,
-    val: SqlExpr | float | str | date | datetime | bytes,
+    arg: SqlExpr | Decimal | bytes | date | datetime | float | str,
+    val: SqlExpr | bytes | date | datetime | float | str,
     col2: SqlExpr | int | None = None,
 ) -> SqlExpr:
     """Finds the row with the maximum val.
@@ -3130,8 +3130,8 @@ def arg_max(
     Calculates the non-NULL arg expression at that row.
 
     Args:
-        arg (SqlExpr | int | float | str | date | datetime | bytes | Decimal | SqlExpr): `INTEGER | BIGINT | DOUBLE | VARCHAR | DATE | TIMESTAMP | TIMESTAMP WITH TIME ZONE | BLOB | DECIMAL | ANY` expression
-        val (SqlExpr | int | float | str | date | datetime | bytes | SqlExpr): `INTEGER | BIGINT | HUGEINT | DOUBLE | VARCHAR | DATE | TIMESTAMP | TIMESTAMP WITH TIME ZONE | BLOB | ANY` expression
+        arg (SqlExpr | Decimal | SqlExpr | bytes | date | datetime | float | int | str): `ANY | BIGINT | BLOB | DATE | DECIMAL | DOUBLE | INTEGER | TIMESTAMP | TIMESTAMP WITH TIME ZONE | VARCHAR` expression
+        val (SqlExpr | SqlExpr | bytes | date | datetime | float | int | str): `ANY | BIGINT | BLOB | DATE | DOUBLE | HUGEINT | INTEGER | TIMESTAMP | TIMESTAMP WITH TIME ZONE | VARCHAR` expression
         col2 (SqlExpr | int | None): `BIGINT` expression
 
     Returns:
@@ -3141,16 +3141,16 @@ def arg_max(
 
 
 def arg_max_null(
-    arg: SqlExpr | float | str | date | datetime | bytes | Decimal,
-    val: SqlExpr | float | str | date | datetime | bytes,
+    arg: SqlExpr | Decimal | bytes | date | datetime | float | str,
+    val: SqlExpr | bytes | date | datetime | float | str,
 ) -> SqlExpr:
     """Finds the row with the maximum val.
 
     Calculates the arg expression at that row.
 
     Args:
-        arg (SqlExpr | int | float | str | date | datetime | bytes | Decimal | SqlExpr): `INTEGER | BIGINT | DOUBLE | VARCHAR | DATE | TIMESTAMP | TIMESTAMP WITH TIME ZONE | BLOB | DECIMAL | ANY` expression
-        val (SqlExpr | int | float | str | date | datetime | bytes | SqlExpr): `INTEGER | BIGINT | HUGEINT | DOUBLE | VARCHAR | DATE | TIMESTAMP | TIMESTAMP WITH TIME ZONE | BLOB | ANY` expression
+        arg (SqlExpr | Decimal | SqlExpr | bytes | date | datetime | float | int | str): `ANY | BIGINT | BLOB | DATE | DECIMAL | DOUBLE | INTEGER | TIMESTAMP | TIMESTAMP WITH TIME ZONE | VARCHAR` expression
+        val (SqlExpr | SqlExpr | bytes | date | datetime | float | int | str): `ANY | BIGINT | BLOB | DATE | DOUBLE | HUGEINT | INTEGER | TIMESTAMP | TIMESTAMP WITH TIME ZONE | VARCHAR` expression
 
     Returns:
         SqlExpr: `INTEGER` expression.
@@ -3159,8 +3159,8 @@ def arg_max_null(
 
 
 def arg_min(
-    arg: SqlExpr | float | str | date | datetime | bytes | Decimal,
-    val: SqlExpr | float | str | date | datetime | bytes,
+    arg: SqlExpr | Decimal | bytes | date | datetime | float | str,
+    val: SqlExpr | bytes | date | datetime | float | str,
     col2: SqlExpr | int | None = None,
 ) -> SqlExpr:
     """Finds the row with the minimum val.
@@ -3168,8 +3168,8 @@ def arg_min(
     Calculates the non-NULL arg expression at that row.
 
     Args:
-        arg (SqlExpr | int | float | str | date | datetime | bytes | Decimal | SqlExpr): `INTEGER | BIGINT | DOUBLE | VARCHAR | DATE | TIMESTAMP | TIMESTAMP WITH TIME ZONE | BLOB | DECIMAL | ANY` expression
-        val (SqlExpr | int | float | str | date | datetime | bytes | SqlExpr): `INTEGER | BIGINT | HUGEINT | DOUBLE | VARCHAR | DATE | TIMESTAMP | TIMESTAMP WITH TIME ZONE | BLOB | ANY` expression
+        arg (SqlExpr | Decimal | SqlExpr | bytes | date | datetime | float | int | str): `ANY | BIGINT | BLOB | DATE | DECIMAL | DOUBLE | INTEGER | TIMESTAMP | TIMESTAMP WITH TIME ZONE | VARCHAR` expression
+        val (SqlExpr | SqlExpr | bytes | date | datetime | float | int | str): `ANY | BIGINT | BLOB | DATE | DOUBLE | HUGEINT | INTEGER | TIMESTAMP | TIMESTAMP WITH TIME ZONE | VARCHAR` expression
         col2 (SqlExpr | int | None): `BIGINT` expression
 
     Returns:
@@ -3179,16 +3179,16 @@ def arg_min(
 
 
 def arg_min_null(
-    arg: SqlExpr | float | str | date | datetime | bytes | Decimal,
-    val: SqlExpr | float | str | date | datetime | bytes,
+    arg: SqlExpr | Decimal | bytes | date | datetime | float | str,
+    val: SqlExpr | bytes | date | datetime | float | str,
 ) -> SqlExpr:
     """Finds the row with the minimum val.
 
     Calculates the arg expression at that row.
 
     Args:
-        arg (SqlExpr | int | float | str | date | datetime | bytes | Decimal | SqlExpr): `INTEGER | BIGINT | DOUBLE | VARCHAR | DATE | TIMESTAMP | TIMESTAMP WITH TIME ZONE | BLOB | DECIMAL | ANY` expression
-        val (SqlExpr | int | float | str | date | datetime | bytes | SqlExpr): `INTEGER | BIGINT | HUGEINT | DOUBLE | VARCHAR | DATE | TIMESTAMP | TIMESTAMP WITH TIME ZONE | BLOB | ANY` expression
+        arg (SqlExpr | Decimal | SqlExpr | bytes | date | datetime | float | int | str): `ANY | BIGINT | BLOB | DATE | DECIMAL | DOUBLE | INTEGER | TIMESTAMP | TIMESTAMP WITH TIME ZONE | VARCHAR` expression
+        val (SqlExpr | SqlExpr | bytes | date | datetime | float | int | str): `ANY | BIGINT | BLOB | DATE | DOUBLE | HUGEINT | INTEGER | TIMESTAMP | TIMESTAMP WITH TIME ZONE | VARCHAR` expression
 
     Returns:
         SqlExpr: `INTEGER` expression.
@@ -3196,11 +3196,11 @@ def arg_min_null(
     return func("arg_min_null", arg, val)
 
 
-def avg(x: SqlExpr | Decimal | timedelta | float | datetime | time) -> SqlExpr:
+def avg(x: SqlExpr | Decimal | datetime | float | time | timedelta) -> SqlExpr:
     """Calculates the average value for all tuples in x.
 
     Args:
-        x (SqlExpr | Decimal | int | timedelta | float | datetime | time): `DECIMAL | SMALLINT | INTEGER | BIGINT | HUGEINT | INTERVAL | DOUBLE | TIMESTAMP | TIMESTAMP WITH TIME ZONE | TIME | TIME WITH TIME ZONE` expression
+        x (SqlExpr | Decimal | datetime | float | int | time | timedelta): `BIGINT | DECIMAL | DOUBLE | HUGEINT | INTEGER | INTERVAL | SMALLINT | TIME | TIME WITH TIME ZONE | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
 
     Returns:
         SqlExpr: `DECIMAL` expression.
@@ -3334,7 +3334,7 @@ def first(arg: SqlExpr | Decimal) -> SqlExpr:
     This function is affected by ordering.
 
     Args:
-        arg (SqlExpr | Decimal | SqlExpr): `DECIMAL | ANY` expression
+        arg (SqlExpr | Decimal | SqlExpr): `ANY | DECIMAL` expression
 
     Returns:
         SqlExpr: `DECIMAL` expression.
@@ -3410,7 +3410,7 @@ def last(arg: SqlExpr | Decimal) -> SqlExpr:
     This function is affected by ordering.
 
     Args:
-        arg (SqlExpr | Decimal | SqlExpr): `DECIMAL | ANY` expression
+        arg (SqlExpr | Decimal | SqlExpr): `ANY | DECIMAL` expression
 
     Returns:
         SqlExpr: `DECIMAL` expression.
@@ -3418,7 +3418,7 @@ def last(arg: SqlExpr | Decimal) -> SqlExpr:
     return func("last", arg)
 
 
-def mad(x: SqlExpr | Decimal | float | date | datetime | time) -> SqlExpr:
+def mad(x: SqlExpr | Decimal | date | datetime | float | time) -> SqlExpr:
     """Returns the median absolute deviation for the values within x.
 
     NULL values are ignored.
@@ -3426,7 +3426,7 @@ def mad(x: SqlExpr | Decimal | float | date | datetime | time) -> SqlExpr:
     Temporal types return a positive INTERVAL.
 
     Args:
-        x (SqlExpr | Decimal | float | date | datetime | time): `DECIMAL | FLOAT | DOUBLE | DATE | TIMESTAMP | TIME | TIMESTAMP WITH TIME ZONE | TIME WITH TIME ZONE` expression
+        x (SqlExpr | Decimal | date | datetime | float | time): `DATE | DECIMAL | DOUBLE | FLOAT | TIME | TIME WITH TIME ZONE | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
 
     Returns:
         SqlExpr: `DECIMAL` expression.
@@ -3505,7 +3505,7 @@ def product(arg: SqlExpr | float) -> SqlExpr:
 
 
 def quantile_cont(
-    x: SqlExpr | Decimal | float | date | datetime | time,
+    x: SqlExpr | Decimal | date | datetime | float | time,
     pos: SqlExpr | float | list[float],
 ) -> SqlExpr:
     """Returns the interpolated quantile number between 0 and 1 .
@@ -3513,7 +3513,7 @@ def quantile_cont(
     If pos is a LIST of FLOATs, then the result is a LIST of the corresponding interpolated quantiles.
 
     Args:
-        x (SqlExpr | Decimal | int | float | date | datetime | time): `DECIMAL | TINYINT | SMALLINT | INTEGER | BIGINT | HUGEINT | FLOAT | DOUBLE | DATE | TIMESTAMP | TIME | TIMESTAMP WITH TIME ZONE | TIME WITH TIME ZONE` expression
+        x (SqlExpr | Decimal | date | datetime | float | int | time): `BIGINT | DATE | DECIMAL | DOUBLE | FLOAT | HUGEINT | INTEGER | SMALLINT | TIME | TIME WITH TIME ZONE | TIMESTAMP | TIMESTAMP WITH TIME ZONE | TINYINT` expression
         pos (SqlExpr | float | list[float]): `DOUBLE | DOUBLE[]` expression
 
     Returns:
@@ -3664,7 +3664,7 @@ def reservoir_quantile(
     """Gives the approximate quantile using reservoir sampling, the sample size is optional and uses 8192 as a default size.
 
     Args:
-        x (SqlExpr | Decimal | int | float): `DECIMAL | TINYINT | SMALLINT | INTEGER | BIGINT | HUGEINT | FLOAT | DOUBLE` expression
+        x (SqlExpr | Decimal | float | int): `BIGINT | DECIMAL | DOUBLE | FLOAT | HUGEINT | INTEGER | SMALLINT | TINYINT` expression
         quantile (SqlExpr | float | list[float]): `DOUBLE | DOUBLE[]` expression
         sample_size (SqlExpr | int | None): `INTEGER` expression
 
@@ -3726,7 +3726,7 @@ def sum(arg: SqlExpr | Decimal | bool | float) -> SqlExpr:
     """Calculates the sum value for all tuples in arg.
 
     Args:
-        arg (SqlExpr | Decimal | bool | int | float | SqlExpr): `DECIMAL | BOOLEAN | SMALLINT | INTEGER | BIGINT | HUGEINT | DOUBLE | BIGNUM` expression
+        arg (SqlExpr | Decimal | SqlExpr | bool | float | int): `BIGINT | BIGNUM | BOOLEAN | DECIMAL | DOUBLE | HUGEINT | INTEGER | SMALLINT` expression
 
     Returns:
         SqlExpr: `DECIMAL` expression.
@@ -3734,13 +3734,13 @@ def sum(arg: SqlExpr | Decimal | bool | float) -> SqlExpr:
     return func("sum", arg)
 
 
-def sum_no_overflow(arg: SqlExpr | int | Decimal) -> SqlExpr:
+def sum_no_overflow(arg: SqlExpr | Decimal | int) -> SqlExpr:
     """Internal only.
 
     Calculates the sum value for all tuples in arg without overflow checks.
 
     Args:
-        arg (SqlExpr | int | Decimal): `INTEGER | BIGINT | DECIMAL` expression
+        arg (SqlExpr | Decimal | int): `BIGINT | DECIMAL | INTEGER` expression
 
     Returns:
         SqlExpr: `HUGEINT` expression.
@@ -3798,8 +3798,8 @@ def array_cosine_distance(array1: SqlExpr | float, array2: SqlExpr | float) -> S
     The arrays can have any size as long as the size is the same for both arguments.
 
     Args:
-        array1 (SqlExpr | float): `FLOAT[ANY] | DOUBLE[ANY]` expression
-        array2 (SqlExpr | float): `FLOAT[ANY] | DOUBLE[ANY]` expression
+        array1 (SqlExpr | float): `DOUBLE[ANY] | FLOAT[ANY]` expression
+        array2 (SqlExpr | float): `DOUBLE[ANY] | FLOAT[ANY]` expression
 
     Returns:
         SqlExpr: `FLOAT` expression.
@@ -3817,8 +3817,8 @@ def array_cosine_similarity(
     The arrays can have any size as long as the size is the same for both arguments.
 
     Args:
-        array1 (SqlExpr | float): `FLOAT[ANY] | DOUBLE[ANY]` expression
-        array2 (SqlExpr | float): `FLOAT[ANY] | DOUBLE[ANY]` expression
+        array1 (SqlExpr | float): `DOUBLE[ANY] | FLOAT[ANY]` expression
+        array2 (SqlExpr | float): `DOUBLE[ANY] | FLOAT[ANY]` expression
 
     Returns:
         SqlExpr: `FLOAT` expression.
@@ -3832,8 +3832,8 @@ def array_cross_product(array: SqlExpr | float, array_2: SqlExpr | float) -> Sql
     The array elements can not be `NULL`.
 
     Args:
-        array (SqlExpr | float): `FLOAT[3] | DOUBLE[3]` expression
-        array_2 (SqlExpr | float): `FLOAT[3] | DOUBLE[3]` expression
+        array (SqlExpr | float): `DOUBLE[3] | FLOAT[3]` expression
+        array_2 (SqlExpr | float): `DOUBLE[3] | FLOAT[3]` expression
 
     Returns:
         SqlExpr: `FLOAT[3]` expression.
@@ -3849,8 +3849,8 @@ def array_distance(array1: SqlExpr | float, array2: SqlExpr | float) -> SqlExpr:
     The arrays can have any size as long as the size is the same for both arguments.
 
     Args:
-        array1 (SqlExpr | float): `FLOAT[ANY] | DOUBLE[ANY]` expression
-        array2 (SqlExpr | float): `FLOAT[ANY] | DOUBLE[ANY]` expression
+        array1 (SqlExpr | float): `DOUBLE[ANY] | FLOAT[ANY]` expression
+        array2 (SqlExpr | float): `DOUBLE[ANY] | FLOAT[ANY]` expression
 
     Returns:
         SqlExpr: `FLOAT` expression.
@@ -3885,13 +3885,13 @@ def array_extract_string(string: SqlExpr | str, index: SqlExpr | int) -> SqlExpr
 
 
 def array_extract_struct(
-    struct: SqlExpr | dict[object, object], entry: SqlExpr | str | int
+    struct: SqlExpr | dict[object, object], entry: SqlExpr | int | str
 ) -> SqlExpr:
     """Extracts the named `entry` from the `STRUCT`.
 
     Args:
         struct (SqlExpr | dict[object, object]): `STRUCT` expression
-        entry (SqlExpr | str | int): `VARCHAR | BIGINT` expression
+        entry (SqlExpr | int | str): `BIGINT | VARCHAR` expression
 
     Returns:
         SqlExpr: `ANY` expression.
@@ -3907,8 +3907,8 @@ def array_inner_product(array1: SqlExpr | float, array2: SqlExpr | float) -> Sql
     The arrays can have any size as long as the size is the same for both arguments.
 
     Args:
-        array1 (SqlExpr | float): `FLOAT[ANY] | DOUBLE[ANY]` expression
-        array2 (SqlExpr | float): `FLOAT[ANY] | DOUBLE[ANY]` expression
+        array1 (SqlExpr | float): `DOUBLE[ANY] | FLOAT[ANY]` expression
+        array2 (SqlExpr | float): `DOUBLE[ANY] | FLOAT[ANY]` expression
 
     Returns:
         SqlExpr: `FLOAT` expression.
@@ -3966,8 +3966,8 @@ def array_negative_inner_product(
     The arrays can have any size as long as the size is the same for both arguments.
 
     Args:
-        array1 (SqlExpr | float): `FLOAT[ANY] | DOUBLE[ANY]` expression
-        array2 (SqlExpr | float): `FLOAT[ANY] | DOUBLE[ANY]` expression
+        array1 (SqlExpr | float): `DOUBLE[ANY] | FLOAT[ANY]` expression
+        array2 (SqlExpr | float): `DOUBLE[ANY] | FLOAT[ANY]` expression
 
     Returns:
         SqlExpr: `FLOAT` expression.
@@ -4105,11 +4105,11 @@ def array_value(*args: SqlExpr) -> SqlExpr:
 # ============================================================
 
 
-def bit_and(arg: SqlExpr | int | bytes) -> SqlExpr:
+def bit_and(arg: SqlExpr | bytes | int) -> SqlExpr:
     """Returns the bitwise AND of all bits in a given expression.
 
     Args:
-        arg (SqlExpr | int | bytes): `TINYINT | SMALLINT | INTEGER | BIGINT | HUGEINT | UTINYINT | USMALLINT | UINTEGER | UBIGINT | UHUGEINT | BIT` expression
+        arg (SqlExpr | bytes | int): `BIGINT | BIT | HUGEINT | INTEGER | SMALLINT | TINYINT | UBIGINT | UHUGEINT | UINTEGER | USMALLINT | UTINYINT` expression
 
     Returns:
         SqlExpr: `TINYINT` expression.
@@ -4117,11 +4117,11 @@ def bit_and(arg: SqlExpr | int | bytes) -> SqlExpr:
     return func("bit_and", arg)
 
 
-def bit_count(x: SqlExpr | int | bytes) -> SqlExpr:
+def bit_count(x: SqlExpr | bytes | int) -> SqlExpr:
     """Returns the number of bits that are set.
 
     Args:
-        x (SqlExpr | int | bytes): `TINYINT | SMALLINT | INTEGER | BIGINT | HUGEINT | BIT` expression
+        x (SqlExpr | bytes | int): `BIGINT | BIT | HUGEINT | INTEGER | SMALLINT | TINYINT` expression
 
     Returns:
         SqlExpr: `TINYINT` expression.
@@ -4153,11 +4153,11 @@ def bit_length_string(string: SqlExpr | str) -> SqlExpr:
     return func("bit_length", string)
 
 
-def bit_or(arg: SqlExpr | int | bytes) -> SqlExpr:
+def bit_or(arg: SqlExpr | bytes | int) -> SqlExpr:
     """Returns the bitwise OR of all bits in a given expression.
 
     Args:
-        arg (SqlExpr | int | bytes): `TINYINT | SMALLINT | INTEGER | BIGINT | HUGEINT | UTINYINT | USMALLINT | UINTEGER | UBIGINT | UHUGEINT | BIT` expression
+        arg (SqlExpr | bytes | int): `BIGINT | BIT | HUGEINT | INTEGER | SMALLINT | TINYINT | UBIGINT | UHUGEINT | UINTEGER | USMALLINT | UTINYINT` expression
 
     Returns:
         SqlExpr: `TINYINT` expression.
@@ -4180,11 +4180,11 @@ def bit_position(substring: SqlExpr | bytes, bitstring: SqlExpr | bytes) -> SqlE
     return func("bit_position", substring, bitstring)
 
 
-def bit_xor(arg: SqlExpr | int | bytes) -> SqlExpr:
+def bit_xor(arg: SqlExpr | bytes | int) -> SqlExpr:
     """Returns the bitwise XOR of all bits in a given expression.
 
     Args:
-        arg (SqlExpr | int | bytes): `TINYINT | SMALLINT | INTEGER | BIGINT | HUGEINT | UTINYINT | USMALLINT | UINTEGER | UBIGINT | UHUGEINT | BIT` expression
+        arg (SqlExpr | bytes | int): `BIGINT | BIT | HUGEINT | INTEGER | SMALLINT | TINYINT | UBIGINT | UHUGEINT | UINTEGER | USMALLINT | UTINYINT` expression
 
     Returns:
         SqlExpr: `TINYINT` expression.
@@ -4192,11 +4192,11 @@ def bit_xor(arg: SqlExpr | int | bytes) -> SqlExpr:
     return func("bit_xor", arg)
 
 
-def bitstring(bitstring: SqlExpr | str | bytes, length: SqlExpr | int) -> SqlExpr:
+def bitstring(bitstring: SqlExpr | bytes | str, length: SqlExpr | int) -> SqlExpr:
     """Pads the bitstring until the specified length.
 
     Args:
-        bitstring (SqlExpr | str | bytes): `VARCHAR | BIT` expression
+        bitstring (SqlExpr | bytes | str): `BIT | VARCHAR` expression
         length (SqlExpr | int): `INTEGER` expression
 
     Returns:
@@ -4213,9 +4213,9 @@ def bitstring_agg(
     """Returns a bitstring with bits set for each distinct value.
 
     Args:
-        arg (SqlExpr | int): `TINYINT | SMALLINT | INTEGER | BIGINT | HUGEINT | UTINYINT | USMALLINT | UINTEGER | UBIGINT | UHUGEINT` expression
-        col1 (SqlExpr | int | None): `TINYINT | SMALLINT | INTEGER | BIGINT | HUGEINT | UTINYINT | USMALLINT | UINTEGER | UBIGINT | UHUGEINT` expression
-        col2 (SqlExpr | int | None): `TINYINT | SMALLINT | INTEGER | BIGINT | HUGEINT | UTINYINT | USMALLINT | UINTEGER | UBIGINT | UHUGEINT` expression
+        arg (SqlExpr | int): `BIGINT | HUGEINT | INTEGER | SMALLINT | TINYINT | UBIGINT | UHUGEINT | UINTEGER | USMALLINT | UTINYINT` expression
+        col1 (SqlExpr | int | None): `BIGINT | HUGEINT | INTEGER | SMALLINT | TINYINT | UBIGINT | UHUGEINT | UINTEGER | USMALLINT | UTINYINT` expression
+        col2 (SqlExpr | int | None): `BIGINT | HUGEINT | INTEGER | SMALLINT | TINYINT | UBIGINT | UHUGEINT | UINTEGER | USMALLINT | UTINYINT` expression
 
     Returns:
         SqlExpr: `BIT` expression.
@@ -4244,7 +4244,7 @@ def from_json(col0: SqlExpr | str, col1: SqlExpr | str) -> SqlExpr:
     """SQL from_json function.
 
     Args:
-        col0 (SqlExpr | str): `VARCHAR | JSON` expression
+        col0 (SqlExpr | str): `JSON | VARCHAR` expression
         col1 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
@@ -4257,7 +4257,7 @@ def from_json_strict(col0: SqlExpr | str, col1: SqlExpr | str) -> SqlExpr:
     """SQL from_json_strict function.
 
     Args:
-        col0 (SqlExpr | str): `VARCHAR | JSON` expression
+        col0 (SqlExpr | str): `JSON | VARCHAR` expression
         col1 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
@@ -4298,7 +4298,7 @@ def to_centuries(integer: SqlExpr | int) -> SqlExpr:
     """Construct a century interval.
 
     Args:
-        integer (SqlExpr | int): `INTEGER | BIGINT` expression
+        integer (SqlExpr | int): `BIGINT | INTEGER` expression
 
     Returns:
         SqlExpr: `INTERVAL` expression.
@@ -4310,7 +4310,7 @@ def to_days(integer: SqlExpr | int) -> SqlExpr:
     """Construct a day interval.
 
     Args:
-        integer (SqlExpr | int): `INTEGER | BIGINT` expression
+        integer (SqlExpr | int): `BIGINT | INTEGER` expression
 
     Returns:
         SqlExpr: `INTERVAL` expression.
@@ -4322,7 +4322,7 @@ def to_decades(integer: SqlExpr | int) -> SqlExpr:
     """Construct a decade interval.
 
     Args:
-        integer (SqlExpr | int): `INTEGER | BIGINT` expression
+        integer (SqlExpr | int): `BIGINT | INTEGER` expression
 
     Returns:
         SqlExpr: `INTERVAL` expression.
@@ -4370,7 +4370,7 @@ def to_millennia(integer: SqlExpr | int) -> SqlExpr:
     """Construct a millenium interval.
 
     Args:
-        integer (SqlExpr | int): `INTEGER | BIGINT` expression
+        integer (SqlExpr | int): `BIGINT | INTEGER` expression
 
     Returns:
         SqlExpr: `INTERVAL` expression.
@@ -4406,7 +4406,7 @@ def to_months(integer: SqlExpr | int) -> SqlExpr:
     """Construct a month interval.
 
     Args:
-        integer (SqlExpr | int): `INTEGER | BIGINT` expression
+        integer (SqlExpr | int): `BIGINT | INTEGER` expression
 
     Returns:
         SqlExpr: `INTERVAL` expression.
@@ -4418,7 +4418,7 @@ def to_quarters(integer: SqlExpr | int) -> SqlExpr:
     """Construct a quarter interval.
 
     Args:
-        integer (SqlExpr | int): `INTEGER | BIGINT` expression
+        integer (SqlExpr | int): `BIGINT | INTEGER` expression
 
     Returns:
         SqlExpr: `INTERVAL` expression.
@@ -4454,7 +4454,7 @@ def to_weeks(integer: SqlExpr | int) -> SqlExpr:
     """Construct a week interval.
 
     Args:
-        integer (SqlExpr | int): `INTEGER | BIGINT` expression
+        integer (SqlExpr | int): `BIGINT | INTEGER` expression
 
     Returns:
         SqlExpr: `INTERVAL` expression.
@@ -4466,7 +4466,7 @@ def to_years(integer: SqlExpr | int) -> SqlExpr:
     """Construct a year interval.
 
     Args:
-        integer (SqlExpr | int): `INTEGER | BIGINT` expression
+        integer (SqlExpr | int): `BIGINT | INTEGER` expression
 
     Returns:
         SqlExpr: `INTERVAL` expression.
@@ -4494,15 +4494,15 @@ def date_add(date_arg: SqlExpr, interval: SqlExpr) -> SqlExpr:
 
 def date_diff(
     part: SqlExpr | str,
-    startdate: SqlExpr | date | time | datetime,
-    enddate: SqlExpr | date | time | datetime,
+    startdate: SqlExpr | date | datetime | time,
+    enddate: SqlExpr | date | datetime | time,
 ) -> SqlExpr:
     """The number of partition boundaries between the timestamps.
 
     Args:
         part (SqlExpr | str): `VARCHAR` expression
-        startdate (SqlExpr | date | time | datetime): `DATE | TIME | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
-        enddate (SqlExpr | date | time | datetime): `DATE | TIME | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
+        startdate (SqlExpr | date | datetime | time): `DATE | TIME | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
+        enddate (SqlExpr | date | datetime | time): `DATE | TIME | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
 
     Returns:
         SqlExpr: `BIGINT` expression.
@@ -4511,13 +4511,13 @@ def date_diff(
 
 
 def date_part(
-    ts: SqlExpr | list[str] | str, col1: SqlExpr | date | timedelta | time | datetime
+    ts: SqlExpr | list[str] | str, col1: SqlExpr | date | datetime | time | timedelta
 ) -> SqlExpr:
     """Get subfield (equivalent to extract).
 
     Args:
-        ts (SqlExpr | list[str] | str): `VARCHAR[] | VARCHAR` expression
-        col1 (SqlExpr | date | timedelta | time | datetime): `DATE | INTERVAL | TIME | TIMESTAMP | TIME WITH TIME ZONE | TIME_NS | TIMESTAMP WITH TIME ZONE` expression
+        ts (SqlExpr | list[str] | str): `VARCHAR | VARCHAR[]` expression
+        col1 (SqlExpr | date | datetime | time | timedelta): `DATE | INTERVAL | TIME | TIME WITH TIME ZONE | TIMESTAMP | TIMESTAMP WITH TIME ZONE | TIME_NS` expression
 
     Returns:
         SqlExpr: `STRUCT()` expression.
@@ -4527,15 +4527,15 @@ def date_part(
 
 def date_sub(
     part: SqlExpr | str,
-    startdate: SqlExpr | date | time | datetime,
-    enddate: SqlExpr | date | time | datetime,
+    startdate: SqlExpr | date | datetime | time,
+    enddate: SqlExpr | date | datetime | time,
 ) -> SqlExpr:
     """The number of complete partitions between the timestamps.
 
     Args:
         part (SqlExpr | str): `VARCHAR` expression
-        startdate (SqlExpr | date | time | datetime): `DATE | TIME | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
-        enddate (SqlExpr | date | time | datetime): `DATE | TIME | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
+        startdate (SqlExpr | date | datetime | time): `DATE | TIME | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
+        enddate (SqlExpr | date | datetime | time): `DATE | TIME | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
 
     Returns:
         SqlExpr: `BIGINT` expression.
@@ -4544,13 +4544,13 @@ def date_sub(
 
 
 def date_trunc(
-    part: SqlExpr | str, timestamp: SqlExpr | date | timedelta | datetime
+    part: SqlExpr | str, timestamp: SqlExpr | date | datetime | timedelta
 ) -> SqlExpr:
     """Truncate to specified precision.
 
     Args:
         part (SqlExpr | str): `VARCHAR` expression
-        timestamp (SqlExpr | date | timedelta | datetime): `DATE | INTERVAL | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
+        timestamp (SqlExpr | date | datetime | timedelta): `DATE | INTERVAL | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
 
     Returns:
         SqlExpr: `TIMESTAMP` expression.
@@ -4560,15 +4560,15 @@ def date_trunc(
 
 def datediff(
     part: SqlExpr | str,
-    startdate: SqlExpr | date | time | datetime,
-    enddate: SqlExpr | date | time | datetime,
+    startdate: SqlExpr | date | datetime | time,
+    enddate: SqlExpr | date | datetime | time,
 ) -> SqlExpr:
     """The number of partition boundaries between the timestamps.
 
     Args:
         part (SqlExpr | str): `VARCHAR` expression
-        startdate (SqlExpr | date | time | datetime): `DATE | TIME | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
-        enddate (SqlExpr | date | time | datetime): `DATE | TIME | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
+        startdate (SqlExpr | date | datetime | time): `DATE | TIME | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
+        enddate (SqlExpr | date | datetime | time): `DATE | TIME | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
 
     Returns:
         SqlExpr: `BIGINT` expression.
@@ -4577,13 +4577,13 @@ def datediff(
 
 
 def datepart(
-    ts: SqlExpr | list[str] | str, col1: SqlExpr | date | timedelta | time | datetime
+    ts: SqlExpr | list[str] | str, col1: SqlExpr | date | datetime | time | timedelta
 ) -> SqlExpr:
     """Get subfield (equivalent to extract).
 
     Args:
-        ts (SqlExpr | list[str] | str): `VARCHAR[] | VARCHAR` expression
-        col1 (SqlExpr | date | timedelta | time | datetime): `DATE | INTERVAL | TIME | TIMESTAMP | TIME WITH TIME ZONE | TIME_NS | TIMESTAMP WITH TIME ZONE` expression
+        ts (SqlExpr | list[str] | str): `VARCHAR | VARCHAR[]` expression
+        col1 (SqlExpr | date | datetime | time | timedelta): `DATE | INTERVAL | TIME | TIME WITH TIME ZONE | TIMESTAMP | TIMESTAMP WITH TIME ZONE | TIME_NS` expression
 
     Returns:
         SqlExpr: `STRUCT()` expression.
@@ -4593,15 +4593,15 @@ def datepart(
 
 def datesub(
     part: SqlExpr | str,
-    startdate: SqlExpr | date | time | datetime,
-    enddate: SqlExpr | date | time | datetime,
+    startdate: SqlExpr | date | datetime | time,
+    enddate: SqlExpr | date | datetime | time,
 ) -> SqlExpr:
     """The number of complete partitions between the timestamps.
 
     Args:
         part (SqlExpr | str): `VARCHAR` expression
-        startdate (SqlExpr | date | time | datetime): `DATE | TIME | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
-        enddate (SqlExpr | date | time | datetime): `DATE | TIME | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
+        startdate (SqlExpr | date | datetime | time): `DATE | TIME | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
+        enddate (SqlExpr | date | datetime | time): `DATE | TIME | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
 
     Returns:
         SqlExpr: `BIGINT` expression.
@@ -4610,13 +4610,13 @@ def datesub(
 
 
 def datetrunc(
-    part: SqlExpr | str, timestamp: SqlExpr | date | timedelta | datetime
+    part: SqlExpr | str, timestamp: SqlExpr | date | datetime | timedelta
 ) -> SqlExpr:
     """Truncate to specified precision.
 
     Args:
         part (SqlExpr | str): `VARCHAR` expression
-        timestamp (SqlExpr | date | timedelta | datetime): `DATE | INTERVAL | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
+        timestamp (SqlExpr | date | datetime | timedelta): `DATE | INTERVAL | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
 
     Returns:
         SqlExpr: `TIMESTAMP` expression.
@@ -4726,13 +4726,13 @@ def json_array(*args: SqlExpr) -> SqlExpr:
 
 
 def json_array_length(
-    col0: SqlExpr | str, col1: SqlExpr | str | list[str] | None = None
+    col0: SqlExpr | str, col1: SqlExpr | list[str] | str | None = None
 ) -> SqlExpr:
     """SQL json_array_length function.
 
     Args:
-        col0 (SqlExpr | str): `VARCHAR | JSON` expression
-        col1 (SqlExpr | str | list[str] | None): `VARCHAR | VARCHAR[]` expression
+        col0 (SqlExpr | str): `JSON | VARCHAR` expression
+        col1 (SqlExpr | list[str] | str | None): `VARCHAR | VARCHAR[]` expression
 
     Returns:
         SqlExpr: `UBIGINT` expression.
@@ -4744,8 +4744,8 @@ def json_contains(col0: SqlExpr | str, col1: SqlExpr | str) -> SqlExpr:
     """SQL json_contains function.
 
     Args:
-        col0 (SqlExpr | str): `VARCHAR | JSON` expression
-        col1 (SqlExpr | str): `VARCHAR | JSON` expression
+        col0 (SqlExpr | str): `JSON | VARCHAR` expression
+        col1 (SqlExpr | str): `JSON | VARCHAR` expression
 
     Returns:
         SqlExpr: `BOOLEAN` expression.
@@ -4769,7 +4769,7 @@ def json_each(col0: SqlExpr | str, col1: SqlExpr | str | None = None) -> SqlExpr
     """SQL json_each function.
 
     Args:
-        col0 (SqlExpr | str): `VARCHAR | JSON` expression
+        col0 (SqlExpr | str): `JSON | VARCHAR` expression
         col1 (SqlExpr | str | None): `VARCHAR` expression
 
     Returns:
@@ -4790,12 +4790,12 @@ def json_execute_serialized_sql(col0: SqlExpr | str) -> SqlExpr:
     return func("json_execute_serialized_sql", col0)
 
 
-def json_exists(col0: SqlExpr | str, col1: SqlExpr | str | list[str]) -> SqlExpr:
+def json_exists(col0: SqlExpr | str, col1: SqlExpr | list[str] | str) -> SqlExpr:
     """SQL json_exists function.
 
     Args:
-        col0 (SqlExpr | str): `VARCHAR | JSON` expression
-        col1 (SqlExpr | str | list[str]): `VARCHAR | VARCHAR[]` expression
+        col0 (SqlExpr | str): `JSON | VARCHAR` expression
+        col1 (SqlExpr | list[str] | str): `VARCHAR | VARCHAR[]` expression
 
     Returns:
         SqlExpr: `BOOLEAN` expression.
@@ -4803,12 +4803,12 @@ def json_exists(col0: SqlExpr | str, col1: SqlExpr | str | list[str]) -> SqlExpr
     return func("json_exists", col0, col1)
 
 
-def json_extract(col0: SqlExpr | str, col1: SqlExpr | int | str | list[str]) -> SqlExpr:
+def json_extract(col0: SqlExpr | str, col1: SqlExpr | int | list[str] | str) -> SqlExpr:
     """SQL json_extract function.
 
     Args:
-        col0 (SqlExpr | str): `VARCHAR | JSON` expression
-        col1 (SqlExpr | int | str | list[str]): `BIGINT | VARCHAR | VARCHAR[]` expression
+        col0 (SqlExpr | str): `JSON | VARCHAR` expression
+        col1 (SqlExpr | int | list[str] | str): `BIGINT | VARCHAR | VARCHAR[]` expression
 
     Returns:
         SqlExpr: `JSON` expression.
@@ -4817,13 +4817,13 @@ def json_extract(col0: SqlExpr | str, col1: SqlExpr | int | str | list[str]) -> 
 
 
 def json_extract_path(
-    col0: SqlExpr | str, col1: SqlExpr | int | str | list[str]
+    col0: SqlExpr | str, col1: SqlExpr | int | list[str] | str
 ) -> SqlExpr:
     """SQL json_extract_path function.
 
     Args:
-        col0 (SqlExpr | str): `VARCHAR | JSON` expression
-        col1 (SqlExpr | int | str | list[str]): `BIGINT | VARCHAR | VARCHAR[]` expression
+        col0 (SqlExpr | str): `JSON | VARCHAR` expression
+        col1 (SqlExpr | int | list[str] | str): `BIGINT | VARCHAR | VARCHAR[]` expression
 
     Returns:
         SqlExpr: `JSON` expression.
@@ -4832,13 +4832,13 @@ def json_extract_path(
 
 
 def json_extract_path_text(
-    col0: SqlExpr | str, col1: SqlExpr | int | str | list[str]
+    col0: SqlExpr | str, col1: SqlExpr | int | list[str] | str
 ) -> SqlExpr:
     """SQL json_extract_path_text function.
 
     Args:
-        col0 (SqlExpr | str): `VARCHAR | JSON` expression
-        col1 (SqlExpr | int | str | list[str]): `BIGINT | VARCHAR | VARCHAR[]` expression
+        col0 (SqlExpr | str): `JSON | VARCHAR` expression
+        col1 (SqlExpr | int | list[str] | str): `BIGINT | VARCHAR | VARCHAR[]` expression
 
     Returns:
         SqlExpr: `VARCHAR` expression.
@@ -4847,13 +4847,13 @@ def json_extract_path_text(
 
 
 def json_extract_string(
-    col0: SqlExpr | str, col1: SqlExpr | int | str | list[str]
+    col0: SqlExpr | str, col1: SqlExpr | int | list[str] | str
 ) -> SqlExpr:
     """SQL json_extract_string function.
 
     Args:
-        col0 (SqlExpr | str): `VARCHAR | JSON` expression
-        col1 (SqlExpr | int | str | list[str]): `BIGINT | VARCHAR | VARCHAR[]` expression
+        col0 (SqlExpr | str): `JSON | VARCHAR` expression
+        col1 (SqlExpr | int | list[str] | str): `BIGINT | VARCHAR | VARCHAR[]` expression
 
     Returns:
         SqlExpr: `VARCHAR` expression.
@@ -4899,13 +4899,13 @@ def json_group_structure(x: SqlExpr) -> SqlExpr:
 
 
 def json_keys(
-    col0: SqlExpr | str, col1: SqlExpr | str | list[str] | None = None
+    col0: SqlExpr | str, col1: SqlExpr | list[str] | str | None = None
 ) -> SqlExpr:
     """SQL json_keys function.
 
     Args:
-        col0 (SqlExpr | str): `VARCHAR | JSON` expression
-        col1 (SqlExpr | str | list[str] | None): `VARCHAR | VARCHAR[]` expression
+        col0 (SqlExpr | str): `JSON | VARCHAR` expression
+        col1 (SqlExpr | list[str] | str | None): `VARCHAR | VARCHAR[]` expression
 
     Returns:
         SqlExpr: `VARCHAR[]` expression.
@@ -5013,7 +5013,7 @@ def json_structure(col0: SqlExpr | str) -> SqlExpr:
     """SQL json_structure function.
 
     Args:
-        col0 (SqlExpr | str): `VARCHAR | JSON` expression
+        col0 (SqlExpr | str): `JSON | VARCHAR` expression
 
     Returns:
         SqlExpr: `JSON` expression.
@@ -5025,7 +5025,7 @@ def json_transform(col0: SqlExpr | str, col1: SqlExpr | str) -> SqlExpr:
     """SQL json_transform function.
 
     Args:
-        col0 (SqlExpr | str): `VARCHAR | JSON` expression
+        col0 (SqlExpr | str): `JSON | VARCHAR` expression
         col1 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
@@ -5038,7 +5038,7 @@ def json_transform_strict(col0: SqlExpr | str, col1: SqlExpr | str) -> SqlExpr:
     """SQL json_transform_strict function.
 
     Args:
-        col0 (SqlExpr | str): `VARCHAR | JSON` expression
+        col0 (SqlExpr | str): `JSON | VARCHAR` expression
         col1 (SqlExpr | str): `VARCHAR` expression
 
     Returns:
@@ -5051,7 +5051,7 @@ def json_tree(col0: SqlExpr | str, col1: SqlExpr | str | None = None) -> SqlExpr
     """SQL json_tree function.
 
     Args:
-        col0 (SqlExpr | str): `VARCHAR | JSON` expression
+        col0 (SqlExpr | str): `JSON | VARCHAR` expression
         col1 (SqlExpr | str | None): `VARCHAR` expression
 
     Returns:
@@ -5061,13 +5061,13 @@ def json_tree(col0: SqlExpr | str, col1: SqlExpr | str | None = None) -> SqlExpr
 
 
 def json_type(
-    col0: SqlExpr | str, col1: SqlExpr | str | list[str] | None = None
+    col0: SqlExpr | str, col1: SqlExpr | list[str] | str | None = None
 ) -> SqlExpr:
     """SQL json_type function.
 
     Args:
-        col0 (SqlExpr | str): `VARCHAR | JSON` expression
-        col1 (SqlExpr | str | list[str] | None): `VARCHAR | VARCHAR[]` expression
+        col0 (SqlExpr | str): `JSON | VARCHAR` expression
+        col1 (SqlExpr | list[str] | str | None): `VARCHAR | VARCHAR[]` expression
 
     Returns:
         SqlExpr: `VARCHAR` expression.
@@ -5079,7 +5079,7 @@ def json_valid(col0: SqlExpr | str) -> SqlExpr:
     """SQL json_valid function.
 
     Args:
-        col0 (SqlExpr | str): `VARCHAR | JSON` expression
+        col0 (SqlExpr | str): `JSON | VARCHAR` expression
 
     Returns:
         SqlExpr: `BOOLEAN` expression.
@@ -5087,12 +5087,12 @@ def json_valid(col0: SqlExpr | str) -> SqlExpr:
     return func("json_valid", col0)
 
 
-def json_value(col0: SqlExpr | str, col1: SqlExpr | int | str | list[str]) -> SqlExpr:
+def json_value(col0: SqlExpr | str, col1: SqlExpr | int | list[str] | str) -> SqlExpr:
     """SQL json_value function.
 
     Args:
-        col0 (SqlExpr | str): `VARCHAR | JSON` expression
-        col1 (SqlExpr | int | str | list[str]): `BIGINT | VARCHAR | VARCHAR[]` expression
+        col0 (SqlExpr | str): `JSON | VARCHAR` expression
+        col1 (SqlExpr | int | list[str] | str): `BIGINT | VARCHAR | VARCHAR[]` expression
 
     Returns:
         SqlExpr: `VARCHAR` expression.
@@ -5265,8 +5265,8 @@ def list_cosine_distance(
     """Computes the cosine distance between two same-sized lists.
 
     Args:
-        list1 (SqlExpr | list[float]): `FLOAT[] | DOUBLE[]` expression
-        list2 (SqlExpr | list[float]): `FLOAT[] | DOUBLE[]` expression
+        list1 (SqlExpr | list[float]): `DOUBLE[] | FLOAT[]` expression
+        list2 (SqlExpr | list[float]): `DOUBLE[] | FLOAT[]` expression
 
     Returns:
         SqlExpr: `FLOAT` expression.
@@ -5280,8 +5280,8 @@ def list_cosine_similarity(
     """Computes the cosine similarity between two same-sized lists.
 
     Args:
-        list1 (SqlExpr | list[float]): `FLOAT[] | DOUBLE[]` expression
-        list2 (SqlExpr | list[float]): `FLOAT[] | DOUBLE[]` expression
+        list1 (SqlExpr | list[float]): `DOUBLE[] | FLOAT[]` expression
+        list2 (SqlExpr | list[float]): `DOUBLE[] | FLOAT[]` expression
 
     Returns:
         SqlExpr: `FLOAT` expression.
@@ -5307,8 +5307,8 @@ def list_distance(
     """Calculates the Euclidean distance between two points with coordinates given in two inputs lists of equal length.
 
     Args:
-        list1 (SqlExpr | list[float]): `FLOAT[] | DOUBLE[]` expression
-        list2 (SqlExpr | list[float]): `FLOAT[] | DOUBLE[]` expression
+        list1 (SqlExpr | list[float]): `DOUBLE[] | FLOAT[]` expression
+        list2 (SqlExpr | list[float]): `DOUBLE[] | FLOAT[]` expression
 
     Returns:
         SqlExpr: `FLOAT` expression.
@@ -5462,8 +5462,8 @@ def list_inner_product(
     """Computes the inner product between two same-sized lists.
 
     Args:
-        list1 (SqlExpr | list[float]): `FLOAT[] | DOUBLE[]` expression
-        list2 (SqlExpr | list[float]): `FLOAT[] | DOUBLE[]` expression
+        list1 (SqlExpr | list[float]): `DOUBLE[] | FLOAT[]` expression
+        list2 (SqlExpr | list[float]): `DOUBLE[] | FLOAT[]` expression
 
     Returns:
         SqlExpr: `FLOAT` expression.
@@ -5586,8 +5586,8 @@ def list_negative_inner_product(
     """Computes the negative inner product between two same-sized lists.
 
     Args:
-        list1 (SqlExpr | list[float]): `FLOAT[] | DOUBLE[]` expression
-        list2 (SqlExpr | list[float]): `FLOAT[] | DOUBLE[]` expression
+        list1 (SqlExpr | list[float]): `DOUBLE[] | FLOAT[]` expression
+        list2 (SqlExpr | list[float]): `DOUBLE[] | FLOAT[]` expression
 
     Returns:
         SqlExpr: `FLOAT` expression.
@@ -6877,11 +6877,11 @@ def is_histogram_other_bin(val: SqlExpr) -> SqlExpr:
     return func("is_histogram_other_bin", val)
 
 
-def isfinite(x: SqlExpr | float | date | datetime) -> SqlExpr:
+def isfinite(x: SqlExpr | date | datetime | float) -> SqlExpr:
     """Returns true if the floating point value is finite, false otherwise.
 
     Args:
-        x (SqlExpr | float | date | datetime): `FLOAT | DOUBLE | DATE | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
+        x (SqlExpr | date | datetime | float): `DATE | DOUBLE | FLOAT | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
 
     Returns:
         SqlExpr: `BOOLEAN` expression.
@@ -6889,11 +6889,11 @@ def isfinite(x: SqlExpr | float | date | datetime) -> SqlExpr:
     return func("isfinite", x)
 
 
-def isinf(x: SqlExpr | float | date | datetime) -> SqlExpr:
+def isinf(x: SqlExpr | date | datetime | float) -> SqlExpr:
     """Returns true if the floating point value is infinite, false otherwise.
 
     Args:
-        x (SqlExpr | float | date | datetime): `FLOAT | DOUBLE | DATE | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
+        x (SqlExpr | date | datetime | float): `DATE | DOUBLE | FLOAT | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
 
     Returns:
         SqlExpr: `BOOLEAN` expression.
@@ -6905,7 +6905,7 @@ def isnan(x: SqlExpr | float) -> SqlExpr:
     """Returns true if the floating point value is not a number, false otherwise.
 
     Args:
-        x (SqlExpr | float): `FLOAT | DOUBLE` expression
+        x (SqlExpr | float): `DOUBLE | FLOAT` expression
 
     Returns:
         SqlExpr: `BOOLEAN` expression.
@@ -6913,11 +6913,11 @@ def isnan(x: SqlExpr | float) -> SqlExpr:
     return func("isnan", x)
 
 
-def isodow(ts: SqlExpr | date | timedelta | datetime) -> SqlExpr:
+def isodow(ts: SqlExpr | date | datetime | timedelta) -> SqlExpr:
     """Extract the isodow component from a date or timestamp.
 
     Args:
-        ts (SqlExpr | date | timedelta | datetime): `DATE | INTERVAL | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
+        ts (SqlExpr | date | datetime | timedelta): `DATE | INTERVAL | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
 
     Returns:
         SqlExpr: `BIGINT` expression.
@@ -6925,11 +6925,11 @@ def isodow(ts: SqlExpr | date | timedelta | datetime) -> SqlExpr:
     return func("isodow", ts)
 
 
-def isoyear(ts: SqlExpr | date | timedelta | datetime) -> SqlExpr:
+def isoyear(ts: SqlExpr | date | datetime | timedelta) -> SqlExpr:
     """Extract the isoyear component from a date or timestamp.
 
     Args:
-        ts (SqlExpr | date | timedelta | datetime): `DATE | INTERVAL | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
+        ts (SqlExpr | date | datetime | timedelta): `DATE | INTERVAL | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
 
     Returns:
         SqlExpr: `BIGINT` expression.
@@ -7100,11 +7100,11 @@ def regexp_split_to_table(text: SqlExpr, pattern: SqlExpr) -> SqlExpr:
 # ============================================================
 
 
-def abs(x: SqlExpr | float | Decimal) -> SqlExpr:
+def abs(x: SqlExpr | Decimal | float) -> SqlExpr:
     """Absolute value.
 
     Args:
-        x (SqlExpr | int | float | Decimal): `TINYINT | SMALLINT | INTEGER | BIGINT | HUGEINT | FLOAT | DOUBLE | DECIMAL | UTINYINT | USMALLINT | UINTEGER | UBIGINT | UHUGEINT` expression
+        x (SqlExpr | Decimal | float | int): `BIGINT | DECIMAL | DOUBLE | FLOAT | HUGEINT | INTEGER | SMALLINT | TINYINT | UBIGINT | UHUGEINT | UINTEGER | USMALLINT | UTINYINT` expression
 
     Returns:
         SqlExpr: `TINYINT` expression.
@@ -7137,15 +7137,15 @@ def acosh(x: SqlExpr | float) -> SqlExpr:
 
 
 def add(
-    col0: SqlExpr | float | Decimal | date | timedelta | time | datetime | None = None,
-    col1: SqlExpr | float | Decimal | date | timedelta | time | datetime | None = None,
+    col0: SqlExpr | Decimal | date | datetime | float | time | timedelta | None = None,
+    col1: SqlExpr | Decimal | date | datetime | float | time | timedelta | None = None,
     *args: SqlExpr,
 ) -> SqlExpr:
     """SQL add function.
 
     Args:
-        col0 (SqlExpr | int | float | Decimal | date | timedelta | time | datetime | SqlExpr | None): `TINYINT | SMALLINT | INTEGER | BIGINT | HUGEINT | FLOAT | DOUBLE | DECIMAL | UTINYINT | USMALLINT | UINTEGER | UBIGINT | UHUGEINT | DATE | INTERVAL | TIME | TIMESTAMP | TIME WITH TIME ZONE | BIGNUM` expression
-        col1 (SqlExpr | int | float | Decimal | date | timedelta | time | datetime | SqlExpr | None): `TINYINT | SMALLINT | INTEGER | BIGINT | HUGEINT | FLOAT | DOUBLE | DECIMAL | UTINYINT | USMALLINT | UINTEGER | UBIGINT | UHUGEINT | DATE | INTERVAL | TIME | TIMESTAMP | TIME WITH TIME ZONE | BIGNUM` expression
+        col0 (SqlExpr | Decimal | SqlExpr | date | datetime | float | int | time | timedelta | None): `BIGINT | BIGNUM | DATE | DECIMAL | DOUBLE | FLOAT | HUGEINT | INTEGER | INTERVAL | SMALLINT | TIME | TIME WITH TIME ZONE | TIMESTAMP | TINYINT | UBIGINT | UHUGEINT | UINTEGER | USMALLINT | UTINYINT` expression
+        col1 (SqlExpr | Decimal | SqlExpr | date | datetime | float | int | time | timedelta | None): `BIGINT | BIGNUM | DATE | DECIMAL | DOUBLE | FLOAT | HUGEINT | INTEGER | INTERVAL | SMALLINT | TIME | TIME WITH TIME ZONE | TIMESTAMP | TINYINT | UBIGINT | UHUGEINT | UINTEGER | USMALLINT | UTINYINT` expression
         *args (SqlExpr): `ANY[]` expression
 
     Returns:
@@ -7280,7 +7280,7 @@ def bin_numeric(value: SqlExpr | int) -> SqlExpr:
     """Converts the `value` to binary representation.
 
     Args:
-        value (SqlExpr | SqlExpr | int): `BIGNUM | UBIGINT | BIGINT | HUGEINT | UHUGEINT` expression
+        value (SqlExpr | SqlExpr | int): `BIGINT | BIGNUM | HUGEINT | UBIGINT | UHUGEINT` expression
 
     Returns:
         SqlExpr: `VARCHAR` expression.
@@ -7351,11 +7351,11 @@ def cbrt(x: SqlExpr | float) -> SqlExpr:
     return func("cbrt", x)
 
 
-def ceil(x: SqlExpr | float | Decimal) -> SqlExpr:
+def ceil(x: SqlExpr | Decimal | float) -> SqlExpr:
     """Rounds the number up.
 
     Args:
-        x (SqlExpr | float | Decimal): `FLOAT | DOUBLE | DECIMAL` expression
+        x (SqlExpr | Decimal | float): `DECIMAL | DOUBLE | FLOAT` expression
 
     Returns:
         SqlExpr: `FLOAT` expression.
@@ -7363,11 +7363,11 @@ def ceil(x: SqlExpr | float | Decimal) -> SqlExpr:
     return func("ceil", x)
 
 
-def century(ts: SqlExpr | date | timedelta | datetime) -> SqlExpr:
+def century(ts: SqlExpr | date | datetime | timedelta) -> SqlExpr:
     """Extract the century component from a date or timestamp.
 
     Args:
-        ts (SqlExpr | date | timedelta | datetime): `DATE | INTERVAL | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
+        ts (SqlExpr | date | datetime | timedelta): `DATE | INTERVAL | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
 
     Returns:
         SqlExpr: `BIGINT` expression.
@@ -7453,8 +7453,8 @@ def contains(col0: SqlExpr | dict[object, object], col1: SqlExpr) -> SqlExpr:
     """SQL contains function.
 
     Args:
-        col0 (SqlExpr | SqlExpr | dict[object, object]): `T[] | MAP(K, V) | STRUCT` expression
-        col1 (SqlExpr): `T | K | ANY` expression
+        col0 (SqlExpr | SqlExpr | dict[object, object]): `MAP(K, V) | STRUCT | T[]` expression
+        col1 (SqlExpr): `ANY | K | T` expression
 
     Returns:
         SqlExpr: `BOOLEAN` expression.
@@ -7604,7 +7604,7 @@ def current_schemas(include_implicit: SqlExpr | bool) -> SqlExpr:
     Pass a parameter of True to include implicit schemas.
 
     Args:
-        include_implicit (SqlExpr | bool | SqlExpr): `BOOLEAN | ANY` expression
+        include_implicit (SqlExpr | SqlExpr | bool): `ANY | BOOLEAN` expression
 
     Returns:
         SqlExpr: `VARCHAR[]` expression.
@@ -7664,11 +7664,11 @@ def damerau_levenshtein(s1: SqlExpr | str, s2: SqlExpr | str) -> SqlExpr:
     return func("damerau_levenshtein", s1, s2)
 
 
-def day(ts: SqlExpr | date | timedelta | datetime) -> SqlExpr:
+def day(ts: SqlExpr | date | datetime | timedelta) -> SqlExpr:
     """Extract the day component from a date or timestamp.
 
     Args:
-        ts (SqlExpr | date | timedelta | datetime): `DATE | INTERVAL | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
+        ts (SqlExpr | date | datetime | timedelta): `DATE | INTERVAL | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
 
     Returns:
         SqlExpr: `BIGINT` expression.
@@ -7688,11 +7688,11 @@ def dayname(ts: SqlExpr | date | datetime) -> SqlExpr:
     return func("dayname", ts)
 
 
-def dayofmonth(ts: SqlExpr | date | timedelta | datetime) -> SqlExpr:
+def dayofmonth(ts: SqlExpr | date | datetime | timedelta) -> SqlExpr:
     """Extract the dayofmonth component from a date or timestamp.
 
     Args:
-        ts (SqlExpr | date | timedelta | datetime): `DATE | INTERVAL | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
+        ts (SqlExpr | date | datetime | timedelta): `DATE | INTERVAL | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
 
     Returns:
         SqlExpr: `BIGINT` expression.
@@ -7700,11 +7700,11 @@ def dayofmonth(ts: SqlExpr | date | timedelta | datetime) -> SqlExpr:
     return func("dayofmonth", ts)
 
 
-def dayofweek(ts: SqlExpr | date | timedelta | datetime) -> SqlExpr:
+def dayofweek(ts: SqlExpr | date | datetime | timedelta) -> SqlExpr:
     """Extract the dayofweek component from a date or timestamp.
 
     Args:
-        ts (SqlExpr | date | timedelta | datetime): `DATE | INTERVAL | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
+        ts (SqlExpr | date | datetime | timedelta): `DATE | INTERVAL | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
 
     Returns:
         SqlExpr: `BIGINT` expression.
@@ -7712,11 +7712,11 @@ def dayofweek(ts: SqlExpr | date | timedelta | datetime) -> SqlExpr:
     return func("dayofweek", ts)
 
 
-def dayofyear(ts: SqlExpr | date | timedelta | datetime) -> SqlExpr:
+def dayofyear(ts: SqlExpr | date | datetime | timedelta) -> SqlExpr:
     """Extract the dayofyear component from a date or timestamp.
 
     Args:
-        ts (SqlExpr | date | timedelta | datetime): `DATE | INTERVAL | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
+        ts (SqlExpr | date | datetime | timedelta): `DATE | INTERVAL | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
 
     Returns:
         SqlExpr: `BIGINT` expression.
@@ -7724,11 +7724,11 @@ def dayofyear(ts: SqlExpr | date | timedelta | datetime) -> SqlExpr:
     return func("dayofyear", ts)
 
 
-def decade(ts: SqlExpr | date | timedelta | datetime) -> SqlExpr:
+def decade(ts: SqlExpr | date | datetime | timedelta) -> SqlExpr:
     """Extract the decade component from a date or timestamp.
 
     Args:
-        ts (SqlExpr | date | timedelta | datetime): `DATE | INTERVAL | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
+        ts (SqlExpr | date | datetime | timedelta): `DATE | INTERVAL | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
 
     Returns:
         SqlExpr: `BIGINT` expression.
@@ -7766,8 +7766,8 @@ def divide(col0: SqlExpr | float, col1: SqlExpr | float) -> SqlExpr:
     """SQL divide function.
 
     Args:
-        col0 (SqlExpr | int | float): `TINYINT | SMALLINT | INTEGER | BIGINT | HUGEINT | FLOAT | DOUBLE | UTINYINT | USMALLINT | UINTEGER | UBIGINT | UHUGEINT` expression
-        col1 (SqlExpr | int | float): `TINYINT | SMALLINT | INTEGER | BIGINT | HUGEINT | FLOAT | DOUBLE | UTINYINT | USMALLINT | UINTEGER | UBIGINT | UHUGEINT` expression
+        col0 (SqlExpr | float | int): `BIGINT | DOUBLE | FLOAT | HUGEINT | INTEGER | SMALLINT | TINYINT | UBIGINT | UHUGEINT | UINTEGER | USMALLINT | UTINYINT` expression
+        col1 (SqlExpr | float | int): `BIGINT | DOUBLE | FLOAT | HUGEINT | INTEGER | SMALLINT | TINYINT | UBIGINT | UHUGEINT | UINTEGER | USMALLINT | UTINYINT` expression
 
     Returns:
         SqlExpr: `TINYINT` expression.
@@ -7789,11 +7789,11 @@ def encode(string: SqlExpr | str) -> SqlExpr:
     return func("encode", string)
 
 
-def epoch(temporal: SqlExpr | date | timedelta | time | datetime) -> SqlExpr:
+def epoch(temporal: SqlExpr | date | datetime | time | timedelta) -> SqlExpr:
     """Extract the epoch component from a temporal type.
 
     Args:
-        temporal (SqlExpr | date | timedelta | time | datetime): `DATE | INTERVAL | TIME | TIMESTAMP | TIME WITH TIME ZONE | TIME_NS | TIMESTAMP WITH TIME ZONE` expression
+        temporal (SqlExpr | date | datetime | time | timedelta): `DATE | INTERVAL | TIME | TIME WITH TIME ZONE | TIMESTAMP | TIMESTAMP WITH TIME ZONE | TIME_NS` expression
 
     Returns:
         SqlExpr: `DOUBLE` expression.
@@ -7801,11 +7801,11 @@ def epoch(temporal: SqlExpr | date | timedelta | time | datetime) -> SqlExpr:
     return func("epoch", temporal)
 
 
-def epoch_ms(temporal: SqlExpr | date | datetime | timedelta | time | int) -> SqlExpr:
+def epoch_ms(temporal: SqlExpr | date | datetime | int | time | timedelta) -> SqlExpr:
     """Extract the epoch component in milliseconds from a temporal type.
 
     Args:
-        temporal (SqlExpr | date | datetime | timedelta | time | int): `DATE | TIMESTAMP | INTERVAL | TIME | TIME_NS | TIME WITH TIME ZONE | TIMESTAMP WITH TIME ZONE | BIGINT` expression
+        temporal (SqlExpr | date | datetime | int | time | timedelta): `BIGINT | DATE | INTERVAL | TIME | TIME WITH TIME ZONE | TIMESTAMP | TIMESTAMP WITH TIME ZONE | TIME_NS` expression
 
     Returns:
         SqlExpr: `BIGINT` expression.
@@ -7813,11 +7813,11 @@ def epoch_ms(temporal: SqlExpr | date | datetime | timedelta | time | int) -> Sq
     return func("epoch_ms", temporal)
 
 
-def epoch_ns(temporal: SqlExpr | date | datetime | timedelta | time) -> SqlExpr:
+def epoch_ns(temporal: SqlExpr | date | datetime | time | timedelta) -> SqlExpr:
     """Extract the epoch component in nanoseconds from a temporal type.
 
     Args:
-        temporal (SqlExpr | date | datetime | timedelta | time): `DATE | TIMESTAMP | INTERVAL | TIME | TIME_NS | TIME WITH TIME ZONE | TIMESTAMP WITH TIME ZONE | TIMESTAMP_NS` expression
+        temporal (SqlExpr | date | datetime | time | timedelta): `DATE | INTERVAL | TIME | TIME WITH TIME ZONE | TIMESTAMP | TIMESTAMP WITH TIME ZONE | TIMESTAMP_NS | TIME_NS` expression
 
     Returns:
         SqlExpr: `BIGINT` expression.
@@ -7825,11 +7825,11 @@ def epoch_ns(temporal: SqlExpr | date | datetime | timedelta | time) -> SqlExpr:
     return func("epoch_ns", temporal)
 
 
-def epoch_us(temporal: SqlExpr | date | datetime | timedelta | time) -> SqlExpr:
+def epoch_us(temporal: SqlExpr | date | datetime | time | timedelta) -> SqlExpr:
     """Extract the epoch component in microseconds from a temporal type.
 
     Args:
-        temporal (SqlExpr | date | datetime | timedelta | time): `DATE | TIMESTAMP | INTERVAL | TIME | TIME_NS | TIME WITH TIME ZONE | TIMESTAMP WITH TIME ZONE` expression
+        temporal (SqlExpr | date | datetime | time | timedelta): `DATE | INTERVAL | TIME | TIME WITH TIME ZONE | TIMESTAMP | TIMESTAMP WITH TIME ZONE | TIME_NS` expression
 
     Returns:
         SqlExpr: `BIGINT` expression.
@@ -7838,8 +7838,8 @@ def epoch_us(temporal: SqlExpr | date | datetime | timedelta | time) -> SqlExpr:
 
 
 def equi_width_bins(
-    min_arg: SqlExpr | float | datetime,
-    max_arg: SqlExpr | float | datetime,
+    min_arg: SqlExpr | datetime | float,
+    max_arg: SqlExpr | datetime | float,
     bin_count: SqlExpr | int,
     nice_rounding: SqlExpr | bool,
 ) -> SqlExpr:
@@ -7848,8 +7848,8 @@ def equi_width_bins(
     If enabled nice_rounding makes the numbers more readable/less jagged.
 
     Args:
-        min_arg (SqlExpr | int | float | datetime | SqlExpr): `BIGINT | DOUBLE | TIMESTAMP | ANY` expression
-        max_arg (SqlExpr | int | float | datetime | SqlExpr): `BIGINT | DOUBLE | TIMESTAMP | ANY` expression
+        min_arg (SqlExpr | SqlExpr | datetime | float | int): `ANY | BIGINT | DOUBLE | TIMESTAMP` expression
+        max_arg (SqlExpr | SqlExpr | datetime | float | int): `ANY | BIGINT | DOUBLE | TIMESTAMP` expression
         bin_count (SqlExpr | int): `BIGINT` expression
         nice_rounding (SqlExpr | bool): `BOOLEAN` expression
 
@@ -7859,11 +7859,11 @@ def equi_width_bins(
     return func("equi_width_bins", min_arg, max_arg, bin_count, nice_rounding)
 
 
-def era(ts: SqlExpr | date | timedelta | datetime) -> SqlExpr:
+def era(ts: SqlExpr | date | datetime | timedelta) -> SqlExpr:
     """Extract the era component from a date or timestamp.
 
     Args:
-        ts (SqlExpr | date | timedelta | datetime): `DATE | INTERVAL | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
+        ts (SqlExpr | date | datetime | timedelta): `DATE | INTERVAL | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
 
     Returns:
         SqlExpr: `BIGINT` expression.
@@ -7945,11 +7945,11 @@ def flatten(nested_list: SqlExpr | list[SqlExpr]) -> SqlExpr:
     return func("flatten", nested_list)
 
 
-def floor(x: SqlExpr | float | Decimal) -> SqlExpr:
+def floor(x: SqlExpr | Decimal | float) -> SqlExpr:
     """Rounds the number down.
 
     Args:
-        x (SqlExpr | float | Decimal): `FLOAT | DOUBLE | DECIMAL` expression
+        x (SqlExpr | Decimal | float): `DECIMAL | DOUBLE | FLOAT` expression
 
     Returns:
         SqlExpr: `FLOAT` expression.
@@ -8007,15 +8007,15 @@ def gamma(x: SqlExpr | float) -> SqlExpr:
 
 
 def generate_series_list(
-    start: SqlExpr | int | datetime,
-    stop: SqlExpr | int | datetime | None = None,
+    start: SqlExpr | datetime | int,
+    stop: SqlExpr | datetime | int | None = None,
     step: SqlExpr | int | timedelta | None = None,
 ) -> SqlExpr:
     """Creates a list of values between `start` and `stop` - the stop parameter is inclusive.
 
     Args:
-        start (SqlExpr | int | datetime): `BIGINT | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
-        stop (SqlExpr | int | datetime | None): `BIGINT | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
+        start (SqlExpr | datetime | int): `BIGINT | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
+        stop (SqlExpr | datetime | int | None): `BIGINT | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
         step (SqlExpr | int | timedelta | None): `BIGINT | INTERVAL` expression
 
     Returns:
@@ -8145,7 +8145,7 @@ def hex_numeric(value: SqlExpr | int) -> SqlExpr:
     """Converts the `value` to `VARCHAR` using hexadecimal representation.
 
     Args:
-        value (SqlExpr | SqlExpr | int): `BIGNUM | BIGINT | UBIGINT | HUGEINT | UHUGEINT` expression
+        value (SqlExpr | SqlExpr | int): `BIGINT | BIGNUM | HUGEINT | UBIGINT | UHUGEINT` expression
 
     Returns:
         SqlExpr: `VARCHAR` expression.
@@ -8165,11 +8165,11 @@ def hex_string(string: SqlExpr | str) -> SqlExpr:
     return func("hex", string)
 
 
-def hour(ts: SqlExpr | date | timedelta | time | datetime) -> SqlExpr:
+def hour(ts: SqlExpr | date | datetime | time | timedelta) -> SqlExpr:
     """Extract the hour component from a date or timestamp.
 
     Args:
-        ts (SqlExpr | date | timedelta | time | datetime): `DATE | INTERVAL | TIME | TIMESTAMP | TIME WITH TIME ZONE | TIME_NS | TIMESTAMP WITH TIME ZONE` expression
+        ts (SqlExpr | date | datetime | time | timedelta): `DATE | INTERVAL | TIME | TIME WITH TIME ZONE | TIMESTAMP | TIMESTAMP WITH TIME ZONE | TIME_NS` expression
 
     Returns:
         SqlExpr: `BIGINT` expression.
@@ -10146,11 +10146,11 @@ def ltrim(string: SqlExpr | str, characters: SqlExpr | str | None = None) -> Sql
     return func("ltrim", string, characters)
 
 
-def make_date(col0: SqlExpr | int | dict[object, object]) -> SqlExpr:
+def make_date(col0: SqlExpr | dict[object, object] | int) -> SqlExpr:
     """The date for the given struct.
 
     Args:
-        col0 (SqlExpr | int | dict[object, object]): `INTEGER | STRUCT("year" BIGINT, "month" BIGINT, "day" BIGINT)` expression
+        col0 (SqlExpr | dict[object, object] | int): `INTEGER | STRUCT("year" BIGINT, "month" BIGINT, "day" BIGINT)` expression
 
     Returns:
         SqlExpr: `DATE` expression.
@@ -10314,11 +10314,11 @@ def md5_string(string: SqlExpr | str) -> SqlExpr:
     return func("md5", string)
 
 
-def microsecond(ts: SqlExpr | date | timedelta | time | datetime) -> SqlExpr:
+def microsecond(ts: SqlExpr | date | datetime | time | timedelta) -> SqlExpr:
     """Extract the microsecond component from a date or timestamp.
 
     Args:
-        ts (SqlExpr | date | timedelta | time | datetime): `DATE | INTERVAL | TIME | TIMESTAMP | TIME WITH TIME ZONE | TIME_NS | TIMESTAMP WITH TIME ZONE` expression
+        ts (SqlExpr | date | datetime | time | timedelta): `DATE | INTERVAL | TIME | TIME WITH TIME ZONE | TIMESTAMP | TIMESTAMP WITH TIME ZONE | TIME_NS` expression
 
     Returns:
         SqlExpr: `BIGINT` expression.
@@ -10326,11 +10326,11 @@ def microsecond(ts: SqlExpr | date | timedelta | time | datetime) -> SqlExpr:
     return func("microsecond", ts)
 
 
-def millennium(ts: SqlExpr | date | timedelta | datetime) -> SqlExpr:
+def millennium(ts: SqlExpr | date | datetime | timedelta) -> SqlExpr:
     """Extract the millennium component from a date or timestamp.
 
     Args:
-        ts (SqlExpr | date | timedelta | datetime): `DATE | INTERVAL | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
+        ts (SqlExpr | date | datetime | timedelta): `DATE | INTERVAL | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
 
     Returns:
         SqlExpr: `BIGINT` expression.
@@ -10338,11 +10338,11 @@ def millennium(ts: SqlExpr | date | timedelta | datetime) -> SqlExpr:
     return func("millennium", ts)
 
 
-def millisecond(ts: SqlExpr | date | timedelta | time | datetime) -> SqlExpr:
+def millisecond(ts: SqlExpr | date | datetime | time | timedelta) -> SqlExpr:
     """Extract the millisecond component from a date or timestamp.
 
     Args:
-        ts (SqlExpr | date | timedelta | time | datetime): `DATE | INTERVAL | TIME | TIMESTAMP | TIME WITH TIME ZONE | TIME_NS | TIMESTAMP WITH TIME ZONE` expression
+        ts (SqlExpr | date | datetime | time | timedelta): `DATE | INTERVAL | TIME | TIME WITH TIME ZONE | TIMESTAMP | TIMESTAMP WITH TIME ZONE | TIME_NS` expression
 
     Returns:
         SqlExpr: `BIGINT` expression.
@@ -10350,11 +10350,11 @@ def millisecond(ts: SqlExpr | date | timedelta | time | datetime) -> SqlExpr:
     return func("millisecond", ts)
 
 
-def minute(ts: SqlExpr | date | timedelta | time | datetime) -> SqlExpr:
+def minute(ts: SqlExpr | date | datetime | time | timedelta) -> SqlExpr:
     """Extract the minute component from a date or timestamp.
 
     Args:
-        ts (SqlExpr | date | timedelta | time | datetime): `DATE | INTERVAL | TIME | TIMESTAMP | TIME WITH TIME ZONE | TIME_NS | TIMESTAMP WITH TIME ZONE` expression
+        ts (SqlExpr | date | datetime | time | timedelta): `DATE | INTERVAL | TIME | TIME WITH TIME ZONE | TIMESTAMP | TIMESTAMP WITH TIME ZONE | TIME_NS` expression
 
     Returns:
         SqlExpr: `BIGINT` expression.
@@ -10362,12 +10362,12 @@ def minute(ts: SqlExpr | date | timedelta | time | datetime) -> SqlExpr:
     return func("minute", ts)
 
 
-def mod(col0: SqlExpr | float | Decimal, col1: SqlExpr | float | Decimal) -> SqlExpr:
+def mod(col0: SqlExpr | Decimal | float, col1: SqlExpr | Decimal | float) -> SqlExpr:
     """SQL mod function.
 
     Args:
-        col0 (SqlExpr | int | float | Decimal): `TINYINT | SMALLINT | INTEGER | BIGINT | HUGEINT | FLOAT | DOUBLE | DECIMAL | UTINYINT | USMALLINT | UINTEGER | UBIGINT | UHUGEINT` expression
-        col1 (SqlExpr | int | float | Decimal): `TINYINT | SMALLINT | INTEGER | BIGINT | HUGEINT | FLOAT | DOUBLE | DECIMAL | UTINYINT | USMALLINT | UINTEGER | UBIGINT | UHUGEINT` expression
+        col0 (SqlExpr | Decimal | float | int): `BIGINT | DECIMAL | DOUBLE | FLOAT | HUGEINT | INTEGER | SMALLINT | TINYINT | UBIGINT | UHUGEINT | UINTEGER | USMALLINT | UTINYINT` expression
+        col1 (SqlExpr | Decimal | float | int): `BIGINT | DECIMAL | DOUBLE | FLOAT | HUGEINT | INTEGER | SMALLINT | TINYINT | UBIGINT | UHUGEINT | UINTEGER | USMALLINT | UTINYINT` expression
 
     Returns:
         SqlExpr: `TINYINT` expression.
@@ -10375,11 +10375,11 @@ def mod(col0: SqlExpr | float | Decimal, col1: SqlExpr | float | Decimal) -> Sql
     return func("mod", col0, col1)
 
 
-def month(ts: SqlExpr | date | timedelta | datetime) -> SqlExpr:
+def month(ts: SqlExpr | date | datetime | timedelta) -> SqlExpr:
     """Extract the month component from a date or timestamp.
 
     Args:
-        ts (SqlExpr | date | timedelta | datetime): `DATE | INTERVAL | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
+        ts (SqlExpr | date | datetime | timedelta): `DATE | INTERVAL | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
 
     Returns:
         SqlExpr: `BIGINT` expression.
@@ -10400,14 +10400,14 @@ def monthname(ts: SqlExpr | date | datetime) -> SqlExpr:
 
 
 def multiply(
-    col0: SqlExpr | float | Decimal | timedelta,
-    col1: SqlExpr | float | Decimal | timedelta,
+    col0: SqlExpr | Decimal | float | timedelta,
+    col1: SqlExpr | Decimal | float | timedelta,
 ) -> SqlExpr:
     """SQL multiply function.
 
     Args:
-        col0 (SqlExpr | int | float | Decimal | timedelta): `TINYINT | SMALLINT | INTEGER | BIGINT | HUGEINT | FLOAT | DOUBLE | DECIMAL | UTINYINT | USMALLINT | UINTEGER | UBIGINT | UHUGEINT | INTERVAL` expression
-        col1 (SqlExpr | int | float | Decimal | timedelta): `TINYINT | SMALLINT | INTEGER | BIGINT | HUGEINT | FLOAT | DOUBLE | DECIMAL | UTINYINT | USMALLINT | UINTEGER | UBIGINT | UHUGEINT | INTERVAL` expression
+        col0 (SqlExpr | Decimal | float | int | timedelta): `BIGINT | DECIMAL | DOUBLE | FLOAT | HUGEINT | INTEGER | INTERVAL | SMALLINT | TINYINT | UBIGINT | UHUGEINT | UINTEGER | USMALLINT | UTINYINT` expression
+        col1 (SqlExpr | Decimal | float | int | timedelta): `BIGINT | DECIMAL | DOUBLE | FLOAT | HUGEINT | INTEGER | INTERVAL | SMALLINT | TINYINT | UBIGINT | UHUGEINT | UINTEGER | USMALLINT | UTINYINT` expression
 
     Returns:
         SqlExpr: `TINYINT` expression.
@@ -10415,11 +10415,11 @@ def multiply(
     return func("multiply", col0, col1)
 
 
-def nanosecond(tsns: SqlExpr | date | datetime | timedelta | time) -> SqlExpr:
+def nanosecond(tsns: SqlExpr | date | datetime | time | timedelta) -> SqlExpr:
     """Extract the nanosecond component from a date or timestamp.
 
     Args:
-        tsns (SqlExpr | date | datetime | timedelta | time): `DATE | TIMESTAMP | INTERVAL | TIME | TIME_NS | TIME WITH TIME ZONE | TIMESTAMP_NS | TIMESTAMP WITH TIME ZONE` expression
+        tsns (SqlExpr | date | datetime | time | timedelta): `DATE | INTERVAL | TIME | TIME WITH TIME ZONE | TIMESTAMP | TIMESTAMP WITH TIME ZONE | TIMESTAMP_NS | TIME_NS` expression
 
     Returns:
         SqlExpr: `BIGINT` expression.
@@ -10593,7 +10593,7 @@ def parse_duckdb_log_message(
 
 def parse_filename(
     string: SqlExpr | str,
-    trim_extension: SqlExpr | str | bool | None = None,
+    trim_extension: SqlExpr | bool | str | None = None,
     separator: SqlExpr | str | None = None,
 ) -> SqlExpr:
     """Returns the last component of the `path` similarly to Python's `os.path.basename` function.
@@ -10604,7 +10604,7 @@ def parse_filename(
 
     Args:
         string (SqlExpr | str): `VARCHAR` expression
-        trim_extension (SqlExpr | str | bool | None): `VARCHAR | BOOLEAN` expression
+        trim_extension (SqlExpr | bool | str | None): `BOOLEAN | VARCHAR` expression
         separator (SqlExpr | str | None): `VARCHAR` expression
 
     Returns:
@@ -10689,11 +10689,11 @@ def printf(format_arg: SqlExpr | str, *args: SqlExpr) -> SqlExpr:
     return func("printf", format_arg, *args)
 
 
-def quarter(ts: SqlExpr | date | timedelta | datetime) -> SqlExpr:
+def quarter(ts: SqlExpr | date | datetime | timedelta) -> SqlExpr:
     """Extract the quarter component from a date or timestamp.
 
     Args:
-        ts (SqlExpr | date | timedelta | datetime): `DATE | INTERVAL | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
+        ts (SqlExpr | date | datetime | timedelta): `DATE | INTERVAL | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
 
     Returns:
         SqlExpr: `BIGINT` expression.
@@ -10723,15 +10723,15 @@ def random() -> SqlExpr:
 
 
 def range_list(
-    start: SqlExpr | int | datetime,
-    stop: SqlExpr | int | datetime | None = None,
+    start: SqlExpr | datetime | int,
+    stop: SqlExpr | datetime | int | None = None,
     step: SqlExpr | int | timedelta | None = None,
 ) -> SqlExpr:
     """Creates a list of values between `start` and `stop` - the stop parameter is exclusive.
 
     Args:
-        start (SqlExpr | int | datetime): `BIGINT | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
-        stop (SqlExpr | int | datetime | None): `BIGINT | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
+        start (SqlExpr | datetime | int): `BIGINT | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
+        stop (SqlExpr | datetime | int | None): `BIGINT | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
         step (SqlExpr | int | timedelta | None): `BIGINT | INTERVAL` expression
 
     Returns:
@@ -10852,12 +10852,12 @@ def right_grapheme(string: SqlExpr | str, count: SqlExpr | int) -> SqlExpr:
 
 
 def round(
-    x: SqlExpr | float | Decimal, precision: SqlExpr | int | None = None
+    x: SqlExpr | Decimal | float, precision: SqlExpr | int | None = None
 ) -> SqlExpr:
     """Rounds x to s decimal places.
 
     Args:
-        x (SqlExpr | int | float | Decimal): `TINYINT | SMALLINT | INTEGER | BIGINT | HUGEINT | FLOAT | DOUBLE | DECIMAL` expression
+        x (SqlExpr | Decimal | float | int): `BIGINT | DECIMAL | DOUBLE | FLOAT | HUGEINT | INTEGER | SMALLINT | TINYINT` expression
         precision (SqlExpr | int | None): `INTEGER` expression
 
     Returns:
@@ -10923,11 +10923,11 @@ def rtrim(string: SqlExpr | str, characters: SqlExpr | str | None = None) -> Sql
     return func("rtrim", string, characters)
 
 
-def second(ts: SqlExpr | date | timedelta | time | datetime) -> SqlExpr:
+def second(ts: SqlExpr | date | datetime | time | timedelta) -> SqlExpr:
     """Extract the second component from a date or timestamp.
 
     Args:
-        ts (SqlExpr | date | timedelta | time | datetime): `DATE | INTERVAL | TIME | TIMESTAMP | TIME WITH TIME ZONE | TIME_NS | TIMESTAMP WITH TIME ZONE` expression
+        ts (SqlExpr | date | datetime | time | timedelta): `DATE | INTERVAL | TIME | TIME WITH TIME ZONE | TIMESTAMP | TIMESTAMP WITH TIME ZONE | TIME_NS` expression
 
     Returns:
         SqlExpr: `BIGINT` expression.
@@ -11017,7 +11017,7 @@ def sign(x: SqlExpr | float) -> SqlExpr:
     """Returns the sign of x as -1, 0 or 1.
 
     Args:
-        x (SqlExpr | int | float): `TINYINT | SMALLINT | INTEGER | BIGINT | HUGEINT | FLOAT | DOUBLE | UTINYINT | USMALLINT | UINTEGER | UBIGINT | UHUGEINT` expression
+        x (SqlExpr | float | int): `BIGINT | DOUBLE | FLOAT | HUGEINT | INTEGER | SMALLINT | TINYINT | UBIGINT | UHUGEINT | UINTEGER | USMALLINT | UTINYINT` expression
 
     Returns:
         SqlExpr: `TINYINT` expression.
@@ -11029,7 +11029,7 @@ def signbit(x: SqlExpr | float) -> SqlExpr:
     """Returns whether the signbit is set or not.
 
     Args:
-        x (SqlExpr | float): `FLOAT | DOUBLE` expression
+        x (SqlExpr | float): `DOUBLE | FLOAT` expression
 
     Returns:
         SqlExpr: `BOOLEAN` expression.
@@ -11101,13 +11101,13 @@ def stats(expression: SqlExpr) -> SqlExpr:
 
 
 def strftime(
-    data: SqlExpr | date | datetime | str, format_arg: SqlExpr | str | date | datetime
+    data: SqlExpr | date | datetime | str, format_arg: SqlExpr | date | datetime | str
 ) -> SqlExpr:
     """Converts a `date` to a string according to the format string.
 
     Args:
-        data (SqlExpr | date | datetime | str): `DATE | TIMESTAMP | TIMESTAMP_NS | VARCHAR | TIMESTAMP WITH TIME ZONE` expression
-        format_arg (SqlExpr | str | date | datetime): `VARCHAR | DATE | TIMESTAMP | TIMESTAMP_NS` expression
+        data (SqlExpr | date | datetime | str): `DATE | TIMESTAMP | TIMESTAMP WITH TIME ZONE | TIMESTAMP_NS | VARCHAR` expression
+        format_arg (SqlExpr | date | datetime | str): `DATE | TIMESTAMP | TIMESTAMP_NS | VARCHAR` expression
 
     Returns:
         SqlExpr: `VARCHAR` expression.
@@ -11139,7 +11139,7 @@ def strlen(string: SqlExpr | str) -> SqlExpr:
     return func("strlen", string)
 
 
-def strptime(text: SqlExpr | str, format_arg: SqlExpr | str | list[str]) -> SqlExpr:
+def strptime(text: SqlExpr | str, format_arg: SqlExpr | list[str] | str) -> SqlExpr:
     """Converts the `string` text to timestamp according to the format string.
 
     Throws an error on failure.
@@ -11148,7 +11148,7 @@ def strptime(text: SqlExpr | str, format_arg: SqlExpr | str | list[str]) -> SqlE
 
     Args:
         text (SqlExpr | str): `VARCHAR` expression
-        format_arg (SqlExpr | str | list[str]): `VARCHAR | VARCHAR[]` expression
+        format_arg (SqlExpr | list[str] | str): `VARCHAR | VARCHAR[]` expression
 
     Returns:
         SqlExpr: `TIMESTAMP` expression.
@@ -11197,14 +11197,14 @@ def substring_grapheme(
 
 
 def subtract(
-    col0: SqlExpr | float | Decimal | date | datetime | timedelta | time,
-    col1: SqlExpr | float | Decimal | date | datetime | timedelta | None = None,
+    col0: SqlExpr | Decimal | date | datetime | float | time | timedelta,
+    col1: SqlExpr | Decimal | date | datetime | float | timedelta | None = None,
 ) -> SqlExpr:
     """SQL subtract function.
 
     Args:
-        col0 (SqlExpr | int | float | Decimal | SqlExpr | date | datetime | timedelta | time): `TINYINT | SMALLINT | INTEGER | BIGINT | HUGEINT | FLOAT | DOUBLE | DECIMAL | UTINYINT | USMALLINT | UINTEGER | UBIGINT | UHUGEINT | BIGNUM | DATE | TIMESTAMP | INTERVAL | TIME | TIME WITH TIME ZONE` expression
-        col1 (SqlExpr | int | float | Decimal | SqlExpr | date | datetime | timedelta | None): `TINYINT | SMALLINT | INTEGER | BIGINT | HUGEINT | FLOAT | DOUBLE | DECIMAL | UTINYINT | USMALLINT | UINTEGER | UBIGINT | UHUGEINT | BIGNUM | DATE | TIMESTAMP | INTERVAL` expression
+        col0 (SqlExpr | Decimal | SqlExpr | date | datetime | float | int | time | timedelta): `BIGINT | BIGNUM | DATE | DECIMAL | DOUBLE | FLOAT | HUGEINT | INTEGER | INTERVAL | SMALLINT | TIME | TIME WITH TIME ZONE | TIMESTAMP | TINYINT | UBIGINT | UHUGEINT | UINTEGER | USMALLINT | UTINYINT` expression
+        col1 (SqlExpr | Decimal | SqlExpr | date | datetime | float | int | timedelta | None): `BIGINT | BIGNUM | DATE | DECIMAL | DOUBLE | FLOAT | HUGEINT | INTEGER | INTERVAL | SMALLINT | TIMESTAMP | TINYINT | UBIGINT | UHUGEINT | UINTEGER | USMALLINT | UTINYINT` expression
 
     Returns:
         SqlExpr: `TINYINT` expression.
@@ -11291,11 +11291,11 @@ def trim(string: SqlExpr | str, characters: SqlExpr | str | None = None) -> SqlE
     return func("trim", string, characters)
 
 
-def trunc(x: SqlExpr | float | Decimal, col1: SqlExpr | int | None = None) -> SqlExpr:
+def trunc(x: SqlExpr | Decimal | float, col1: SqlExpr | int | None = None) -> SqlExpr:
     """Truncates the number.
 
     Args:
-        x (SqlExpr | int | float | Decimal): `TINYINT | SMALLINT | INTEGER | BIGINT | HUGEINT | FLOAT | DOUBLE | DECIMAL | UTINYINT | USMALLINT | UINTEGER | UBIGINT | UHUGEINT` expression
+        x (SqlExpr | Decimal | float | int): `BIGINT | DECIMAL | DOUBLE | FLOAT | HUGEINT | INTEGER | SMALLINT | TINYINT | UBIGINT | UHUGEINT | UINTEGER | USMALLINT | UTINYINT` expression
         col1 (SqlExpr | int | None): `INTEGER` expression
 
     Returns:
@@ -11304,14 +11304,14 @@ def trunc(x: SqlExpr | float | Decimal, col1: SqlExpr | int | None = None) -> Sq
     return func("trunc", x, col1)
 
 
-def try_strptime(text: SqlExpr | str, format_arg: SqlExpr | str | list[str]) -> SqlExpr:
+def try_strptime(text: SqlExpr | str, format_arg: SqlExpr | list[str] | str) -> SqlExpr:
     """Converts the `string` text to timestamp according to the format string.
 
     Returns `NULL` on failure.
 
     Args:
         text (SqlExpr | str): `VARCHAR` expression
-        format_arg (SqlExpr | str | list[str]): `VARCHAR | VARCHAR[]` expression
+        format_arg (SqlExpr | list[str] | str): `VARCHAR | VARCHAR[]` expression
 
     Returns:
         SqlExpr: `TIMESTAMP` expression.
@@ -11477,12 +11477,12 @@ def uuidv7() -> SqlExpr:
     return func("uuidv7")
 
 
-def variant_extract(col0: SqlExpr, col1: SqlExpr | str | int) -> SqlExpr:
+def variant_extract(col0: SqlExpr, col1: SqlExpr | int | str) -> SqlExpr:
     """SQL variant_extract function.
 
     Args:
         col0 (SqlExpr): `VARIANT` expression
-        col1 (SqlExpr | str | int): `VARCHAR | UINTEGER` expression
+        col1 (SqlExpr | int | str): `UINTEGER | VARCHAR` expression
 
     Returns:
         SqlExpr: `VARIANT` expression.
@@ -11523,11 +11523,11 @@ def version() -> SqlExpr:
     return func("version")
 
 
-def week(ts: SqlExpr | date | timedelta | datetime) -> SqlExpr:
+def week(ts: SqlExpr | date | datetime | timedelta) -> SqlExpr:
     """Extract the week component from a date or timestamp.
 
     Args:
-        ts (SqlExpr | date | timedelta | datetime): `DATE | INTERVAL | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
+        ts (SqlExpr | date | datetime | timedelta): `DATE | INTERVAL | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
 
     Returns:
         SqlExpr: `BIGINT` expression.
@@ -11535,11 +11535,11 @@ def week(ts: SqlExpr | date | timedelta | datetime) -> SqlExpr:
     return func("week", ts)
 
 
-def weekday(ts: SqlExpr | date | timedelta | datetime) -> SqlExpr:
+def weekday(ts: SqlExpr | date | datetime | timedelta) -> SqlExpr:
     """Extract the weekday component from a date or timestamp.
 
     Args:
-        ts (SqlExpr | date | timedelta | datetime): `DATE | INTERVAL | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
+        ts (SqlExpr | date | datetime | timedelta): `DATE | INTERVAL | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
 
     Returns:
         SqlExpr: `BIGINT` expression.
@@ -11547,11 +11547,11 @@ def weekday(ts: SqlExpr | date | timedelta | datetime) -> SqlExpr:
     return func("weekday", ts)
 
 
-def weekofyear(ts: SqlExpr | date | timedelta | datetime) -> SqlExpr:
+def weekofyear(ts: SqlExpr | date | datetime | timedelta) -> SqlExpr:
     """Extract the weekofyear component from a date or timestamp.
 
     Args:
-        ts (SqlExpr | date | timedelta | datetime): `DATE | INTERVAL | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
+        ts (SqlExpr | date | datetime | timedelta): `DATE | INTERVAL | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
 
     Returns:
         SqlExpr: `BIGINT` expression.
@@ -11572,12 +11572,12 @@ def write_log(string: SqlExpr | str, *args: SqlExpr) -> SqlExpr:
     return func("write_log", string, *args)
 
 
-def xor(left: SqlExpr | int | bytes, right: SqlExpr | int | bytes) -> SqlExpr:
+def xor(left: SqlExpr | bytes | int, right: SqlExpr | bytes | int) -> SqlExpr:
     """Bitwise XOR.
 
     Args:
-        left (SqlExpr | int | bytes): `TINYINT | SMALLINT | INTEGER | BIGINT | HUGEINT | UTINYINT | USMALLINT | UINTEGER | UBIGINT | UHUGEINT | BIT` expression
-        right (SqlExpr | int | bytes): `TINYINT | SMALLINT | INTEGER | BIGINT | HUGEINT | UTINYINT | USMALLINT | UINTEGER | UBIGINT | UHUGEINT | BIT` expression
+        left (SqlExpr | bytes | int): `BIGINT | BIT | HUGEINT | INTEGER | SMALLINT | TINYINT | UBIGINT | UHUGEINT | UINTEGER | USMALLINT | UTINYINT` expression
+        right (SqlExpr | bytes | int): `BIGINT | BIT | HUGEINT | INTEGER | SMALLINT | TINYINT | UBIGINT | UHUGEINT | UINTEGER | USMALLINT | UTINYINT` expression
 
     Returns:
         SqlExpr: `TINYINT` expression.
@@ -11585,11 +11585,11 @@ def xor(left: SqlExpr | int | bytes, right: SqlExpr | int | bytes) -> SqlExpr:
     return func("xor", left, right)
 
 
-def year(ts: SqlExpr | date | timedelta | datetime) -> SqlExpr:
+def year(ts: SqlExpr | date | datetime | timedelta) -> SqlExpr:
     """Extract the year component from a date or timestamp.
 
     Args:
-        ts (SqlExpr | date | timedelta | datetime): `DATE | INTERVAL | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
+        ts (SqlExpr | date | datetime | timedelta): `DATE | INTERVAL | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
 
     Returns:
         SqlExpr: `BIGINT` expression.
@@ -11597,11 +11597,11 @@ def year(ts: SqlExpr | date | timedelta | datetime) -> SqlExpr:
     return func("year", ts)
 
 
-def yearweek(ts: SqlExpr | date | timedelta | datetime) -> SqlExpr:
+def yearweek(ts: SqlExpr | date | datetime | timedelta) -> SqlExpr:
     """Extract the yearweek component from a date or timestamp.
 
     Args:
-        ts (SqlExpr | date | timedelta | datetime): `DATE | INTERVAL | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
+        ts (SqlExpr | date | datetime | timedelta): `DATE | INTERVAL | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
 
     Returns:
         SqlExpr: `BIGINT` expression.
@@ -11640,13 +11640,13 @@ def struct_contains(struct: SqlExpr | dict[object, object], entry: SqlExpr) -> S
 
 
 def struct_extract(
-    struct: SqlExpr | dict[object, object], entry: SqlExpr | str | int
+    struct: SqlExpr | dict[object, object], entry: SqlExpr | int | str
 ) -> SqlExpr:
     """Extract the named entry from the STRUCT.
 
     Args:
         struct (SqlExpr | dict[object, object]): `STRUCT` expression
-        entry (SqlExpr | str | int): `VARCHAR | BIGINT` expression
+        entry (SqlExpr | int | str): `BIGINT | VARCHAR` expression
 
     Returns:
         SqlExpr: `ANY` expression.
@@ -11781,7 +11781,7 @@ def string_split_regex(
 def time_bucket(
     bucket_width: SqlExpr | timedelta,
     timestamp: SqlExpr | date | datetime,
-    origin: SqlExpr | date | timedelta | datetime | str | None = None,
+    origin: SqlExpr | date | datetime | str | timedelta | None = None,
 ) -> SqlExpr:
     """Truncate TIMESTAMPTZ by the specified interval bucket_width.
 
@@ -11792,7 +11792,7 @@ def time_bucket(
     Args:
         bucket_width (SqlExpr | timedelta): `INTERVAL` expression
         timestamp (SqlExpr | date | datetime): `DATE | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
-        origin (SqlExpr | date | timedelta | datetime | str | None): `DATE | INTERVAL | TIMESTAMP | TIMESTAMP WITH TIME ZONE | VARCHAR` expression
+        origin (SqlExpr | date | datetime | str | timedelta | None): `DATE | INTERVAL | TIMESTAMP | TIMESTAMP WITH TIME ZONE | VARCHAR` expression
 
     Returns:
         SqlExpr: `DATE` expression.
@@ -11813,14 +11813,14 @@ def timetz_byte_comparable(time_tz: SqlExpr | time) -> SqlExpr:
 
 
 def timezone(
-    ts: SqlExpr | date | timedelta | datetime | str,
-    col1: SqlExpr | time | datetime | None = None,
+    ts: SqlExpr | date | datetime | str | timedelta,
+    col1: SqlExpr | datetime | time | None = None,
 ) -> SqlExpr:
     """Extract the timezone component from a date or timestamp.
 
     Args:
-        ts (SqlExpr | date | timedelta | datetime | str): `DATE | INTERVAL | TIMESTAMP | TIMESTAMP WITH TIME ZONE | VARCHAR` expression
-        col1 (SqlExpr | time | datetime | None): `TIME WITH TIME ZONE | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
+        ts (SqlExpr | date | datetime | str | timedelta): `DATE | INTERVAL | TIMESTAMP | TIMESTAMP WITH TIME ZONE | VARCHAR` expression
+        col1 (SqlExpr | datetime | time | None): `TIME WITH TIME ZONE | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
 
     Returns:
         SqlExpr: `BIGINT` expression.
@@ -11828,11 +11828,11 @@ def timezone(
     return func("timezone", ts, col1)
 
 
-def timezone_hour(ts: SqlExpr | date | timedelta | datetime) -> SqlExpr:
+def timezone_hour(ts: SqlExpr | date | datetime | timedelta) -> SqlExpr:
     """Extract the timezone_hour component from a date or timestamp.
 
     Args:
-        ts (SqlExpr | date | timedelta | datetime): `DATE | INTERVAL | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
+        ts (SqlExpr | date | datetime | timedelta): `DATE | INTERVAL | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
 
     Returns:
         SqlExpr: `BIGINT` expression.
@@ -11840,11 +11840,11 @@ def timezone_hour(ts: SqlExpr | date | timedelta | datetime) -> SqlExpr:
     return func("timezone_hour", ts)
 
 
-def timezone_minute(ts: SqlExpr | date | timedelta | datetime) -> SqlExpr:
+def timezone_minute(ts: SqlExpr | date | datetime | timedelta) -> SqlExpr:
     """Extract the timezone_minute component from a date or timestamp.
 
     Args:
-        ts (SqlExpr | date | timedelta | datetime): `DATE | INTERVAL | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
+        ts (SqlExpr | date | datetime | timedelta): `DATE | INTERVAL | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
 
     Returns:
         SqlExpr: `BIGINT` expression.

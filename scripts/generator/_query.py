@@ -36,7 +36,6 @@ class ParamLens:
 class PyCols:
     name: pl.Expr = field(default=pl.col("py_name"))
     types: pl.Expr = field(default=pl.col("py_types"))
-    types_union: pl.Expr = field(default=pl.col("py_types_union"))
 
 
 @dataclass(slots=True)
@@ -44,7 +43,6 @@ class Params:
     names: pl.Expr = field(default=pl.col("param_names"))
     idx: pl.Expr = field(default=pl.col("param_idx"))
     lens: ParamLens = field(default_factory=ParamLens)
-    types_union: pl.Expr = field(default=pl.col("param_types_union"))
 
 
 @dataclass(slots=True)
@@ -86,9 +84,6 @@ def get_df() -> pl.LazyFrame:
                     .alias("p_len_by_fn_cat_desc"),
                 )
             ),
-            dk.varargs.pipe(_convert_duckdb_type_to_python)
-            .pipe(_make_type_union)
-            .alias("varargs_py_type"),
         )
         .with_columns(_to_py_name(dk, params.lens))
         .with_row_index("sig_id")
@@ -104,8 +99,8 @@ def get_df() -> pl.LazyFrame:
             .exclude("param_doc_join", "py_types", "parameter_types")
             .drop_nulls()
             .first(),
-            dk.params_types.unique().str.join(" | ").alias("param_types_union"),
-            py.types.unique().str.join(" | ").alias("py_types_union"),
+            dk.params_types,
+            py.types,
         )
         .sort(py.name, params.idx)
         .group_by(py.name, maintain_order=True)
@@ -114,8 +109,8 @@ def get_df() -> pl.LazyFrame:
             *params.names.filter(params.names.is_not_null()).pipe(
                 _joined_parts,
                 params.idx.ge(params.lens.by_fn_cat),
-                py.types_union,
-                params.types_union,
+                py.types,
+                dk.params_types,
             ),
         )
         .select(
@@ -132,7 +127,7 @@ def get_df() -> pl.LazyFrame:
                 pl.col("param_sig_list"),
                 pl.col("param_doc_join"),
                 pl.col("param_names_join"),
-                pl.col("varargs_py_type"),
+                dk.varargs.pipe(_convert_duckdb_type_to_python).pipe(_make_type_union),
                 pl.col("return_type"),
                 dk,
             ),
@@ -143,13 +138,18 @@ def get_df() -> pl.LazyFrame:
 
 
 def _joined_parts(
-    expr: pl.Expr, cond: pl.Expr, _py_type_union: pl.Expr, param_types_union: pl.Expr
+    expr: pl.Expr, cond: pl.Expr, py_types: pl.Expr, params_types: pl.Expr
 ) -> Iterable[pl.Expr]:
+    def _into_union(expr: pl.Expr) -> pl.Expr:
+        return expr.list.unique().list.sort().list.join(" | ")
+
+    py_union = py_types.pipe(_into_union).pipe(_make_type_union)
+
     def _param_sig_list() -> pl.Expr:
         return pl.concat_str(
             expr,
             pl.lit(": "),
-            _py_type_union.pipe(_make_type_union),
+            py_union,
             pl.when(cond).then(pl.lit(" | None = None")).otherwise(_EMPTY_STR),
         ).alias("param_sig_list")
 
@@ -159,10 +159,10 @@ def _joined_parts(
                 pl.lit("        "),
                 expr,
                 pl.lit(" ("),
-                _py_type_union.pipe(_make_type_union),
+                py_union,
                 pl.when(cond).then(pl.lit(" | None")).otherwise(_EMPTY_STR),
                 pl.lit("): `"),
-                param_types_union,
+                params_types.pipe(_into_union),
                 pl.lit("` expression"),
             )
             .str.join("\n")
