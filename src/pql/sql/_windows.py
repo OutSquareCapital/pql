@@ -2,7 +2,7 @@ from dataclasses import dataclass, field
 
 import pyochain as pc
 
-from ._exprs import SqlExpr, raw
+from ._core import SqlExpr, raw
 
 type BoolClause = pc.Option[pc.Seq[bool]] | pc.Option[bool]
 
