@@ -50,6 +50,7 @@ class TableSchema:
     alias_of = pl.String()
     function_type = FUNC_TYPES
     description = pl.String()
+    """Only present for scalar and aggregate functions."""
     comment = pl.String()
     tags = pl.List(pl.Struct({"key": pl.String, "value": pl.String}))
     return_type = pl.String()

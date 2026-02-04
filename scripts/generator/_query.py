@@ -150,8 +150,7 @@ def _joined_parts(
             expr,
             pl.lit(": "),
             _py_type_union.pipe(_make_type_union),
-            pl.when(cond).then(pl.lit(" | None")).otherwise(_EMPTY_STR),
-            pl.when(cond).then(pl.lit(" = None")).otherwise(_EMPTY_STR),
+            pl.when(cond).then(pl.lit(" | None = None")).otherwise(_EMPTY_STR),
         ).alias("param_sig_list")
 
     def _param_doc_join() -> pl.Expr:
@@ -182,7 +181,7 @@ def _make_type_union(py_type: pl.Expr) -> pl.Expr:
     return (
         pl.when(py_type.eq(pl.lit(PyTypes.EXPR.value)))
         .then(py_type)
-        .otherwise(pl.concat_str(pl.lit(PyTypes.EXPR.value), pl.lit(" | "), py_type))
+        .otherwise(pl.concat_str(pl.lit(f"{PyTypes.EXPR.value} | "), py_type))
     )
 
 
@@ -386,15 +385,12 @@ def _to_func(
 
     return pl.concat_str(
         _signature(has_params),
-        pl.lit("\n"),
-        pl.lit('    """'),
+        pl.lit('\n    """'),
         _description(),
         _args_section(has_params),
         pl.lit(f"\n\n    Returns:\n        {PyTypes.EXPR}: `"),
         return_type.fill_null(DuckDbTypes.ANY.value.upper()),
-        pl.lit('` expression.\n    """'),
-        pl.lit("\n"),
-        pl.lit('    return func("'),
+        pl.lit('` expression.\n    """\n    return func("'),
         dk.name,
         pl.lit('"'),
         _body(has_params),
