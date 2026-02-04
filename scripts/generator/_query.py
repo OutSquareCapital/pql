@@ -248,7 +248,7 @@ def _to_py_name(dk: DuckCols, p_lens: ParamLens) -> pl.Expr:
         lambda cat_str: dk.name.pipe(
             lambda expr: (
                 pl.when(expr.is_in(KWORDS))
-                .then(pl.concat_str(expr, pl.lit("_func")))
+                .then(pl.concat_str(expr, pl.lit("_fn")))
                 .otherwise(expr)
                 .str.to_lowercase()
             )

@@ -79,7 +79,7 @@ class PyTypes(StrEnum):
     TIME = auto()
     DATETIME = auto()
     TIMEDELTA = auto()
-    LIST = "list[object]"
+    LIST = auto()
     DICT = "dict[object, object]"
     EXPR = "SqlExpr"
 
@@ -155,11 +155,11 @@ CONVERSION_MAP: pc.Dict[DuckDbTypes, PyTypes] = pc.Dict(
 )
 """DuckDB type -> Python type hint mapping."""
 
-KWORDS = pc.Set(keyword.kwlist)
+DTYPES = pc.Iter(PyTypes).map(lambda t: t.value).collect(pc.SetMut)
+DTYPES.remove(PyTypes.EXPR)
+KWORDS = pc.Set(keyword.kwlist).union(DTYPES)
 """Python reserved keywords that need renaming when generating function names."""
-SHADOWERS = KWORDS.union(pc.Set(dir(builtins))).union(
-    pc.Set(("l", "date", "time", "datetime", "timedelta"))
-)
+SHADOWERS = KWORDS.union(pc.Set(dir(builtins))).union(pc.Set("l"))
 """Names that should be renamed to avoid shadowing."""
 OPERATOR_MAP = pc.Set(
     {

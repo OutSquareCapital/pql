@@ -456,7 +456,6 @@ __all__ = [
     "levenshtein",
     "lgamma",
     "like_escape",
-    "list",
     "list_aggregate",
     "list_any_value",
     "list_append",
@@ -478,6 +477,7 @@ __all__ = [
     "list_extract",
     "list_filter",
     "list_first",
+    "list_fn",
     "list_grade_up",
     "list_has_all",
     "list_has_any",
@@ -5105,18 +5105,6 @@ def json_value(col0: SqlExpr | str, col1: SqlExpr | int | str | list[str]) -> Sq
 # ============================================================
 
 
-def list(arg: SqlExpr) -> SqlExpr:
-    """Returns a LIST containing all the values of a column.
-
-    Args:
-        arg (SqlExpr): `T` expression
-
-    Returns:
-        SqlExpr: `T[]` expression.
-    """
-    return func("list", arg)
-
-
 def list_aggregate(
     list_arg: SqlExpr | list[SqlExpr], function_name: SqlExpr | str, *args: SqlExpr
 ) -> SqlExpr:
@@ -5396,6 +5384,18 @@ def list_first(l_arg: SqlExpr) -> SqlExpr:
         SqlExpr: `ANY` expression.
     """
     return func("list_first", l_arg)
+
+
+def list_fn(arg: SqlExpr) -> SqlExpr:
+    """Returns a LIST containing all the values of a column.
+
+    Args:
+        arg (SqlExpr): `T` expression
+
+    Returns:
+        SqlExpr: `T[]` expression.
+    """
+    return func("list", arg)
 
 
 def list_grade_up(
