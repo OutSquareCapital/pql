@@ -64,17 +64,19 @@ def _header() -> str:
 def _parse_manual_functions() -> pc.Iter[FunctionInfo]:
 
     content = MANUAL_FNS_PATH.read_text(encoding="utf-8")
+    section = "Window Functions"
 
     def _is_function_def(node: ast.stmt) -> TypeIs[ast.FunctionDef]:
         return isinstance(node, ast.FunctionDef)
 
-    def _extract_function(node: ast.FunctionDef) -> FunctionInfo:
-        return FunctionInfo(
-            category="Window Functions",
-            python_name=node.name,
-            func=pc.Option(ast.get_source_segment(content, node)).unwrap_or(""),
-        )
-
     return (
-        pc.Iter(ast.parse(content).body).filter(_is_function_def).map(_extract_function)
+        pc.Iter(ast.parse(content).body)
+        .filter(_is_function_def)
+        .map(
+            lambda node: FunctionInfo(
+                section,
+                node.name,
+                pc.Option(ast.get_source_segment(content, node)).unwrap_or(""),
+            )
+        )
     )

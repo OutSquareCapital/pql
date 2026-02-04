@@ -155,9 +155,12 @@ CONVERSION_MAP: pc.Dict[DuckDbTypes, PyTypes] = pc.Dict(
 )
 """DuckDB type -> Python type hint mapping."""
 
-DTYPES = pc.Iter(PyTypes).map(lambda t: t.value).collect(pc.SetMut)
-DTYPES.remove(PyTypes.EXPR)
-KWORDS = pc.Set(keyword.kwlist).union(DTYPES)
+KWORDS = pc.Set(keyword.kwlist).union(
+    pc.Iter(PyTypes)
+    .filter(lambda t: t != PyTypes.EXPR)
+    .map(lambda t: t.value)
+    .collect(pc.Set)
+)
 """Python reserved keywords that need renaming when generating function names."""
 SHADOWERS = KWORDS.union(pc.Set(dir(builtins))).union(pc.Set("l"))
 """Names that should be renamed to avoid shadowing."""
