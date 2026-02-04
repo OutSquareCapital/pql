@@ -3,7 +3,6 @@
 from . import datatypes, fns
 from ._core import (
     IntoExprColumn,
-    IterExpr,
     Relation,
     SqlExpr,
     all,
@@ -26,7 +25,6 @@ from ._windows import WindowExpr
 
 __all__ = [
     "IntoExprColumn",
-    "IterExpr",
     "Relation",
     "SqlExpr",
     "WindowExpr",

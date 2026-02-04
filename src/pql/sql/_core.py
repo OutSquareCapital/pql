@@ -23,8 +23,6 @@ from duckdb import (
     from_query,  # noqa: F401 # pyright: ignore[reportUnusedImport]
 )
 
-type IterExpr = IntoExpr | Iterable[IntoExpr]
-
 type IntoExprColumn = Iterable[SqlExpr] | SqlExpr | str
 
 
@@ -65,7 +63,7 @@ def from_cols(exprs: IntoExprColumn) -> Iterable[SqlExpr | str]:
             return exprs
 
 
-def from_iter(*values: IterExpr) -> pc.Iter[SqlExpr]:
+def from_iter(*values: IntoExpr | Iterable[IntoExpr]) -> pc.Iter[SqlExpr]:
     """Convert one or more values or iterables of values to an iterator of DuckDB Expressions.
 
     Note:
@@ -73,7 +71,7 @@ def from_iter(*values: IterExpr) -> pc.Iter[SqlExpr]:
         distinguish between a single iterable argument and multiple arguments.
     """
 
-    def _to_exprs(value: IterExpr) -> pc.Iter[SqlExpr]:
+    def _to_exprs(value: IntoExpr | Iterable[IntoExpr]) -> pc.Iter[SqlExpr]:
         match value:
             case str():
                 return pc.Iter.once(from_expr(value))
@@ -89,7 +87,9 @@ def from_iter(*values: IterExpr) -> pc.Iter[SqlExpr]:
             return pc.Iter(values).map(_to_exprs).flatten()
 
 
-def from_args_kwargs(*exprs: IterExpr, **named_exprs: IntoExpr) -> pc.Iter[SqlExpr]:
+def from_args_kwargs(
+    *exprs: IntoExpr | Iterable[IntoExpr], **named_exprs: IntoExpr
+) -> pc.Iter[SqlExpr]:
     """Convert positional and keyword arguments to an iterator of DuckDB Expressions."""
     return from_iter(*exprs).chain(
         pc.Dict.from_ref(named_exprs)

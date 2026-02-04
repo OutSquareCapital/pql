@@ -73,11 +73,15 @@ class LazyFrame:
         """Execute the query and return a Polars DataFrame."""
         return self._rel.pl()
 
-    def select(self, *exprs: sql.IterExpr, **named_exprs: IntoExpr) -> Self:
+    def select(
+        self, *exprs: IntoExpr | Iterable[IntoExpr], **named_exprs: IntoExpr
+    ) -> Self:
         """Select columns or expressions."""
         return self._select(sql.from_args_kwargs(*exprs, **named_exprs))
 
-    def with_columns(self, *exprs: sql.IterExpr, **named_exprs: IntoExpr) -> Self:
+    def with_columns(
+        self, *exprs: IntoExpr | Iterable[IntoExpr], **named_exprs: IntoExpr
+    ) -> Self:
         """Add or replace columns."""
         return (
             sql.from_args_kwargs(*exprs, **named_exprs)
@@ -93,7 +97,7 @@ class LazyFrame:
 
     def sort(
         self,
-        *by: sql.IterExpr,
+        *by: IntoExpr | Iterable[IntoExpr],
         descending: bool | Iterable[bool] = False,
         nulls_last: bool | Iterable[bool] = False,
     ) -> Self:
@@ -407,11 +411,15 @@ class LazyFrame:
             .project("* EXCLUDE (__rn__)")
         )
 
-    def top_k(self, k: int, *, by: sql.IterExpr, reverse: bool = False) -> Self:
+    def top_k(
+        self, k: int, *, by: IntoExpr | Iterable[IntoExpr], reverse: bool = False
+    ) -> Self:
         """Return top k rows by column(s)."""
         return self.sort(by, descending=not reverse).head(k)
 
-    def bottom_k(self, k: int, *, by: sql.IterExpr, reverse: bool = False) -> Self:
+    def bottom_k(
+        self, k: int, *, by: IntoExpr | Iterable[IntoExpr], reverse: bool = False
+    ) -> Self:
         """Return bottom k rows by column(s)."""
         return self.sort(by, descending=reverse).head(k)
 

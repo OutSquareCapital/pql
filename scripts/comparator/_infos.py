@@ -139,7 +139,7 @@ def _get_annotation_str(annotation: object) -> pc.Option[str]:
         case type():
             return pc.Option(annotation.__name__)
         case _:
-            return pc.Option(str(annotation))
+            return pc.Option(_extract_last_name(str(annotation)))
 
 
 def _mismatch_against(target: MapInfo, other: MapInfo) -> bool:
@@ -149,8 +149,7 @@ def _mismatch_against(target: MapInfo, other: MapInfo) -> bool:
         .intersection(target.keys())
         .any(
             lambda name: annotations_differ(
-                other.get_item(name).unwrap(),
-                target.get_item(name).unwrap(),
+                other.get_item(name).unwrap(), target.get_item(name).unwrap()
             )
         )
     )
@@ -158,7 +157,16 @@ def _mismatch_against(target: MapInfo, other: MapInfo) -> bool:
 
 
 def _normalize_self(annotation: str) -> str:
-    return SELF_PATTERN.sub("__SELF__", annotation)
+    return _extract_last_name(SELF_PATTERN.sub("__SELF__", annotation))
+
+
+def _extract_last_name(annotation: str) -> str:
+    if "[" in annotation:
+        base_type = annotation.split("[", maxsplit=1)[0]
+        generic_part = annotation[len(base_type) :]
+        return _extract_last_name(base_type) + generic_part
+
+    return annotation.rsplit(".", maxsplit=1)[-1]
 
 
 @dataclass(slots=True)
