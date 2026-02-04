@@ -10,7 +10,17 @@ if TYPE_CHECKING:
 RoundMode = Literal["half_to_even", "half_away_from_zero"]
 
 type PyLiteral = (
-    str | int | float | bool | date | datetime | time | timedelta | bytes | None
+    str
+    | int
+    | float
+    | bool
+    | date
+    | datetime
+    | time
+    | timedelta
+    | bytes
+    | bytearray
+    | None
 )
 type FrameInit = (
     duckdb.DuckDBPyRelation | pl.DataFrame | pl.LazyFrame | None | FrameInitTypes

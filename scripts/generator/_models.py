@@ -147,7 +147,7 @@ CONVERSION_MAP: pc.Dict[DuckDbTypes, PyTypes] = pc.Dict(
         DuckDbTypes.JSON: PyTypes.STR,
         DuckDbTypes.ANY: PyTypes.EXPR,
         DuckDbTypes.LIST: PyTypes.LIST,
-        DuckDbTypes.MAP: PyTypes.DICT,
+        DuckDbTypes.MAP: PyTypes.EXPR,
         DuckDbTypes.STRUCT: PyTypes.DICT,
         DuckDbTypes.ARRAY: PyTypes.LIST,
         DuckDbTypes.UNION: PyTypes.EXPR,

@@ -6703,11 +6703,11 @@ def map_concat(*args: SqlExpr) -> SqlExpr:
     return func("map_concat", *args)
 
 
-def map_contains(map_arg: SqlExpr | dict[object, object], key: SqlExpr) -> SqlExpr:
+def map_contains(map_arg: SqlExpr, key: SqlExpr) -> SqlExpr:
     """Checks if a map contains a given key.
 
     Args:
-        map_arg (SqlExpr | dict[object, object]): `MAP(K, V)` expression
+        map_arg (SqlExpr): `MAP(K, V)` expression
         key (SqlExpr): `K` expression
 
     Returns:
@@ -6743,11 +6743,11 @@ def map_contains_value(map_arg: SqlExpr, value: SqlExpr) -> SqlExpr:
     return func("map_contains_value", map_arg, value)
 
 
-def map_entries(map_arg: SqlExpr | dict[object, object]) -> SqlExpr:
+def map_entries(map_arg: SqlExpr) -> SqlExpr:
     """Returns the map entries as a list of keys/values.
 
     Args:
-        map_arg (SqlExpr | dict[object, object]): `MAP(K, V)` expression
+        map_arg (SqlExpr): `MAP(K, V)` expression
 
     Returns:
         SqlExpr: `STRUCT("key" K, "value" V)[]` expression.
@@ -6755,13 +6755,13 @@ def map_entries(map_arg: SqlExpr | dict[object, object]) -> SqlExpr:
     return func("map_entries", map_arg)
 
 
-def map_extract(map_arg: SqlExpr | dict[object, object], key: SqlExpr) -> SqlExpr:
+def map_extract(map_arg: SqlExpr, key: SqlExpr) -> SqlExpr:
     """Returns a list containing the value for a given key or an empty list if the key is not contained in the map.
 
     The type of the key provided in the second parameter must match the type of the map's keys else an error is returned.
 
     Args:
-        map_arg (SqlExpr | dict[object, object]): `MAP(K, V)` expression
+        map_arg (SqlExpr): `MAP(K, V)` expression
         key (SqlExpr): `K` expression
 
     Returns:
@@ -6770,13 +6770,13 @@ def map_extract(map_arg: SqlExpr | dict[object, object], key: SqlExpr) -> SqlExp
     return func("map_extract", map_arg, key)
 
 
-def map_extract_value(map_arg: SqlExpr | dict[object, object], key: SqlExpr) -> SqlExpr:
+def map_extract_value(map_arg: SqlExpr, key: SqlExpr) -> SqlExpr:
     """Returns the value for a given key or NULL if the key is not contained in the map.
 
     The type of the key provided in the second parameter must match the type of the map's keys else an error is returned.
 
     Args:
-        map_arg (SqlExpr | dict[object, object]): `MAP(K, V)` expression
+        map_arg (SqlExpr): `MAP(K, V)` expression
         key (SqlExpr): `K` expression
 
     Returns:
@@ -6797,11 +6797,11 @@ def map_from_entries(map_arg: SqlExpr | dict[object, object]) -> SqlExpr:
     return func("map_from_entries", map_arg)
 
 
-def map_keys(map_arg: SqlExpr | dict[object, object]) -> SqlExpr:
+def map_keys(map_arg: SqlExpr) -> SqlExpr:
     """Returns the keys of a map as a list.
 
     Args:
-        map_arg (SqlExpr | dict[object, object]): `MAP(K, V)` expression
+        map_arg (SqlExpr): `MAP(K, V)` expression
 
     Returns:
         SqlExpr: `K[]` expression.
@@ -6821,11 +6821,11 @@ def map_to_pg_oid(type_name: SqlExpr) -> SqlExpr:
     return func("map_to_pg_oid", type_name)
 
 
-def map_values(map_arg: SqlExpr | dict[object, object]) -> SqlExpr:
+def map_values(map_arg: SqlExpr) -> SqlExpr:
     """Returns the values of a map as a list.
 
     Args:
-        map_arg (SqlExpr | dict[object, object]): `MAP(K, V)` expression
+        map_arg (SqlExpr): `MAP(K, V)` expression
 
     Returns:
         SqlExpr: `V[]` expression.
