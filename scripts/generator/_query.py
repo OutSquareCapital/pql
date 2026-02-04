@@ -109,8 +109,8 @@ def get_df() -> pl.LazyFrame:
             *params.names.filter(params.names.is_not_null()).pipe(
                 _joined_parts,
                 params.idx.ge(params.lens.by_fn_cat),
-                py.types,
-                dk.params_types,
+                py.types.pipe(_into_union).pipe(_make_type_union),
+                dk.params_types.pipe(_into_union),
             ),
         )
         .select(
@@ -128,7 +128,6 @@ def get_df() -> pl.LazyFrame:
                 pl.col("param_doc_join"),
                 pl.col("param_names_join"),
                 dk.varargs.pipe(_convert_duckdb_type_to_python).pipe(_make_type_union),
-                pl.col("return_type"),
                 dk,
             ),
         )
@@ -137,14 +136,13 @@ def get_df() -> pl.LazyFrame:
     )
 
 
+def _into_union(expr: pl.Expr) -> pl.Expr:
+    return expr.list.unique().list.sort().list.join(" | ")
+
+
 def _joined_parts(
-    expr: pl.Expr, cond: pl.Expr, py_types: pl.Expr, params_types: pl.Expr
+    expr: pl.Expr, cond: pl.Expr, py_union: pl.Expr, params_union: pl.Expr
 ) -> Iterable[pl.Expr]:
-    def _into_union(expr: pl.Expr) -> pl.Expr:
-        return expr.list.unique().list.sort().list.join(" | ")
-
-    py_union = py_types.pipe(_into_union).pipe(_make_type_union)
-
     def _param_sig_list() -> pl.Expr:
         return pl.concat_str(
             expr,
@@ -162,7 +160,7 @@ def _joined_parts(
                 py_union,
                 pl.when(cond).then(pl.lit(" | None")).otherwise(_EMPTY_STR),
                 pl.lit("): `"),
-                params_types.pipe(_into_union),
+                params_union,
                 pl.lit("` expression"),
             )
             .str.join("\n")
@@ -295,7 +293,6 @@ def _to_func(
     param_doc_join: pl.Expr,
     param_names_join: pl.Expr,
     varargs_py_type: pl.Expr,
-    return_type: pl.Expr,
     dk: DuckCols,
 ) -> pl.Expr:
     def _signature(has_params: pl.Expr) -> pl.Expr:
@@ -385,9 +382,7 @@ def _to_func(
         pl.lit('\n    """'),
         _description(),
         _args_section(has_params),
-        pl.lit(f"\n\n    Returns:\n        {PyTypes.EXPR}: `"),
-        return_type.fill_null(DuckDbTypes.ANY.value.upper()),
-        pl.lit('` expression.\n    """\n    return func("'),
+        pl.lit(f'\n\n    Returns:\n        {PyTypes.EXPR}\n    """\n    return func("'),
         dk.name,
         pl.lit('"'),
         _body(has_params),
