@@ -1,11 +1,14 @@
 from __future__ import annotations
 
+import ast
 from dataclasses import dataclass
+from pathlib import Path
 from textwrap import dedent
-from typing import TYPE_CHECKING
+from typing import TypeIs
 
-if TYPE_CHECKING:
-    import pyochain as pc
+import pyochain as pc
+
+MANUAL_FNS_PATH = Path("src", "pql", "sql", "_manual_fns.py")
 
 
 @dataclass(slots=True)
@@ -17,14 +20,19 @@ class FunctionInfo:
     func: str
 
 
-def build_file(fns: pc.Seq[FunctionInfo]) -> str:
-    all_names = fns.iter().map(lambda f: f'    "{f.python_name}",').join("\n")
+def build_file(fns: pc.Iter[FunctionInfo]) -> str:
+
+    all_fns = fns.chain(_parse_manual_functions()).collect()
+
+    all_names = all_fns.iter().map(lambda f: f'    "{f.python_name}",').join("\n")
     sections = (
-        fns.iter()
+        all_fns.iter()
         .group_by(lambda f: f.category)
         .map_star(
-            lambda category, funcs: f"\n\n# {'=' * 60}\n# {category}\n# {'=' * 60}\n\n"
-            + funcs.map(lambda f: f.func).join("\n\n\n")
+            lambda category, funcs: (
+                f"\n\n# {'=' * 60}\n# {category}\n# {'=' * 60}\n\n"
+                + funcs.map(lambda f: f.func).join("\n\n\n")
+            )
         )
         .join("")
     )
@@ -51,3 +59,22 @@ def _header() -> str:
 
         __all__ = [
     ''')
+
+
+def _parse_manual_functions() -> pc.Iter[FunctionInfo]:
+
+    content = MANUAL_FNS_PATH.read_text(encoding="utf-8")
+
+    def _is_function_def(node: ast.stmt) -> TypeIs[ast.FunctionDef]:
+        return isinstance(node, ast.FunctionDef)
+
+    def _extract_function(node: ast.FunctionDef) -> FunctionInfo:
+        return FunctionInfo(
+            category="Window Functions",
+            python_name=node.name,
+            func=pc.Option(ast.get_source_segment(content, node)).unwrap_or(""),
+        )
+
+    return (
+        pc.Iter(ast.parse(content).body).filter(_is_function_def).map(_extract_function)
+    )
