@@ -1,4 +1,4 @@
-from ._exprs import SqlExpr, func
+from ._core import SqlExpr, func
 
 
 def cume_dist() -> SqlExpr:
