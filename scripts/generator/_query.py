@@ -46,6 +46,13 @@ class Params:
 
 
 @dataclass(slots=True)
+class ParamLists:
+    signatures: pl.Expr = field(default=pl.col("param_sig_list"))
+    docs: pl.Expr = field(default=pl.col("param_doc_join"))
+    names: pl.Expr = field(default=pl.col("param_names_join"))
+
+
+@dataclass(slots=True)
 class DuckCols:
     name: pl.Expr = field(default=pl.col("function_name"))
     description: pl.Expr = field(default=pl.col("description"))
@@ -61,6 +68,7 @@ def get_df() -> pl.LazyFrame:
     py = PyCols()
     params = Params()
     dk = DuckCols()
+    p_lists = ParamLists()
 
     return (
         sql_query()
@@ -95,17 +103,13 @@ def get_df() -> pl.LazyFrame:
         )
         .group_by(py.name, params.idx, maintain_order=True)
         .agg(
-            pl.all()
-            .exclude("param_doc_join", "py_types", "parameter_types")
-            .drop_nulls()
-            .first(),
+            pl.all().exclude("py_types", "parameter_types").drop_nulls().first(),
             dk.params_types,
             py.types,
         )
-        .sort(py.name, params.idx)
         .group_by(py.name, maintain_order=True)
         .agg(
-            pl.all().exclude("param_names", "param_doc_join").first(),
+            pl.all().exclude("param_names").first(),
             *params.names.filter(params.names.is_not_null()).pipe(
                 _joined_parts,
                 params.idx.ge(params.lens.by_fn_cat),
@@ -124,9 +128,7 @@ def get_df() -> pl.LazyFrame:
             .pipe(
                 _to_func,
                 py.name,
-                pl.col("param_sig_list"),
-                pl.col("param_doc_join"),
-                pl.col("param_names_join"),
+                p_lists,
                 dk.varargs.pipe(_convert_duckdb_type_to_python).pipe(_make_type_union),
                 dk,
             ),
@@ -301,9 +303,7 @@ def _to_py_name(dk: DuckCols, p_lens: ParamLens) -> pl.Expr:
 def _to_func(
     has_params: pl.Expr,
     py_name: pl.Expr,
-    param_sig_list: pl.Expr,
-    param_doc_join: pl.Expr,
-    param_names_join: pl.Expr,
+    p_lists: ParamLists,
     varargs_py_type: pl.Expr,
     dk: DuckCols,
 ) -> pl.Expr:
@@ -315,7 +315,7 @@ def _to_func(
                     pl.lit("def "),
                     py_name,
                     pl.lit("("),
-                    param_sig_list.list.join(", "),
+                    p_lists.signatures.list.join(", "),
                     pl.when(dk.varargs.is_not_null())
                     .then(
                         pl.concat_str(
@@ -353,7 +353,7 @@ def _to_func(
             .then(
                 pl.concat_str(
                     pl.lit("\n\n    Args:\n"),
-                    param_doc_join,
+                    p_lists.docs,
                     pl.when(dk.varargs.is_not_null())
                     .then(
                         pl.concat_str(
@@ -376,7 +376,7 @@ def _to_func(
             .then(
                 pl.concat_str(
                     pl.lit(", "),
-                    param_names_join,
+                    p_lists.names,
                     pl.when(dk.varargs.is_not_null())
                     .then(
                         pl.when(has_params)
