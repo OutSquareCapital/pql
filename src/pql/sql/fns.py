@@ -37,8 +37,6 @@ __all__ = [
     "array_cross_product",
     "array_distance",
     "array_extract",
-    "array_extract_string",
-    "array_extract_struct",
     "array_inner_product",
     "array_intersect",
     "array_length",
@@ -64,17 +62,21 @@ __all__ = [
     "atanh",
     "avg",
     "bar",
-    "bin_numeric",
-    "bin_string",
     "bit_and",
     "bit_count",
-    "bit_length_numeric",
-    "bit_length_string",
     "bit_or",
     "bit_position",
     "bit_xor",
     "bitstring",
     "bitstring_agg",
+    "bitstring_octet_length",
+    "blob_hex",
+    "blob_md5",
+    "blob_md5_number",
+    "blob_octet_length",
+    "blob_repeat",
+    "blob_sha1",
+    "blob_sha256",
     "bool_and",
     "bool_or",
     "can_cast_implicitly",
@@ -92,7 +94,6 @@ __all__ = [
     "concat_ws",
     "constant_or_null",
     "contains",
-    "contains_string",
     "copy_database",
     "corr",
     "cos",
@@ -227,7 +228,6 @@ __all__ = [
     "functions",
     "gamma",
     "generate_series",
-    "generate_series_list",
     "generate_subscripts",
     "geomean",
     "geometric_mean",
@@ -252,9 +252,6 @@ __all__ = [
     "has_table_privilege",
     "has_tablespace_privilege",
     "hash",
-    "hex_blob",
-    "hex_numeric",
-    "hex_string",
     "histogram",
     "histogram_col_name_bin_count_technique",
     "histogram_exact",
@@ -450,9 +447,6 @@ __all__ = [
     "left",
     "left_grapheme",
     "length_grapheme",
-    "length_list",
-    "length_numeric",
-    "length_string",
     "levenshtein",
     "lgamma",
     "like_escape",
@@ -478,6 +472,7 @@ __all__ = [
     "list_filter",
     "list_first",
     "list_fn",
+    "list_generate_series",
     "list_grade_up",
     "list_has_all",
     "list_has_any",
@@ -487,6 +482,8 @@ __all__ = [
     "list_kurtosis",
     "list_kurtosis_pop",
     "list_last",
+    "list_length",
+    "list_list_slice",
     "list_mad",
     "list_max",
     "list_median",
@@ -496,6 +493,7 @@ __all__ = [
     "list_position",
     "list_prepend",
     "list_product",
+    "list_range",
     "list_reduce",
     "list_resize",
     "list_reverse",
@@ -503,12 +501,11 @@ __all__ = [
     "list_select",
     "list_sem",
     "list_skewness",
-    "list_slice_list",
-    "list_slice_list_string",
     "list_sort",
     "list_stddev_pop",
     "list_stddev_samp",
     "list_string_agg",
+    "list_string_list_slice",
     "list_sum",
     "list_transform",
     "list_unique",
@@ -545,12 +542,8 @@ __all__ = [
     "map_to_pg_oid",
     "map_values",
     "max",
-    "md5_blob",
-    "md5_number_blob",
     "md5_number_lower",
-    "md5_number_string",
     "md5_number_upper",
-    "md5_string",
     "median",
     "metadata_info",
     "microsecond",
@@ -571,9 +564,11 @@ __all__ = [
     "not_ilike_escape",
     "not_like_escape",
     "nullif",
+    "numeric_bin",
+    "numeric_bit_length",
+    "numeric_hex",
+    "numeric_length",
     "obj_description",
-    "octet_length_bitstring",
-    "octet_length_blob",
     "pandas_scan",
     "parquet_bloom_probe",
     "parquet_file_metadata",
@@ -634,7 +629,6 @@ __all__ = [
     "radians",
     "random",
     "range",
-    "range_list",
     "read_blob",
     "read_csv",
     "read_csv_auto",
@@ -666,9 +660,7 @@ __all__ = [
     "regr_syy",
     "remap_struct",
     "repeat",
-    "repeat_blob",
     "repeat_row",
-    "repeat_string",
     "replace",
     "replace_type",
     "reservoir_quantile",
@@ -688,10 +680,6 @@ __all__ = [
     "session_user",
     "set_bit",
     "setseed",
-    "sha1_blob",
-    "sha1_string",
-    "sha256_blob",
-    "sha256_string",
     "shobj_description",
     "show",
     "show_databases",
@@ -712,11 +700,23 @@ __all__ = [
     "storage_info",
     "strftime",
     "string_agg",
+    "string_array_extract",
+    "string_bin",
+    "string_bit_length",
+    "string_contains",
+    "string_hex",
+    "string_length",
+    "string_md5",
+    "string_md5_number",
+    "string_repeat",
+    "string_sha1",
+    "string_sha256",
     "string_split",
     "string_split_regex",
     "strip_accents",
     "strlen",
     "strptime",
+    "struct_array_extract",
     "struct_concat",
     "struct_contains",
     "struct_extract",
@@ -3871,34 +3871,6 @@ def array_extract(col0: SqlExpr, col1: SqlExpr | int) -> SqlExpr:
     return func("array_extract", col0, col1)
 
 
-def array_extract_string(string: SqlExpr | str, index: SqlExpr | int) -> SqlExpr:
-    """Extracts a single character from a `string` using a (1-based) `index`.
-
-    Args:
-        string (SqlExpr | str): `VARCHAR` expression
-        index (SqlExpr | int): `BIGINT` expression
-
-    Returns:
-        SqlExpr
-    """
-    return func("array_extract", string, index)
-
-
-def array_extract_struct(
-    struct: SqlExpr | dict[object, object], entry: SqlExpr | int | str
-) -> SqlExpr:
-    """Extracts the named `entry` from the `STRUCT`.
-
-    Args:
-        struct (SqlExpr | dict[object, object]): `STRUCT` expression
-        entry (SqlExpr | int | str): `BIGINT | VARCHAR` expression
-
-    Returns:
-        SqlExpr
-    """
-    return func("array_extract", struct, entry)
-
-
 def array_inner_product(array1: SqlExpr | float, array2: SqlExpr | float) -> SqlExpr:
     """Computes the inner product between two arrays of the same size.
 
@@ -4129,30 +4101,6 @@ def bit_count(x: SqlExpr | bytes | int) -> SqlExpr:
     return func("bit_count", x)
 
 
-def bit_length_numeric(bit: SqlExpr | bytes) -> SqlExpr:
-    """Returns the bit-length of the `bit` argument.
-
-    Args:
-        bit (SqlExpr | bytes): `BIT` expression
-
-    Returns:
-        SqlExpr
-    """
-    return func("bit_length", bit)
-
-
-def bit_length_string(string: SqlExpr | str) -> SqlExpr:
-    """Number of bits in a `string`.
-
-    Args:
-        string (SqlExpr | str): `VARCHAR` expression
-
-    Returns:
-        SqlExpr
-    """
-    return func("bit_length", string)
-
-
 def bit_or(arg: SqlExpr | bytes | int) -> SqlExpr:
     """Returns the bitwise OR of all bits in a given expression.
 
@@ -4221,6 +4169,18 @@ def bitstring_agg(
         SqlExpr
     """
     return func("bitstring_agg", arg, col1, col2)
+
+
+def bitstring_octet_length(bitstring: SqlExpr | bytes) -> SqlExpr:
+    """Returns the number of bytes in the `bitstring`.
+
+    Args:
+        bitstring (SqlExpr | bytes): `BIT` expression
+
+    Returns:
+        SqlExpr
+    """
+    return func("octet_length", bitstring)
 
 
 # ============================================================
@@ -5396,6 +5356,24 @@ def list_fn(arg: SqlExpr) -> SqlExpr:
     return func("list", arg)
 
 
+def list_generate_series(
+    start: SqlExpr | datetime | int,
+    stop: SqlExpr | datetime | int | None = None,
+    step: SqlExpr | int | timedelta | None = None,
+) -> SqlExpr:
+    """Creates a list of values between `start` and `stop` - the stop parameter is inclusive.
+
+    Args:
+        start (SqlExpr | datetime | int): `BIGINT | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
+        stop (SqlExpr | datetime | int | None): `BIGINT | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
+        step (SqlExpr | int | timedelta | None): `BIGINT | INTERVAL` expression
+
+    Returns:
+        SqlExpr
+    """
+    return func("generate_series", start, stop, step)
+
+
 def list_grade_up(
     list_arg: SqlExpr,
     col1: SqlExpr | str | None = None,
@@ -5520,6 +5498,35 @@ def list_last(l_arg: SqlExpr) -> SqlExpr:
     return func("list_last", l_arg)
 
 
+def list_length(list_arg: SqlExpr) -> SqlExpr:
+    """Returns the length of the `list`.
+
+    Args:
+        list_arg (SqlExpr): `ANY[]` expression
+
+    Returns:
+        SqlExpr
+    """
+    return func("length", list_arg)
+
+
+def list_list_slice(
+    list_arg: SqlExpr, begin: SqlExpr, end: SqlExpr, step: SqlExpr | int | None = None
+) -> SqlExpr:
+    """list_slice with added step feature.
+
+    Args:
+        list_arg (SqlExpr): `ANY` expression
+        begin (SqlExpr): `ANY` expression
+        end (SqlExpr): `ANY` expression
+        step (SqlExpr | int | None): `BIGINT` expression
+
+    Returns:
+        SqlExpr
+    """
+    return func("list_slice", list_arg, begin, end, step)
+
+
 def list_mad(l_arg: SqlExpr) -> SqlExpr:
     """SQL list_mad function.
 
@@ -5635,6 +5642,24 @@ def list_product(l_arg: SqlExpr) -> SqlExpr:
     return func("list_product", l_arg)
 
 
+def list_range(
+    start: SqlExpr | datetime | int,
+    stop: SqlExpr | datetime | int | None = None,
+    step: SqlExpr | int | timedelta | None = None,
+) -> SqlExpr:
+    """Creates a list of values between `start` and `stop` - the stop parameter is exclusive.
+
+    Args:
+        start (SqlExpr | datetime | int): `BIGINT | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
+        stop (SqlExpr | datetime | int | None): `BIGINT | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
+        step (SqlExpr | int | timedelta | None): `BIGINT | INTERVAL` expression
+
+    Returns:
+        SqlExpr
+    """
+    return func("range", start, stop, step)
+
+
 def list_reduce(
     list_arg: SqlExpr, lambda_arg: SqlExpr, initial_value: SqlExpr | None = None
 ) -> SqlExpr:
@@ -5733,39 +5758,6 @@ def list_skewness(l_arg: SqlExpr) -> SqlExpr:
     return func("list_skewness", l_arg)
 
 
-def list_slice_list(
-    list_arg: SqlExpr, begin: SqlExpr, end: SqlExpr, step: SqlExpr | int | None = None
-) -> SqlExpr:
-    """list_slice with added step feature.
-
-    Args:
-        list_arg (SqlExpr): `ANY` expression
-        begin (SqlExpr): `ANY` expression
-        end (SqlExpr): `ANY` expression
-        step (SqlExpr | int | None): `BIGINT` expression
-
-    Returns:
-        SqlExpr
-    """
-    return func("list_slice", list_arg, begin, end, step)
-
-
-def list_slice_list_string(list_arg: SqlExpr, begin: SqlExpr, end: SqlExpr) -> SqlExpr:
-    """Extracts a sublist or substring using slice conventions.
-
-    Negative values are accepted.
-
-    Args:
-        list_arg (SqlExpr): `ANY` expression
-        begin (SqlExpr): `ANY` expression
-        end (SqlExpr): `ANY` expression
-
-    Returns:
-        SqlExpr
-    """
-    return func("list_slice", list_arg, begin, end)
-
-
 def list_sort(
     list_arg: SqlExpr,
     col1: SqlExpr | str | None = None,
@@ -5818,6 +5810,22 @@ def list_string_agg(l_arg: SqlExpr) -> SqlExpr:
         SqlExpr
     """
     return func("list_string_agg", l_arg)
+
+
+def list_string_list_slice(list_arg: SqlExpr, begin: SqlExpr, end: SqlExpr) -> SqlExpr:
+    """Extracts a sublist or substring using slice conventions.
+
+    Negative values are accepted.
+
+    Args:
+        list_arg (SqlExpr): `ANY` expression
+        begin (SqlExpr): `ANY` expression
+        end (SqlExpr): `ANY` expression
+
+    Returns:
+        SqlExpr
+    """
+    return func("list_slice", list_arg, begin, end)
 
 
 def list_sum(l_arg: SqlExpr) -> SqlExpr:
@@ -7276,28 +7284,89 @@ def bar(
     return func("bar", x, min_arg, max_arg, width)
 
 
-def bin_numeric(value: SqlExpr | int) -> SqlExpr:
-    """Converts the `value` to binary representation.
+def blob_hex(blob: SqlExpr | bytes) -> SqlExpr:
+    """Converts `blob` to `VARCHAR` using hexadecimal encoding.
 
     Args:
-        value (SqlExpr | SqlExpr | int): `BIGINT | BIGNUM | HUGEINT | UBIGINT | UHUGEINT` expression
+        blob (SqlExpr | bytes): `BLOB` expression
 
     Returns:
         SqlExpr
     """
-    return func("bin", value)
+    return func("hex", blob)
 
 
-def bin_string(string: SqlExpr | str) -> SqlExpr:
-    """Converts the `string` to binary representation.
+def blob_md5(blob: SqlExpr | bytes) -> SqlExpr:
+    """Returns the MD5 hash of the `blob` as a `VARCHAR`.
 
     Args:
-        string (SqlExpr | str): `VARCHAR` expression
+        blob (SqlExpr | bytes): `BLOB` expression
 
     Returns:
         SqlExpr
     """
-    return func("bin", string)
+    return func("md5", blob)
+
+
+def blob_md5_number(blob: SqlExpr | bytes) -> SqlExpr:
+    """Returns the MD5 hash of the `blob` as a `HUGEINT`.
+
+    Args:
+        blob (SqlExpr | bytes): `BLOB` expression
+
+    Returns:
+        SqlExpr
+    """
+    return func("md5_number", blob)
+
+
+def blob_octet_length(blob: SqlExpr | bytes) -> SqlExpr:
+    """Number of bytes in `blob`.
+
+    Args:
+        blob (SqlExpr | bytes): `BLOB` expression
+
+    Returns:
+        SqlExpr
+    """
+    return func("octet_length", blob)
+
+
+def blob_repeat(blob: SqlExpr | bytes, count: SqlExpr | int) -> SqlExpr:
+    """Repeats the `blob` `count` number of times.
+
+    Args:
+        blob (SqlExpr | bytes): `BLOB` expression
+        count (SqlExpr | int): `BIGINT` expression
+
+    Returns:
+        SqlExpr
+    """
+    return func("repeat", blob, count)
+
+
+def blob_sha1(blob: SqlExpr | bytes) -> SqlExpr:
+    """Returns a `VARCHAR` with the SHA-1 hash of the `blob`.
+
+    Args:
+        blob (SqlExpr | bytes): `BLOB` expression
+
+    Returns:
+        SqlExpr
+    """
+    return func("sha1", blob)
+
+
+def blob_sha256(blob: SqlExpr | bytes) -> SqlExpr:
+    """Returns a `VARCHAR` with the SHA-256 hash of the `blob`.
+
+    Args:
+        blob (SqlExpr | bytes): `BLOB` expression
+
+    Returns:
+        SqlExpr
+    """
+    return func("sha256", blob)
 
 
 def can_cast_implicitly(source_type: SqlExpr, target_type: SqlExpr) -> SqlExpr:
@@ -7460,19 +7529,6 @@ def contains(col0: SqlExpr | dict[object, object], col1: SqlExpr) -> SqlExpr:
         SqlExpr
     """
     return func("contains", col0, col1)
-
-
-def contains_string(string: SqlExpr | str, search_string: SqlExpr | str) -> SqlExpr:
-    """Returns `true` if `search_string` is found within `string`.
-
-    Args:
-        string (SqlExpr | str): `VARCHAR` expression
-        search_string (SqlExpr | str): `VARCHAR` expression
-
-    Returns:
-        SqlExpr
-    """
-    return func("contains", string, search_string)
 
 
 def cos(x: SqlExpr | float) -> SqlExpr:
@@ -8006,24 +8062,6 @@ def gamma(x: SqlExpr | float) -> SqlExpr:
     return func("gamma", x)
 
 
-def generate_series_list(
-    start: SqlExpr | datetime | int,
-    stop: SqlExpr | datetime | int | None = None,
-    step: SqlExpr | int | timedelta | None = None,
-) -> SqlExpr:
-    """Creates a list of values between `start` and `stop` - the stop parameter is inclusive.
-
-    Args:
-        start (SqlExpr | datetime | int): `BIGINT | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
-        stop (SqlExpr | datetime | int | None): `BIGINT | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
-        step (SqlExpr | int | timedelta | None): `BIGINT | INTERVAL` expression
-
-    Returns:
-        SqlExpr
-    """
-    return func("generate_series", start, stop, step)
-
-
 def get_bit(bitstring: SqlExpr | bytes, index: SqlExpr | int) -> SqlExpr:
     """Extracts the nth bit from bitstring; the first (leftmost) bit is indexed 0.
 
@@ -8127,42 +8165,6 @@ def hash(value: SqlExpr, *args: SqlExpr) -> SqlExpr:
         SqlExpr
     """
     return func("hash", value, *args)
-
-
-def hex_blob(blob: SqlExpr | bytes) -> SqlExpr:
-    """Converts `blob` to `VARCHAR` using hexadecimal encoding.
-
-    Args:
-        blob (SqlExpr | bytes): `BLOB` expression
-
-    Returns:
-        SqlExpr
-    """
-    return func("hex", blob)
-
-
-def hex_numeric(value: SqlExpr | int) -> SqlExpr:
-    """Converts the `value` to `VARCHAR` using hexadecimal representation.
-
-    Args:
-        value (SqlExpr | SqlExpr | int): `BIGINT | BIGNUM | HUGEINT | UBIGINT | UHUGEINT` expression
-
-    Returns:
-        SqlExpr
-    """
-    return func("hex", value)
-
-
-def hex_string(string: SqlExpr | str) -> SqlExpr:
-    """Converts the `string` to hexadecimal representation.
-
-    Args:
-        string (SqlExpr | str): `VARCHAR` expression
-
-    Returns:
-        SqlExpr
-    """
-    return func("hex", string)
 
 
 def hour(ts: SqlExpr | date | datetime | time | timedelta) -> SqlExpr:
@@ -9967,42 +9969,6 @@ def length_grapheme(string: SqlExpr | str) -> SqlExpr:
     return func("length_grapheme", string)
 
 
-def length_list(list_arg: SqlExpr) -> SqlExpr:
-    """Returns the length of the `list`.
-
-    Args:
-        list_arg (SqlExpr): `ANY[]` expression
-
-    Returns:
-        SqlExpr
-    """
-    return func("length", list_arg)
-
-
-def length_numeric(bit: SqlExpr | bytes) -> SqlExpr:
-    """Returns the bit-length of the `bit` argument.
-
-    Args:
-        bit (SqlExpr | bytes): `BIT` expression
-
-    Returns:
-        SqlExpr
-    """
-    return func("length", bit)
-
-
-def length_string(string: SqlExpr | str) -> SqlExpr:
-    """Number of characters in `string`.
-
-    Args:
-        string (SqlExpr | str): `VARCHAR` expression
-
-    Returns:
-        SqlExpr
-    """
-    return func("length", string)
-
-
 def levenshtein(s1: SqlExpr | str, s2: SqlExpr | str) -> SqlExpr:
     """The minimum number of single-character edits (insertions, deletions or substitutions) required to change one string to the other.
 
@@ -10266,54 +10232,6 @@ def make_timestamptz(
     return func("make_timestamptz", col0, col1, col2, col3, col4, col5, col6)
 
 
-def md5_blob(blob: SqlExpr | bytes) -> SqlExpr:
-    """Returns the MD5 hash of the `blob` as a `VARCHAR`.
-
-    Args:
-        blob (SqlExpr | bytes): `BLOB` expression
-
-    Returns:
-        SqlExpr
-    """
-    return func("md5", blob)
-
-
-def md5_number_blob(blob: SqlExpr | bytes) -> SqlExpr:
-    """Returns the MD5 hash of the `blob` as a `HUGEINT`.
-
-    Args:
-        blob (SqlExpr | bytes): `BLOB` expression
-
-    Returns:
-        SqlExpr
-    """
-    return func("md5_number", blob)
-
-
-def md5_number_string(string: SqlExpr | str) -> SqlExpr:
-    """Returns the MD5 hash of the `string` as a `HUGEINT`.
-
-    Args:
-        string (SqlExpr | str): `VARCHAR` expression
-
-    Returns:
-        SqlExpr
-    """
-    return func("md5_number", string)
-
-
-def md5_string(string: SqlExpr | str) -> SqlExpr:
-    """Returns the MD5 hash of the `string` as a `VARCHAR`.
-
-    Args:
-        string (SqlExpr | str): `VARCHAR` expression
-
-    Returns:
-        SqlExpr
-    """
-    return func("md5", string)
-
-
 def microsecond(ts: SqlExpr | date | datetime | time | timedelta) -> SqlExpr:
     """Extract the microsecond component from a date or timestamp.
 
@@ -10518,28 +10436,52 @@ def not_like_escape(
     return func("not_like_escape", string, like_specifier, escape_character)
 
 
-def octet_length_bitstring(bitstring: SqlExpr | bytes) -> SqlExpr:
-    """Returns the number of bytes in the `bitstring`.
+def numeric_bin(value: SqlExpr | int) -> SqlExpr:
+    """Converts the `value` to binary representation.
 
     Args:
-        bitstring (SqlExpr | bytes): `BIT` expression
+        value (SqlExpr | SqlExpr | int): `BIGINT | BIGNUM | HUGEINT | UBIGINT | UHUGEINT` expression
 
     Returns:
         SqlExpr
     """
-    return func("octet_length", bitstring)
+    return func("bin", value)
 
 
-def octet_length_blob(blob: SqlExpr | bytes) -> SqlExpr:
-    """Number of bytes in `blob`.
+def numeric_bit_length(bit: SqlExpr | bytes) -> SqlExpr:
+    """Returns the bit-length of the `bit` argument.
 
     Args:
-        blob (SqlExpr | bytes): `BLOB` expression
+        bit (SqlExpr | bytes): `BIT` expression
 
     Returns:
         SqlExpr
     """
-    return func("octet_length", blob)
+    return func("bit_length", bit)
+
+
+def numeric_hex(value: SqlExpr | int) -> SqlExpr:
+    """Converts the `value` to `VARCHAR` using hexadecimal representation.
+
+    Args:
+        value (SqlExpr | SqlExpr | int): `BIGINT | BIGNUM | HUGEINT | UBIGINT | UHUGEINT` expression
+
+    Returns:
+        SqlExpr
+    """
+    return func("hex", value)
+
+
+def numeric_length(bit: SqlExpr | bytes) -> SqlExpr:
+    """Returns the bit-length of the `bit` argument.
+
+    Args:
+        bit (SqlExpr | bytes): `BIT` expression
+
+    Returns:
+        SqlExpr
+    """
+    return func("length", bit)
 
 
 def parse_dirname(
@@ -10722,24 +10664,6 @@ def random() -> SqlExpr:
     return func("random")
 
 
-def range_list(
-    start: SqlExpr | datetime | int,
-    stop: SqlExpr | datetime | int | None = None,
-    step: SqlExpr | int | timedelta | None = None,
-) -> SqlExpr:
-    """Creates a list of values between `start` and `stop` - the stop parameter is exclusive.
-
-    Args:
-        start (SqlExpr | datetime | int): `BIGINT | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
-        stop (SqlExpr | datetime | int | None): `BIGINT | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
-        step (SqlExpr | int | timedelta | None): `BIGINT | INTERVAL` expression
-
-    Returns:
-        SqlExpr
-    """
-    return func("range", start, stop, step)
-
-
 def remap_struct(
     input_arg: SqlExpr, target_type: SqlExpr, mapping: SqlExpr, defaults: SqlExpr
 ) -> SqlExpr:
@@ -10755,32 +10679,6 @@ def remap_struct(
         SqlExpr
     """
     return func("remap_struct", input_arg, target_type, mapping, defaults)
-
-
-def repeat_blob(blob: SqlExpr | bytes, count: SqlExpr | int) -> SqlExpr:
-    """Repeats the `blob` `count` number of times.
-
-    Args:
-        blob (SqlExpr | bytes): `BLOB` expression
-        count (SqlExpr | int): `BIGINT` expression
-
-    Returns:
-        SqlExpr
-    """
-    return func("repeat", blob, count)
-
-
-def repeat_string(string: SqlExpr | str, count: SqlExpr | int) -> SqlExpr:
-    """Repeats the `string` `count` number of times.
-
-    Args:
-        string (SqlExpr | str): `VARCHAR` expression
-        count (SqlExpr | int): `BIGINT` expression
-
-    Returns:
-        SqlExpr
-    """
-    return func("repeat", string, count)
 
 
 def replace(
@@ -10963,54 +10861,6 @@ def setseed(col0: SqlExpr | float) -> SqlExpr:
         SqlExpr
     """
     return func("setseed", col0)
-
-
-def sha1_blob(blob: SqlExpr | bytes) -> SqlExpr:
-    """Returns a `VARCHAR` with the SHA-1 hash of the `blob`.
-
-    Args:
-        blob (SqlExpr | bytes): `BLOB` expression
-
-    Returns:
-        SqlExpr
-    """
-    return func("sha1", blob)
-
-
-def sha1_string(value: SqlExpr | str) -> SqlExpr:
-    """Returns a `VARCHAR` with the SHA-1 hash of the `value`.
-
-    Args:
-        value (SqlExpr | str): `VARCHAR` expression
-
-    Returns:
-        SqlExpr
-    """
-    return func("sha1", value)
-
-
-def sha256_blob(blob: SqlExpr | bytes) -> SqlExpr:
-    """Returns a `VARCHAR` with the SHA-256 hash of the `blob`.
-
-    Args:
-        blob (SqlExpr | bytes): `BLOB` expression
-
-    Returns:
-        SqlExpr
-    """
-    return func("sha256", blob)
-
-
-def sha256_string(value: SqlExpr | str) -> SqlExpr:
-    """Returns a `VARCHAR` with the SHA-256 hash of the `value`.
-
-    Args:
-        value (SqlExpr | str): `VARCHAR` expression
-
-    Returns:
-        SqlExpr
-    """
-    return func("sha256", value)
 
 
 def sign(x: SqlExpr | float) -> SqlExpr:
@@ -11614,6 +11464,21 @@ def yearweek(ts: SqlExpr | date | datetime | timedelta) -> SqlExpr:
 # ============================================================
 
 
+def struct_array_extract(
+    struct: SqlExpr | dict[object, object], entry: SqlExpr | int | str
+) -> SqlExpr:
+    """Extracts the named `entry` from the `STRUCT`.
+
+    Args:
+        struct (SqlExpr | dict[object, object]): `STRUCT` expression
+        entry (SqlExpr | int | str): `BIGINT | VARCHAR` expression
+
+    Returns:
+        SqlExpr
+    """
+    return func("array_extract", struct, entry)
+
+
 def struct_concat(*args: SqlExpr) -> SqlExpr:
     """Merge the multiple STRUCTs into a single STRUCT.
 
@@ -11740,6 +11605,141 @@ def string_agg(str_arg: SqlExpr, arg: SqlExpr | str | None = None) -> SqlExpr:
         SqlExpr
     """
     return func("string_agg", str_arg, arg)
+
+
+def string_array_extract(string: SqlExpr | str, index: SqlExpr | int) -> SqlExpr:
+    """Extracts a single character from a `string` using a (1-based) `index`.
+
+    Args:
+        string (SqlExpr | str): `VARCHAR` expression
+        index (SqlExpr | int): `BIGINT` expression
+
+    Returns:
+        SqlExpr
+    """
+    return func("array_extract", string, index)
+
+
+def string_bin(string: SqlExpr | str) -> SqlExpr:
+    """Converts the `string` to binary representation.
+
+    Args:
+        string (SqlExpr | str): `VARCHAR` expression
+
+    Returns:
+        SqlExpr
+    """
+    return func("bin", string)
+
+
+def string_bit_length(string: SqlExpr | str) -> SqlExpr:
+    """Number of bits in a `string`.
+
+    Args:
+        string (SqlExpr | str): `VARCHAR` expression
+
+    Returns:
+        SqlExpr
+    """
+    return func("bit_length", string)
+
+
+def string_contains(string: SqlExpr | str, search_string: SqlExpr | str) -> SqlExpr:
+    """Returns `true` if `search_string` is found within `string`.
+
+    Args:
+        string (SqlExpr | str): `VARCHAR` expression
+        search_string (SqlExpr | str): `VARCHAR` expression
+
+    Returns:
+        SqlExpr
+    """
+    return func("contains", string, search_string)
+
+
+def string_hex(string: SqlExpr | str) -> SqlExpr:
+    """Converts the `string` to hexadecimal representation.
+
+    Args:
+        string (SqlExpr | str): `VARCHAR` expression
+
+    Returns:
+        SqlExpr
+    """
+    return func("hex", string)
+
+
+def string_length(string: SqlExpr | str) -> SqlExpr:
+    """Number of characters in `string`.
+
+    Args:
+        string (SqlExpr | str): `VARCHAR` expression
+
+    Returns:
+        SqlExpr
+    """
+    return func("length", string)
+
+
+def string_md5(string: SqlExpr | str) -> SqlExpr:
+    """Returns the MD5 hash of the `string` as a `VARCHAR`.
+
+    Args:
+        string (SqlExpr | str): `VARCHAR` expression
+
+    Returns:
+        SqlExpr
+    """
+    return func("md5", string)
+
+
+def string_md5_number(string: SqlExpr | str) -> SqlExpr:
+    """Returns the MD5 hash of the `string` as a `HUGEINT`.
+
+    Args:
+        string (SqlExpr | str): `VARCHAR` expression
+
+    Returns:
+        SqlExpr
+    """
+    return func("md5_number", string)
+
+
+def string_repeat(string: SqlExpr | str, count: SqlExpr | int) -> SqlExpr:
+    """Repeats the `string` `count` number of times.
+
+    Args:
+        string (SqlExpr | str): `VARCHAR` expression
+        count (SqlExpr | int): `BIGINT` expression
+
+    Returns:
+        SqlExpr
+    """
+    return func("repeat", string, count)
+
+
+def string_sha1(value: SqlExpr | str) -> SqlExpr:
+    """Returns a `VARCHAR` with the SHA-1 hash of the `value`.
+
+    Args:
+        value (SqlExpr | str): `VARCHAR` expression
+
+    Returns:
+        SqlExpr
+    """
+    return func("sha1", value)
+
+
+def string_sha256(value: SqlExpr | str) -> SqlExpr:
+    """Returns a `VARCHAR` with the SHA-256 hash of the `value`.
+
+    Args:
+        value (SqlExpr | str): `VARCHAR` expression
+
+    Returns:
+        SqlExpr
+    """
+    return func("sha256", value)
 
 
 def string_split(string: SqlExpr | str, separator: SqlExpr | str) -> SqlExpr:

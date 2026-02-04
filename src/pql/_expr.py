@@ -458,13 +458,13 @@ class ExprStringNameSpace:
 
     def len_chars(self) -> Expr:
         """Get the length in characters."""
-        return Expr(sql.fns.length_string(self._expr))
+        return Expr(sql.fns.string_length(self._expr))
 
     def contains(self, pattern: str, *, literal: bool = False) -> Expr:
         """Check if string contains a pattern."""
         match literal:
             case True:
-                return Expr(sql.fns.contains_string(self._expr, sql.lit(pattern)))
+                return Expr(sql.fns.string_contains(self._expr, sql.lit(pattern)))
             case False:
                 return Expr(sql.fns.regexp_matches(self._expr, sql.lit(pattern)))
 
@@ -547,7 +547,7 @@ class ExprStringNameSpace:
 
     def len_bytes(self) -> Expr:
         """Get the length in bytes."""
-        return Expr(sql.fns.octet_length_bitstring(sql.fns.encode(self._expr)))
+        return Expr(sql.fns.bitstring_octet_length(sql.fns.encode(self._expr)))
 
     def split(self, by: str) -> Expr:
         """Split string by separator."""
@@ -563,19 +563,19 @@ class ExprStringNameSpace:
         match literal:
             case False:
                 return Expr(
-                    sql.fns.length_list(
+                    sql.fns.list_length(
                         sql.fns.regexp_extract_all(self._expr, pattern_expr),
                     )
                 )
             case True:
                 return Expr(
-                    sql.fns.length_string(self._expr)
+                    sql.fns.string_length(self._expr)
                     .__sub__(
-                        sql.fns.length_string(
+                        sql.fns.string_length(
                             sql.fns.replace(self._expr, pattern_expr, sql.lit("")),
                         )
                     )
-                    .__truediv__(sql.fns.length_string(pattern_expr))
+                    .__truediv__(sql.fns.string_length(pattern_expr))
                 )
 
     def to_date(self, format: str | None = None) -> Expr:  # noqa: A002
@@ -640,7 +640,7 @@ class ExprStringNameSpace:
                             sql.fns.starts_with(self._expr, prefix_expr),
                             sql.fns.substring(
                                 self._expr,
-                                sql.fns.length_string(prefix_expr).__add__(sql.lit(1)),
+                                sql.fns.string_length(prefix_expr).__add__(sql.lit(1)),
                             ),
                         ).otherwise(self._expr)
                     )
@@ -664,8 +664,8 @@ class ExprStringNameSpace:
                             sql.fns.substring(
                                 self._expr,
                                 sql.lit(1),
-                                sql.fns.length_string(self._expr).__sub__(
-                                    sql.fns.length_string(suffix_expr)
+                                sql.fns.string_length(self._expr).__sub__(
+                                    sql.fns.string_length(suffix_expr)
                                 ),
                             ),
                         ).otherwise(self._expr)
@@ -737,7 +737,7 @@ class ExprListNameSpace(SqlExprHandler):
 
     def len(self) -> Expr:
         """Return the number of elements in each list."""
-        return Expr(sql.fns.length_list(self._expr))
+        return Expr(sql.fns.list_length(self._expr))
 
     def unique(self) -> Expr:
         """Return unique values in each list."""

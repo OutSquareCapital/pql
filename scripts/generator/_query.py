@@ -249,7 +249,7 @@ def _to_py_name(dk: DuckCols, p_lens: ParamLens) -> pl.Expr:
             lambda base_name: pl.when(
                 cat_str.n_unique().over(dk.name).gt(1).and_(cat_str.ne(_EMPTY_STR))
             )
-            .then(pl.concat_str(base_name, pl.lit("_"), cat_str))
+            .then(pl.concat_str(cat_str, pl.lit("_"), base_name))
             .otherwise(base_name)
         )
         .pipe(
