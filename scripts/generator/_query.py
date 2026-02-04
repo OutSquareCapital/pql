@@ -216,18 +216,6 @@ def _to_param_names(_params: pl.Expr, _py_name: pl.Expr) -> pl.Expr:
         )
         .pipe(
             lambda expr: (
-                pl.when(expr.eq(_EMPTY_STR))
-                .then(
-                    pl.concat_str(
-                        pl.lit("_arg"),
-                        expr.cum_count().over(_py_name).cast(pl.String),
-                    )
-                )
-                .otherwise(expr)
-            )
-        )
-        .pipe(
-            lambda expr: (
                 pl.when(expr.cum_count().over(_py_name, expr).gt(1))
                 .then(
                     pl.concat_str(
