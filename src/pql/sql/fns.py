@@ -2685,11 +2685,11 @@ def read_text(col0: SqlExpr | str | list[str]) -> SqlExpr:
     return func("read_text", col0)
 
 
-def repeat(col0: SqlExpr | list[SqlExpr], col1: SqlExpr | int) -> SqlExpr:
+def repeat(col0: SqlExpr, col1: SqlExpr | int) -> SqlExpr:
     """SQL repeat function.
 
     Args:
-        col0 (SqlExpr | SqlExpr | list[SqlExpr]): `ANY | T[]` expression
+        col0 (SqlExpr): `ANY | T[]` expression
         col1 (SqlExpr | int): `BIGINT` expression
 
     Returns:
@@ -3342,12 +3342,12 @@ def first(arg: SqlExpr | Decimal) -> SqlExpr:
     return func("first", arg)
 
 
-def histogram(arg: SqlExpr, col1: SqlExpr | list[SqlExpr] | None = None) -> SqlExpr:
+def histogram(arg: SqlExpr, col1: SqlExpr | None = None) -> SqlExpr:
     """Returns a LIST of STRUCTs with the fields bucket and count.
 
     Args:
         arg (SqlExpr): `ANY` expression
-        col1 (SqlExpr | list[SqlExpr] | None): `ANY[]` expression
+        col1 (SqlExpr | None): `ANY[]` expression
 
     Returns:
         SqlExpr: `MAP` expression.
@@ -3355,12 +3355,12 @@ def histogram(arg: SqlExpr, col1: SqlExpr | list[SqlExpr] | None = None) -> SqlE
     return func("histogram", arg, col1)
 
 
-def histogram_exact(arg: SqlExpr, bins: SqlExpr | list[SqlExpr]) -> SqlExpr:
+def histogram_exact(arg: SqlExpr, bins: SqlExpr) -> SqlExpr:
     """Returns a LIST of STRUCTs with the fields bucket and count matching the buckets exactly.
 
     Args:
         arg (SqlExpr): `ANY` expression
-        bins (SqlExpr | list[SqlExpr]): `ANY[]` expression
+        bins (SqlExpr): `ANY[]` expression
 
     Returns:
         SqlExpr: `MAP` expression.
@@ -3858,11 +3858,11 @@ def array_distance(array1: SqlExpr | float, array2: SqlExpr | float) -> SqlExpr:
     return func("array_distance", array1, array2)
 
 
-def array_extract(col0: SqlExpr | list[SqlExpr], col1: SqlExpr | int) -> SqlExpr:
+def array_extract(col0: SqlExpr, col1: SqlExpr | int) -> SqlExpr:
     """SQL array_extract function.
 
     Args:
-        col0 (SqlExpr | list[SqlExpr]): `T[]` expression
+        col0 (SqlExpr): `T[]` expression
         col1 (SqlExpr | int): `BIGINT` expression
 
     Returns:
@@ -3929,11 +3929,11 @@ def array_intersect(l1: SqlExpr, l2: SqlExpr) -> SqlExpr:
     return func("array_intersect", l1, l2)
 
 
-def array_length(list_arg: SqlExpr | list[SqlExpr]) -> SqlExpr:
+def array_length(list_arg: SqlExpr) -> SqlExpr:
     """Returns the length of the `list`.
 
     Args:
-        list_arg (SqlExpr | list[SqlExpr]): `ANY[]` expression
+        list_arg (SqlExpr): `ANY[]` expression
 
     Returns:
         SqlExpr: `BIGINT` expression.
@@ -3942,12 +3942,12 @@ def array_length(list_arg: SqlExpr | list[SqlExpr]) -> SqlExpr:
 
 
 def array_length_dimension(
-    list_arg: SqlExpr | list[SqlExpr], dimension: SqlExpr | int | None = None
+    list_arg: SqlExpr, dimension: SqlExpr | int | None = None
 ) -> SqlExpr:
     """`array_length` for lists with dimensions other than 1 not implemented.
 
     Args:
-        list_arg (SqlExpr | list[SqlExpr]): `ANY[]` expression
+        list_arg (SqlExpr): `ANY[]` expression
         dimension (SqlExpr | int | None): `BIGINT` expression
 
     Returns:
@@ -5106,12 +5106,12 @@ def json_value(col0: SqlExpr | str, col1: SqlExpr | int | str | list[str]) -> Sq
 
 
 def list_aggregate(
-    list_arg: SqlExpr | list[SqlExpr], function_name: SqlExpr | str, *args: SqlExpr
+    list_arg: SqlExpr, function_name: SqlExpr | str, *args: SqlExpr
 ) -> SqlExpr:
     """Executes the aggregate function `function_name` on the elements of `list`.
 
     Args:
-        list_arg (SqlExpr | list[SqlExpr]): `ANY[]` expression
+        list_arg (SqlExpr): `ANY[]` expression
         function_name (SqlExpr | str): `VARCHAR` expression
         *args (SqlExpr): `ANY` expression
 
@@ -5230,7 +5230,7 @@ def list_bool_or(l_arg: SqlExpr) -> SqlExpr:
     return func("list_bool_or", l_arg)
 
 
-def list_concat(*args: SqlExpr | list[SqlExpr]) -> SqlExpr:
+def list_concat(*args: SqlExpr) -> SqlExpr:
     """Concatenates lists.
 
     `NULL` inputs are skipped.
@@ -5238,7 +5238,7 @@ def list_concat(*args: SqlExpr | list[SqlExpr]) -> SqlExpr:
     See also operator `||`.
 
     Args:
-        *args (SqlExpr | list[SqlExpr]): `ANY[]` expression
+        *args (SqlExpr): `ANY[]` expression
 
     Returns:
         SqlExpr: `ANY[]` expression.
@@ -5246,11 +5246,11 @@ def list_concat(*args: SqlExpr | list[SqlExpr]) -> SqlExpr:
     return func("list_concat", *args)
 
 
-def list_contains(list_arg: SqlExpr | list[SqlExpr], element: SqlExpr) -> SqlExpr:
+def list_contains(list_arg: SqlExpr, element: SqlExpr) -> SqlExpr:
     """Returns true if the list contains the element.
 
     Args:
-        list_arg (SqlExpr | list[SqlExpr]): `T[]` expression
+        list_arg (SqlExpr): `T[]` expression
         element (SqlExpr): `T` expression
 
     Returns:
@@ -5316,13 +5316,13 @@ def list_distance(
     return func("list_distance", list1, list2)
 
 
-def list_distinct(list_arg: SqlExpr | list[SqlExpr]) -> SqlExpr:
+def list_distinct(list_arg: SqlExpr) -> SqlExpr:
     """Removes all duplicates and `NULL` values from a list.
 
     Does not preserve the original order.
 
     Args:
-        list_arg (SqlExpr | list[SqlExpr]): `T[]` expression
+        list_arg (SqlExpr): `T[]` expression
 
     Returns:
         SqlExpr: `T[]` expression.
@@ -5342,13 +5342,11 @@ def list_entropy(l_arg: SqlExpr) -> SqlExpr:
     return func("list_entropy", l_arg)
 
 
-def list_extract(
-    list_arg: SqlExpr | list[SqlExpr] | str, index: SqlExpr | int
-) -> SqlExpr:
+def list_extract(list_arg: SqlExpr | str, index: SqlExpr | int) -> SqlExpr:
     """Extract the `index`th (1-based) value from the list.
 
     Args:
-        list_arg (SqlExpr | list[SqlExpr] | str): `T[] | VARCHAR` expression
+        list_arg (SqlExpr | SqlExpr | str): `T[] | VARCHAR` expression
         index (SqlExpr | int): `BIGINT` expression
 
     Returns:
@@ -5357,7 +5355,7 @@ def list_extract(
     return func("list_extract", list_arg, index)
 
 
-def list_filter(list_arg: SqlExpr | list[SqlExpr], lambda_arg: SqlExpr) -> SqlExpr:
+def list_filter(list_arg: SqlExpr, lambda_arg: SqlExpr) -> SqlExpr:
     """Constructs a list from those elements of the input `list` for which the `lambda` function returns `true`.
 
     DuckDB must be able to cast the `lambda` function's return type to `BOOL`.
@@ -5365,7 +5363,7 @@ def list_filter(list_arg: SqlExpr | list[SqlExpr], lambda_arg: SqlExpr) -> SqlEx
     The return type of `list_filter` is the same as the input list's.
 
     Args:
-        list_arg (SqlExpr | list[SqlExpr]): `ANY[]` expression
+        list_arg (SqlExpr): `ANY[]` expression
         lambda_arg (SqlExpr): `LAMBDA` expression
 
     Returns:
@@ -5399,14 +5397,14 @@ def list_fn(arg: SqlExpr) -> SqlExpr:
 
 
 def list_grade_up(
-    list_arg: SqlExpr | list[SqlExpr],
+    list_arg: SqlExpr,
     col1: SqlExpr | str | None = None,
     col2: SqlExpr | str | None = None,
 ) -> SqlExpr:
     """Works like list_sort, but the results are the indexes that correspond to the position in the original list instead of the actual values.
 
     Args:
-        list_arg (SqlExpr | list[SqlExpr]): `ANY[]` expression
+        list_arg (SqlExpr): `ANY[]` expression
         col1 (SqlExpr | str | None): `VARCHAR` expression
         col2 (SqlExpr | str | None): `VARCHAR` expression
 
@@ -5416,16 +5414,14 @@ def list_grade_up(
     return func("list_grade_up", list_arg, col1, col2)
 
 
-def list_has_all(
-    list1: SqlExpr | list[SqlExpr], list2: SqlExpr | list[SqlExpr]
-) -> SqlExpr:
+def list_has_all(list1: SqlExpr, list2: SqlExpr) -> SqlExpr:
     """Returns true if all elements of list2 are in list1.
 
     NULLs are ignored.
 
     Args:
-        list1 (SqlExpr | list[SqlExpr]): `T[]` expression
-        list2 (SqlExpr | list[SqlExpr]): `T[]` expression
+        list1 (SqlExpr): `T[]` expression
+        list2 (SqlExpr): `T[]` expression
 
     Returns:
         SqlExpr: `BOOLEAN` expression.
@@ -5433,16 +5429,14 @@ def list_has_all(
     return func("list_has_all", list1, list2)
 
 
-def list_has_any(
-    list1: SqlExpr | list[SqlExpr], list2: SqlExpr | list[SqlExpr]
-) -> SqlExpr:
+def list_has_any(list1: SqlExpr, list2: SqlExpr) -> SqlExpr:
     """Returns true if the lists have any element in common.
 
     NULLs are ignored.
 
     Args:
-        list1 (SqlExpr | list[SqlExpr]): `T[]` expression
-        list2 (SqlExpr | list[SqlExpr]): `T[]` expression
+        list1 (SqlExpr): `T[]` expression
+        list2 (SqlExpr): `T[]` expression
 
     Returns:
         SqlExpr: `BOOLEAN` expression.
@@ -5601,13 +5595,13 @@ def list_negative_inner_product(
     return func("list_negative_inner_product", list1, list2)
 
 
-def list_position(list_arg: SqlExpr | list[SqlExpr], element: SqlExpr) -> SqlExpr:
+def list_position(list_arg: SqlExpr, element: SqlExpr) -> SqlExpr:
     """Returns the index of the `element` if the `list` contains the `element`.
 
     If the `element` is not found, it returns `NULL`.
 
     Args:
-        list_arg (SqlExpr | list[SqlExpr]): `T[]` expression
+        list_arg (SqlExpr): `T[]` expression
         element (SqlExpr): `T` expression
 
     Returns:
@@ -5642,16 +5636,14 @@ def list_product(l_arg: SqlExpr) -> SqlExpr:
 
 
 def list_reduce(
-    list_arg: SqlExpr | list[SqlExpr],
-    lambda_arg: SqlExpr,
-    initial_value: SqlExpr | None = None,
+    list_arg: SqlExpr, lambda_arg: SqlExpr, initial_value: SqlExpr | None = None
 ) -> SqlExpr:
     """Reduces all elements of the input `list` into a single scalar value by executing the `lambda` function on a running result and the next list element.
 
     The `lambda` function has an optional `initial_value` argument.
 
     Args:
-        list_arg (SqlExpr | list[SqlExpr]): `ANY[]` expression
+        list_arg (SqlExpr): `ANY[]` expression
         lambda_arg (SqlExpr): `LAMBDA` expression
         initial_value (SqlExpr | None): `ANY` expression
 
@@ -5662,14 +5654,14 @@ def list_reduce(
 
 
 def list_resize(
-    list_arg: SqlExpr | list[SqlExpr], size: SqlExpr, value: SqlExpr | None = None
+    list_arg: SqlExpr, size: SqlExpr, value: SqlExpr | None = None
 ) -> SqlExpr:
     """Resizes the `list` to contain `size` elements.
 
     Initializes new elements with `value` or `NULL` if `value` is not set.
 
     Args:
-        list_arg (SqlExpr | list[SqlExpr]): `ANY[]` expression
+        list_arg (SqlExpr): `ANY[]` expression
         size (SqlExpr): `ANY` expression
         value (SqlExpr | None): `ANY` expression
 
@@ -5691,13 +5683,11 @@ def list_reverse(l_arg: SqlExpr) -> SqlExpr:
     return func("list_reverse", l_arg)
 
 
-def list_reverse_sort(
-    list_arg: SqlExpr | list[SqlExpr], col1: SqlExpr | str | None = None
-) -> SqlExpr:
+def list_reverse_sort(list_arg: SqlExpr, col1: SqlExpr | str | None = None) -> SqlExpr:
     """Sorts the elements of the list in reverse order.
 
     Args:
-        list_arg (SqlExpr | list[SqlExpr]): `ANY[]` expression
+        list_arg (SqlExpr): `ANY[]` expression
         col1 (SqlExpr | str | None): `VARCHAR` expression
 
     Returns:
@@ -5706,13 +5696,11 @@ def list_reverse_sort(
     return func("list_reverse_sort", list_arg, col1)
 
 
-def list_select(
-    value_list: SqlExpr | list[SqlExpr], index_list: SqlExpr | list[int]
-) -> SqlExpr:
+def list_select(value_list: SqlExpr, index_list: SqlExpr | list[int]) -> SqlExpr:
     """Returns a list based on the elements selected by the `index_list`.
 
     Args:
-        value_list (SqlExpr | list[SqlExpr]): `T[]` expression
+        value_list (SqlExpr): `T[]` expression
         index_list (SqlExpr | list[int]): `BIGINT[]` expression
 
     Returns:
@@ -5779,14 +5767,14 @@ def list_slice_list_string(list_arg: SqlExpr, begin: SqlExpr, end: SqlExpr) -> S
 
 
 def list_sort(
-    list_arg: SqlExpr | list[SqlExpr],
+    list_arg: SqlExpr,
     col1: SqlExpr | str | None = None,
     col2: SqlExpr | str | None = None,
 ) -> SqlExpr:
     """Sorts the elements of the list.
 
     Args:
-        list_arg (SqlExpr | list[SqlExpr]): `ANY[]` expression
+        list_arg (SqlExpr): `ANY[]` expression
         col1 (SqlExpr | str | None): `VARCHAR` expression
         col2 (SqlExpr | str | None): `VARCHAR` expression
 
@@ -5844,13 +5832,13 @@ def list_sum(l_arg: SqlExpr) -> SqlExpr:
     return func("list_sum", l_arg)
 
 
-def list_transform(list_arg: SqlExpr | list[SqlExpr], lambda_arg: SqlExpr) -> SqlExpr:
+def list_transform(list_arg: SqlExpr, lambda_arg: SqlExpr) -> SqlExpr:
     """Returns a list that is the result of applying the `lambda` function to each element of the input `list`.
 
     The return type is defined by the return type of the `lambda` function.
 
     Args:
-        list_arg (SqlExpr | list[SqlExpr]): `ANY[]` expression
+        list_arg (SqlExpr): `ANY[]` expression
         lambda_arg (SqlExpr): `LAMBDA` expression
 
     Returns:
@@ -5859,11 +5847,11 @@ def list_transform(list_arg: SqlExpr | list[SqlExpr], lambda_arg: SqlExpr) -> Sq
     return func("list_transform", list_arg, lambda_arg)
 
 
-def list_unique(list_arg: SqlExpr | list[SqlExpr]) -> SqlExpr:
+def list_unique(list_arg: SqlExpr) -> SqlExpr:
     """Counts the unique elements of a `list`.
 
     Args:
-        list_arg (SqlExpr | list[SqlExpr]): `ANY[]` expression
+        list_arg (SqlExpr): `ANY[]` expression
 
     Returns:
         SqlExpr: `UBIGINT` expression.
@@ -5908,13 +5896,11 @@ def list_var_samp(l_arg: SqlExpr) -> SqlExpr:
     return func("list_var_samp", l_arg)
 
 
-def list_where(
-    value_list: SqlExpr | list[SqlExpr], mask_list: SqlExpr | list[bool]
-) -> SqlExpr:
+def list_where(value_list: SqlExpr, mask_list: SqlExpr | list[bool]) -> SqlExpr:
     """Returns a list with the `BOOLEAN`s in `mask_list` applied as a mask to the `value_list`.
 
     Args:
-        value_list (SqlExpr | list[SqlExpr]): `T[]` expression
+        value_list (SqlExpr): `T[]` expression
         mask_list (SqlExpr | list[bool]): `BOOLEAN[]` expression
 
     Returns:
@@ -7463,13 +7449,11 @@ def constant_or_null(arg1: SqlExpr, arg2: SqlExpr, *args: SqlExpr) -> SqlExpr:
     return func("constant_or_null", arg1, arg2, *args)
 
 
-def contains(
-    col0: SqlExpr | list[SqlExpr] | dict[object, object], col1: SqlExpr
-) -> SqlExpr:
+def contains(col0: SqlExpr | dict[object, object], col1: SqlExpr) -> SqlExpr:
     """SQL contains function.
 
     Args:
-        col0 (SqlExpr | list[SqlExpr] | SqlExpr | dict[object, object]): `T[] | MAP(K, V) | STRUCT` expression
+        col0 (SqlExpr | SqlExpr | dict[object, object]): `T[] | MAP(K, V) | STRUCT` expression
         col1 (SqlExpr): `T | K | ANY` expression
 
     Returns:
@@ -9983,11 +9967,11 @@ def length_grapheme(string: SqlExpr | str) -> SqlExpr:
     return func("length_grapheme", string)
 
 
-def length_list(list_arg: SqlExpr | list[SqlExpr]) -> SqlExpr:
+def length_list(list_arg: SqlExpr) -> SqlExpr:
     """Returns the length of the `list`.
 
     Args:
-        list_arg (SqlExpr | list[SqlExpr]): `ANY[]` expression
+        list_arg (SqlExpr): `ANY[]` expression
 
     Returns:
         SqlExpr: `BIGINT` expression.
