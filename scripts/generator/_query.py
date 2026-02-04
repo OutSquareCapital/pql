@@ -348,10 +348,7 @@ def _to_func(
                     pl.when(dk.varargs.is_not_null())
                     .then(
                         pl.concat_str(
-                            pl.when(has_params)
-                            .then(pl.lit("\n        "))
-                            .otherwise(pl.lit("        ")),
-                            pl.lit("*args ("),
+                            pl.lit("\n        *args ("),
                             varargs_py_type,
                             pl.lit("): `"),
                             dk.varargs,
