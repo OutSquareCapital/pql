@@ -55,7 +55,7 @@ def _header() -> str:
         from datetime import date, datetime, time, timedelta
         from decimal import Decimal
 
-        from ._exprs import SqlExpr, func
+        from ._core import SqlExpr, func
 
         __all__ = [
     ''')
