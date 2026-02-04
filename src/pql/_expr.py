@@ -627,9 +627,7 @@ class ExprStringNameSpace:
             case str() as prefix_str:
                 return Expr(
                     sql.fns.regexp_replace(
-                        self._expr,
-                        sql.lit(f"^{re.escape(prefix_str)}"),
-                        sql.lit(""),
+                        self._expr, sql.lit(f"^{re.escape(prefix_str)}"), sql.lit("")
                     )
                 )
             case _:
@@ -691,20 +689,11 @@ class ExprStringNameSpace:
         value_expr = sql.from_value(value)
         match literal:
             case True:
-                return Expr(
-                    sql.fns.replace(
-                        self._expr,
-                        sql.lit(pattern),
-                        value_expr,
-                    )
-                )
+                return Expr(sql.fns.replace(self._expr, sql.lit(pattern), value_expr))
             case False:
                 return Expr(
                     sql.fns.regexp_replace(
-                        self._expr,
-                        sql.lit(pattern),
-                        value_expr,
-                        sql.lit("g"),
+                        self._expr, sql.lit(pattern), value_expr, sql.lit("g")
                     )
                 )
 
@@ -814,9 +803,7 @@ class ExprListNameSpace(SqlExprHandler):
         nulls_position = "NULLS LAST" if nulls_last else "NULLS FIRST"
         return Expr(
             sql.fns.list_sort(
-                self._expr,
-                sql.lit(sort_direction),
-                sql.lit(nulls_position),
+                self._expr, sql.lit(sort_direction), sql.lit(nulls_position)
             )
         )
 
