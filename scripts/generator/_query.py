@@ -27,9 +27,9 @@ def sql_query() -> duckdb.DuckDBPyRelation:
 
 @dataclass(slots=True)
 class ParamLens:
-    by_func: pl.Expr = field(default=pl.col("p_len_by_func"))
-    by_func_and_cat: pl.Expr = field(default=pl.col("p_len_by_func_and_cat"))
-    by_func_cat_and_desc: pl.Expr = field(default=pl.col("p_len_by_func_cat_and_desc"))
+    by_fn: pl.Expr = field(default=pl.col("p_len_by_fn"))
+    by_fn_cat: pl.Expr = field(default=pl.col("p_len_by_fn_cat"))
+    by_fn_cat_desc: pl.Expr = field(default=pl.col("p_len_by_fn_cat_desc"))
 
 
 @dataclass(slots=True)
@@ -79,11 +79,11 @@ def get_df() -> pl.LazyFrame:
             ),
             *dk.params.list.len().pipe(
                 lambda expr_len: (
-                    expr_len.alias("p_len_by_func"),
-                    expr_len.min().over(dk.name).alias("p_len_by_func_and_cat"),
+                    expr_len.alias("p_len_by_fn"),
+                    expr_len.min().over(dk.name).alias("p_len_by_fn_cat"),
                     expr_len.min()
                     .over(dk.name, dk.cats, dk.description)
-                    .alias("p_len_by_func_cat_and_desc"),
+                    .alias("p_len_by_fn_cat_desc"),
                 )
             ),
             dk.varargs.pipe(_convert_duckdb_type_to_python)
@@ -113,7 +113,7 @@ def get_df() -> pl.LazyFrame:
             pl.all().exclude("param_names", "param_doc_join").first(),
             *params.names.filter(params.names.is_not_null()).pipe(
                 _joined_parts,
-                params.idx.ge(params.lens.by_func_and_cat),
+                params.idx.ge(params.lens.by_fn_cat),
                 py.types_union,
                 params.types_union,
             ),
@@ -259,20 +259,19 @@ def _to_py_name(dk: DuckCols, p_lens: ParamLens) -> pl.Expr:
                 dk.description.n_unique()
                 .over(dk.name, dk.cats)
                 .gt(1)
-                .and_(p_lens.by_func_cat_and_desc.gt(p_lens.by_func_and_cat))
+                .and_(p_lens.by_fn_cat_desc.gt(p_lens.by_fn_cat))
             )
             .then(
                 pl.concat_str(
                     base,
                     pl.lit("_"),
-                    pl.when(p_lens.by_func.eq(p_lens.by_func_cat_and_desc))
+                    pl.when(p_lens.by_fn.eq(p_lens.by_fn_cat_desc))
                     .then(
-                        pl.when(p_lens.by_func_cat_and_desc.eq(p_lens.by_func_and_cat))
+                        pl.when(p_lens.by_fn_cat_desc.eq(p_lens.by_fn_cat))
                         .then(dk.params)
                         .otherwise(
                             dk.params.list.slice(
-                                p_lens.by_func_and_cat,
-                                p_lens.by_func.sub(p_lens.by_func_and_cat),
+                                p_lens.by_fn_cat, p_lens.by_fn.sub(p_lens.by_fn_cat)
                             )
                         )
                     )
