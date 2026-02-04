@@ -294,7 +294,7 @@ class Expr(SqlExprHandler):
             sql.fns.func(
                 "/",
                 sql.fns.exp(self._expr).__sub__(sql.fns.exp(-self._expr)),
-                sql.lit("2"),
+                sql.lit(2),
             )
         )
 
@@ -304,7 +304,7 @@ class Expr(SqlExprHandler):
             sql.fns.func(
                 "/",
                 sql.fns.exp(self._expr).__add__(sql.fns.exp(-self._expr)),
-                sql.lit("2"),
+                sql.lit(2),
             )
         )
 
