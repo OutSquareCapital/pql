@@ -7,8 +7,8 @@ This report shows the API coverage of pql compared to Polars.
 | Class       | Coverage vs Narwhals | Total | Matched | Missing | Mismatched | Extra | Extra vs Narwhals |
 | ----------- | -------------------- | ----- | ------- | ------- | ---------- | ----- | ----------------- |
 | LazyFrame   | 50.0%                | 52    | 26      | 7       | 19         | 1     | 26                |
-| Expr        | 48.6%                | 107   | 52      | 46      | 9          | 1     | 38                |
-| Expr.str    | 88.9%                | 27    | 24      | 1       | 2          | 0     | 10                |
+| Expr        | 48.6%                | 107   | 52      | 46      | 9          | 1     | 37                |
+| Expr.str    | 82.8%                | 29    | 24      | 3       | 2          | 0     | 10                |
 | Expr.list   | 100.0%               | 10    | 10      | 0       | 0          | 0     | 0                 |
 | Expr.struct | 100.0%               | 1     | 1       | 0       | 0          | 0     | 0                 |
 
@@ -60,11 +60,11 @@ This report shows the API coverage of pql compared to Polars.
   - pql: (k: int, by: IntoExpr | Iterable[IntoExpr], **reverse: bool**) -> Self
 - `cast` (pl)
   - Polars: (**dtypes: Mapping[ColumnNameOrSelector | PolarsDataType, PolarsDataType | PythonDataType] | PolarsDataType | pl.DataTypeExpr | Schema**, **strict: bool**) -> LazyFrame
-  - pql: (**dtypes: Mapping[str, datatypes.DataType] | datatypes.DataType**) -> Self
+  - pql: (**dtypes: Mapping[str, sql.datatypes.DataType] | sql.datatypes.DataType**) -> Self
 - `collect` (nw)
   - Narwhals: (**backend: IntoBackend[Polars | Pandas | Arrow] | None**, **kwargs: Any**) -> DataFrame[Any]
   - Polars: (**type_coercion: bool**, **predicate_pushdown: bool**, **projection_pushdown: bool**, **simplify_expression: bool**, **slice_pushdown: bool**, **comm_subplan_elim: bool**, **comm_subexpr_elim: bool**, **cluster_with_columns: bool**, **collapse_joins: bool**, **no_optimization: bool**, **engine: EngineType**, **background: bool**, **optimizations: QueryOptFlags**, **_kwargs: Any**) -> DataFrame | InProcessQuery
-  - pql: () -> pl.DataFrame
+  - pql: () -> DataFrame
 - `drop` (nw)
   - Narwhals: (**columns: str | Iterable[str]**, **strict: bool**) -> Self
   - Polars: (**columns: ColumnNameOrSelector | Iterable[ColumnNameOrSelector]**, **strict: bool**) -> LazyFrame
@@ -100,14 +100,14 @@ This report shows the API coverage of pql compared to Polars.
   - Polars: (**n: int | IntoExprColumn**, fill_value: IntoExpr | None) -> LazyFrame
   - pql: (**n: int**, fill_value: IntoExpr | None) -> Self
 - `sink_csv` (pl)
-  - Polars: (**path: str | Path | IO[bytes] | IO[str] | _SinkDirectory | PartitionBy**, **include_bom: bool**, include_header: bool, separator: str, **line_terminator: str**, **quote_char: str**, **batch_size: int**, **datetime_format: str | None**, **date_format: str | None**, **time_format: str | None**, **float_scientific: bool | None**, **float_precision: int | None**, **decimal_comma: bool**, **null_value: str | None**, **quote_style: CsvQuoteStyle | None**, **maintain_order: bool**, **storage_options: dict[str, Any] | None**, **credential_provider: CredentialProviderFunction | Literal['auto'] | None**, **retries: int**, **sync_on_close: SyncOnCloseMethod | None**, **mkdir: bool**, **lazy: bool**, **engine: EngineType**, **optimizations: QueryOptFlags**) -> LazyFrame | None
+  - Polars: (**path: str | Path | IO[bytes] | IO[str] | PartitionBy**, **include_bom: bool**, **compression: Literal['uncompressed', 'gzip', 'zstd']**, **compression_level: int | None**, **check_extension: bool**, include_header: bool, separator: str, **line_terminator: str**, **quote_char: str**, **batch_size: int**, **datetime_format: str | None**, **date_format: str | None**, **time_format: str | None**, **float_scientific: bool | None**, **float_precision: int | None**, **decimal_comma: bool**, **null_value: str | None**, **quote_style: CsvQuoteStyle | None**, **maintain_order: bool**, **storage_options: StorageOptionsDict | None**, **credential_provider: CredentialProviderFunction | Literal['auto'] | None**, **retries: int | None**, **sync_on_close: SyncOnCloseMethod | None**, **mkdir: bool**, **lazy: bool**, **engine: EngineType**, **optimizations: QueryOptFlags**) -> LazyFrame | None
   - pql: (**path: str | Path**, separator: str, include_header: bool) -> None
 - `sink_ndjson` (pl)
-  - Polars: (**path: str | Path | IO[bytes] | IO[str] | _SinkDirectory | PartitionBy**, **maintain_order: bool**, **storage_options: dict[str, Any] | None**, **credential_provider: CredentialProviderFunction | Literal['auto'] | None**, **retries: int**, **sync_on_close: SyncOnCloseMethod | None**, **mkdir: bool**, **lazy: bool**, **engine: EngineType**, **optimizations: QueryOptFlags**) -> LazyFrame | None
+  - Polars: (**path: str | Path | IO[bytes] | IO[str] | PartitionBy**, **compression: Literal['uncompressed', 'gzip', 'zstd']**, **compression_level: int | None**, **check_extension: bool**, **maintain_order: bool**, **storage_options: StorageOptionsDict | None**, **credential_provider: CredentialProviderFunction | Literal['auto'] | None**, **retries: int | None**, **sync_on_close: SyncOnCloseMethod | None**, **mkdir: bool**, **lazy: bool**, **engine: EngineType**, **optimizations: QueryOptFlags**) -> LazyFrame | None
   - pql: (**path: str | Path**) -> None
 - `sink_parquet` (nw)
   - Narwhals: (**file: str | Path | BytesIO**) -> None
-  - Polars: (**path: str | Path | IO[bytes] | _SinkDirectory | PartitionBy**, compression: str, **compression_level: int | None**, **statistics: bool | str | dict[str, bool]**, **row_group_size: int | None**, **data_page_size: int | None**, **maintain_order: bool**, **storage_options: dict[str, Any] | None**, **credential_provider: CredentialProviderFunction | Literal['auto'] | None**, **retries: int**, **sync_on_close: SyncOnCloseMethod | None**, **metadata: ParquetMetadata | None**, **mkdir: bool**, **lazy: bool**, **field_overwrites: ParquetFieldOverwrites | Sequence[ParquetFieldOverwrites] | Mapping[str, ParquetFieldOverwrites] | None**, **engine: EngineType**, **optimizations: QueryOptFlags**) -> LazyFrame | None
+  - Polars: (**path: str | Path | IO[bytes] | PartitionBy**, compression: str, **compression_level: int | None**, **statistics: bool | str | dict[str, bool]**, **row_group_size: int | None**, **data_page_size: int | None**, **maintain_order: bool**, **storage_options: StorageOptionsDict | None**, **credential_provider: CredentialProviderFunction | Literal['auto'] | None**, **retries: int | None**, **sync_on_close: SyncOnCloseMethod | None**, **metadata: ParquetMetadata | None**, **arrow_schema: ArrowSchemaExportable | None**, **mkdir: bool**, **lazy: bool**, **engine: EngineType**, **optimizations: QueryOptFlags**) -> LazyFrame | None
   - pql: (**path: str | Path**, **compression: str**) -> None
 - `sort` (nw)
   - Narwhals: (**by: str | Iterable[str]**, **more_by: str**, **descending: bool | Sequence[bool]**, **nulls_last: bool**) -> Self
@@ -202,11 +202,11 @@ This report shows the API coverage of pql compared to Polars.
 - `ewm_mean` (com: float | None, span: float | None, half_life: float | None, alpha: float | None, adjust: bool, min_samples: int, ignore_nulls: bool) -> Self
 - `fill_null` (value: Expr | NonNestedLiteral, strategy: FillNullStrategy | None, limit: int | None) -> Self
 - `filter` (predicates: Any) -> Self
-- `first` () -> Self
+- `first` (order_by: str | Iterable[str] | None) -> Self
 - `is_between` (lower_bound: Any | IntoExpr, upper_bound: Any | IntoExpr, closed: ClosedInterval) -> Self
 - `is_close` (other: Expr | Series[Any] | NumericLiteral, abs_tol: float, rel_tol: float, nans_equal: bool) -> Self
 - `kurtosis` () -> Self
-- `last` () -> Self
+- `last` (order_by: str | Iterable[str] | None) -> Self
 - `len` () -> Self
 - `map_batches` (function: Callable[[Any], CompliantExpr[Any, Any]], return_dtype: DType | None, returns_scalar: bool) -> Self
 - `max` () -> Self
@@ -239,8 +239,8 @@ This report shows the API coverage of pql compared to Polars.
   - pql: () -> Self
 - `cast` (nw)
   - Narwhals: (**dtype: IntoDType**) -> Self
-  - Polars: (**dtype: PolarsDataType | pl.DataTypeExpr | type[Any]**, **strict: bool**, **wrap_numerical: bool**) -> Expr
-  - pql: (**dtype: datatypes.DataType**) -> Self
+  - Polars: (**dtype: DataTypeExpr | type[Any]**, **strict: bool**, **wrap_numerical: bool**) -> Expr
+  - pql: (**dtype: DataType**) -> Self
 - `forward_fill` (pl)
   - Polars: (**limit: int | None**) -> Expr
   - pql: () -> Self
@@ -258,7 +258,7 @@ This report shows the API coverage of pql compared to Polars.
   - Polars: (**exponent: IntoExprColumn | int | float**) -> Expr
   - pql: (**other: Any**) -> Self
 - `repeat_by` (pl)
-  - Polars: (**by: pl.Series | Expr | str | int**) -> Expr
+  - Polars: (**by: Series | Expr | str | int**) -> Expr
   - pql: (**by: Expr | int**) -> Self
 - `replace` (pl)
   - Polars: (**old: IntoExpr | Sequence[Any] | Mapping[Any, Any]**, **new: IntoExpr | Sequence[Any] | NoDefault**, **default: IntoExpr | NoDefault**, **return_dtype: PolarsDataType | None**) -> Expr
@@ -297,8 +297,10 @@ This report shows the API coverage of pql compared to Polars.
 - `to_titlecase`
 - `to_uppercase`
 
-### [x] Missing Methods (1)
+### [x] Missing Methods (3)
 
+- `pad_end` (length: int, fill_char: str) -> ExprT
+- `pad_start` (length: int, fill_char: str) -> ExprT
 - `zfill` (width: int) -> ExprT
 
 ### [!] Signature Mismatches (2)
@@ -306,7 +308,7 @@ This report shows the API coverage of pql compared to Polars.
 - `to_datetime` (nw)
   - Narwhals: (format: str | None) -> ExprT
   - Polars: (format: str | None, **time_unit: TimeUnit | None**, **time_zone: str | None**, **strict: bool**, **exact: bool**, **cache: bool**, **ambiguous: Ambiguous | Expr**) -> Expr
-  - pql: (format: str | None, **time_unit: str**) -> Expr
+  - pql: (format: str | None, **time_unit: TimeUnit**) -> Expr
 - `to_time` (pl)
   - Polars: (format: str | None, **strict: bool**, **cache: bool**) -> Expr
   - pql: (format: str | None) -> Expr
