@@ -1139,7 +1139,7 @@ def duckdb_log_contexts() -> SqlExpr:
     return func("duckdb_log_contexts")
 
 
-def duckdb_logs(*, denormalized_table: SqlExpr | bool) -> SqlExpr:
+def duckdb_logs(denormalized_table: SqlExpr | bool) -> SqlExpr:
     """SQL duckdb_logs function.
 
     Args:
@@ -1208,7 +1208,7 @@ def duckdb_secret_types() -> SqlExpr:
     return func("duckdb_secret_types")
 
 
-def duckdb_secrets(*, redact: SqlExpr | bool) -> SqlExpr:
+def duckdb_secrets(redact: SqlExpr | bool) -> SqlExpr:
     """SQL duckdb_secrets function.
 
     Args:
@@ -1596,7 +1596,6 @@ def parquet_metadata(col0: SqlExpr | str) -> SqlExpr:
 def parquet_scan(
     col0: SqlExpr | str,
     filename: SqlExpr,
-    *,
     hive_partitioning: SqlExpr | bool,
     union_by_name: SqlExpr | bool,
     hive_types: SqlExpr | bool,
@@ -1802,7 +1801,7 @@ def query(col0: SqlExpr | str) -> SqlExpr:
     return func("query", col0)
 
 
-def query_table(col0: SqlExpr | str, *, col1: SqlExpr | bool | None = None) -> SqlExpr:
+def query_table(col0: SqlExpr | str, col1: SqlExpr | bool | None = None) -> SqlExpr:
     """SQL query_table function.
 
     Args:
@@ -1850,7 +1849,6 @@ def read_csv(
     filename: SqlExpr | str,
     skip: SqlExpr | int,
     comment: SqlExpr | str,
-    *,
     hive_partitioning: SqlExpr | bool,
     quote: SqlExpr | str,
     union_by_name: SqlExpr | bool | int,
@@ -2003,7 +2001,6 @@ def read_csv_auto(
     filename: SqlExpr | str,
     skip: SqlExpr | int,
     comment: SqlExpr | str,
-    *,
     hive_partitioning: SqlExpr | bool,
     quote: SqlExpr | str,
     union_by_name: SqlExpr | bool | int,
@@ -2155,7 +2152,6 @@ def read_json(
     col0: SqlExpr | str,
     format_arg: SqlExpr | str,
     filename: SqlExpr | str,
-    *,
     hive_partitioning: SqlExpr | bool | str,
     date_format: SqlExpr | str | bool,
     union_by_name: SqlExpr | bool,
@@ -2239,7 +2235,6 @@ def read_json_auto(
     col0: SqlExpr | str,
     format_arg: SqlExpr | str,
     filename: SqlExpr | str,
-    *,
     hive_partitioning: SqlExpr | bool | str,
     date_format: SqlExpr | str | bool,
     union_by_name: SqlExpr | bool,
@@ -2323,7 +2318,6 @@ def read_json_objects(
     col0: SqlExpr | str,
     format_arg: SqlExpr | str,
     filename: SqlExpr | str,
-    *,
     hive_partitioning: SqlExpr | bool,
     union_by_name: SqlExpr | bool,
     maximum_object_size: SqlExpr | int,
@@ -2368,7 +2362,6 @@ def read_json_objects_auto(
     col0: SqlExpr | str,
     format_arg: SqlExpr | str,
     filename: SqlExpr | str,
-    *,
     hive_partitioning: SqlExpr | bool,
     union_by_name: SqlExpr | bool,
     maximum_object_size: SqlExpr | int,
@@ -2413,7 +2406,6 @@ def read_ndjson(
     col0: SqlExpr | str,
     format_arg: SqlExpr | str,
     filename: SqlExpr | str,
-    *,
     hive_partitioning: SqlExpr | bool | str,
     date_format: SqlExpr | str | bool,
     union_by_name: SqlExpr | bool,
@@ -2497,7 +2489,6 @@ def read_ndjson_auto(
     col0: SqlExpr | str,
     format_arg: SqlExpr | str,
     filename: SqlExpr | str,
-    *,
     hive_partitioning: SqlExpr | bool | str,
     date_format: SqlExpr | str | bool,
     union_by_name: SqlExpr | bool,
@@ -2581,7 +2572,6 @@ def read_ndjson_objects(
     col0: SqlExpr | str,
     format_arg: SqlExpr | str,
     filename: SqlExpr | str,
-    *,
     hive_partitioning: SqlExpr | bool,
     union_by_name: SqlExpr | bool,
     maximum_object_size: SqlExpr | int,
@@ -2625,7 +2615,6 @@ def read_ndjson_objects(
 def read_parquet(
     col0: SqlExpr | str,
     filename: SqlExpr,
-    *,
     hive_partitioning: SqlExpr | bool,
     union_by_name: SqlExpr | bool,
     hive_types: SqlExpr | bool,
@@ -2773,7 +2762,6 @@ def sniff_csv(
     sep: SqlExpr | str,
     delim: SqlExpr | str,
     nullstr: SqlExpr,
-    *,
     parallel: SqlExpr | bool,
     quote: SqlExpr | str,
     new_line: SqlExpr | str,
@@ -2961,7 +2949,7 @@ def table_info(col0: SqlExpr | str) -> SqlExpr:
 
 
 def test_all_types(
-    *, use_large_enum: SqlExpr | bool, use_large_bignum: SqlExpr | bool
+    use_large_enum: SqlExpr | bool, use_large_bignum: SqlExpr | bool
 ) -> SqlExpr:
     """SQL test_all_types function.
 
@@ -3217,7 +3205,7 @@ def avg(x: SqlExpr | Decimal | timedelta | float | datetime | time) -> SqlExpr:
     return func("avg", x)
 
 
-def bool_and(*, arg: SqlExpr | bool) -> SqlExpr:
+def bool_and(arg: SqlExpr | bool) -> SqlExpr:
     """Returns TRUE if every input value is TRUE, otherwise FALSE.
 
     Args:
@@ -3229,7 +3217,7 @@ def bool_and(*, arg: SqlExpr | bool) -> SqlExpr:
     return func("bool_and", arg)
 
 
-def bool_or(*, arg: SqlExpr | bool) -> SqlExpr:
+def bool_or(arg: SqlExpr | bool) -> SqlExpr:
     """Returns TRUE if any input value is TRUE, otherwise FALSE.
 
     Args:
@@ -3266,7 +3254,7 @@ def count(arg: SqlExpr | None = None) -> SqlExpr:
     return func("count", arg)
 
 
-def count_if(*, arg: SqlExpr | bool) -> SqlExpr:
+def count_if(arg: SqlExpr | bool) -> SqlExpr:
     """Counts the total number of TRUE values for a boolean column.
 
     Args:
@@ -3728,7 +3716,7 @@ def stddev_samp(x: SqlExpr | float) -> SqlExpr:
     return func("stddev_samp", x)
 
 
-def sum(*, arg: SqlExpr | Decimal | bool | float) -> SqlExpr:
+def sum(arg: SqlExpr | Decimal | bool | float) -> SqlExpr:
     """Calculates the sum value for all tuples in arg.
 
     Args:
@@ -4965,7 +4953,6 @@ def json_quote(*args: SqlExpr) -> SqlExpr:
 
 def json_serialize_plan(
     col0: SqlExpr | str,
-    *,
     col1: SqlExpr | bool | None = None,
     col2: SqlExpr | bool | None = None,
     col3: SqlExpr | bool | None = None,
@@ -4988,7 +4975,6 @@ def json_serialize_plan(
 
 def json_serialize_sql(
     col0: SqlExpr | str,
-    *,
     col1: SqlExpr | bool | None = None,
     col2: SqlExpr | bool | None = None,
     col3: SqlExpr | bool | None = None,
@@ -5886,7 +5872,7 @@ def list_var_samp(l_arg: SqlExpr) -> SqlExpr:
     return func("list_var_samp", l_arg)
 
 
-def list_where(value_list: SqlExpr, *, mask_list: SqlExpr | bool) -> SqlExpr:
+def list_where(value_list: SqlExpr, mask_list: SqlExpr | bool) -> SqlExpr:
     """Returns a list with the `BOOLEAN`s in `mask_list` applied as a mask to the `value_list`.
 
     Args:
@@ -7585,7 +7571,7 @@ def current_schema() -> SqlExpr:
     return func("current_schema")
 
 
-def current_schemas(*, include_implicit: SqlExpr | bool) -> SqlExpr:
+def current_schemas(include_implicit: SqlExpr | bool) -> SqlExpr:
     """Returns list of schemas.
 
     Pass a parameter of True to include implicit schemas.
@@ -7828,7 +7814,6 @@ def equi_width_bins(
     min_arg: SqlExpr | float | datetime,
     max_arg: SqlExpr | float | datetime,
     bin_count: SqlExpr | int,
-    *,
     nice_rounding: SqlExpr | bool,
 ) -> SqlExpr:
     """Generates bin_count equi-width bins between the min and max.
@@ -10581,7 +10566,6 @@ def parse_duckdb_log_message(
 
 def parse_filename(
     string: SqlExpr | str,
-    *,
     trim_extension: SqlExpr | str | bool | None = None,
     separator: SqlExpr | str | None = None,
 ) -> SqlExpr:

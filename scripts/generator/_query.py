@@ -94,7 +94,7 @@ def get_df() -> pl.LazyFrame:
         .with_row_index("sig_id")
         .explode("parameters", "parameter_types")
         .with_columns(
-            pl.int_range(pl.len()).over("sig_id").inspect().alias("param_idx"),
+            pl.int_range(pl.len()).over("sig_id").alias("param_idx"),
             dk.params_types.pipe(_convert_duckdb_type_to_python).alias("py_types"),
             dk.params.pipe(_to_param_names, py.name),
         )
@@ -111,9 +111,6 @@ def get_df() -> pl.LazyFrame:
         .group_by(py.name, maintain_order=True)
         .agg(
             pl.all().exclude("param_names", "param_doc_join").first(),
-            py.types_union.str.contains(r"\bbool\b")
-            .filter(params.names.is_not_null())
-            .alias("param_is_bool"),
             *params.names.filter(params.names.is_not_null()).pipe(
                 _joined_parts,
                 params.idx.ge(params.lens.by_func_and_cat),
@@ -132,7 +129,6 @@ def get_df() -> pl.LazyFrame:
             .pipe(
                 _to_func,
                 py.name,
-                pl.col("param_is_bool"),
                 pl.col("param_sig_list"),
                 pl.col("param_doc_join"),
                 pl.col("param_names_join"),
@@ -296,7 +292,6 @@ def _to_py_name(dk: DuckCols, p_lens: ParamLens) -> pl.Expr:
 def _to_func(
     has_params: pl.Expr,
     py_name: pl.Expr,
-    is_bool: pl.Expr,
     param_sig_list: pl.Expr,
     param_doc_join: pl.Expr,
     param_names_join: pl.Expr,
@@ -312,32 +307,7 @@ def _to_func(
                     pl.lit("def "),
                     py_name,
                     pl.lit("("),
-                    is_bool.pipe(
-                        lambda p_is_bool_list: (
-                            pl.when(p_is_bool_list.list.any())
-                            .then(p_is_bool_list.list.arg_max())
-                            .otherwise(pl.lit(0))
-                            .pipe(
-                                lambda first_bool_idx: pl.when(
-                                    p_is_bool_list.list.any().and_(dk.varargs.is_null())
-                                )
-                                .then(
-                                    param_sig_list.pipe(
-                                        lambda p_sig_list: pl.concat_list(
-                                            p_sig_list.list.slice(0, first_bool_idx),
-                                            pl.lit(["*"]),
-                                            p_sig_list.list.slice(
-                                                first_bool_idx,
-                                                p_sig_list.list.len(),
-                                            ),
-                                        )
-                                    )
-                                )
-                                .otherwise(param_sig_list)
-                                .list.join(", ")
-                            )
-                        )
-                    ),
+                    param_sig_list.list.join(", "),
                     pl.when(dk.varargs.is_not_null())
                     .then(
                         pl.concat_str(

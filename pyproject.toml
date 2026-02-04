@@ -49,7 +49,7 @@
     [tool.ruff.lint.pydocstyle]
         convention = "google"
     [tool.ruff.lint.per-file-ignores]
-        "src/pql/sql/fns.py" = ["PLR0913"]
+        "src/pql/sql/fns.py" = ["FBT001", "PLR0913"]
         "tests/*"            = ["D100", "D101", "D102", "D103", "D104"]
     [tool.ruff.lint.isort]
         combine-as-imports = true
