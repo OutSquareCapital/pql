@@ -38,6 +38,7 @@ class Kword(StrEnum):
     NULLS_LAST = "NULLS LAST"
     NULLS_FIRST = "NULLS FIRST"
     ROWS_BETWEEN = "ROWS BETWEEN"
+    OVER = "OVER"
 
     @classmethod
     def sort_strat(cls, item: SqlExpr, *, desc: bool, nulls_last: bool) -> str:
@@ -65,7 +66,7 @@ class Kword(StrEnum):
 
 
 def _build(expr: str, partition_by: str, order_by: str, row_between: str) -> SqlExpr:
-    return raw(f"{expr} OVER ({partition_by} {order_by} {row_between})".strip())
+    return raw(f"{expr} {Kword.OVER} ({partition_by} {order_by} {row_between})")
 
 
 def _get_partition_by(partition_by: pc.Seq[SqlExpr]) -> str:
