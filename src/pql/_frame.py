@@ -57,8 +57,10 @@ class LazyFrame:
     def _iter_slct(self, func: Callable[[str], SqlExpr]) -> Self:
         return self.columns.iter().map(func).into(self._select)
 
-    def _iter_agg(self, func: Callable[[str], SqlExpr]) -> Self:
-        return self.columns.iter().map(func).into(self._agg)
+    def _iter_agg(self, func: Callable[[SqlExpr], SqlExpr]) -> Self:
+        return (
+            self.columns.iter().map(lambda c: func(sql.col(c)).alias(c)).into(self._agg)
+        )
 
     @property
     def relation(self) -> duckdb.DuckDBPyRelation:
@@ -201,39 +203,39 @@ class LazyFrame:
 
     def count(self) -> Self:
         """Return the count of each column."""
-        return self._iter_agg(lambda c: sql.col(c).count().alias(c))
+        return self._iter_agg(lambda c: c.count())
 
     def sum(self) -> Self:
         """Aggregate the sum of each column."""
-        return self._iter_agg(lambda c: sql.col(c).sum().alias(c))
+        return self._iter_agg(lambda c: c.sum())
 
     def mean(self) -> Self:
         """Aggregate the mean of each column."""
-        return self._iter_agg(lambda c: sql.col(c).avg().alias(c))
+        return self._iter_agg(lambda c: c.avg())
 
     def median(self) -> Self:
         """Aggregate the median of each column."""
-        return self._iter_agg(lambda c: sql.col(c).median().alias(c))
+        return self._iter_agg(lambda c: c.median())
 
     def min(self) -> Self:
         """Aggregate the minimum of each column."""
-        return self._iter_agg(lambda c: sql.col(c).min().alias(c))
+        return self._iter_agg(lambda c: c.min())
 
     def max(self) -> Self:
         """Aggregate the maximum of each column."""
-        return self._iter_agg(lambda c: sql.col(c).max().alias(c))
+        return self._iter_agg(lambda c: c.max())
 
     def std(self, ddof: int = 1) -> Self:
         """Aggregate the standard deviation of each column."""
         match ddof:
             case 1:
 
-                def _std_fn(c: str) -> sql.SqlExpr:
-                    return sql.col(c).stddev_samp().alias(c)
+                def _std_fn(c: SqlExpr) -> SqlExpr:
+                    return c.stddev_samp()
             case _:
 
-                def _std_fn(c: str) -> sql.SqlExpr:
-                    return sql.col(c).stddev_pop().alias(c)
+                def _std_fn(c: SqlExpr) -> SqlExpr:
+                    return c.stddev_pop()
 
         return self._iter_agg(_std_fn)
 
@@ -242,18 +244,18 @@ class LazyFrame:
         match ddof:
             case 1:
 
-                def _var_fn(c: str) -> sql.SqlExpr:
-                    return sql.col(c).var_samp().alias(c)
+                def _var_fn(c: SqlExpr) -> SqlExpr:
+                    return c.var_samp()
             case _:
 
-                def _var_fn(c: str) -> sql.SqlExpr:
-                    return sql.col(c).var_pop().alias(c)
+                def _var_fn(c: SqlExpr) -> SqlExpr:
+                    return c.var_pop()
 
         return self._iter_agg(_var_fn)
 
     def null_count(self) -> Self:
         """Return the null count of each column."""
-        return self._iter_agg(lambda c: sql.col(c).is_null().count_if().alias(c))
+        return self._iter_agg(lambda c: c.is_null().count_if())
 
     def fill_nan(self, value: float | Expr | None) -> Self:
         """Fill NaN values."""
@@ -280,12 +282,12 @@ class LazyFrame:
         match n:
             case n_val if n_val < 0:
 
-                def _shift_fn(c: str) -> sql.SqlExpr:
+                def _shift_fn(c: str) -> SqlExpr:
                     return sql.col(c).lead(sql.lit(abs_n)).alias(c)
 
             case _:
 
-                def _shift_fn(c: str) -> sql.SqlExpr:
+                def _shift_fn(c: str) -> SqlExpr:
                     return sql.col(c).lag(sql.lit(abs_n)).alias(c)
 
         return self._iter_slct(
@@ -324,9 +326,7 @@ class LazyFrame:
 
     def quantile(self, quantile: float) -> Self:
         """Compute quantile for each column."""
-        return self._iter_agg(
-            lambda c: sql.col(c).quantile_cont(sql.lit(quantile)).alias(c)
-        )
+        return self._iter_agg(lambda c: c.quantile_cont(sql.lit(quantile)))
 
     def top_k(
         self, k: int, *, by: IntoExpr | Iterable[IntoExpr], reverse: bool = False
