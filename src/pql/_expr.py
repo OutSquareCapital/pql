@@ -10,11 +10,9 @@ from typing import TYPE_CHECKING, Any, Concatenate, Literal, Self
 import pyochain as pc
 
 from . import sql
-from .sql import SqlExpr
+from .sql import ExprHandler, SqlExpr
 
 if TYPE_CHECKING:
-    import duckdb
-
     from .sql import IntoExpr
 
 RoundMode = Literal["half_to_even", "half_away_from_zero"]
@@ -37,23 +35,8 @@ def all() -> Expr:
 
 
 @dataclass(slots=True)
-class SqlExprHandler:
-    """A wrapper for DuckDB expressions."""
-
-    _expr: sql.SqlExpr
-
-
-@dataclass(slots=True)
-class Expr(SqlExprHandler):
+class Expr(ExprHandler[SqlExpr]):
     """Expression wrapper providing Polars-like API over DuckDB expressions."""
-
-    def to_sql(self) -> sql.SqlExpr:
-        """Get the underlying wrapped Expression."""
-        return self._expr
-
-    def to_duckdb(self) -> duckdb.Expression:
-        """Get the underlying DuckDB Expression."""
-        return self._expr.to_duckdb()
 
     def __repr__(self) -> str:
         return f"Expr({self._expr})"
@@ -669,7 +652,7 @@ class ExprStringNameSpace:
 
 
 @dataclass(slots=True)
-class ExprListNameSpace(SqlExprHandler):
+class ExprListNameSpace(ExprHandler[sql.SqlExpr]):
     """List operations namespace (equivalent to pl.Expr.list)."""
 
     def len(self) -> Expr:
@@ -747,7 +730,7 @@ class ExprListNameSpace(SqlExprHandler):
 
 
 @dataclass(slots=True)
-class ExprStructNameSpace(SqlExprHandler):
+class ExprStructNameSpace(ExprHandler[sql.SqlExpr]):
     """Struct operations namespace (equivalent to pl.Expr.struct)."""
 
     def field(self, name: str) -> Expr:

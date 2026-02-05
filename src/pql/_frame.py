@@ -95,7 +95,7 @@ class LazyFrame:
     def filter(self, *predicates: Expr) -> Self:
         """Filter rows based on predicates."""
         return pc.Iter(predicates).fold(
-            self, lambda lf, p: lf.__from_lf__(lf._rel.filter(p.to_duckdb()))
+            self, lambda lf, p: lf.__from_lf__(lf._rel.filter(sql.to_duckdb(p.inner())))
         )
 
     def sort(
@@ -129,7 +129,7 @@ class LazyFrame:
                 *SqlExpr.from_iter(*by)
                 .zip(_args_iter(arg=descending), _args_iter(arg=nulls_last))
                 .map_star(_make_order)
-                .map(lambda c: c.to_duckdb())
+                .map(lambda c: c.inner())
             )
         )
 

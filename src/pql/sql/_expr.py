@@ -2,13 +2,13 @@ from __future__ import annotations
 
 from collections.abc import Iterable
 from datetime import date, datetime, time, timedelta
-from enum import StrEnum
 from typing import TYPE_CHECKING, Any, Self
 
 import duckdb
 import pyochain as pc
 
 from ._core import func
+from ._window import over
 from .fns import FnsMixin
 
 if TYPE_CHECKING:
@@ -42,7 +42,7 @@ def row_number() -> SqlExpr:
 
 
 def fn_once(lhs: Any, rhs: SqlExpr) -> SqlExpr:  # noqa: ANN401
-    return SqlExpr(duckdb.LambdaExpression(lhs, rhs.to_duckdb()))
+    return SqlExpr(duckdb.LambdaExpression(lhs, rhs.inner()))
 
 
 def all(*, exclude: Any | None = None) -> SqlExpr:  # noqa: ANN401
@@ -50,7 +50,7 @@ def all(*, exclude: Any | None = None) -> SqlExpr:  # noqa: ANN401
 
 
 def when(condition: SqlExpr, value: SqlExpr) -> SqlExpr:
-    return SqlExpr(duckdb.CaseExpression(condition.to_duckdb(), value.to_duckdb()))
+    return SqlExpr(duckdb.CaseExpression(condition.inner(), value.inner()))
 
 
 def col(name: str) -> SqlExpr:
@@ -70,7 +70,7 @@ def raw(sql: str) -> SqlExpr:
 
 def coalesce(*exprs: SqlExpr) -> SqlExpr:
     """Create a COALESCE expression."""
-    return SqlExpr(duckdb.CoalesceOperator(*(expr.to_duckdb() for expr in exprs)))
+    return SqlExpr(duckdb.CoalesceOperator(*(expr.inner() for expr in exprs)))
 
 
 def to_duckdb(value: SqlExpr | str | duckdb.Expression) -> duckdb.Expression | str:
@@ -79,7 +79,7 @@ def to_duckdb(value: SqlExpr | str | duckdb.Expression) -> duckdb.Expression | s
         case str() | duckdb.Expression():
             return value
         case SqlExpr():
-            return value.to_duckdb()
+            return value.inner()
 
 
 def from_cols(exprs: IntoExprColumn) -> pc.Iter[duckdb.Expression | str]:
@@ -89,104 +89,14 @@ def from_cols(exprs: IntoExprColumn) -> pc.Iter[duckdb.Expression | str]:
     match exprs:
         case duckdb.Expression():
             return pc.Iter.once(exprs)
-        case Expr() | SqlExpr():
-            return pc.Iter.once(exprs.to_duckdb())
+        case SqlExpr():
+            return pc.Iter.once(exprs.inner())
+        case Expr():
+            return pc.Iter.once(exprs.inner().inner())
         case str():
             return pc.Iter.once(exprs)
         case Iterable():
             return pc.Iter(exprs).map(from_cols).flatten()
-
-
-def build_over(
-    expr: str, partition_by: str, order_by: str, row_between: str
-) -> duckdb.Expression:
-    return duckdb.SQLExpression(
-        f"{expr} {Kword.OVER} ({partition_by} {order_by} {row_between})"
-    )
-
-
-class Kword(StrEnum):
-    PARTITION_BY = "PARTITION BY"
-    ORDER_BY = "ORDER BY"
-    DESC = "DESC"
-    ASC = "ASC"
-    NULLS_LAST = "NULLS LAST"
-    NULLS_FIRST = "NULLS FIRST"
-    ROWS_BETWEEN = "ROWS BETWEEN"
-    OVER = "OVER"
-
-    @classmethod
-    def sort_strat(cls, item: SqlExpr, *, desc: bool, nulls_last: bool) -> str:
-        return f"{item} {cls.DESC if desc else cls.ASC} {cls.NULLS_LAST if nulls_last else cls.NULLS_FIRST}"
-
-    @classmethod
-    def rows_clause(cls, row_start: pc.Option[int], row_end: pc.Option[int]) -> str:
-        match (row_start, row_end):
-            case (pc.Some(start), pc.Some(end)):
-                return f"{cls.ROWS_BETWEEN} {-start} PRECEDING AND {end} FOLLOWING"
-            case (pc.Some(start), pc.NONE):
-                return f"{cls.ROWS_BETWEEN} {-start} PRECEDING AND UNBOUNDED FOLLOWING"
-            case (pc.NONE, pc.Some(end)):
-                return f"{cls.ROWS_BETWEEN} UNBOUNDED PRECEDING AND {end} FOLLOWING"
-            case _:
-                return ""
-
-    @classmethod
-    def partition_by(cls, by: str) -> str:
-        return f"{cls.PARTITION_BY} {by}"
-
-    @classmethod
-    def order_by(cls, by: str) -> str:
-        return f"{cls.ORDER_BY} {by}"
-
-
-def get_partition_by(partition_by: pc.Seq[SqlExpr]) -> str:
-    return (
-        partition_by.then_some()
-        .map(lambda x: x.iter().map(str).join(", "))
-        .map(Kword.partition_by)
-        .unwrap_or("")
-    )
-
-
-def handle_nulls(expr: SqlExpr, *, ignore_nulls: bool) -> str:
-    match ignore_nulls:
-        case True:
-            return f"{str(expr).removesuffix(')')} ignore nulls)"
-        case False:
-            return str(expr)
-
-
-def get_order_by(
-    order_by: pc.Seq[SqlExpr],
-    *,
-    descending: pc.Seq[bool] | bool,
-    nulls_last: pc.Seq[bool] | bool,
-) -> str:
-    def _get_clauses(*, clauses: pc.Seq[bool] | bool) -> pc.Seq[bool]:
-        match clauses:
-            case bool() as val:
-                return pc.Iter.once(val).cycle().take(order_by.length()).collect()
-            case pc.Seq() as seq:
-                return seq
-
-    return (
-        order_by.then_some()
-        .map(
-            lambda x: (
-                x.iter()
-                .zip(_get_clauses(clauses=descending), _get_clauses(clauses=nulls_last))
-                .map_star(
-                    lambda item, desc, nl: Kword.sort_strat(
-                        item=item, desc=desc, nulls_last=nl
-                    )
-                )
-                .join(", ")
-            )
-        )
-        .map(Kword.order_by)
-        .unwrap_or("")
-    )
 
 
 class SqlExpr(FnsMixin):  # noqa: PLW1641
@@ -205,7 +115,7 @@ class SqlExpr(FnsMixin):  # noqa: PLW1641
             case duckdb.Expression():
                 return cls(value)
             case Expr():
-                return value.to_sql()
+                return value.inner()
             case str():
                 return col(value)
             case _:
@@ -222,7 +132,7 @@ class SqlExpr(FnsMixin):  # noqa: PLW1641
             case duckdb.Expression():
                 return SqlExpr(value)
             case Expr():
-                return value.to_sql()
+                return value.inner()
             case _:
                 return lit(value)
 
@@ -261,10 +171,6 @@ class SqlExpr(FnsMixin):  # noqa: PLW1641
             .iter()
             .map_star(lambda name, expr: cls.from_expr(expr).alias(name))
         )
-
-    def to_duckdb(self) -> duckdb.Expression:
-        """Get the underlying DuckDB Expression."""
-        return self._expr
 
     def __str__(self) -> str:
         return str(self._expr)
@@ -488,15 +394,15 @@ class SqlExpr(FnsMixin):  # noqa: PLW1641
         ignore_nulls: bool = False,
     ) -> Self:
         return self.__class__(
-            build_over(
-                handle_nulls(self, ignore_nulls=ignore_nulls),
-                get_partition_by(partition_by or pc.Seq[SqlExpr].new()),
-                get_order_by(
-                    order_by or pc.Seq[SqlExpr].new(),
-                    descending=descending,
-                    nulls_last=nulls_last,
-                ),
-                Kword.rows_clause(pc.Option(rows_start), pc.Option(rows_end)),
+            over(
+                self,
+                partition_by,
+                order_by,
+                rows_start,
+                rows_end,
+                descending=descending,
+                nulls_last=nulls_last,
+                ignore_nulls=ignore_nulls,
             )
         )
 

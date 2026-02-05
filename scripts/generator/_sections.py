@@ -51,24 +51,17 @@ def _header() -> str:
 
         from datetime import date, datetime, time, timedelta
         from decimal import Decimal
-        from typing import TYPE_CHECKING, Self
+        from typing import Self
 
-        from ._core import func
+        from duckdb import Expression as SqlExpr
 
-        if TYPE_CHECKING:
-            from duckdb import Expression as SqlExpr
-
+        from ._core import ExprHandler, func
 
 
-        class FnsMixin:
+        class FnsMixin(ExprHandler[SqlExpr]):
             """Mixin providing all auto-generated DuckDB functions as methods.
 
             All methods return Self for chaining.
             """
 
-            __slots__ = ("_expr",)
-
-            def __init__(self, expr: SqlExpr) -> None:
-                """Initialize mixin with underlying SqlExpr."""
-                self._expr = expr
     ''')

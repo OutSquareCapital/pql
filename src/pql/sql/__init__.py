@@ -1,7 +1,7 @@
 """SQL expression functions and converters."""
 
 from . import datatypes
-from ._core import FrameInit, rel_from_data
+from ._core import ExprHandler, FrameInit, rel_from_data
 from ._expr import (
     IntoExpr,
     IntoExprColumn,
@@ -20,6 +20,7 @@ from ._expr import (
 )
 
 __all__ = [
+    "ExprHandler",
     "FrameInit",
     "IntoExpr",
     "IntoExprColumn",

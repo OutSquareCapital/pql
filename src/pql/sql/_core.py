@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from dataclasses import dataclass
 from typing import Any
 
 import duckdb
@@ -12,6 +13,17 @@ type FrameInit = (
 )
 
 
+@dataclass(slots=True)
+class ExprHandler[T]:
+    """A wrapper for expressions."""
+
+    _expr: T
+
+    def inner(self) -> T:
+        """Unwrap the underlying expression."""
+        return self._expr
+
+
 def func(name: str, *args: Any) -> duckdb.Expression:  # noqa: ANN401
     """Create a SQL function expression."""
 
@@ -22,8 +34,10 @@ def func(name: str, *args: Any) -> duckdb.Expression:  # noqa: ANN401
         match arg:
             case duckdb.Expression():
                 return arg
-            case SqlExpr() | Expr():
-                return arg.to_duckdb()
+            case SqlExpr():
+                return arg.inner()
+            case Expr():
+                return arg.inner().inner()
             case str():
                 return duckdb.ColumnExpression(arg)
             case _:
