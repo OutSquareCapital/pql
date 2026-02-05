@@ -15,14 +15,14 @@ def sample_df() -> nw.LazyFrame[duckdb.DuckDBPyRelation]:
         duckdb.from_arrow(
             pl.DataFrame(
                 {
-                    "a": [True, False, True, None],
-                    "b": [True, True, False, None],
-                    "x": [10, 2, 3, None],
-                    "n": [2, 3, 1, None],
-                    "s": ["1", "2", "3", None],
-                    "age": [25, 30, 35, None],
-                    "salary": [50000.0, 60000.0, 70000.0, None],
-                    "nested": [[1, 2], [3, 4], [5], None],
+                    "a": [True, False, True, None, True, False],
+                    "b": [True, True, False, None, True, False],
+                    "x": [10, 2, 3, None, 10, 20],
+                    "n": [2, 3, 1, None, 2, 3],
+                    "s": ["1", "2", "3", None, "1", "2"],
+                    "age": [25, 30, 35, None, 25, 30],
+                    "salary": [50000.0, 60000.0, 70000.0, None, 50000.0, 60000.0],
+                    "nested": [[1, 2], [3, 4], [5], None, [1, 2], [3, 4]],
                 }
             )
         )
@@ -262,13 +262,6 @@ def test_backward_fill() -> None:
     assert_eq_pl(
         pql.col("a").backward_fill().alias("backward_filled"),
         pl.col("a").backward_fill().alias("backward_filled"),
-    )
-
-
-def test_interpolate() -> None:
-    assert_eq_pl(
-        pql.col("x").interpolate().alias("interpolated"),
-        pl.col("x").interpolate().alias("interpolated"),
     )
 
 

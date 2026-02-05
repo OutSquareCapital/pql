@@ -6,8 +6,8 @@ This report shows the API coverage of pql compared to Polars.
 
 | Class       | Coverage vs Narwhals | Total | Matched | Missing | Mismatched | Extra | Extra vs Narwhals |
 | ----------- | -------------------- | ----- | ------- | ------- | ---------- | ----- | ----------------- |
-| LazyFrame   | 50.0%                | 52    | 26      | 7       | 19         | 1     | 26                |
-| Expr        | 48.6%                | 107   | 52      | 46      | 9          | 1     | 37                |
+| LazyFrame   | 51.0%                | 51    | 26      | 7       | 18         | 1     | 25                |
+| Expr        | 49.1%                | 106   | 52      | 46      | 8          | 1     | 36                |
 | Expr.str    | 82.8%                | 29    | 24      | 3       | 2          | 0     | 10                |
 | Expr.list   | 100.0%               | 10    | 10      | 0       | 0          | 0     | 0                 |
 | Expr.struct | 100.0%               | 1     | 1       | 0       | 0          | 0     | 0                 |
@@ -53,7 +53,7 @@ This report shows the API coverage of pql compared to Polars.
 - `to_native` () -> LazyFrameT
 - `unpivot` (on: str | list[str] | None, index: str | list[str] | None, variable_name: str, value_name: str) -> Self
 
-### [!] Signature Mismatches (19)
+### [!] Signature Mismatches (18)
 
 - `bottom_k` (pl)
   - Polars: (k: int, by: IntoExpr | Iterable[IntoExpr], **reverse: bool | Sequence[bool]**) -> LazyFrame
@@ -82,9 +82,6 @@ This report shows the API coverage of pql compared to Polars.
 - `fill_nan` (pl)
   - Polars: (**value: int | float | Expr | None**) -> LazyFrame
   - pql: (**value: float | Expr | None**) -> Self
-- `fill_null` (pl)
-  - Polars: (**value: Any | Expr | None**, **strategy: FillNullStrategy | None**, **limit: int | None**, **matches_supertype: bool**) -> LazyFrame
-  - pql: (**value: IntoExpr**, **strategy: Literal['forward', 'backward'] | None**) -> Self
 - `filter` (nw)
   - Narwhals: (**predicates: IntoExpr | Iterable[IntoExpr]**, **constraints: Any**) -> Self
   - Polars: (**predicates: IntoExprColumn | Iterable[IntoExprColumn] | bool | list[bool]**, **constraints: Any**) -> LazyFrame
@@ -232,7 +229,7 @@ This report shows the API coverage of pql compared to Polars.
 - `unique` () -> Self
 - `var` (ddof: int) -> Self
 
-### [!] Signature Mismatches (9)
+### [!] Signature Mismatches (8)
 
 - `backward_fill` (pl)
   - Polars: (**limit: int | None**) -> Expr
@@ -247,9 +244,6 @@ This report shows the API coverage of pql compared to Polars.
 - `hash` (pl)
   - Polars: (seed: int, **seed_1: int | None**, **seed_2: int | None**, **seed_3: int | None**) -> Expr
   - pql: (seed: int) -> Self
-- `interpolate` (pl)
-  - Polars: (**method: InterpolationMethod**) -> Expr
-  - pql: () -> Self
 - `is_in` (nw)
   - Narwhals: (**other: Any**) -> Self
   - Polars: (**other: Expr | Collection[Any] | Series**, **nulls_equal: bool**) -> Expr

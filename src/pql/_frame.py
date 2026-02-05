@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Callable, Iterable, Mapping
 from pathlib import Path
-from typing import TYPE_CHECKING, Concatenate, Literal, Self
+from typing import TYPE_CHECKING, Concatenate, Self
 
 import pyochain as pc
 
@@ -254,42 +254,6 @@ class LazyFrame:
     def null_count(self) -> Self:
         """Return the null count of each column."""
         return self._iter_agg(lambda c: sql.fns.count_if(sql.col(c).isnull()).alias(c))
-
-    def fill_null(
-        self,
-        value: IntoExpr = None,
-        *,
-        strategy: Literal["forward", "backward"] | None = None,
-    ) -> Self:
-        """Fill null values."""
-
-        def _with_strategy(
-            start: pc.Option[int], end: pc.Option[int], fn: Callable[[SqlExpr], SqlExpr]
-        ) -> Self:
-            return self._iter_slct(
-                lambda c: sql.coalesce(
-                    sql.col(c),
-                    sql.Over(rows_start=start, rows_end=end, ignore_nulls=True).call(
-                        fn(sql.col(c))
-                    ),
-                ).alias(c)
-            )
-
-        match (value, strategy):
-            case (None, None):
-                msg = "Either `value` or `strategy` must be provided."
-                raise ValueError(msg)
-            case (None, "forward"):
-                return _with_strategy(pc.NONE, pc.Some(0), sql.fns.last_value)
-            case (None, "backward"):
-                return _with_strategy(pc.Some(0), pc.NONE, sql.fns.first_value)
-            case (val, None):
-                return self._iter_slct(
-                    lambda c: sql.coalesce(sql.col(c), sql.from_expr(val)).alias(c)
-                )
-            case _:
-                msg = "Either `value` or `strategy` must be provided."
-                raise ValueError(msg)
 
     def fill_nan(self, value: float | Expr | None) -> Self:
         """Fill NaN values."""

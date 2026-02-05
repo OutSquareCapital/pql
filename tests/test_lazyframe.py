@@ -133,29 +133,6 @@ def test_select_single_column(sample_df: pl.DataFrame) -> None:
     )
 
 
-def test_fill_null(sample_df: pl.DataFrame) -> None:
-    assert_eq(
-        pql.LazyFrame(sample_df)
-        .select(pql.col("id"), pql.col("value"))
-        .fill_null(0)
-        .collect(),
-        sample_df.lazy().select(pl.col("id"), pl.col("value")).fill_null(0).collect(),
-    )
-
-    assert_eq(
-        pql.LazyFrame(sample_df).fill_null(strategy="forward").collect(),
-        sample_df.lazy().fill_null(strategy="forward").collect(),
-    )
-    assert_eq(
-        pql.LazyFrame(sample_df).fill_null(strategy="backward").collect(),
-        sample_df.lazy().fill_null(strategy="backward").collect(),
-    )
-    with pytest.raises(
-        ValueError, match=r"Either `value` or `strategy` must be provided\."
-    ):
-        pql.LazyFrame(sample_df).fill_null().collect()
-
-
 def test_sort(sample_df: pl.DataFrame) -> None:
     assert_eq(
         pql.LazyFrame(sample_df).sort("age").collect(),
