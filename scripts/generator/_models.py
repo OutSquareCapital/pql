@@ -76,12 +76,15 @@ class PyTypes(StrEnum):
     FLOAT = auto()
     DECIMAL = "Decimal"
     BYTES = auto()
+    BYTEARRAY = auto()
+    MEMORYVIEW = auto()
     TIME = auto()
     DATETIME = auto()
     TIMEDELTA = auto()
     LIST = auto()
     DICT = "dict[object, object]"
     EXPR = "SqlExpr"
+    NONE = "None"
 
 
 class DuckDbTypes(StrEnum):
@@ -104,8 +107,6 @@ class DuckDbTypes(StrEnum):
     DECIMAL = auto()
     BOOLEAN = auto()
     DATE = auto()
-    TIME = auto()
-    TIMESTAMP = auto()
     INTERVAL = auto()
     BLOB = auto()
     BIT = auto()
@@ -117,43 +118,55 @@ class DuckDbTypes(StrEnum):
     STRUCT = auto()
     ARRAY = auto()
     UNION = auto()
+    TIME = auto()
+    TIMESTAMP = auto()
+    TIMESTAMPTZ = auto()
+    BITSTRING = auto()
+    NULL = auto()
 
 
-CONVERSION_MAP: pc.Dict[DuckDbTypes, PyTypes] = pc.Dict(
+CONVERSION_MAP: pc.Dict[DuckDbTypes, pc.Seq[PyTypes]] = pc.Dict(
     {
-        DuckDbTypes.VARCHAR: PyTypes.STR,
-        DuckDbTypes.INTEGER: PyTypes.INT,
-        DuckDbTypes.BIGINT: PyTypes.INT,
-        DuckDbTypes.SMALLINT: PyTypes.INT,
-        DuckDbTypes.TINYINT: PyTypes.INT,
-        DuckDbTypes.HUGEINT: PyTypes.INT,
-        DuckDbTypes.UINTEGER: PyTypes.INT,
-        DuckDbTypes.UBIGINT: PyTypes.INT,
-        DuckDbTypes.USMALLINT: PyTypes.INT,
-        DuckDbTypes.UTINYINT: PyTypes.INT,
-        DuckDbTypes.UHUGEINT: PyTypes.INT,
-        DuckDbTypes.DOUBLE: PyTypes.FLOAT,
-        DuckDbTypes.FLOAT: PyTypes.FLOAT,
-        DuckDbTypes.REAL: PyTypes.FLOAT,
-        DuckDbTypes.DECIMAL: PyTypes.DECIMAL,
-        DuckDbTypes.BOOLEAN: PyTypes.BOOL,
-        DuckDbTypes.DATE: PyTypes.DATE,
-        DuckDbTypes.TIME: PyTypes.TIME,
-        DuckDbTypes.TIMESTAMP: PyTypes.DATETIME,
-        DuckDbTypes.INTERVAL: PyTypes.TIMEDELTA,
-        DuckDbTypes.BLOB: PyTypes.BYTES,
-        DuckDbTypes.BIT: PyTypes.BYTES,
-        DuckDbTypes.UUID: PyTypes.STR,
-        DuckDbTypes.JSON: PyTypes.STR,
-        DuckDbTypes.ANY: PyTypes.EXPR,
-        DuckDbTypes.LIST: PyTypes.LIST,
-        DuckDbTypes.MAP: PyTypes.EXPR,
-        DuckDbTypes.STRUCT: PyTypes.DICT,
-        DuckDbTypes.ARRAY: PyTypes.LIST,
-        DuckDbTypes.UNION: PyTypes.EXPR,
+        DuckDbTypes.VARCHAR: pc.Seq((PyTypes.STR,)),
+        DuckDbTypes.INTEGER: pc.Seq((PyTypes.INT,)),
+        DuckDbTypes.BIGINT: pc.Seq((PyTypes.INT,)),
+        DuckDbTypes.SMALLINT: pc.Seq((PyTypes.INT,)),
+        DuckDbTypes.TINYINT: pc.Seq((PyTypes.INT,)),
+        DuckDbTypes.HUGEINT: pc.Seq((PyTypes.INT,)),
+        DuckDbTypes.UINTEGER: pc.Seq((PyTypes.INT,)),
+        DuckDbTypes.UBIGINT: pc.Seq((PyTypes.INT,)),
+        DuckDbTypes.USMALLINT: pc.Seq((PyTypes.INT,)),
+        DuckDbTypes.UTINYINT: pc.Seq((PyTypes.INT,)),
+        DuckDbTypes.UHUGEINT: pc.Seq((PyTypes.INT,)),
+        DuckDbTypes.DOUBLE: pc.Seq((PyTypes.FLOAT,)),
+        DuckDbTypes.FLOAT: pc.Seq((PyTypes.FLOAT,)),
+        DuckDbTypes.REAL: pc.Seq((PyTypes.FLOAT,)),
+        DuckDbTypes.DECIMAL: pc.Seq((PyTypes.DECIMAL,)),
+        DuckDbTypes.BOOLEAN: pc.Seq((PyTypes.BOOL,)),
+        DuckDbTypes.DATE: pc.Seq((PyTypes.DATE,)),
+        DuckDbTypes.TIME: pc.Seq((PyTypes.TIME,)),
+        DuckDbTypes.TIMESTAMP: pc.Seq((PyTypes.DATETIME,)),
+        DuckDbTypes.INTERVAL: pc.Seq((PyTypes.TIMEDELTA,)),
+        DuckDbTypes.BLOB: pc.Seq(
+            (PyTypes.BYTES, PyTypes.BYTEARRAY, PyTypes.MEMORYVIEW)
+        ),
+        DuckDbTypes.BIT: pc.Seq((PyTypes.BYTES, PyTypes.BYTEARRAY, PyTypes.MEMORYVIEW)),
+        DuckDbTypes.UUID: pc.Seq((PyTypes.STR,)),
+        DuckDbTypes.JSON: pc.Seq((PyTypes.STR,)),
+        DuckDbTypes.ANY: pc.Seq((PyTypes.EXPR,)),
+        DuckDbTypes.LIST: pc.Seq((PyTypes.LIST,)),
+        DuckDbTypes.MAP: pc.Seq((PyTypes.EXPR,)),
+        DuckDbTypes.STRUCT: pc.Seq((PyTypes.DICT,)),
+        DuckDbTypes.ARRAY: pc.Seq((PyTypes.LIST,)),
+        DuckDbTypes.UNION: pc.Seq((PyTypes.EXPR,)),
+        DuckDbTypes.TIMESTAMPTZ: pc.Seq((PyTypes.DATETIME,)),
+        DuckDbTypes.BITSTRING: pc.Seq(
+            (PyTypes.BYTES, PyTypes.BYTEARRAY, PyTypes.MEMORYVIEW)
+        ),
+        DuckDbTypes.NULL: pc.Seq((PyTypes.NONE,)),
     }
 )
-"""DuckDB type -> Python type hint mapping."""
+"""DuckDB type -> Python type hint mapping (exhaustive)."""
 
 KWORDS = pc.Set(keyword.kwlist).union(
     pc.Iter(PyTypes)

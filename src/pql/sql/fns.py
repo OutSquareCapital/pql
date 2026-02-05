@@ -558,8 +558,16 @@ def approx_top_k(val: SqlExpr, k: SqlExpr | int) -> SqlExpr:
 
 
 def arg_max(
-    arg: SqlExpr | Decimal | bytes | date | datetime | float | str,
-    val: SqlExpr | bytes | date | datetime | float | str,
+    arg: SqlExpr
+    | Decimal
+    | bytes
+    | bytearray
+    | memoryview
+    | date
+    | datetime
+    | float
+    | str,
+    val: SqlExpr | bytes | bytearray | memoryview | date | datetime | float | str,
     col2: SqlExpr | int | None = None,
 ) -> SqlExpr:
     """Finds the row with the maximum val.
@@ -567,8 +575,8 @@ def arg_max(
     Calculates the non-NULL arg expression at that row.
 
     Args:
-        arg (SqlExpr | Decimal | SqlExpr | bytes | date | datetime | float | int | str): `ANY | BIGINT | BLOB | DATE | DECIMAL | DOUBLE | INTEGER | TIMESTAMP | TIMESTAMP WITH TIME ZONE | VARCHAR` expression
-        val (SqlExpr | SqlExpr | bytes | date | datetime | float | int | str): `ANY | BIGINT | BLOB | DATE | DOUBLE | HUGEINT | INTEGER | TIMESTAMP | TIMESTAMP WITH TIME ZONE | VARCHAR` expression
+        arg (SqlExpr | Decimal | SqlExpr | bytes | bytearray | memoryview | date | datetime | float | int | str): `ANY | BIGINT | BLOB | DATE | DECIMAL | DOUBLE | INTEGER | TIMESTAMP | TIMESTAMP WITH TIME ZONE | VARCHAR` expression
+        val (SqlExpr | SqlExpr | bytes | bytearray | memoryview | date | datetime | float | int | str): `ANY | BIGINT | BLOB | DATE | DOUBLE | HUGEINT | INTEGER | TIMESTAMP | TIMESTAMP WITH TIME ZONE | VARCHAR` expression
         col2 (SqlExpr | int | None): `BIGINT` expression
 
     Returns:
@@ -578,16 +586,24 @@ def arg_max(
 
 
 def arg_max_null(
-    arg: SqlExpr | Decimal | bytes | date | datetime | float | str,
-    val: SqlExpr | bytes | date | datetime | float | str,
+    arg: SqlExpr
+    | Decimal
+    | bytes
+    | bytearray
+    | memoryview
+    | date
+    | datetime
+    | float
+    | str,
+    val: SqlExpr | bytes | bytearray | memoryview | date | datetime | float | str,
 ) -> SqlExpr:
     """Finds the row with the maximum val.
 
     Calculates the arg expression at that row.
 
     Args:
-        arg (SqlExpr | Decimal | SqlExpr | bytes | date | datetime | float | int | str): `ANY | BIGINT | BLOB | DATE | DECIMAL | DOUBLE | INTEGER | TIMESTAMP | TIMESTAMP WITH TIME ZONE | VARCHAR` expression
-        val (SqlExpr | SqlExpr | bytes | date | datetime | float | int | str): `ANY | BIGINT | BLOB | DATE | DOUBLE | HUGEINT | INTEGER | TIMESTAMP | TIMESTAMP WITH TIME ZONE | VARCHAR` expression
+        arg (SqlExpr | Decimal | SqlExpr | bytes | bytearray | memoryview | date | datetime | float | int | str): `ANY | BIGINT | BLOB | DATE | DECIMAL | DOUBLE | INTEGER | TIMESTAMP | TIMESTAMP WITH TIME ZONE | VARCHAR` expression
+        val (SqlExpr | SqlExpr | bytes | bytearray | memoryview | date | datetime | float | int | str): `ANY | BIGINT | BLOB | DATE | DOUBLE | HUGEINT | INTEGER | TIMESTAMP | TIMESTAMP WITH TIME ZONE | VARCHAR` expression
 
     Returns:
         SqlExpr
@@ -596,8 +612,16 @@ def arg_max_null(
 
 
 def arg_min(
-    arg: SqlExpr | Decimal | bytes | date | datetime | float | str,
-    val: SqlExpr | bytes | date | datetime | float | str,
+    arg: SqlExpr
+    | Decimal
+    | bytes
+    | bytearray
+    | memoryview
+    | date
+    | datetime
+    | float
+    | str,
+    val: SqlExpr | bytes | bytearray | memoryview | date | datetime | float | str,
     col2: SqlExpr | int | None = None,
 ) -> SqlExpr:
     """Finds the row with the minimum val.
@@ -605,8 +629,8 @@ def arg_min(
     Calculates the non-NULL arg expression at that row.
 
     Args:
-        arg (SqlExpr | Decimal | SqlExpr | bytes | date | datetime | float | int | str): `ANY | BIGINT | BLOB | DATE | DECIMAL | DOUBLE | INTEGER | TIMESTAMP | TIMESTAMP WITH TIME ZONE | VARCHAR` expression
-        val (SqlExpr | SqlExpr | bytes | date | datetime | float | int | str): `ANY | BIGINT | BLOB | DATE | DOUBLE | HUGEINT | INTEGER | TIMESTAMP | TIMESTAMP WITH TIME ZONE | VARCHAR` expression
+        arg (SqlExpr | Decimal | SqlExpr | bytes | bytearray | memoryview | date | datetime | float | int | str): `ANY | BIGINT | BLOB | DATE | DECIMAL | DOUBLE | INTEGER | TIMESTAMP | TIMESTAMP WITH TIME ZONE | VARCHAR` expression
+        val (SqlExpr | SqlExpr | bytes | bytearray | memoryview | date | datetime | float | int | str): `ANY | BIGINT | BLOB | DATE | DOUBLE | HUGEINT | INTEGER | TIMESTAMP | TIMESTAMP WITH TIME ZONE | VARCHAR` expression
         col2 (SqlExpr | int | None): `BIGINT` expression
 
     Returns:
@@ -616,16 +640,24 @@ def arg_min(
 
 
 def arg_min_null(
-    arg: SqlExpr | Decimal | bytes | date | datetime | float | str,
-    val: SqlExpr | bytes | date | datetime | float | str,
+    arg: SqlExpr
+    | Decimal
+    | bytes
+    | bytearray
+    | memoryview
+    | date
+    | datetime
+    | float
+    | str,
+    val: SqlExpr | bytes | bytearray | memoryview | date | datetime | float | str,
 ) -> SqlExpr:
     """Finds the row with the minimum val.
 
     Calculates the arg expression at that row.
 
     Args:
-        arg (SqlExpr | Decimal | SqlExpr | bytes | date | datetime | float | int | str): `ANY | BIGINT | BLOB | DATE | DECIMAL | DOUBLE | INTEGER | TIMESTAMP | TIMESTAMP WITH TIME ZONE | VARCHAR` expression
-        val (SqlExpr | SqlExpr | bytes | date | datetime | float | int | str): `ANY | BIGINT | BLOB | DATE | DOUBLE | HUGEINT | INTEGER | TIMESTAMP | TIMESTAMP WITH TIME ZONE | VARCHAR` expression
+        arg (SqlExpr | Decimal | SqlExpr | bytes | bytearray | memoryview | date | datetime | float | int | str): `ANY | BIGINT | BLOB | DATE | DECIMAL | DOUBLE | INTEGER | TIMESTAMP | TIMESTAMP WITH TIME ZONE | VARCHAR` expression
+        val (SqlExpr | SqlExpr | bytes | bytearray | memoryview | date | datetime | float | int | str): `ANY | BIGINT | BLOB | DATE | DOUBLE | HUGEINT | INTEGER | TIMESTAMP | TIMESTAMP WITH TIME ZONE | VARCHAR` expression
 
     Returns:
         SqlExpr
@@ -1505,11 +1537,11 @@ def array_value(*args: SqlExpr) -> SqlExpr:
 # ============================================================
 
 
-def bit_and(arg: SqlExpr | bytes | int) -> SqlExpr:
+def bit_and(arg: SqlExpr | bytes | bytearray | memoryview | int) -> SqlExpr:
     """Returns the bitwise AND of all bits in a given expression.
 
     Args:
-        arg (SqlExpr | bytes | int): `BIGINT | BIT | HUGEINT | INTEGER | SMALLINT | TINYINT | UBIGINT | UHUGEINT | UINTEGER | USMALLINT | UTINYINT` expression
+        arg (SqlExpr | bytes | bytearray | memoryview | int): `BIGINT | BIT | HUGEINT | INTEGER | SMALLINT | TINYINT | UBIGINT | UHUGEINT | UINTEGER | USMALLINT | UTINYINT` expression
 
     Returns:
         SqlExpr
@@ -1517,11 +1549,11 @@ def bit_and(arg: SqlExpr | bytes | int) -> SqlExpr:
     return func("bit_and", arg)
 
 
-def bit_count(x: SqlExpr | bytes | int) -> SqlExpr:
+def bit_count(x: SqlExpr | bytes | bytearray | memoryview | int) -> SqlExpr:
     """Returns the number of bits that are set.
 
     Args:
-        x (SqlExpr | bytes | int): `BIGINT | BIT | HUGEINT | INTEGER | SMALLINT | TINYINT` expression
+        x (SqlExpr | bytes | bytearray | memoryview | int): `BIGINT | BIT | HUGEINT | INTEGER | SMALLINT | TINYINT` expression
 
     Returns:
         SqlExpr
@@ -1529,11 +1561,11 @@ def bit_count(x: SqlExpr | bytes | int) -> SqlExpr:
     return func("bit_count", x)
 
 
-def bit_or(arg: SqlExpr | bytes | int) -> SqlExpr:
+def bit_or(arg: SqlExpr | bytes | bytearray | memoryview | int) -> SqlExpr:
     """Returns the bitwise OR of all bits in a given expression.
 
     Args:
-        arg (SqlExpr | bytes | int): `BIGINT | BIT | HUGEINT | INTEGER | SMALLINT | TINYINT | UBIGINT | UHUGEINT | UINTEGER | USMALLINT | UTINYINT` expression
+        arg (SqlExpr | bytes | bytearray | memoryview | int): `BIGINT | BIT | HUGEINT | INTEGER | SMALLINT | TINYINT | UBIGINT | UHUGEINT | UINTEGER | USMALLINT | UTINYINT` expression
 
     Returns:
         SqlExpr
@@ -1541,14 +1573,17 @@ def bit_or(arg: SqlExpr | bytes | int) -> SqlExpr:
     return func("bit_or", arg)
 
 
-def bit_position(substring: SqlExpr | bytes, bitstring: SqlExpr | bytes) -> SqlExpr:
+def bit_position(
+    substring: SqlExpr | bytes | bytearray | memoryview,
+    bitstring: SqlExpr | bytes | bytearray | memoryview,
+) -> SqlExpr:
     """Returns first starting index of the specified substring within bits, or zero if it is not present.
 
     The first (leftmost) bit is indexed 1.
 
     Args:
-        substring (SqlExpr | bytes): `BIT` expression
-        bitstring (SqlExpr | bytes): `BIT` expression
+        substring (SqlExpr | bytes | bytearray | memoryview): `BIT` expression
+        bitstring (SqlExpr | bytes | bytearray | memoryview): `BIT` expression
 
     Returns:
         SqlExpr
@@ -1556,11 +1591,11 @@ def bit_position(substring: SqlExpr | bytes, bitstring: SqlExpr | bytes) -> SqlE
     return func("bit_position", substring, bitstring)
 
 
-def bit_xor(arg: SqlExpr | bytes | int) -> SqlExpr:
+def bit_xor(arg: SqlExpr | bytes | bytearray | memoryview | int) -> SqlExpr:
     """Returns the bitwise XOR of all bits in a given expression.
 
     Args:
-        arg (SqlExpr | bytes | int): `BIGINT | BIT | HUGEINT | INTEGER | SMALLINT | TINYINT | UBIGINT | UHUGEINT | UINTEGER | USMALLINT | UTINYINT` expression
+        arg (SqlExpr | bytes | bytearray | memoryview | int): `BIGINT | BIT | HUGEINT | INTEGER | SMALLINT | TINYINT | UBIGINT | UHUGEINT | UINTEGER | USMALLINT | UTINYINT` expression
 
     Returns:
         SqlExpr
@@ -1568,11 +1603,13 @@ def bit_xor(arg: SqlExpr | bytes | int) -> SqlExpr:
     return func("bit_xor", arg)
 
 
-def bitstring(bitstring: SqlExpr | bytes | str, length: SqlExpr | int) -> SqlExpr:
+def bitstring(
+    bitstring: SqlExpr | bytes | bytearray | memoryview | str, length: SqlExpr | int
+) -> SqlExpr:
     """Pads the bitstring until the specified length.
 
     Args:
-        bitstring (SqlExpr | bytes | str): `BIT | VARCHAR` expression
+        bitstring (SqlExpr | bytes | bytearray | memoryview | str): `BIT | VARCHAR` expression
         length (SqlExpr | int): `INTEGER` expression
 
     Returns:
@@ -1599,11 +1636,13 @@ def bitstring_agg(
     return func("bitstring_agg", arg, col1, col2)
 
 
-def bitstring_octet_length(bitstring: SqlExpr | bytes) -> SqlExpr:
+def bitstring_octet_length(
+    bitstring: SqlExpr | bytes | bytearray | memoryview,
+) -> SqlExpr:
     """Returns the number of bytes in the `bitstring`.
 
     Args:
-        bitstring (SqlExpr | bytes): `BIT` expression
+        bitstring (SqlExpr | bytes | bytearray | memoryview): `BIT` expression
 
     Returns:
         SqlExpr
@@ -1670,11 +1709,11 @@ def to_base(
     return func("to_base", number, radix, min_length)
 
 
-def to_base64(blob: SqlExpr | bytes) -> SqlExpr:
+def to_base64(blob: SqlExpr | bytes | bytearray | memoryview) -> SqlExpr:
     """Converts a `blob` to a base64 encoded string.
 
     Args:
-        blob (SqlExpr | bytes): `BLOB` expression
+        blob (SqlExpr | bytes | bytearray | memoryview): `BLOB` expression
 
     Returns:
         SqlExpr
@@ -4034,11 +4073,11 @@ def bar(
     return func("bar", x, min_arg, max_arg, width)
 
 
-def blob_hex(blob: SqlExpr | bytes) -> SqlExpr:
+def blob_hex(blob: SqlExpr | bytes | bytearray | memoryview) -> SqlExpr:
     """Converts `blob` to `VARCHAR` using hexadecimal encoding.
 
     Args:
-        blob (SqlExpr | bytes): `BLOB` expression
+        blob (SqlExpr | bytes | bytearray | memoryview): `BLOB` expression
 
     Returns:
         SqlExpr
@@ -4046,11 +4085,11 @@ def blob_hex(blob: SqlExpr | bytes) -> SqlExpr:
     return func("hex", blob)
 
 
-def blob_md5(blob: SqlExpr | bytes) -> SqlExpr:
+def blob_md5(blob: SqlExpr | bytes | bytearray | memoryview) -> SqlExpr:
     """Returns the MD5 hash of the `blob` as a `VARCHAR`.
 
     Args:
-        blob (SqlExpr | bytes): `BLOB` expression
+        blob (SqlExpr | bytes | bytearray | memoryview): `BLOB` expression
 
     Returns:
         SqlExpr
@@ -4058,11 +4097,11 @@ def blob_md5(blob: SqlExpr | bytes) -> SqlExpr:
     return func("md5", blob)
 
 
-def blob_md5_number(blob: SqlExpr | bytes) -> SqlExpr:
+def blob_md5_number(blob: SqlExpr | bytes | bytearray | memoryview) -> SqlExpr:
     """Returns the MD5 hash of the `blob` as a `HUGEINT`.
 
     Args:
-        blob (SqlExpr | bytes): `BLOB` expression
+        blob (SqlExpr | bytes | bytearray | memoryview): `BLOB` expression
 
     Returns:
         SqlExpr
@@ -4070,11 +4109,11 @@ def blob_md5_number(blob: SqlExpr | bytes) -> SqlExpr:
     return func("md5_number", blob)
 
 
-def blob_octet_length(blob: SqlExpr | bytes) -> SqlExpr:
+def blob_octet_length(blob: SqlExpr | bytes | bytearray | memoryview) -> SqlExpr:
     """Number of bytes in `blob`.
 
     Args:
-        blob (SqlExpr | bytes): `BLOB` expression
+        blob (SqlExpr | bytes | bytearray | memoryview): `BLOB` expression
 
     Returns:
         SqlExpr
@@ -4082,11 +4121,13 @@ def blob_octet_length(blob: SqlExpr | bytes) -> SqlExpr:
     return func("octet_length", blob)
 
 
-def blob_repeat(blob: SqlExpr | bytes, count: SqlExpr | int) -> SqlExpr:
+def blob_repeat(
+    blob: SqlExpr | bytes | bytearray | memoryview, count: SqlExpr | int
+) -> SqlExpr:
     """Repeats the `blob` `count` number of times.
 
     Args:
-        blob (SqlExpr | bytes): `BLOB` expression
+        blob (SqlExpr | bytes | bytearray | memoryview): `BLOB` expression
         count (SqlExpr | int): `BIGINT` expression
 
     Returns:
@@ -4095,11 +4136,11 @@ def blob_repeat(blob: SqlExpr | bytes, count: SqlExpr | int) -> SqlExpr:
     return func("repeat", blob, count)
 
 
-def blob_sha1(blob: SqlExpr | bytes) -> SqlExpr:
+def blob_sha1(blob: SqlExpr | bytes | bytearray | memoryview) -> SqlExpr:
     """Returns a `VARCHAR` with the SHA-1 hash of the `blob`.
 
     Args:
-        blob (SqlExpr | bytes): `BLOB` expression
+        blob (SqlExpr | bytes | bytearray | memoryview): `BLOB` expression
 
     Returns:
         SqlExpr
@@ -4107,11 +4148,11 @@ def blob_sha1(blob: SqlExpr | bytes) -> SqlExpr:
     return func("sha1", blob)
 
 
-def blob_sha256(blob: SqlExpr | bytes) -> SqlExpr:
+def blob_sha256(blob: SqlExpr | bytes | bytearray | memoryview) -> SqlExpr:
     """Returns a `VARCHAR` with the SHA-256 hash of the `blob`.
 
     Args:
-        blob (SqlExpr | bytes): `BLOB` expression
+        blob (SqlExpr | bytes | bytearray | memoryview): `BLOB` expression
 
     Returns:
         SqlExpr
@@ -4433,13 +4474,13 @@ def decade(ts: SqlExpr | date | datetime | timedelta) -> SqlExpr:
     return func("decade", ts)
 
 
-def decode(blob: SqlExpr | bytes) -> SqlExpr:
+def decode(blob: SqlExpr | bytes | bytearray | memoryview) -> SqlExpr:
     """Converts `blob` to `VARCHAR`.
 
     Fails if `blob` is not valid UTF-8.
 
     Args:
-        blob (SqlExpr | bytes): `BLOB` expression
+        blob (SqlExpr | bytes | bytearray | memoryview): `BLOB` expression
 
     Returns:
         SqlExpr
@@ -4721,11 +4762,13 @@ def generate_series(
     return func("generate_series", start, stop, step)
 
 
-def get_bit(bitstring: SqlExpr | bytes, index: SqlExpr | int) -> SqlExpr:
+def get_bit(
+    bitstring: SqlExpr | bytes | bytearray | memoryview, index: SqlExpr | int
+) -> SqlExpr:
     """Extracts the nth bit from bitstring; the first (leftmost) bit is indexed 0.
 
     Args:
-        bitstring (SqlExpr | bytes): `BIT` expression
+        bitstring (SqlExpr | bytes | bytearray | memoryview): `BIT` expression
         index (SqlExpr | int): `INTEGER` expression
 
     Returns:
@@ -5576,11 +5619,11 @@ def numeric_bin(value: SqlExpr | int) -> SqlExpr:
     return func("bin", value)
 
 
-def numeric_bit_length(bit: SqlExpr | bytes) -> SqlExpr:
+def numeric_bit_length(bit: SqlExpr | bytes | bytearray | memoryview) -> SqlExpr:
     """Returns the bit-length of the `bit` argument.
 
     Args:
-        bit (SqlExpr | bytes): `BIT` expression
+        bit (SqlExpr | bytes | bytearray | memoryview): `BIT` expression
 
     Returns:
         SqlExpr
@@ -5600,11 +5643,11 @@ def numeric_hex(value: SqlExpr | int) -> SqlExpr:
     return func("hex", value)
 
 
-def numeric_length(bit: SqlExpr | bytes) -> SqlExpr:
+def numeric_length(bit: SqlExpr | bytes | bytearray | memoryview) -> SqlExpr:
     """Returns the bit-length of the `bit` argument.
 
     Args:
-        bit (SqlExpr | bytes): `BIT` expression
+        bit (SqlExpr | bytes | bytearray | memoryview): `BIT` expression
 
     Returns:
         SqlExpr
@@ -5975,14 +6018,16 @@ def second(ts: SqlExpr | date | datetime | time | timedelta) -> SqlExpr:
 
 
 def set_bit(
-    bitstring: SqlExpr | bytes, index: SqlExpr | int, new_value: SqlExpr | int
+    bitstring: SqlExpr | bytes | bytearray | memoryview,
+    index: SqlExpr | int,
+    new_value: SqlExpr | int,
 ) -> SqlExpr:
     """Sets the nth bit in bitstring to newvalue; the first (leftmost) bit is indexed 0.
 
     Returns a new bitstring.
 
     Args:
-        bitstring (SqlExpr | bytes): `BIT` expression
+        bitstring (SqlExpr | bytes | bytearray | memoryview): `BIT` expression
         index (SqlExpr | int): `INTEGER` expression
         new_value (SqlExpr | int): `INTEGER` expression
 
@@ -6507,12 +6552,15 @@ def write_log(string: SqlExpr | str, *args: SqlExpr) -> SqlExpr:
     return func("write_log", string, *args)
 
 
-def xor(left: SqlExpr | bytes | int, right: SqlExpr | bytes | int) -> SqlExpr:
+def xor(
+    left: SqlExpr | bytes | bytearray | memoryview | int,
+    right: SqlExpr | bytes | bytearray | memoryview | int,
+) -> SqlExpr:
     """Bitwise XOR.
 
     Args:
-        left (SqlExpr | bytes | int): `BIGINT | BIT | HUGEINT | INTEGER | SMALLINT | TINYINT | UBIGINT | UHUGEINT | UINTEGER | USMALLINT | UTINYINT` expression
-        right (SqlExpr | bytes | int): `BIGINT | BIT | HUGEINT | INTEGER | SMALLINT | TINYINT | UBIGINT | UHUGEINT | UINTEGER | USMALLINT | UTINYINT` expression
+        left (SqlExpr | bytes | bytearray | memoryview | int): `BIGINT | BIT | HUGEINT | INTEGER | SMALLINT | TINYINT | UBIGINT | UHUGEINT | UINTEGER | USMALLINT | UTINYINT` expression
+        right (SqlExpr | bytes | bytearray | memoryview | int): `BIGINT | BIT | HUGEINT | INTEGER | SMALLINT | TINYINT | UBIGINT | UHUGEINT | UINTEGER | USMALLINT | UTINYINT` expression
 
     Returns:
         SqlExpr

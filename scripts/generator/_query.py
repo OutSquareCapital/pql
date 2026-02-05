@@ -201,7 +201,12 @@ def _convert_duckdb_type_to_python(param_type: pl.Expr) -> pl.Expr:
     converter = (
         CONVERSION_MAP.items()
         .iter()
-        .map_star(lambda k, v: (k.value.upper(), v.value))
+        .map_star(
+            lambda k, v: (
+                k.value.upper(),
+                v.iter().map(lambda pt: pt.value).join(" | "),
+            )
+        )
         .collect(dict)
     )
 

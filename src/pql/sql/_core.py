@@ -42,6 +42,7 @@ type PyLiteral = (
     | timedelta
     | bytes
     | bytearray
+    | memoryview
     | list[PyLiteral]
     | dict[Any, PyLiteral]
     | None
