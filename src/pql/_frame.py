@@ -269,11 +269,9 @@ class LazyFrame:
             return self._iter_slct(
                 lambda c: sql.coalesce(
                     sql.col(c),
-                    sql.Over(
-                        rows_start=start,
-                        rows_end=end,
-                        ignore_nulls=True,
-                    ).call(fn(sql.col(c))),
+                    sql.Over(rows_start=start, rows_end=end, ignore_nulls=True).call(
+                        fn(sql.col(c))
+                    ),
                 ).alias(c)
             )
 

@@ -1,10 +1,47 @@
+from __future__ import annotations
+
 from dataclasses import dataclass, field
+from enum import StrEnum
 
 import pyochain as pc
 
 from ._core import SqlExpr, raw
 
 type BoolClause = pc.Option[pc.Seq[bool]] | pc.Option[bool]
+
+
+class Kword(StrEnum):
+    PARTITION_BY = "PARTITION BY"
+    ORDER_BY = "ORDER BY"
+    DESC = "DESC"
+    ASC = "ASC"
+    NULLS_LAST = "NULLS LAST"
+    NULLS_FIRST = "NULLS FIRST"
+    ROWS_BETWEEN = "ROWS BETWEEN"
+
+    @classmethod
+    def sort_strat(cls, *, desc: bool, nulls_last: bool) -> str:
+        return f"{cls.DESC if desc else cls.ASC} {cls.NULLS_LAST if nulls_last else cls.NULLS_FIRST}"
+
+    @classmethod
+    def rows_clause(cls, row_start: pc.Option[int], row_end: pc.Option[int]) -> str:
+        match (row_start, row_end):
+            case (pc.Some(start), pc.Some(end)):
+                return f"{cls.ROWS_BETWEEN} {-start} PRECEDING AND {end} FOLLOWING"
+            case (pc.Some(start), pc.NONE):
+                return f"{cls.ROWS_BETWEEN} {-start} PRECEDING AND UNBOUNDED FOLLOWING"
+            case (pc.NONE, pc.Some(end)):
+                return f"{cls.ROWS_BETWEEN} UNBOUNDED PRECEDING AND {end} FOLLOWING"
+            case _:
+                return ""
+
+    @classmethod
+    def partition_by(cls, by: str) -> str:
+        return f"{cls.PARTITION_BY} {by}"
+
+    @classmethod
+    def order_by(cls, by: str) -> str:
+        return f"{cls.ORDER_BY} {by}"
 
 
 @dataclass(slots=True)
@@ -35,7 +72,7 @@ class Over:
         return (
             self.partition_by.then_some()
             .map(lambda x: x.iter().map(str).join(", "))
-            .map(lambda s: "PARTITION BY " + s)
+            .map(Kword.partition_by)
             .unwrap_or("")
         )
 
@@ -51,26 +88,15 @@ class Over:
                     )
                     .map_star(
                         lambda item, desc, nl: (
-                            f"{item} {'desc' if desc else 'asc'} {'nulls last' if nl else 'nulls first'}"
+                            f"{item} {Kword.sort_strat(desc=desc, nulls_last=nl)}"
                         )
                     )
                     .join(", ")
                 )
             )
-            .map(lambda s: "ORDER BY " + s)
+            .map(Kword.order_by)
             .unwrap_or("")
         )
-
-    def _get_rows_clause(self) -> str:
-        match (self.rows_start, self.rows_end):
-            case (pc.Some(start), pc.Some(end)):
-                return f"rows between {-start} preceding and {end} following"
-            case (pc.Some(start), pc.NONE):
-                return f"rows between {-start} preceding and unbounded following"
-            case (pc.NONE, pc.Some(end)):
-                return f"rows between unbounded preceding and {end} following"
-            case _:
-                return ""
 
     def _get_func(self, expr: SqlExpr) -> str:
         match self.ignore_nulls:
@@ -82,5 +108,5 @@ class Over:
     def call(self, expr: SqlExpr) -> SqlExpr:
         """Generate the full window function SQL expression."""
         return raw(
-            f"{self._get_func(expr)} OVER ({self._get_partition_by()} {self._get_order_by()} {self._get_rows_clause()})"
+            f"{self._get_func(expr)} OVER ({self._get_partition_by()} {self._get_order_by()} {Kword.rows_clause(self.rows_start, self.rows_end)})".strip()
         )
