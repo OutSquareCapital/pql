@@ -73,38 +73,6 @@ def coalesce(*exprs: SqlExpr) -> SqlExpr:
     return SqlExpr(duckdb.CoalesceOperator(*(expr.to_duckdb() for expr in exprs)))
 
 
-def from_expr(value: IntoExpr) -> SqlExpr:
-    """Convert a value to a DuckDB Expression (strings become columns for select/group_by)."""
-    from .._expr import Expr
-
-    match value:
-        case SqlExpr():
-            return value
-        case duckdb.Expression():
-            return SqlExpr(value)
-        case Expr():
-            return value.to_sql()
-        case str():
-            return col(value)
-        case _:
-            return lit(value)
-
-
-def from_value(value: IntoExpr) -> SqlExpr:
-    """Convert a value to a DuckDB Expression (strings become constants for comparisons)."""
-    from .._expr import Expr
-
-    match value:
-        case SqlExpr():
-            return value
-        case duckdb.Expression():
-            return SqlExpr(value)
-        case Expr():
-            return value.to_sql()
-        case _:
-            return lit(value)
-
-
 def to_duckdb(value: SqlExpr | str | duckdb.Expression) -> duckdb.Expression | str:
     """Convert a SqlExpr to duckdb.Expression, preserving str and duckdb.Expression."""
     match value:
@@ -127,42 +95,6 @@ def from_cols(exprs: IntoExprColumn) -> pc.Iter[duckdb.Expression | str]:
             return pc.Iter.once(exprs)
         case Iterable():
             return pc.Iter(exprs).map(from_cols).flatten()
-
-
-def from_iter(*values: IntoExpr | Iterable[IntoExpr]) -> pc.Iter[SqlExpr]:
-    """Convert one or more values or iterables of values to an iterator of DuckDB Expressions.
-
-    Note:
-        We handle this with an external variadic argument, and an internal closure, to
-        distinguish between a single iterable argument and multiple arguments.
-    """
-
-    def _single_to_expr(value: IntoExpr | Iterable[IntoExpr]) -> pc.Iter[SqlExpr]:
-        match value:
-            case str() | bytes() | bytearray():
-                return pc.Iter.once(from_expr(value))
-            case Iterable():
-                return pc.Iter(value).map(from_expr)
-            case _:
-                return pc.Iter.once(from_expr(value))
-
-    match values:
-        case (single,):
-            return _single_to_expr(single)
-        case _:
-            return pc.Iter(values).map(_single_to_expr).flatten()
-
-
-def from_args_kwargs(
-    *exprs: IntoExpr | Iterable[IntoExpr], **named_exprs: IntoExpr
-) -> pc.Iter[SqlExpr]:
-    """Convert positional and keyword arguments to an iterator of DuckDB Expressions."""
-    return from_iter(*exprs).chain(
-        pc.Dict.from_ref(named_exprs)
-        .items()
-        .iter()
-        .map_star(lambda name, expr: from_expr(expr).alias(name))
-    )
 
 
 def build_over(
@@ -261,6 +193,74 @@ class SqlExpr(FnsMixin):  # noqa: PLW1641
     """A wrapper around duckdb.Expression that provides operator overloading and SQL function methods."""
 
     __slots__ = ()
+
+    @classmethod
+    def from_expr(cls, value: IntoExpr) -> SqlExpr:
+        """Convert a value to a DuckDB Expression (strings become columns for select/group_by)."""
+        from .._expr import Expr
+
+        match value:
+            case SqlExpr():
+                return value
+            case duckdb.Expression():
+                return cls(value)
+            case Expr():
+                return value.to_sql()
+            case str():
+                return col(value)
+            case _:
+                return lit(value)
+
+    @classmethod
+    def from_value(cls, value: IntoExpr) -> SqlExpr:
+        """Convert a value to a DuckDB Expression (strings become constants for comparisons)."""
+        from .._expr import Expr
+
+        match value:
+            case SqlExpr():
+                return value
+            case duckdb.Expression():
+                return SqlExpr(value)
+            case Expr():
+                return value.to_sql()
+            case _:
+                return lit(value)
+
+    @classmethod
+    def from_iter(cls, *values: IntoExpr | Iterable[IntoExpr]) -> pc.Iter[SqlExpr]:
+        """Convert one or more values or iterables of values to an iterator of DuckDB Expressions.
+
+        Note:
+            We handle this with an external variadic argument, and an internal closure, to
+            distinguish between a single iterable argument and multiple arguments.
+        """
+
+        def _single_to_expr(value: IntoExpr | Iterable[IntoExpr]) -> pc.Iter[SqlExpr]:
+            match value:
+                case str() | bytes() | bytearray():
+                    return pc.Iter.once(cls.from_expr(value))
+                case Iterable():
+                    return pc.Iter(value).map(cls.from_expr)
+                case _:
+                    return pc.Iter.once(cls.from_expr(value))
+
+        match values:
+            case (single,):
+                return _single_to_expr(single)
+            case _:
+                return pc.Iter(values).map(_single_to_expr).flatten()
+
+    @classmethod
+    def from_args_kwargs(
+        cls, *exprs: IntoExpr | Iterable[IntoExpr], **named_exprs: IntoExpr
+    ) -> pc.Iter[SqlExpr]:
+        """Convert positional and keyword arguments to an iterator of DuckDB Expressions."""
+        return cls.from_iter(*exprs).chain(
+            pc.Dict.from_ref(named_exprs)
+            .items()
+            .iter()
+            .map_star(lambda name, expr: cls.from_expr(expr).alias(name))
+        )
 
     def to_duckdb(self) -> duckdb.Expression:
         """Get the underlying DuckDB Expression."""

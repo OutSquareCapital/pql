@@ -10,11 +10,12 @@ from typing import TYPE_CHECKING, Any, Concatenate, Literal, Self
 import pyochain as pc
 
 from . import sql
+from .sql import SqlExpr
 
 if TYPE_CHECKING:
     import duckdb
 
-    from .sql import IntoExpr, SqlExpr
+    from .sql import IntoExpr
 
 RoundMode = Literal["half_to_even", "half_away_from_zero"]
 
@@ -81,43 +82,43 @@ class Expr(SqlExprHandler):
         return self.add(other)
 
     def __radd__(self, other: IntoExpr) -> Self:
-        return self.__class__(sql.from_value(other) + self._expr)
+        return self.__class__(SqlExpr.from_value(other) + self._expr)
 
     def __sub__(self, other: IntoExpr) -> Self:
         return self.sub(other)
 
     def __rsub__(self, other: IntoExpr) -> Self:
-        return self.__class__(sql.from_value(other) - self._expr)
+        return self.__class__(SqlExpr.from_value(other) - self._expr)
 
     def __mul__(self, other: IntoExpr) -> Self:
         return self.mul(other)
 
     def __rmul__(self, other: IntoExpr) -> Self:
-        return self.__class__(sql.from_value(other) * self._expr)
+        return self.__class__(SqlExpr.from_value(other) * self._expr)
 
     def __truediv__(self, other: IntoExpr) -> Self:
         return self.truediv(other)
 
     def __rtruediv__(self, other: IntoExpr) -> Self:
-        return self.__class__(sql.from_value(other) / self._expr)
+        return self.__class__(SqlExpr.from_value(other) / self._expr)
 
     def __floordiv__(self, other: IntoExpr) -> Self:
         return self.floordiv(other)
 
     def __rfloordiv__(self, other: IntoExpr) -> Self:
-        return self.__class__(sql.from_value(other) // self._expr)
+        return self.__class__(SqlExpr.from_value(other) // self._expr)
 
     def __mod__(self, other: IntoExpr) -> Self:
         return self.mod(other)
 
     def __rmod__(self, other: IntoExpr) -> Self:
-        return self.__class__(sql.from_value(other) % self._expr)
+        return self.__class__(SqlExpr.from_value(other) % self._expr)
 
     def __pow__(self, other: IntoExpr) -> Self:
         return self.pow(other)
 
     def __rpow__(self, other: IntoExpr) -> Self:
-        return self.__class__(sql.from_value(other) ** self._expr)
+        return self.__class__(SqlExpr.from_value(other) ** self._expr)
 
     def __neg__(self) -> Self:
         return self.neg()
@@ -144,13 +145,13 @@ class Expr(SqlExprHandler):
         return self.and_(other)
 
     def __rand__(self, other: IntoExpr) -> Self:
-        return self.__class__(sql.from_value(other) & self._expr)
+        return self.__class__(SqlExpr.from_value(other) & self._expr)
 
     def __or__(self, other: IntoExpr) -> Self:
         return self.or_(other)
 
     def __ror__(self, other: IntoExpr) -> Self:
-        return self.__class__(sql.from_value(other) | self._expr)
+        return self.__class__(SqlExpr.from_value(other) | self._expr)
 
     def __invert__(self) -> Self:
         return self.not_()
@@ -160,25 +161,25 @@ class Expr(SqlExprHandler):
 
     def add(self, other: Any) -> Self:  # noqa: ANN401
         """Add another expression or value."""
-        return self.__class__(self._expr + sql.from_value(other))
+        return self.__class__(self._expr + SqlExpr.from_value(other))
 
     def sub(self, other: Any) -> Self:  # noqa: ANN401
-        return self.__class__(self._expr - sql.from_value(other))
+        return self.__class__(self._expr - SqlExpr.from_value(other))
 
     def mul(self, other: Any) -> Self:  # noqa: ANN401
-        return self.__class__(self._expr * sql.from_value(other))
+        return self.__class__(self._expr * SqlExpr.from_value(other))
 
     def truediv(self, other: Any) -> Self:  # noqa: ANN401
-        return self.__class__(self._expr / sql.from_value(other))
+        return self.__class__(self._expr / SqlExpr.from_value(other))
 
     def floordiv(self, other: Any) -> Self:  # noqa: ANN401
-        return self.__class__(self._expr // sql.from_value(other))
+        return self.__class__(self._expr // SqlExpr.from_value(other))
 
     def mod(self, other: Any) -> Self:  # noqa: ANN401
-        return self.__class__(self._expr % sql.from_value(other))
+        return self.__class__(self._expr % SqlExpr.from_value(other))
 
     def pow(self, other: Any) -> Self:  # noqa: ANN401
-        return self.__class__(self._expr ** sql.from_value(other))
+        return self.__class__(self._expr ** SqlExpr.from_value(other))
 
     def neg(self) -> Self:
         return self.__class__(-self._expr)
@@ -187,28 +188,28 @@ class Expr(SqlExprHandler):
         return self.__class__(self._expr.abs())
 
     def eq(self, other: Any) -> Self:  # noqa: ANN401
-        return self.__class__(self._expr == sql.from_value(other))
+        return self.__class__(self._expr == SqlExpr.from_value(other))
 
     def ne(self, other: Any) -> Self:  # noqa: ANN401
-        return self.__class__(self._expr != sql.from_value(other))
+        return self.__class__(self._expr != SqlExpr.from_value(other))
 
     def lt(self, other: Any) -> Self:  # noqa: ANN401
-        return self.__class__(self._expr < sql.from_value(other))
+        return self.__class__(self._expr < SqlExpr.from_value(other))
 
     def le(self, other: Any) -> Self:  # noqa: ANN401
-        return self.__class__(self._expr <= sql.from_value(other))
+        return self.__class__(self._expr <= SqlExpr.from_value(other))
 
     def gt(self, other: Any) -> Self:  # noqa: ANN401
-        return self.__class__(self._expr > sql.from_value(other))
+        return self.__class__(self._expr > SqlExpr.from_value(other))
 
     def ge(self, other: Any) -> Self:  # noqa: ANN401
-        return self.__class__(self._expr >= sql.from_value(other))
+        return self.__class__(self._expr >= SqlExpr.from_value(other))
 
     def and_(self, others: Any) -> Self:  # noqa: ANN401
-        return self.__class__(self._expr & sql.from_value(others))
+        return self.__class__(self._expr & SqlExpr.from_value(others))
 
     def or_(self, others: Any) -> Self:  # noqa: ANN401
-        return self.__class__(self._expr | sql.from_value(others))
+        return self.__class__(self._expr | SqlExpr.from_value(others))
 
     def not_(self) -> Self:
         return self.__class__(~self._expr)
@@ -231,7 +232,7 @@ class Expr(SqlExprHandler):
 
     def is_in(self, other: Collection[IntoExpr] | IntoExpr) -> Self:
         """Check if value is in an iterable of values."""
-        return self.__class__(self._expr.is_in(*sql.from_iter(other)))
+        return self.__class__(self._expr.is_in(*SqlExpr.from_iter(other)))
 
     def pipe[**P, T](
         self,
@@ -354,7 +355,9 @@ class Expr(SqlExprHandler):
     def fill_nan(self, value: int | float | Expr | None) -> Self:  # noqa: PYI041
         """Fill NaN values."""
         return self.__class__(
-            sql.when(self._expr.isnan(), sql.from_value(value)).otherwise(self._expr)
+            sql.when(self._expr.isnan(), SqlExpr.from_value(value)).otherwise(
+                self._expr
+            )
         )
 
     def hash(self, seed: int = 0) -> Self:
@@ -364,15 +367,15 @@ class Expr(SqlExprHandler):
     def replace(self, old: IntoExpr, new: IntoExpr) -> Self:
         """Replace values."""
         return self.__class__(
-            sql.when(self._expr.eq(sql.from_value(old)), sql.from_value(new)).otherwise(
-                self._expr
-            )
+            sql.when(
+                self._expr.eq(SqlExpr.from_value(old)), SqlExpr.from_value(new)
+            ).otherwise(self._expr)
         )
 
     def repeat_by(self, by: Expr | int) -> Self:
         """Repeat values by count, returning a list."""
         return self.__class__(
-            sql.from_value(by).range().list_transform(sql.fn_once("_", self._expr))
+            SqlExpr.from_value(by).range().list_transform(sql.fn_once("_", self._expr))
         )
 
     def is_duplicated(self) -> Self:
@@ -447,7 +450,7 @@ class ExprStringNameSpace:
         self, pattern: str, value: str | IntoExpr, *, literal: bool = False, n: int = 1
     ) -> Expr:
         """Replace first matching substring with a new string value."""
-        value_expr = sql.from_value(value)
+        value_expr = SqlExpr.from_value(value)
         pattern_expr = sql.lit(re.escape(pattern) if literal else pattern)
 
         def _replace_once(expr: SqlExpr) -> SqlExpr:
@@ -481,7 +484,7 @@ class ExprStringNameSpace:
             case None:
                 return Expr(self._expr.ltrim())
             case _:
-                characters_expr = sql.from_value(characters)
+                characters_expr = SqlExpr.from_value(characters)
                 return Expr(
                     sql.when(characters_expr.is_null(), sql.lit(None)).otherwise(
                         self._expr.ltrim(characters_expr)
@@ -494,7 +497,7 @@ class ExprStringNameSpace:
             case None:
                 return Expr(self._expr.rtrim())
             case _:
-                characters_expr = sql.from_value(characters)
+                characters_expr = SqlExpr.from_value(characters)
                 return Expr(
                     sql.when(characters_expr.is_null(), sql.lit(None)).otherwise(
                         self._expr.rtrim(characters_expr)
@@ -519,11 +522,11 @@ class ExprStringNameSpace:
 
     def extract_all(self, pattern: str | Expr) -> Expr:
         """Extract all regex matches."""
-        return Expr(self._expr.regexp_extract_all(sql.from_value(pattern)))
+        return Expr(self._expr.regexp_extract_all(SqlExpr.from_value(pattern)))
 
     def count_matches(self, pattern: str | Expr, *, literal: bool = False) -> Expr:
         """Count pattern matches."""
-        pattern_expr = sql.from_value(pattern)
+        pattern_expr = SqlExpr.from_value(pattern)
         match literal:
             case False:
                 return Expr(
@@ -586,7 +589,7 @@ class ExprStringNameSpace:
                     )
                 )
             case _:
-                prefix_expr = sql.from_value(prefix)
+                prefix_expr = SqlExpr.from_value(prefix)
                 return Expr(
                     sql.when(prefix_expr.is_null(), sql.lit(None)).otherwise(
                         sql.when(
@@ -608,7 +611,7 @@ class ExprStringNameSpace:
                     )
                 )
             case _:
-                suffix_expr = sql.from_value(suffix)
+                suffix_expr = SqlExpr.from_value(suffix)
                 return Expr(
                     sql.when(suffix_expr.is_null(), sql.lit(None)).otherwise(
                         sql.when(
@@ -639,7 +642,7 @@ class ExprStringNameSpace:
         self, pattern: str, value: IntoExpr, *, literal: bool = False
     ) -> Expr:
         """Replace all occurrences."""
-        value_expr = sql.from_value(value)
+        value_expr = SqlExpr.from_value(value)
         match literal:
             case True:
                 return Expr(self._expr.replace(sql.lit(pattern), value_expr))
@@ -685,7 +688,7 @@ class ExprListNameSpace(SqlExprHandler):
 
     def contains(self, item: IntoExpr, *, nulls_equal: bool = True) -> Expr:
         """Check if sublists contain the given item."""
-        item_expr = sql.from_value(item)
+        item_expr = SqlExpr.from_value(item)
         contains_expr = self._expr.list_contains(item_expr)
         if nulls_equal:
             return Expr(

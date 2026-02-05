@@ -80,14 +80,14 @@ class LazyFrame:
         self, *exprs: IntoExpr | Iterable[IntoExpr], **named_exprs: IntoExpr
     ) -> Self:
         """Select columns or expressions."""
-        return self._select(sql.from_args_kwargs(*exprs, **named_exprs))
+        return self._select(SqlExpr.from_args_kwargs(*exprs, **named_exprs))
 
     def with_columns(
         self, *exprs: IntoExpr | Iterable[IntoExpr], **named_exprs: IntoExpr
     ) -> Self:
         """Add or replace columns."""
         return (
-            sql.from_args_kwargs(*exprs, **named_exprs)
+            SqlExpr.from_args_kwargs(*exprs, **named_exprs)
             .insert(sql.all())
             .into(self._select)
         )
@@ -126,7 +126,7 @@ class LazyFrame:
 
         return self.__from_lf__(
             self._rel.sort(
-                *sql.from_iter(*by)
+                *SqlExpr.from_iter(*by)
                 .zip(_args_iter(arg=descending), _args_iter(arg=nulls_last))
                 .map_star(_make_order)
                 .map(lambda c: c.to_duckdb())
@@ -242,7 +242,7 @@ class LazyFrame:
         """Fill NaN values."""
         return self._iter_slct(
             lambda c: (
-                sql.when(sql.col(c).isnan(), sql.from_expr(value))
+                sql.when(sql.col(c).isnan(), SqlExpr.from_expr(value))
                 .otherwise(sql.col(c))
                 .alias(c)
             )
@@ -273,7 +273,7 @@ class LazyFrame:
 
         return self._iter_slct(
             lambda c: sql.coalesce(
-                _shift_fn(c).over(), sql.from_value(fill_value)
+                _shift_fn(c).over(), SqlExpr.from_value(fill_value)
             ).alias(c)
         )
 
