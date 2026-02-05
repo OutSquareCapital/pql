@@ -9,13 +9,14 @@ from typing import TYPE_CHECKING, Concatenate, Self
 import pyochain as pc
 
 from . import sql
+from .sql import SqlExpr
 
 if TYPE_CHECKING:
     import duckdb
     import polars as pl
 
     from ._expr import Expr
-    from .sql import FrameInit, IntoExpr, IntoExprColumn, SqlExpr
+    from .sql import FrameInit, IntoExpr, IntoExprColumn
 TEMP_NAME = "__pql_temp__"
 TEMP_COL = sql.col(TEMP_NAME)
 
