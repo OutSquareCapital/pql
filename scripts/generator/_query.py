@@ -56,7 +56,6 @@ class ParamLists:
 class DuckCols:
     name: pl.Expr = field(default=pl.col("function_name"))
     description: pl.Expr = field(default=pl.col("description"))
-    category: pl.Expr = field(default=pl.col("category"))
     cats: pl.Expr = field(default=pl.col("categories"))
     varargs: pl.Expr = field(default=pl.col("varargs"))
     alias_of: pl.Expr = field(default=pl.col("alias_of"))
@@ -72,7 +71,7 @@ def get_df() -> pl.LazyFrame:
 
     return (
         sql_query()
-        .pl()
+        .pl(lazy=True)
         .filter(
             dk.name.str.starts_with("__")
             .not_()
@@ -133,8 +132,7 @@ def get_df() -> pl.LazyFrame:
                 dk,
             ),
         )
-        .sort(dk.category, py.name)
-        .lazy()
+        .sort("category", py.name)
     )
 
 
