@@ -7,12 +7,13 @@ from collections.abc import Callable, Collection
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Concatenate, Literal, Self
 
-import duckdb
 import pyochain as pc
 
 from . import sql
 
 if TYPE_CHECKING:
+    import duckdb
+
     from .sql import IntoExpr, SqlExpr
 
 RoundMode = Literal["half_to_even", "half_away_from_zero"]
