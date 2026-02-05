@@ -340,25 +340,7 @@ class Expr(SqlExprHandler):
     def backward_fill(self) -> Self:
         """Fill null values with the next non-null value."""
         return self.__class__(
-            sql.Over(rows_start=pc.Some(0), ignore_nulls=True).call(
-                sql.fns.first_value(self._expr),
-            )
-        )
-
-    def interpolate(self) -> Self:
-        """Interpolate null values using linear interpolation."""
-        last_value = sql.Over(rows_end=pc.Some(0), ignore_nulls=True).call(
-            sql.fns.last_value(self._expr),
-        )
-        return self.__class__(
-            sql.coalesce(
-                self._expr,
-                last_value.__add__(
-                    sql.Over(rows_start=pc.Some(0), ignore_nulls=True)
-                    .call(sql.fns.first_value(self._expr))
-                    .__sub__(last_value)
-                ).__truediv__(sql.lit(2)),
-            )
+            sql.Over(rows_start=pc.Some(0)).call(sql.fns.any_value(self._expr))
         )
 
     def is_nan(self) -> Self:
@@ -435,8 +417,8 @@ class Expr(SqlExprHandler):
             sql.Over(
                 partition_by=pc.Seq((self._expr,)),
                 order_by=pc.Seq((self._expr,)),
-                descending=pc.Some(value=True),
-                nulls_last=pc.Some(value=True),
+                descending=True,
+                nulls_last=True,
             )
             .call(sql.fns.row_number())
             .__eq__(sql.lit(1))
