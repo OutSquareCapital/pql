@@ -332,16 +332,12 @@ class Expr(SqlExprHandler):
     def forward_fill(self) -> Self:
         """Fill null values with the last non-null value."""
         return self.__class__(
-            sql.Over(rows_end=pc.Some(0), ignore_nulls=True).call(
-                sql.fns.last_value(self._expr)
-            )
+            sql.over(sql.fns.last_value(self._expr), rows_end=0, ignore_nulls=True)
         )
 
     def backward_fill(self) -> Self:
         """Fill null values with the next non-null value."""
-        return self.__class__(
-            sql.Over(rows_start=pc.Some(0)).call(sql.fns.any_value(self._expr))
-        )
+        return self.__class__(sql.over(sql.fns.any_value(self._expr), rows_start=0))
 
     def is_nan(self) -> Self:
         """Check if value is NaN."""
@@ -390,38 +386,37 @@ class Expr(SqlExprHandler):
     def is_duplicated(self) -> Self:
         """Check if value is duplicated."""
         return self.__class__(
-            sql.Over(partition_by=pc.Seq((self._expr,)))
-            .call(sql.fns.count(sql.all()))
-            .__gt__(sql.lit(1))
+            sql.over(
+                sql.fns.count(sql.all()), partition_by=pc.Seq((self._expr,))
+            ).__gt__(sql.lit(1))
         )
 
     def is_unique(self) -> Self:
         """Check if value is unique."""
         return self.__class__(
-            sql.Over(partition_by=pc.Seq((self._expr,)))
-            .call(sql.fns.count(sql.all()))
-            .__eq__(sql.lit(1))
+            sql.over(
+                sql.fns.count(sql.all()), partition_by=pc.Seq((self._expr,))
+            ).__eq__(sql.lit(1))
         )
 
     def is_first_distinct(self) -> Self:
         """Check if value is first occurrence."""
         return self.__class__(
-            sql.Over(partition_by=pc.Seq((self._expr,)))
-            .call(sql.fns.row_number())
-            .__eq__(sql.lit(1))
+            sql.over(sql.fns.row_number(), partition_by=pc.Seq((self._expr,))).__eq__(
+                sql.lit(1)
+            )
         )
 
     def is_last_distinct(self) -> Self:
         """Check if value is last occurrence."""
         return self.__class__(
-            sql.Over(
+            sql.over(
+                sql.fns.row_number(),
                 partition_by=pc.Seq((self._expr,)),
                 order_by=pc.Seq((self._expr,)),
                 descending=True,
                 nulls_last=True,
-            )
-            .call(sql.fns.row_number())
-            .__eq__(sql.lit(1))
+            ).__eq__(sql.lit(1))
         )
 
 

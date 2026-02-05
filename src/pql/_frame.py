@@ -132,9 +132,9 @@ class LazyFrame:
             return self.__from_lf__(
                 self._rel.select(
                     sql.all(),
-                    sql.Over(partition_by=cols.map(sql.col).collect())
-                    .call(sql.fns.row_number())
-                    .alias(TEMP_NAME),
+                    sql.over(
+                        sql.fns.row_number(), partition_by=cols.map(sql.col).collect()
+                    ).alias(TEMP_NAME),
                 )
                 .filter(TEMP_COL.__eq__(sql.lit(1)))
                 .project(sql.all(exclude=(TEMP_COL,)))
@@ -209,7 +209,7 @@ class LazyFrame:
         """Reverse the LazyFrame rows."""
         return self.__from_lf__(
             self._rel.select(
-                sql.all(), sql.Over().call(sql.fns.row_number()).alias(TEMP_NAME)
+                sql.all(), sql.over(sql.fns.row_number()).alias(TEMP_NAME)
             ).project(sql.all(exclude=(TEMP_COL,)))
         )
 
@@ -291,7 +291,7 @@ class LazyFrame:
     def with_row_index(self, name: str = "index", offset: int = 0) -> Self:
         """Add a row index column."""
         rel = self._rel.select(
-            sql.all(), sql.Over().call(sql.fns.row_number()).alias(TEMP_NAME)
+            sql.all(), sql.over(sql.fns.row_number()).alias(TEMP_NAME)
         )
         match offset:
             case 0:
@@ -323,9 +323,7 @@ class LazyFrame:
         abs_n = abs(n)
         return self._iter_slct(
             lambda c: sql.coalesce(
-                sql.Over().call(
-                    shift_func(sql.col(c), sql.lit(abs_n)),
-                ),
+                sql.over(shift_func(sql.col(c), sql.lit(abs_n))),
                 sql.from_value(fill_value),
             ).alias(c)
         )
@@ -367,9 +365,7 @@ class LazyFrame:
     def gather_every(self, n: int, offset: int = 0) -> Self:
         """Take every nth row."""
         return self.__from_lf__(
-            self._rel.select(
-                sql.all(), sql.Over().call(sql.fns.row_number()).alias(TEMP_NAME)
-            )
+            self._rel.select(sql.all(), sql.over(sql.fns.row_number()).alias(TEMP_NAME))
             .filter(
                 (
                     sql.col(TEMP_NAME)

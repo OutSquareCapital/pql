@@ -1,13 +1,33 @@
 from __future__ import annotations
 
-from dataclasses import dataclass, field
 from enum import StrEnum
 
 import pyochain as pc
 
 from ._core import SqlExpr, raw
 
-type BoolClause = pc.Option[pc.Seq[bool]] | pc.Option[bool]
+
+def over(  # noqa: PLR0913
+    expr: SqlExpr,
+    partition_by: pc.Seq[SqlExpr] | None = None,
+    order_by: pc.Seq[SqlExpr] | None = None,
+    rows_start: int | None = None,
+    rows_end: int | None = None,
+    *,
+    descending: pc.Seq[bool] | bool = False,
+    nulls_last: pc.Seq[bool] | bool = False,
+    ignore_nulls: bool = False,
+) -> SqlExpr:
+    return _build(
+        _handle_nulls(expr, ignore_nulls=ignore_nulls),
+        _get_partition_by(partition_by or pc.Seq[SqlExpr].new()),
+        _get_order_by(
+            order_by or pc.Seq[SqlExpr].new(),
+            descending=descending,
+            nulls_last=nulls_last,
+        ),
+        Kword.rows_clause(pc.Option(rows_start), pc.Option(rows_end)),
+    )
 
 
 class Kword(StrEnum):
@@ -20,8 +40,8 @@ class Kword(StrEnum):
     ROWS_BETWEEN = "ROWS BETWEEN"
 
     @classmethod
-    def sort_strat(cls, *, desc: bool, nulls_last: bool) -> str:
-        return f"{cls.DESC if desc else cls.ASC} {cls.NULLS_LAST if nulls_last else cls.NULLS_FIRST}"
+    def sort_strat(cls, item: SqlExpr, *, desc: bool, nulls_last: bool) -> str:
+        return f"{item} {cls.DESC if desc else cls.ASC} {cls.NULLS_LAST if nulls_last else cls.NULLS_FIRST}"
 
     @classmethod
     def rows_clause(cls, row_start: pc.Option[int], row_end: pc.Option[int]) -> str:
@@ -44,69 +64,54 @@ class Kword(StrEnum):
         return f"{cls.ORDER_BY} {by}"
 
 
-@dataclass(slots=True)
-class Over:
-    """A window function expression builder."""
+def _build(expr: str, partition_by: str, order_by: str, row_between: str) -> SqlExpr:
+    return raw(f"{expr} OVER ({partition_by} {order_by} {row_between})".strip())
 
-    partition_by: pc.Seq[SqlExpr] = field(default_factory=pc.Seq[SqlExpr].new)
-    order_by: pc.Seq[SqlExpr] = field(default_factory=pc.Seq[SqlExpr].new)
-    rows_start: pc.Option[int] = field(default_factory=lambda: pc.NONE)
-    rows_end: pc.Option[int] = field(default_factory=lambda: pc.NONE)
-    descending: BoolClause = field(default_factory=lambda: pc.NONE)
-    nulls_last: BoolClause = field(default_factory=lambda: pc.NONE)
-    ignore_nulls: bool = False
 
-    def _on_scalar(self, *, val: bool) -> pc.Seq[bool]:
-        return pc.Iter.once(val).cycle().take(self.order_by.length()).collect()
+def _get_partition_by(partition_by: pc.Seq[SqlExpr]) -> str:
+    return (
+        partition_by.then_some()
+        .map(lambda x: x.iter().map(str).join(", "))
+        .map(Kword.partition_by)
+        .unwrap_or("")
+    )
 
-    def _get_clauses(self, clauses: BoolClause) -> pc.Seq[bool]:
+
+def _handle_nulls(expr: SqlExpr, *, ignore_nulls: bool) -> str:
+    match ignore_nulls:
+        case True:
+            return f"{str(expr).removesuffix(')')} ignore nulls)"
+        case False:
+            return str(expr)
+
+
+def _get_order_by(
+    order_by: pc.Seq[SqlExpr],
+    *,
+    descending: pc.Seq[bool] | bool,
+    nulls_last: pc.Seq[bool] | bool,
+) -> str:
+    def _get_clauses(*, clauses: pc.Seq[bool] | bool) -> pc.Seq[bool]:
         match clauses:
-            case pc.Some(bool(val)):
-                return self._on_scalar(val=val)
-            case pc.Some(pc.Seq()) as seq:
-                return seq.unwrap()
-            case _:
-                return self._on_scalar(val=False)
+            case bool() as val:
+                return pc.Iter.once(val).cycle().take(order_by.length()).collect()
+            case pc.Seq() as seq:
+                return seq
 
-    def _get_partition_by(self) -> str:
-        return (
-            self.partition_by.then_some()
-            .map(lambda x: x.iter().map(str).join(", "))
-            .map(Kword.partition_by)
-            .unwrap_or("")
-        )
-
-    def _get_order_by(self) -> str:
-        return (
-            self.order_by.then_some()
-            .map(
-                lambda x: (
-                    x.iter()
-                    .zip(
-                        self._get_clauses(self.descending),
-                        self._get_clauses(self.nulls_last),
+    return (
+        order_by.then_some()
+        .map(
+            lambda x: (
+                x.iter()
+                .zip(_get_clauses(clauses=descending), _get_clauses(clauses=nulls_last))
+                .map_star(
+                    lambda item, desc, nl: Kword.sort_strat(
+                        item=item, desc=desc, nulls_last=nl
                     )
-                    .map_star(
-                        lambda item, desc, nl: (
-                            f"{item} {Kword.sort_strat(desc=desc, nulls_last=nl)}"
-                        )
-                    )
-                    .join(", ")
                 )
+                .join(", ")
             )
-            .map(Kword.order_by)
-            .unwrap_or("")
         )
-
-    def _get_func(self, expr: SqlExpr) -> str:
-        match self.ignore_nulls:
-            case True:
-                return f"{str(expr).removesuffix(')')} ignore nulls)"
-            case False:
-                return str(expr)
-
-    def call(self, expr: SqlExpr) -> SqlExpr:
-        """Generate the full window function SQL expression."""
-        return raw(
-            f"{self._get_func(expr)} OVER ({self._get_partition_by()} {self._get_order_by()} {Kword.rows_clause(self.rows_start, self.rows_end)})".strip()
-        )
+        .map(Kword.order_by)
+        .unwrap_or("")
+    )

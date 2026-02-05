@@ -24,13 +24,12 @@ from ._core import (
     rel_from_data,
     when,
 )
-from ._windows import Over
+from ._windows import over
 
 __all__ = [
     "FrameInit",
     "IntoExpr",
     "IntoExprColumn",
-    "Over",
     "Relation",
     "SqlExpr",
     "all",
@@ -49,6 +48,7 @@ __all__ = [
     "from_value",
     "func",
     "lit",
+    "over",
     "raw",
     "rel_from_data",
     "when",
