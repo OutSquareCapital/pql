@@ -8,7 +8,7 @@ type BoolClause = pc.Option[pc.Seq[bool]] | pc.Option[bool]
 
 
 @dataclass(slots=True)
-class WindowExpr:
+class Over:
     """A window function expression builder."""
 
     partition_by: pc.Seq[SqlExpr] = field(default_factory=pc.Seq[SqlExpr].new)
@@ -35,7 +35,7 @@ class WindowExpr:
         return (
             self.partition_by.then_some()
             .map(lambda x: x.iter().map(str).join(", "))
-            .map(lambda s: "partition by " + s)
+            .map(lambda s: "PARTITION BY " + s)
             .unwrap_or("")
         )
 
@@ -57,7 +57,7 @@ class WindowExpr:
                     .join(", ")
                 )
             )
-            .map(lambda s: "order by " + s)
+            .map(lambda s: "ORDER BY " + s)
             .unwrap_or("")
         )
 
@@ -82,5 +82,5 @@ class WindowExpr:
     def call(self, expr: SqlExpr) -> SqlExpr:
         """Generate the full window function SQL expression."""
         return raw(
-            f"{self._get_func(expr)} over ({self._get_partition_by()} {self._get_order_by()} {self._get_rows_clause()})"
+            f"{self._get_func(expr)} OVER ({self._get_partition_by()} {self._get_order_by()} {self._get_rows_clause()})"
         )

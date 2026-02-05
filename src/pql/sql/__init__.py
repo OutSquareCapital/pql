@@ -24,15 +24,15 @@ from ._core import (
     rel_from_data,
     when,
 )
-from ._windows import WindowExpr
+from ._windows import Over
 
 __all__ = [
     "FrameInit",
     "IntoExpr",
     "IntoExprColumn",
+    "Over",
     "Relation",
     "SqlExpr",
-    "WindowExpr",
     "all",
     "coalesce",
     "col",

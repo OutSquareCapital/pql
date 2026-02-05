@@ -15,6 +15,8 @@ if TYPE_CHECKING:
 
     from ._expr import Expr
     from .sql import FrameInit, IntoExpr, SqlExpr
+TEMP_NAME = "__pql_temp__"
+TEMP_COL = sql.col(TEMP_NAME)
 
 
 class LazyFrame:
@@ -130,12 +132,12 @@ class LazyFrame:
             return self.__from_lf__(
                 self._rel.select(
                     sql.all(),
-                    sql.WindowExpr(partition_by=cols.map(sql.col).collect())
+                    sql.Over(partition_by=cols.map(sql.col).collect())
                     .call(sql.fns.row_number())
-                    .alias("__rn__"),
+                    .alias(TEMP_NAME),
                 )
-                .filter(sql.col("__rn__").__eq__(sql.lit(1)))
-                .project("* EXCLUDE (__rn__)")
+                .filter(TEMP_COL.__eq__(sql.lit(1)))
+                .project(sql.all(exclude=(TEMP_COL,)))
             )
 
         match subset:
@@ -206,7 +208,9 @@ class LazyFrame:
     def reverse(self) -> Self:
         """Reverse the LazyFrame rows."""
         return self.__from_lf__(
-            self._rel.row_number("over () as __rn__", "*").project("* EXCLUDE (__rn__)")
+            self._rel.select(
+                sql.all(), sql.Over().call(sql.fns.row_number()).alias(TEMP_NAME)
+            ).project(sql.all(exclude=(TEMP_COL,)))
         )
 
     def first(self) -> Self:
@@ -265,7 +269,7 @@ class LazyFrame:
             return self._iter_slct(
                 lambda c: sql.coalesce(
                     sql.col(c),
-                    sql.WindowExpr(
+                    sql.Over(
                         rows_start=start,
                         rows_end=end,
                         ignore_nulls=True,
@@ -274,10 +278,13 @@ class LazyFrame:
             )
 
         match (value, strategy):
+            case (None, None):
+                msg = "Either `value` or `strategy` must be provided."
+                raise ValueError(msg)
             case (None, "forward"):
-                return _with_strategy(pc.Some(0), pc.NONE, sql.fns.first_value)
-            case (None, "backward"):
                 return _with_strategy(pc.NONE, pc.Some(0), sql.fns.last_value)
+            case (None, "backward"):
+                return _with_strategy(pc.Some(0), pc.NONE, sql.fns.first_value)
             case (val, None):
                 return self._iter_slct(
                     lambda c: sql.coalesce(sql.col(c), sql.from_expr(val)).alias(c)
@@ -321,16 +328,27 @@ class LazyFrame:
 
     def with_row_index(self, name: str = "index", offset: int = 0) -> Self:
         """Add a row index column."""
-        rel = self._rel.row_number("over () as __rn__", "*")
+        rel = self._rel.select(
+            sql.all(), sql.Over().call(sql.fns.row_number()).alias(TEMP_NAME)
+        )
         match offset:
             case 0:
                 return self.__from_lf__(
-                    rel.project(f'(__rn__ - 1)::BIGINT AS "{name}", * EXCLUDE (__rn__)')
+                    rel.project(
+                        TEMP_COL.__sub__(sql.lit(1))
+                        .cast(sql.datatypes.Int64)
+                        .alias(name),
+                        sql.all(exclude=(TEMP_COL,)),
+                    )
                 )
             case _:
                 return self.__from_lf__(
                     rel.project(
-                        f'(__rn__ - 1 + {offset})::BIGINT AS "{name}", * EXCLUDE (__rn__)'
+                        TEMP_COL.__sub__(sql.lit(1))
+                        .__add__(sql.lit(offset))
+                        .cast(sql.datatypes.Int64)
+                        .alias(name),
+                        sql.all(exclude=(TEMP_COL,)),
                     )
                 )
 
@@ -343,7 +361,7 @@ class LazyFrame:
         abs_n = abs(n)
         return self._iter_slct(
             lambda c: sql.coalesce(
-                sql.WindowExpr().call(
+                sql.Over().call(
                     shift_func(sql.col(c), sql.lit(abs_n)),
                 ),
                 sql.from_value(fill_value),
@@ -387,9 +405,20 @@ class LazyFrame:
     def gather_every(self, n: int, offset: int = 0) -> Self:
         """Take every nth row."""
         return self.__from_lf__(
-            self._rel.row_number("over () as __rn__", "*")
-            .filter(f"(__rn__ - 1 - {offset}) % {n} = 0 AND __rn__ > {offset}")
-            .project("* EXCLUDE (__rn__)")
+            self._rel.select(
+                sql.all(), sql.Over().call(sql.fns.row_number()).alias(TEMP_NAME)
+            )
+            .filter(
+                (
+                    sql.col(TEMP_NAME)
+                    .__sub__(sql.lit(1))
+                    .__sub__(sql.lit(offset))
+                    .__mod__(sql.lit(n))
+                )
+                .__eq__(sql.lit(0))
+                .__and__(TEMP_COL.__gt__(sql.lit(offset)))
+            )
+            .project(sql.all(exclude=(TEMP_COL,)))
         )
 
     def top_k(

@@ -7,7 +7,6 @@ from collections.abc import Callable, Collection
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Concatenate, Literal, Self
 
-import duckdb
 import pyochain as pc
 
 from . import sql
@@ -333,7 +332,7 @@ class Expr(SqlExprHandler):
     def forward_fill(self) -> Self:
         """Fill null values with the last non-null value."""
         return self.__class__(
-            sql.WindowExpr(rows_end=pc.Some(0), ignore_nulls=True).call(
+            sql.Over(rows_end=pc.Some(0), ignore_nulls=True).call(
                 sql.fns.last_value(self._expr)
             )
         )
@@ -341,21 +340,21 @@ class Expr(SqlExprHandler):
     def backward_fill(self) -> Self:
         """Fill null values with the next non-null value."""
         return self.__class__(
-            sql.WindowExpr(rows_start=pc.Some(0), ignore_nulls=True).call(
+            sql.Over(rows_start=pc.Some(0), ignore_nulls=True).call(
                 sql.fns.first_value(self._expr),
             )
         )
 
     def interpolate(self) -> Self:
         """Interpolate null values using linear interpolation."""
-        last_value = sql.WindowExpr(rows_end=pc.Some(0), ignore_nulls=True).call(
+        last_value = sql.Over(rows_end=pc.Some(0), ignore_nulls=True).call(
             sql.fns.last_value(self._expr),
         )
         return self.__class__(
             sql.coalesce(
                 self._expr,
                 last_value.__add__(
-                    sql.WindowExpr(rows_start=pc.Some(0), ignore_nulls=True)
+                    sql.Over(rows_start=pc.Some(0), ignore_nulls=True)
                     .call(sql.fns.first_value(self._expr))
                     .__sub__(last_value)
                 ).__truediv__(sql.lit(2)),
@@ -409,7 +408,7 @@ class Expr(SqlExprHandler):
     def is_duplicated(self) -> Self:
         """Check if value is duplicated."""
         return self.__class__(
-            sql.WindowExpr(partition_by=pc.Seq((self._expr,)))
+            sql.Over(partition_by=pc.Seq((self._expr,)))
             .call(sql.fns.count(sql.all()))
             .__gt__(sql.lit(1))
         )
@@ -417,7 +416,7 @@ class Expr(SqlExprHandler):
     def is_unique(self) -> Self:
         """Check if value is unique."""
         return self.__class__(
-            sql.WindowExpr(partition_by=pc.Seq((self._expr,)))
+            sql.Over(partition_by=pc.Seq((self._expr,)))
             .call(sql.fns.count(sql.all()))
             .__eq__(sql.lit(1))
         )
@@ -425,7 +424,7 @@ class Expr(SqlExprHandler):
     def is_first_distinct(self) -> Self:
         """Check if value is first occurrence."""
         return self.__class__(
-            sql.WindowExpr(partition_by=pc.Seq((self._expr,)))
+            sql.Over(partition_by=pc.Seq((self._expr,)))
             .call(sql.fns.row_number())
             .__eq__(sql.lit(1))
         )
@@ -433,7 +432,7 @@ class Expr(SqlExprHandler):
     def is_last_distinct(self) -> Self:
         """Check if value is last occurrence."""
         return self.__class__(
-            sql.WindowExpr(
+            sql.Over(
                 partition_by=pc.Seq((self._expr,)),
                 order_by=pc.Seq((self._expr,)),
                 descending=pc.Some(value=True),
@@ -746,7 +745,6 @@ class ExprListNameSpace(SqlExprHandler):
         item_expr = sql.from_value(item)
         contains_expr = sql.fns.list_contains(self._expr, item_expr)
         if nulls_equal:
-            false_expr = duckdb.SQLExpression("false")
             return Expr(
                 sql.when(
                     item_expr.isnull(),
@@ -755,9 +753,9 @@ class ExprListNameSpace(SqlExprHandler):
                             self._expr,
                             sql.lit(None),
                         ).isnotnull(),
-                        false_expr,
+                        sql.lit(value=False),
                     ),
-                ).otherwise(sql.coalesce(contains_expr, false_expr))
+                ).otherwise(sql.coalesce(contains_expr, sql.lit(value=False)))
             )
         return Expr(contains_expr)
 
