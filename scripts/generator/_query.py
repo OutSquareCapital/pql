@@ -81,10 +81,16 @@ def get_df() -> pl.LazyFrame:
             .and_(
                 dk.fn_type.cast(FUNC_TYPES)
                 .is_in({FuncTypes.TABLE, FuncTypes.TABLE_MACRO, FuncTypes.PRAGMA})
-                .not_()
+                .not_(),
+                dk.params.list.len()
+                .eq(0)
+                .and_(dk.varargs.is_null())
+                .not_(),  # literals
+                dk.name.is_in(OPERATOR_MAP).not_(),
+                dk.name.str.starts_with("current_").not_(),  # Utility fns
+                dk.name.str.starts_with("pg_").not_(),  # Postgres fns
+                dk.alias_of.is_null().or_(dk.alias_of.is_in(OPERATOR_MAP)),
             )
-            .and_(dk.name.is_in(OPERATOR_MAP).not_())
-            .and_(dk.alias_of.is_null().or_(dk.alias_of.is_in(OPERATOR_MAP)))
         )
         .with_columns(
             dk.params_types.list.eval(

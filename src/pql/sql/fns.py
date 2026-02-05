@@ -94,25 +94,10 @@ __all__ = [
     "cot",
     "count",
     "count_if",
-    "count_star",
     "covar_pop",
     "covar_samp",
     "create_sort_key",
     "cume_dist",
-    "current_catalog",
-    "current_connection_id",
-    "current_database",
-    "current_date",
-    "current_localtime",
-    "current_localtimestamp",
-    "current_query",
-    "current_query_id",
-    "current_role",
-    "current_schema",
-    "current_schemas",
-    "current_setting",
-    "current_transaction_id",
-    "current_user",
     "currval",
     "damerau_levenshtein",
     "date_add",
@@ -175,8 +160,6 @@ __all__ = [
     "geometric_mean",
     "get_bit",
     "get_block_size",
-    "get_current_time",
-    "get_current_timestamp",
     "getvariable",
     "greatest",
     "greatest_common_divisor",
@@ -330,10 +313,6 @@ __all__ = [
     "icu_sort_key",
     "ilike_escape",
     "in_search_path",
-    "inet_client_addr",
-    "inet_client_port",
-    "inet_server_addr",
-    "inet_server_port",
     "instr",
     "is_histogram_other_bin",
     "isfinite",
@@ -511,29 +490,6 @@ __all__ = [
     "parse_filename",
     "parse_path",
     "percent_rank",
-    "pg_collation_is_visible",
-    "pg_conf_load_time",
-    "pg_conversion_is_visible",
-    "pg_function_is_visible",
-    "pg_get_constraintdef",
-    "pg_get_expr",
-    "pg_get_viewdef",
-    "pg_has_role",
-    "pg_is_other_temp_schema",
-    "pg_my_temp_schema",
-    "pg_opclass_is_visible",
-    "pg_operator_is_visible",
-    "pg_opfamily_is_visible",
-    "pg_postmaster_start_time",
-    "pg_size_pretty",
-    "pg_table_is_visible",
-    "pg_ts_config_is_visible",
-    "pg_ts_dict_is_visible",
-    "pg_ts_parser_is_visible",
-    "pg_ts_template_is_visible",
-    "pg_type_is_visible",
-    "pg_typeof",
-    "pi",
     "pow",
     "power",
     "prefix",
@@ -543,7 +499,6 @@ __all__ = [
     "quantile_disc",
     "quarter",
     "radians",
-    "random",
     "range",
     "rank",
     "regexp_escape",
@@ -581,7 +536,6 @@ __all__ = [
     "rtrim",
     "second",
     "sem",
-    "session_user",
     "set_bit",
     "setseed",
     "shobj_description",
@@ -653,12 +607,10 @@ __all__ = [
     "to_timestamp",
     "to_weeks",
     "to_years",
-    "today",
     "translate",
     "trim",
     "trunc",
     "try_strptime",
-    "txid_current",
     "typeof",
     "unbin",
     "unhex",
@@ -670,18 +622,13 @@ __all__ = [
     "upper",
     "url_decode",
     "url_encode",
-    "user",
-    "uuid",
     "uuid_extract_timestamp",
     "uuid_extract_version",
-    "uuidv4",
-    "uuidv7",
     "var_pop",
     "var_samp",
     "variant_extract",
     "variant_typeof",
     "vector_type",
-    "version",
     "wavg",
     "week",
     "weekday",
@@ -878,11 +825,11 @@ def corr(y: SqlExpr | float, x: SqlExpr | float) -> SqlExpr:
     return func("corr", y, x)
 
 
-def count(arg: SqlExpr | None = None) -> SqlExpr:
+def count(arg: SqlExpr) -> SqlExpr:
     """Returns the number of non-NULL values in arg.
 
     Args:
-        arg (SqlExpr | None): `ANY` expression
+        arg (SqlExpr): `ANY` expression
 
     Returns:
         SqlExpr
@@ -900,15 +847,6 @@ def count_if(arg: SqlExpr | bool) -> SqlExpr:
         SqlExpr
     """
     return func("count_if", arg)
-
-
-def count_star() -> SqlExpr:
-    """SQL count_star function.
-
-    Returns:
-        SqlExpr
-    """
-    return func("count_star")
 
 
 def covar_pop(y: SqlExpr | float, x: SqlExpr | float) -> SqlExpr:
@@ -3426,11 +3364,11 @@ def list_unique(list_arg: SqlExpr) -> SqlExpr:
     return func("list_unique", list_arg)
 
 
-def list_value(any_arg: SqlExpr | None = None, *args: SqlExpr) -> SqlExpr:
+def list_value(any_arg: SqlExpr, *args: SqlExpr) -> SqlExpr:
     """Creates a LIST containing the argument values.
 
     Args:
-        any_arg (SqlExpr | None): `T` expression
+        any_arg (SqlExpr): `T` expression
         *args (SqlExpr): `T` expression
 
     Returns:
@@ -3508,33 +3446,6 @@ def col_description(table_oid: SqlExpr, column_number: SqlExpr) -> SqlExpr:
         SqlExpr
     """
     return func("col_description", table_oid, column_number)
-
-
-def current_catalog() -> SqlExpr:
-    """SQL current_catalog function.
-
-    Returns:
-        SqlExpr
-    """
-    return func("current_catalog")
-
-
-def current_role() -> SqlExpr:
-    """SQL current_role function.
-
-    Returns:
-        SqlExpr
-    """
-    return func("current_role")
-
-
-def current_user() -> SqlExpr:
-    """SQL current_user function.
-
-    Returns:
-        SqlExpr
-    """
-    return func("current_user")
 
 
 def fdiv(x: SqlExpr, y: SqlExpr) -> SqlExpr:
@@ -3818,42 +3729,6 @@ def has_tablespace_privilege(
     return func("has_tablespace_privilege", tablespace, privilege, privilege_2)
 
 
-def inet_client_addr() -> SqlExpr:
-    """SQL inet_client_addr function.
-
-    Returns:
-        SqlExpr
-    """
-    return func("inet_client_addr")
-
-
-def inet_client_port() -> SqlExpr:
-    """SQL inet_client_port function.
-
-    Returns:
-        SqlExpr
-    """
-    return func("inet_client_port")
-
-
-def inet_server_addr() -> SqlExpr:
-    """SQL inet_server_addr function.
-
-    Returns:
-        SqlExpr
-    """
-    return func("inet_server_addr")
-
-
-def inet_server_port() -> SqlExpr:
-    """SQL inet_server_port function.
-
-    Returns:
-        SqlExpr
-    """
-    return func("inet_server_port")
-
-
 def md5_number_lower(param: SqlExpr) -> SqlExpr:
     """SQL md5_number_lower function.
 
@@ -3904,269 +3779,6 @@ def obj_description(object_oid: SqlExpr, catalog_name: SqlExpr) -> SqlExpr:
     return func("obj_description", object_oid, catalog_name)
 
 
-def pg_collation_is_visible(collation_oid: SqlExpr) -> SqlExpr:
-    """SQL pg_collation_is_visible function.
-
-    Args:
-        collation_oid (SqlExpr): `ANY` expression
-
-    Returns:
-        SqlExpr
-    """
-    return func("pg_collation_is_visible", collation_oid)
-
-
-def pg_conf_load_time() -> SqlExpr:
-    """SQL pg_conf_load_time function.
-
-    Returns:
-        SqlExpr
-    """
-    return func("pg_conf_load_time")
-
-
-def pg_conversion_is_visible(conversion_oid: SqlExpr) -> SqlExpr:
-    """SQL pg_conversion_is_visible function.
-
-    Args:
-        conversion_oid (SqlExpr): `ANY` expression
-
-    Returns:
-        SqlExpr
-    """
-    return func("pg_conversion_is_visible", conversion_oid)
-
-
-def pg_function_is_visible(function_oid: SqlExpr) -> SqlExpr:
-    """SQL pg_function_is_visible function.
-
-    Args:
-        function_oid (SqlExpr): `ANY` expression
-
-    Returns:
-        SqlExpr
-    """
-    return func("pg_function_is_visible", function_oid)
-
-
-def pg_get_constraintdef(
-    constraint_oid: SqlExpr, pretty_bool: SqlExpr | None = None
-) -> SqlExpr:
-    """SQL pg_get_constraintdef function.
-
-    Args:
-        constraint_oid (SqlExpr): `ANY` expression
-        pretty_bool (SqlExpr | None): `ANY` expression
-
-    Returns:
-        SqlExpr
-    """
-    return func("pg_get_constraintdef", constraint_oid, pretty_bool)
-
-
-def pg_get_expr(pg_node_tree: SqlExpr, relation_oid: SqlExpr) -> SqlExpr:
-    """SQL pg_get_expr function.
-
-    Args:
-        pg_node_tree (SqlExpr): `ANY` expression
-        relation_oid (SqlExpr): `ANY` expression
-
-    Returns:
-        SqlExpr
-    """
-    return func("pg_get_expr", pg_node_tree, relation_oid)
-
-
-def pg_get_viewdef(oid: SqlExpr) -> SqlExpr:
-    """SQL pg_get_viewdef function.
-
-    Args:
-        oid (SqlExpr): `ANY` expression
-
-    Returns:
-        SqlExpr
-    """
-    return func("pg_get_viewdef", oid)
-
-
-def pg_has_role(
-    user: SqlExpr, role: SqlExpr, privilege: SqlExpr | None = None
-) -> SqlExpr:
-    """SQL pg_has_role function.
-
-    Args:
-        user (SqlExpr): `ANY` expression
-        role (SqlExpr): `ANY` expression
-        privilege (SqlExpr | None): `ANY` expression
-
-    Returns:
-        SqlExpr
-    """
-    return func("pg_has_role", user, role, privilege)
-
-
-def pg_is_other_temp_schema(schema_id: SqlExpr) -> SqlExpr:
-    """SQL pg_is_other_temp_schema function.
-
-    Args:
-        schema_id (SqlExpr): `ANY` expression
-
-    Returns:
-        SqlExpr
-    """
-    return func("pg_is_other_temp_schema", schema_id)
-
-
-def pg_my_temp_schema() -> SqlExpr:
-    """SQL pg_my_temp_schema function.
-
-    Returns:
-        SqlExpr
-    """
-    return func("pg_my_temp_schema")
-
-
-def pg_opclass_is_visible(opclass_oid: SqlExpr) -> SqlExpr:
-    """SQL pg_opclass_is_visible function.
-
-    Args:
-        opclass_oid (SqlExpr): `ANY` expression
-
-    Returns:
-        SqlExpr
-    """
-    return func("pg_opclass_is_visible", opclass_oid)
-
-
-def pg_operator_is_visible(operator_oid: SqlExpr) -> SqlExpr:
-    """SQL pg_operator_is_visible function.
-
-    Args:
-        operator_oid (SqlExpr): `ANY` expression
-
-    Returns:
-        SqlExpr
-    """
-    return func("pg_operator_is_visible", operator_oid)
-
-
-def pg_opfamily_is_visible(opclass_oid: SqlExpr) -> SqlExpr:
-    """SQL pg_opfamily_is_visible function.
-
-    Args:
-        opclass_oid (SqlExpr): `ANY` expression
-
-    Returns:
-        SqlExpr
-    """
-    return func("pg_opfamily_is_visible", opclass_oid)
-
-
-def pg_postmaster_start_time() -> SqlExpr:
-    """SQL pg_postmaster_start_time function.
-
-    Returns:
-        SqlExpr
-    """
-    return func("pg_postmaster_start_time")
-
-
-def pg_size_pretty(bytes_arg: SqlExpr) -> SqlExpr:
-    """SQL pg_size_pretty function.
-
-    Args:
-        bytes_arg (SqlExpr): `ANY` expression
-
-    Returns:
-        SqlExpr
-    """
-    return func("pg_size_pretty", bytes_arg)
-
-
-def pg_table_is_visible(table_oid: SqlExpr) -> SqlExpr:
-    """SQL pg_table_is_visible function.
-
-    Args:
-        table_oid (SqlExpr): `ANY` expression
-
-    Returns:
-        SqlExpr
-    """
-    return func("pg_table_is_visible", table_oid)
-
-
-def pg_ts_config_is_visible(config_oid: SqlExpr) -> SqlExpr:
-    """SQL pg_ts_config_is_visible function.
-
-    Args:
-        config_oid (SqlExpr): `ANY` expression
-
-    Returns:
-        SqlExpr
-    """
-    return func("pg_ts_config_is_visible", config_oid)
-
-
-def pg_ts_dict_is_visible(dict_oid: SqlExpr) -> SqlExpr:
-    """SQL pg_ts_dict_is_visible function.
-
-    Args:
-        dict_oid (SqlExpr): `ANY` expression
-
-    Returns:
-        SqlExpr
-    """
-    return func("pg_ts_dict_is_visible", dict_oid)
-
-
-def pg_ts_parser_is_visible(parser_oid: SqlExpr) -> SqlExpr:
-    """SQL pg_ts_parser_is_visible function.
-
-    Args:
-        parser_oid (SqlExpr): `ANY` expression
-
-    Returns:
-        SqlExpr
-    """
-    return func("pg_ts_parser_is_visible", parser_oid)
-
-
-def pg_ts_template_is_visible(template_oid: SqlExpr) -> SqlExpr:
-    """SQL pg_ts_template_is_visible function.
-
-    Args:
-        template_oid (SqlExpr): `ANY` expression
-
-    Returns:
-        SqlExpr
-    """
-    return func("pg_ts_template_is_visible", template_oid)
-
-
-def pg_type_is_visible(type_oid: SqlExpr) -> SqlExpr:
-    """SQL pg_type_is_visible function.
-
-    Args:
-        type_oid (SqlExpr): `ANY` expression
-
-    Returns:
-        SqlExpr
-    """
-    return func("pg_type_is_visible", type_oid)
-
-
-def pg_typeof(expression: SqlExpr) -> SqlExpr:
-    """SQL pg_typeof function.
-
-    Args:
-        expression (SqlExpr): `ANY` expression
-
-    Returns:
-        SqlExpr
-    """
-    return func("pg_typeof", expression)
-
-
 def round_even(x: SqlExpr, n: SqlExpr) -> SqlExpr:
     """SQL round_even function.
 
@@ -4191,15 +3803,6 @@ def roundbankers(x: SqlExpr, n: SqlExpr) -> SqlExpr:
         SqlExpr
     """
     return func("roundbankers", x, n)
-
-
-def session_user() -> SqlExpr:
-    """SQL session_user function.
-
-    Returns:
-        SqlExpr
-    """
-    return func("session_user")
 
 
 def shobj_description(object_oid: SqlExpr, catalog_name: SqlExpr) -> SqlExpr:
@@ -4227,15 +3830,6 @@ def split_part(string: SqlExpr, delimiter: SqlExpr, position: SqlExpr) -> SqlExp
         SqlExpr
     """
     return func("split_part", string, delimiter, position)
-
-
-def user() -> SqlExpr:
-    """SQL user function.
-
-    Returns:
-        SqlExpr
-    """
-    return func("user")
 
 
 def wavg(value: SqlExpr, weight: SqlExpr) -> SqlExpr:
@@ -4269,15 +3863,12 @@ def weighted_avg(value: SqlExpr, weight: SqlExpr) -> SqlExpr:
 # ============================================================
 
 
-def map(
-    keys: SqlExpr | list[SqlExpr] | None = None,
-    values: SqlExpr | list[SqlExpr] | None = None,
-) -> SqlExpr:
+def map(keys: SqlExpr | list[SqlExpr], values: SqlExpr | list[SqlExpr]) -> SqlExpr:
     """Creates a map from a set of keys and values.
 
     Args:
-        keys (SqlExpr | SqlExpr | list[SqlExpr] | None): `K[]` expression
-        values (SqlExpr | list[SqlExpr] | None): `V[]` expression
+        keys (SqlExpr | list[SqlExpr]): `K[]` expression
+        values (SqlExpr | list[SqlExpr]): `V[]` expression
 
     Returns:
         SqlExpr
@@ -5139,115 +4730,6 @@ def create_sort_key(parameters: SqlExpr, *args: SqlExpr) -> SqlExpr:
     return func("create_sort_key", parameters, *args)
 
 
-def current_connection_id() -> SqlExpr:
-    """Get the current connection_id.
-
-    Returns:
-        SqlExpr
-    """
-    return func("current_connection_id")
-
-
-def current_database() -> SqlExpr:
-    """Returns the name of the currently active database.
-
-    Returns:
-        SqlExpr
-    """
-    return func("current_database")
-
-
-def current_date() -> SqlExpr:
-    """SQL current_date function.
-
-    Returns:
-        SqlExpr
-    """
-    return func("current_date")
-
-
-def current_localtime() -> SqlExpr:
-    """SQL current_localtime function.
-
-    Returns:
-        SqlExpr
-    """
-    return func("current_localtime")
-
-
-def current_localtimestamp() -> SqlExpr:
-    """SQL current_localtimestamp function.
-
-    Returns:
-        SqlExpr
-    """
-    return func("current_localtimestamp")
-
-
-def current_query() -> SqlExpr:
-    """Returns the current query as a string.
-
-    Returns:
-        SqlExpr
-    """
-    return func("current_query")
-
-
-def current_query_id() -> SqlExpr:
-    """Get the current query_id.
-
-    Returns:
-        SqlExpr
-    """
-    return func("current_query_id")
-
-
-def current_schema() -> SqlExpr:
-    """Returns the name of the currently active schema.
-
-    Default is main.
-
-    Returns:
-        SqlExpr
-    """
-    return func("current_schema")
-
-
-def current_schemas(include_implicit: SqlExpr | bool) -> SqlExpr:
-    """Returns list of schemas.
-
-    Pass a parameter of True to include implicit schemas.
-
-    Args:
-        include_implicit (SqlExpr | SqlExpr | bool): `ANY | BOOLEAN` expression
-
-    Returns:
-        SqlExpr
-    """
-    return func("current_schemas", include_implicit)
-
-
-def current_setting(setting_name: SqlExpr | str) -> SqlExpr:
-    """Returns the current value of the configuration setting.
-
-    Args:
-        setting_name (SqlExpr | str): `VARCHAR` expression
-
-    Returns:
-        SqlExpr
-    """
-    return func("current_setting", setting_name)
-
-
-def current_transaction_id() -> SqlExpr:
-    """Get the current global transaction_id.
-
-    Returns:
-        SqlExpr
-    """
-    return func("current_transaction_id")
-
-
 def currval(sequence_name: SqlExpr | str) -> SqlExpr:
     """Return the current value of the sequence.
 
@@ -5650,24 +5132,6 @@ def get_bit(bitstring: SqlExpr | bytes, index: SqlExpr | int) -> SqlExpr:
         SqlExpr
     """
     return func("get_bit", bitstring, index)
-
-
-def get_current_time() -> SqlExpr:
-    """SQL get_current_time function.
-
-    Returns:
-        SqlExpr
-    """
-    return func("get_current_time")
-
-
-def get_current_timestamp() -> SqlExpr:
-    """Returns the current timestamp.
-
-    Returns:
-        SqlExpr
-    """
-    return func("get_current_timestamp")
 
 
 def getvariable(col0: SqlExpr | str) -> SqlExpr:
@@ -8147,15 +7611,6 @@ def parse_path(path: SqlExpr | str, separator: SqlExpr | str | None = None) -> S
     return func("parse_path", path, separator)
 
 
-def pi() -> SqlExpr:
-    """Returns the value of pi.
-
-    Returns:
-        SqlExpr
-    """
-    return func("pi")
-
-
 def pow(x: SqlExpr | float, y: SqlExpr | float) -> SqlExpr:
     """Computes x to the power of y.
 
@@ -8230,15 +7685,6 @@ def radians(x: SqlExpr | float) -> SqlExpr:
         SqlExpr
     """
     return func("radians", x)
-
-
-def random() -> SqlExpr:
-    """Returns a random number between 0 and 1.
-
-    Returns:
-        SqlExpr
-    """
-    return func("random")
 
 
 def range(
@@ -8707,15 +8153,6 @@ def tanh(x: SqlExpr | float) -> SqlExpr:
     return func("tanh", x)
 
 
-def today() -> SqlExpr:
-    """SQL today function.
-
-    Returns:
-        SqlExpr
-    """
-    return func("today")
-
-
 def translate(
     string: SqlExpr | str, from_arg: SqlExpr | str, to: SqlExpr | str
 ) -> SqlExpr:
@@ -8775,17 +8212,6 @@ def try_strptime(text: SqlExpr | str, format_arg: SqlExpr | list[str] | str) -> 
         SqlExpr
     """
     return func("try_strptime", text, format_arg)
-
-
-def txid_current() -> SqlExpr:
-    """Returns the current transaction's ID (a BIGINT).
-
-    It will assign a new one if the current transaction does not have one already.
-
-    Returns:
-        SqlExpr
-    """
-    return func("txid_current")
 
 
 def typeof(expression: SqlExpr) -> SqlExpr:
@@ -8884,15 +8310,6 @@ def url_encode(string: SqlExpr | str) -> SqlExpr:
     return func("url_encode", string)
 
 
-def uuid() -> SqlExpr:
-    """Returns a random UUID v4 similar to this: eeccb8c5-9943-b2bb-bb5e-222f4e14b687.
-
-    Returns:
-        SqlExpr
-    """
-    return func("uuid")
-
-
 def uuid_extract_timestamp(uuid: SqlExpr | str) -> SqlExpr:
     """Extract the timestamp for the given UUID v7.
 
@@ -8915,24 +8332,6 @@ def uuid_extract_version(uuid: SqlExpr | str) -> SqlExpr:
         SqlExpr
     """
     return func("uuid_extract_version", uuid)
-
-
-def uuidv4() -> SqlExpr:
-    """Returns a random UUIDv4 similar to this: eeccb8c5-9943-b2bb-bb5e-222f4e14b687.
-
-    Returns:
-        SqlExpr
-    """
-    return func("uuidv4")
-
-
-def uuidv7() -> SqlExpr:
-    """Returns a random UUID v7 similar to this: 019482e4-1441-7aad-8127-eec99573b0a0.
-
-    Returns:
-        SqlExpr
-    """
-    return func("uuidv7")
 
 
 def variant_extract(col0: SqlExpr, col1: SqlExpr | int | str) -> SqlExpr:
@@ -8970,15 +8369,6 @@ def vector_type(col: SqlExpr) -> SqlExpr:
         SqlExpr
     """
     return func("vector_type", col)
-
-
-def version() -> SqlExpr:
-    """Returns the currently active version of DuckDB in this format: v0.3.2.
-
-    Returns:
-        SqlExpr
-    """
-    return func("version")
 
 
 def week(ts: SqlExpr | date | datetime | timedelta) -> SqlExpr:
