@@ -2,6 +2,8 @@
 
 from . import datatypes, fns
 from ._core import (
+    FrameInit,
+    IntoExpr,
     IntoExprColumn,
     Relation,
     SqlExpr,
@@ -19,11 +21,14 @@ from ._core import (
     func,
     lit,
     raw,
+    rel_from_data,
     when,
 )
 from ._windows import WindowExpr
 
 __all__ = [
+    "FrameInit",
+    "IntoExpr",
     "IntoExprColumn",
     "Relation",
     "SqlExpr",
@@ -31,6 +36,7 @@ __all__ = [
     "all",
     "coalesce",
     "col",
+    "datatypes",
     "datatypes",
     "fn_once",
     "fns",
@@ -44,5 +50,6 @@ __all__ = [
     "func",
     "lit",
     "raw",
+    "rel_from_data",
     "when",
 ]

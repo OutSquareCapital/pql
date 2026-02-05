@@ -6,14 +6,15 @@ from collections.abc import Callable, Iterable, Mapping
 from pathlib import Path
 from typing import TYPE_CHECKING, Concatenate, Literal, Self
 
-import polars as pl
 import pyochain as pc
 
 from . import sql
 
 if TYPE_CHECKING:
+    import polars as pl
+
     from ._expr import Expr
-    from ._types import FrameInit, IntoExpr
+    from .sql import FrameInit, IntoExpr
 
 
 class LazyFrame:
@@ -23,20 +24,7 @@ class LazyFrame:
     __slots__ = ("_rel",)
 
     def __init__(self, data: FrameInit = None) -> None:
-        match data:
-            case sql.Relation():
-                self._rel = data
-            case pl.DataFrame():
-                self._rel = sql.from_arrow(data)
-            case pl.LazyFrame():
-                _ = data
-                qry = """SELECT * FROM _"""
-                self._rel = sql.from_query(qry)
-
-            case None:
-                self._rel = sql.from_arrow(pl.DataFrame({"_": []}))
-            case _:
-                self._rel = sql.from_arrow(pl.DataFrame(data))
+        self._rel = sql.rel_from_data(data)
 
     def __repr__(self) -> str:
         return f"LazyFrame\n{self._rel}\n"

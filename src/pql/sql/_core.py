@@ -1,10 +1,14 @@
 from __future__ import annotations
 
 from collections.abc import Iterable
+from datetime import date, datetime, time, timedelta
 from typing import TYPE_CHECKING, Any
 
+import polars as pl
+from polars._typing import FrameInitTypes
+
 if TYPE_CHECKING:
-    from .._types import IntoExpr
+    from .._expr import Expr
 
 
 import pyochain as pc
@@ -12,18 +16,37 @@ from duckdb import (
     CaseExpression as when,  # noqa: F401, N813 # pyright: ignore[reportUnusedImport]
     CoalesceOperator as coalesce,  # noqa: F401, N813 # pyright: ignore[reportUnusedImport]
     ColumnExpression as col,  # noqa: N813 # pyright: ignore[reportUnusedImport]
-    ConstantExpression as lit,  # noqa: N813 # pyright: ignore[reportUnusedImport]
-    DuckDBPyRelation as Relation,  # noqa: F401 # pyright: ignore[reportUnusedImport]
-    Expression as SqlExpr,  # pyright: ignore[reportUnusedImport]
+    ConstantExpression as lit,  # noqa: N813
+    DuckDBPyRelation as Relation,
+    Expression as SqlExpr,
     FunctionExpression,
     LambdaExpression as fn_once,  # noqa: F401, N813 # pyright: ignore[reportUnusedImport]
     SQLExpression as raw,  # noqa: F401, N813 # pyright: ignore[reportUnusedImport]
     StarExpression as all,  # noqa: F401, N813 # pyright: ignore[reportUnusedImport]
-    from_arrow,  # noqa: F401 # pyright: ignore[reportUnusedImport]
-    from_query,  # noqa: F401 # pyright: ignore[reportUnusedImport]
+    from_arrow,
+    from_query,
 )
 
+type FrameInit = Relation | pl.DataFrame | pl.LazyFrame | None | FrameInitTypes
+
 type IntoExprColumn = Iterable[SqlExpr] | SqlExpr | str
+
+type PyLiteral = (
+    str
+    | int
+    | float
+    | bool
+    | date
+    | datetime
+    | time
+    | timedelta
+    | bytes
+    | bytearray
+    | list[PyLiteral]
+    | dict[Any, PyLiteral]
+    | None
+)
+type IntoExpr = PyLiteral | Expr | SqlExpr
 
 
 def from_expr(value: IntoExpr) -> SqlExpr:
@@ -71,9 +94,9 @@ def from_iter(*values: IntoExpr | Iterable[IntoExpr]) -> pc.Iter[SqlExpr]:
         distinguish between a single iterable argument and multiple arguments.
     """
 
-    def _to_exprs(value: IntoExpr | Iterable[IntoExpr]) -> pc.Iter[SqlExpr]:
+    def _single_to_expr(value: IntoExpr | Iterable[IntoExpr]) -> pc.Iter[SqlExpr]:
         match value:
-            case str():
+            case str() | bytes() | bytearray():
                 return pc.Iter.once(from_expr(value))
             case Iterable():
                 return pc.Iter(value).map(from_expr)
@@ -82,9 +105,26 @@ def from_iter(*values: IntoExpr | Iterable[IntoExpr]) -> pc.Iter[SqlExpr]:
 
     match values:
         case (single,):
-            return _to_exprs(single)
+            return _single_to_expr(single)
         case _:
-            return pc.Iter(values).map(_to_exprs).flatten()
+            return pc.Iter(values).map(_single_to_expr).flatten()
+
+
+def rel_from_data(data: FrameInit) -> Relation:
+    match data:
+        case Relation():
+            return data
+        case pl.DataFrame():
+            return from_arrow(data)
+        case pl.LazyFrame():
+            _ = data
+            qry = """SELECT * FROM _"""
+            return from_query(qry)
+
+        case None:
+            return from_arrow(pl.DataFrame({"_": ()}))
+        case _:
+            return from_arrow(pl.DataFrame(data))
 
 
 def from_args_kwargs(

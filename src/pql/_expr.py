@@ -5,7 +5,7 @@ from __future__ import annotations
 import re
 from collections.abc import Callable, Collection
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Concatenate, Self
+from typing import TYPE_CHECKING, Any, Concatenate, Literal, Self
 
 import duckdb
 import pyochain as pc
@@ -13,7 +13,9 @@ import pyochain as pc
 from . import sql
 
 if TYPE_CHECKING:
-    from ._types import IntoExpr, RoundMode
+    from .sql import IntoExpr
+
+RoundMode = Literal["half_to_even", "half_away_from_zero"]
 
 
 class Col:
@@ -619,7 +621,8 @@ class ExprStringNameSpace:
     def to_decimal(self, *, scale: int = 38) -> Expr:
         """Convert string to decimal."""
         precision = min(scale, 38)
-        return Expr(self._expr.cast(f"DECIMAL({precision}, {precision // 2})"))
+
+        return Expr(self._expr.cast(f"DECIMAL({precision}, {precision // 2})"))  # pyright: ignore[reportArgumentType]
 
     def strip_prefix(self, prefix: IntoExpr) -> Expr:
         """Strip prefix from string."""
