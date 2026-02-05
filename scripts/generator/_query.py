@@ -117,17 +117,19 @@ def get_df() -> pl.LazyFrame:
         .group_by(py.name, params.idx, maintain_order=True)
         .agg(
             pl.all().exclude("py_types", "parameter_types").drop_nulls().first(),
-            dk.params_types,
-            py.types,
+            dk.params_types.pipe(_into_union),
+            py.types.pipe(_into_union).pipe(_make_type_union),
         )
         .group_by(py.name, maintain_order=True)
         .agg(
             pl.all().exclude("param_names").first(),
-            *params.names.filter(params.names.is_not_null()).pipe(
-                _joined_parts,
-                params.idx.ge(params.lens.by_fn_cat),
-                py.types.pipe(_into_union).pipe(_make_type_union),
-                dk.params_types.pipe(_into_union),
+            *params.names.pipe(
+                lambda expr: expr.filter(expr.is_not_null()).pipe(
+                    _joined_parts,
+                    params.idx.ge(params.lens.by_fn_cat),
+                    py.types,
+                    dk.params_types,
+                )
             ),
         )
         .select(
@@ -151,7 +153,7 @@ def get_df() -> pl.LazyFrame:
 
 
 def _into_union(expr: pl.Expr) -> pl.Expr:
-    return expr.list.unique().list.sort().list.join(" | ")
+    return expr.unique().sort().str.join(" | ")
 
 
 def _joined_parts(
@@ -163,29 +165,25 @@ def _joined_parts(
             pl.lit(": "),
             py_union,
             pl.when(cond).then(pl.lit(" | None = None")).otherwise(_EMPTY_STR),
-        ).alias("param_sig_list")
+        )
 
     def _param_doc_join() -> pl.Expr:
-        return (
-            pl.concat_str(
-                pl.lit("        "),
-                expr,
-                pl.lit(" ("),
-                py_union,
-                pl.when(cond).then(pl.lit(" | None")).otherwise(_EMPTY_STR),
-                pl.lit("): `"),
-                params_union,
-                pl.lit("` expression"),
-            )
-            .str.join("\n")
-            .alias("param_doc_join")
-        )
+        return pl.concat_str(
+            pl.lit("        "),
+            expr,
+            pl.lit(" ("),
+            py_union,
+            pl.when(cond).then(pl.lit(" | None")).otherwise(_EMPTY_STR),
+            pl.lit("): `"),
+            params_union,
+            pl.lit("` expression"),
+        ).str.join("\n")
 
     return (
         expr.alias("param_names_list"),
         expr.str.join(", ").alias("param_names_join"),
-        _param_sig_list(),
-        _param_doc_join(),
+        _param_sig_list().alias("param_sig_list"),
+        _param_doc_join().alias("param_doc_join"),
     )
 
 
