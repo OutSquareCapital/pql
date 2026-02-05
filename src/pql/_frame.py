@@ -227,31 +227,11 @@ class LazyFrame:
 
     def std(self, ddof: int = 1) -> Self:
         """Aggregate the standard deviation of each column."""
-        match ddof:
-            case 1:
-
-                def _std_fn(c: SqlExpr) -> SqlExpr:
-                    return c.stddev_samp()
-            case _:
-
-                def _std_fn(c: SqlExpr) -> SqlExpr:
-                    return c.stddev_pop()
-
-        return self._iter_agg(_std_fn)
+        return self._iter_agg(SqlExpr.stddev_samp if ddof == 1 else SqlExpr.stddev_pop)
 
     def var(self, ddof: int = 1) -> Self:
         """Aggregate the variance of each column."""
-        match ddof:
-            case 1:
-
-                def _var_fn(c: SqlExpr) -> SqlExpr:
-                    return c.var_samp()
-            case _:
-
-                def _var_fn(c: SqlExpr) -> SqlExpr:
-                    return c.var_pop()
-
-        return self._iter_agg(_var_fn)
+        return self._iter_agg(SqlExpr.var_samp if ddof == 1 else SqlExpr.var_pop)
 
     def null_count(self) -> Self:
         """Return the null count of each column."""
