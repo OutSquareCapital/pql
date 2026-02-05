@@ -19,10 +19,8 @@ __all__ = [
     "acos",
     "acosh",
     "add",
-    "add_parquet_key",
     "age",
     "alias",
-    "all_profiling_output",
     "any_value",
     "approx_count_distinct",
     "approx_quantile",
@@ -85,13 +83,11 @@ __all__ = [
     "century",
     "chr",
     "col_description",
-    "collations",
     "combine",
     "concat",
     "concat_ws",
     "constant_or_null",
     "contains",
-    "copy_database",
     "corr",
     "cos",
     "cosh",
@@ -119,8 +115,6 @@ __all__ = [
     "current_user",
     "currval",
     "damerau_levenshtein",
-    "database_list",
-    "database_size",
     "date_add",
     "date_diff",
     "date_part",
@@ -139,27 +133,7 @@ __all__ = [
     "decode",
     "degrees",
     "dense_rank",
-    "disable_checkpoint_on_shutdown",
-    "disable_object_cache",
-    "disable_optimizer",
-    "disable_print_progress_bar",
-    "disable_profile",
-    "disable_profiling",
-    "disable_progress_bar",
-    "disable_verification",
-    "disable_verify_external",
-    "disable_verify_fetch_row",
-    "disable_verify_parallelism",
-    "disable_verify_serializer",
     "divide",
-    "enable_checkpoint_on_shutdown",
-    "enable_object_cache",
-    "enable_optimizer",
-    "enable_print_progress_bar",
-    "enable_profile",
-    "enable_profiling",
-    "enable_progress_bar",
-    "enable_verification",
     "encode",
     "entropy",
     "enum_code",
@@ -176,7 +150,6 @@ __all__ = [
     "error",
     "even",
     "exp",
-    "extension_versions",
     "factorial",
     "favg",
     "fdiv",
@@ -187,7 +160,6 @@ __all__ = [
     "flatten",
     "floor",
     "fmod",
-    "force_checkpoint",
     "format",
     "format_bytes",
     "format_pg_type",
@@ -196,7 +168,6 @@ __all__ = [
     "from_base64",
     "from_json",
     "from_json_strict",
-    "functions",
     "gamma",
     "generate_series",
     "generate_subscripts",
@@ -358,7 +329,6 @@ __all__ = [
     "icu_collate_zu",
     "icu_sort_key",
     "ilike_escape",
-    "import_database",
     "in_search_path",
     "inet_client_addr",
     "inet_client_port",
@@ -379,7 +349,6 @@ __all__ = [
     "json_array_length",
     "json_contains",
     "json_deserialize_sql",
-    "json_execute_serialized_sql",
     "json_exists",
     "json_extract",
     "json_extract_path",
@@ -511,7 +480,6 @@ __all__ = [
     "md5_number_lower",
     "md5_number_upper",
     "median",
-    "metadata_info",
     "microsecond",
     "millennium",
     "millisecond",
@@ -566,7 +534,6 @@ __all__ = [
     "pg_type_is_visible",
     "pg_typeof",
     "pi",
-    "platform",
     "pow",
     "power",
     "prefix",
@@ -618,10 +585,6 @@ __all__ = [
     "set_bit",
     "setseed",
     "shobj_description",
-    "show",
-    "show_databases",
-    "show_tables",
-    "show_tables_expanded",
     "sign",
     "signbit",
     "sin",
@@ -633,7 +596,6 @@ __all__ = [
     "stats",
     "stddev_pop",
     "stddev_samp",
-    "storage_info",
     "strftime",
     "string_agg",
     "string_array_extract",
@@ -667,7 +629,6 @@ __all__ = [
     "suffix",
     "sum",
     "sum_no_overflow",
-    "table_info",
     "tan",
     "tanh",
     "time_bucket",
@@ -710,7 +671,6 @@ __all__ = [
     "url_decode",
     "url_encode",
     "user",
-    "user_agent",
     "uuid",
     "uuid_extract_timestamp",
     "uuid_extract_version",
@@ -721,10 +681,6 @@ __all__ = [
     "variant_extract",
     "variant_typeof",
     "vector_type",
-    "verify_external",
-    "verify_fetch_row",
-    "verify_parallelism",
-    "verify_serializer",
     "version",
     "wavg",
     "week",
@@ -2400,18 +2356,6 @@ def json_deserialize_sql(col0: SqlExpr | str) -> SqlExpr:
         SqlExpr
     """
     return func("json_deserialize_sql", col0)
-
-
-def json_execute_serialized_sql(col0: SqlExpr | str) -> SqlExpr:
-    """SQL json_execute_serialized_sql function.
-
-    Args:
-        col0 (SqlExpr | str): `VARCHAR` expression
-
-    Returns:
-        SqlExpr
-    """
-    return func("json_execute_serialized_sql", col0)
 
 
 def json_exists(col0: SqlExpr | str, col1: SqlExpr | list[str] | str) -> SqlExpr:
@@ -4481,418 +4425,6 @@ def map_values(map_arg: SqlExpr) -> SqlExpr:
         SqlExpr
     """
     return func("map_values", map_arg)
-
-
-# ============================================================
-# Pragma
-# ============================================================
-
-
-def add_parquet_key(col0: SqlExpr | str, col1: SqlExpr | str) -> SqlExpr:
-    """SQL add_parquet_key function.
-
-    Args:
-        col0 (SqlExpr | str): `VARCHAR` expression
-        col1 (SqlExpr | str): `VARCHAR` expression
-
-    Returns:
-        SqlExpr
-    """
-    return func("add_parquet_key", col0, col1)
-
-
-def all_profiling_output() -> SqlExpr:
-    """SQL all_profiling_output function.
-
-    Returns:
-        SqlExpr
-    """
-    return func("all_profiling_output")
-
-
-def collations() -> SqlExpr:
-    """SQL collations function.
-
-    Returns:
-        SqlExpr
-    """
-    return func("collations")
-
-
-def copy_database(col0: SqlExpr | str, col1: SqlExpr | str) -> SqlExpr:
-    """SQL copy_database function.
-
-    Args:
-        col0 (SqlExpr | str): `VARCHAR` expression
-        col1 (SqlExpr | str): `VARCHAR` expression
-
-    Returns:
-        SqlExpr
-    """
-    return func("copy_database", col0, col1)
-
-
-def database_list() -> SqlExpr:
-    """SQL database_list function.
-
-    Returns:
-        SqlExpr
-    """
-    return func("database_list")
-
-
-def database_size() -> SqlExpr:
-    """SQL database_size function.
-
-    Returns:
-        SqlExpr
-    """
-    return func("database_size")
-
-
-def disable_checkpoint_on_shutdown() -> SqlExpr:
-    """SQL disable_checkpoint_on_shutdown function.
-
-    Returns:
-        SqlExpr
-    """
-    return func("disable_checkpoint_on_shutdown")
-
-
-def disable_object_cache() -> SqlExpr:
-    """SQL disable_object_cache function.
-
-    Returns:
-        SqlExpr
-    """
-    return func("disable_object_cache")
-
-
-def disable_optimizer() -> SqlExpr:
-    """SQL disable_optimizer function.
-
-    Returns:
-        SqlExpr
-    """
-    return func("disable_optimizer")
-
-
-def disable_print_progress_bar() -> SqlExpr:
-    """SQL disable_print_progress_bar function.
-
-    Returns:
-        SqlExpr
-    """
-    return func("disable_print_progress_bar")
-
-
-def disable_profile() -> SqlExpr:
-    """SQL disable_profile function.
-
-    Returns:
-        SqlExpr
-    """
-    return func("disable_profile")
-
-
-def disable_profiling() -> SqlExpr:
-    """SQL disable_profiling function.
-
-    Returns:
-        SqlExpr
-    """
-    return func("disable_profiling")
-
-
-def disable_progress_bar() -> SqlExpr:
-    """SQL disable_progress_bar function.
-
-    Returns:
-        SqlExpr
-    """
-    return func("disable_progress_bar")
-
-
-def disable_verification() -> SqlExpr:
-    """SQL disable_verification function.
-
-    Returns:
-        SqlExpr
-    """
-    return func("disable_verification")
-
-
-def disable_verify_external() -> SqlExpr:
-    """SQL disable_verify_external function.
-
-    Returns:
-        SqlExpr
-    """
-    return func("disable_verify_external")
-
-
-def disable_verify_fetch_row() -> SqlExpr:
-    """SQL disable_verify_fetch_row function.
-
-    Returns:
-        SqlExpr
-    """
-    return func("disable_verify_fetch_row")
-
-
-def disable_verify_parallelism() -> SqlExpr:
-    """SQL disable_verify_parallelism function.
-
-    Returns:
-        SqlExpr
-    """
-    return func("disable_verify_parallelism")
-
-
-def disable_verify_serializer() -> SqlExpr:
-    """SQL disable_verify_serializer function.
-
-    Returns:
-        SqlExpr
-    """
-    return func("disable_verify_serializer")
-
-
-def enable_checkpoint_on_shutdown() -> SqlExpr:
-    """SQL enable_checkpoint_on_shutdown function.
-
-    Returns:
-        SqlExpr
-    """
-    return func("enable_checkpoint_on_shutdown")
-
-
-def enable_object_cache() -> SqlExpr:
-    """SQL enable_object_cache function.
-
-    Returns:
-        SqlExpr
-    """
-    return func("enable_object_cache")
-
-
-def enable_optimizer() -> SqlExpr:
-    """SQL enable_optimizer function.
-
-    Returns:
-        SqlExpr
-    """
-    return func("enable_optimizer")
-
-
-def enable_print_progress_bar() -> SqlExpr:
-    """SQL enable_print_progress_bar function.
-
-    Returns:
-        SqlExpr
-    """
-    return func("enable_print_progress_bar")
-
-
-def enable_profile() -> SqlExpr:
-    """SQL enable_profile function.
-
-    Returns:
-        SqlExpr
-    """
-    return func("enable_profile")
-
-
-def enable_profiling() -> SqlExpr:
-    """SQL enable_profiling function.
-
-    Returns:
-        SqlExpr
-    """
-    return func("enable_profiling")
-
-
-def enable_progress_bar() -> SqlExpr:
-    """SQL enable_progress_bar function.
-
-    Returns:
-        SqlExpr
-    """
-    return func("enable_progress_bar")
-
-
-def enable_verification() -> SqlExpr:
-    """SQL enable_verification function.
-
-    Returns:
-        SqlExpr
-    """
-    return func("enable_verification")
-
-
-def extension_versions() -> SqlExpr:
-    """SQL extension_versions function.
-
-    Returns:
-        SqlExpr
-    """
-    return func("extension_versions")
-
-
-def force_checkpoint() -> SqlExpr:
-    """SQL force_checkpoint function.
-
-    Returns:
-        SqlExpr
-    """
-    return func("force_checkpoint")
-
-
-def functions() -> SqlExpr:
-    """SQL functions function.
-
-    Returns:
-        SqlExpr
-    """
-    return func("functions")
-
-
-def import_database(col0: SqlExpr | str) -> SqlExpr:
-    """SQL import_database function.
-
-    Args:
-        col0 (SqlExpr | str): `VARCHAR` expression
-
-    Returns:
-        SqlExpr
-    """
-    return func("import_database", col0)
-
-
-def metadata_info() -> SqlExpr:
-    """SQL metadata_info function.
-
-    Returns:
-        SqlExpr
-    """
-    return func("metadata_info")
-
-
-def platform() -> SqlExpr:
-    """SQL platform function.
-
-    Returns:
-        SqlExpr
-    """
-    return func("platform")
-
-
-def show(col0: SqlExpr | str) -> SqlExpr:
-    """SQL show function.
-
-    Args:
-        col0 (SqlExpr | str): `VARCHAR` expression
-
-    Returns:
-        SqlExpr
-    """
-    return func("show", col0)
-
-
-def show_databases() -> SqlExpr:
-    """SQL show_databases function.
-
-    Returns:
-        SqlExpr
-    """
-    return func("show_databases")
-
-
-def show_tables() -> SqlExpr:
-    """SQL show_tables function.
-
-    Returns:
-        SqlExpr
-    """
-    return func("show_tables")
-
-
-def show_tables_expanded() -> SqlExpr:
-    """SQL show_tables_expanded function.
-
-    Returns:
-        SqlExpr
-    """
-    return func("show_tables_expanded")
-
-
-def storage_info(col0: SqlExpr | str) -> SqlExpr:
-    """SQL storage_info function.
-
-    Args:
-        col0 (SqlExpr | str): `VARCHAR` expression
-
-    Returns:
-        SqlExpr
-    """
-    return func("storage_info", col0)
-
-
-def table_info(col0: SqlExpr | str) -> SqlExpr:
-    """SQL table_info function.
-
-    Args:
-        col0 (SqlExpr | str): `VARCHAR` expression
-
-    Returns:
-        SqlExpr
-    """
-    return func("table_info", col0)
-
-
-def user_agent() -> SqlExpr:
-    """SQL user_agent function.
-
-    Returns:
-        SqlExpr
-    """
-    return func("user_agent")
-
-
-def verify_external() -> SqlExpr:
-    """SQL verify_external function.
-
-    Returns:
-        SqlExpr
-    """
-    return func("verify_external")
-
-
-def verify_fetch_row() -> SqlExpr:
-    """SQL verify_fetch_row function.
-
-    Returns:
-        SqlExpr
-    """
-    return func("verify_fetch_row")
-
-
-def verify_parallelism() -> SqlExpr:
-    """SQL verify_parallelism function.
-
-    Returns:
-        SqlExpr
-    """
-    return func("verify_parallelism")
-
-
-def verify_serializer() -> SqlExpr:
-    """SQL verify_serializer function.
-
-    Returns:
-        SqlExpr
-    """
-    return func("verify_serializer")
 
 
 # ============================================================

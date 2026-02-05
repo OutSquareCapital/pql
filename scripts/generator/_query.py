@@ -80,7 +80,7 @@ def get_df() -> pl.LazyFrame:
             .not_()
             .and_(
                 dk.fn_type.cast(FUNC_TYPES)
-                .is_in({FuncTypes.TABLE, FuncTypes.TABLE_MACRO})
+                .is_in({FuncTypes.TABLE, FuncTypes.TABLE_MACRO, FuncTypes.PRAGMA})
                 .not_()
             )
             .and_(dk.name.is_in(OPERATOR_MAP).not_())
