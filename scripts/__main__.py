@@ -11,7 +11,6 @@ from typing import Annotated
 
 import typer
 
-from .comparator import get_comparisons
 from .generator import run_pipeline
 
 DEFAULT_OUTPUT = Path("src", "pql", "sql", "fns.py")
@@ -22,6 +21,8 @@ app = typer.Typer()
 @app.command()
 def compare() -> None:
     """Run the comparison between polars/narwhals and pql and generate markdown report at the repo root."""
+    from .comparator import get_comparisons
+
     Path("API_COVERAGE.md").write_text(get_comparisons(), encoding="utf-8")
 
 

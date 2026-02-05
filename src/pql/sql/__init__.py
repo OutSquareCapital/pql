@@ -1,36 +1,32 @@
 """SQL expression functions and converters."""
 
-from . import datatypes, fns
-from ._core import (
-    FrameInit,
+from . import datatypes
+from ._core import FrameInit, rel_from_data
+from ._expr import (
     IntoExpr,
     IntoExprColumn,
-    Relation,
     SqlExpr,
     all,
     coalesce,
     col,
     fn_once,
     from_args_kwargs,
-    from_arrow,
     from_cols,
     from_expr,
     from_iter,
-    from_query,
     from_value,
     func,
     lit,
     raw,
-    rel_from_data,
+    row_number,
+    to_duckdb,
     when,
 )
-from ._windows import over
 
 __all__ = [
     "FrameInit",
     "IntoExpr",
     "IntoExprColumn",
-    "Relation",
     "SqlExpr",
     "all",
     "coalesce",
@@ -38,18 +34,16 @@ __all__ = [
     "datatypes",
     "datatypes",
     "fn_once",
-    "fns",
     "from_args_kwargs",
-    "from_arrow",
     "from_cols",
     "from_expr",
     "from_iter",
-    "from_query",
     "from_value",
     "func",
     "lit",
-    "over",
     "raw",
     "rel_from_data",
+    "row_number",
+    "to_duckdb",
     "when",
 ]

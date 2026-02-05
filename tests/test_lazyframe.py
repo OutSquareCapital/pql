@@ -189,13 +189,6 @@ def test_with_columns_filter(sample_df: pl.DataFrame) -> None:
     )
 
 
-def test_reverse(sample_df: pl.DataFrame) -> None:
-    assert_eq(
-        pql.LazyFrame(sample_df).reverse().collect(),
-        sample_df.lazy().reverse().collect(),
-    )
-
-
 def test_first(sample_df: pl.DataFrame) -> None:
     assert_eq(
         pql.LazyFrame(sample_df).first().collect(), sample_df.lazy().first().collect()
@@ -247,54 +240,6 @@ def test_null_count(sample_df: pl.DataFrame) -> None:
     result = pql.LazyFrame(sample_df).select(pql.col("value")).null_count().collect()
     expected = sample_df.lazy().select(pl.col("value")).null_count().collect()
     assert_eq(result, expected, check_dtypes=False)
-
-
-def test_drop_nulls(sample_df: pl.DataFrame) -> None:
-    result = pql.LazyFrame(sample_df).drop_nulls().collect()
-    expected = sample_df.lazy().drop_nulls().collect()
-    assert_eq(result, expected)
-
-
-def test_drop_nulls_subset(sample_df: pl.DataFrame) -> None:
-    result = pql.LazyFrame(sample_df).drop_nulls(subset="value").collect()
-    expected = sample_df.lazy().drop_nulls(subset="value").collect()
-    assert_eq(result, expected)
-
-
-def test_with_row_index(sample_df: pl.DataFrame) -> None:
-    result = pql.LazyFrame(sample_df).with_row_index().collect()
-    expected = sample_df.lazy().with_row_index().collect()
-    assert_eq(result, expected, check_dtypes=False)
-
-
-def test_with_row_index_custom_name(sample_df: pl.DataFrame) -> None:
-    result = pql.LazyFrame(sample_df).with_row_index(name="row_num").collect()
-    expected = sample_df.lazy().with_row_index(name="row_num").collect()
-    assert_eq(result, expected, check_dtypes=False)
-
-
-def test_with_row_index_offset(sample_df: pl.DataFrame) -> None:
-    result = pql.LazyFrame(sample_df).with_row_index(offset=10).collect()
-    expected = sample_df.lazy().with_row_index(offset=10).collect()
-    assert_eq(result, expected, check_dtypes=False)
-
-
-def test_quantile(sample_df: pl.DataFrame) -> None:
-    result = pql.LazyFrame(sample_df).select(pql.col("age")).quantile(0.5).collect()
-    expected = sample_df.lazy().select(pl.col("age")).quantile(0.5).collect()
-    assert_eq(result, expected)
-
-
-def test_gather_every(sample_df: pl.DataFrame) -> None:
-    result = pql.LazyFrame(sample_df).gather_every(2).collect()
-    expected = sample_df.lazy().gather_every(2).collect()
-    assert_eq(result, expected)
-
-
-def test_gather_every_with_offset(sample_df: pl.DataFrame) -> None:
-    result = pql.LazyFrame(sample_df).gather_every(2, offset=1).collect()
-    expected = sample_df.lazy().gather_every(2, offset=1).collect()
-    assert_eq(result, expected)
 
 
 def test_top_k(sample_df: pl.DataFrame) -> None:
@@ -414,25 +359,6 @@ def test_fill_nan_with_value() -> None:
     assert_eq(result, expected)
 
 
-def test_drop_nans() -> None:
-    df = pl.DataFrame(
-        {
-            "a": [1.0, float("nan"), 3.0],
-            "b": [4.0, 5.0, float("nan")],
-            "c": [7.0, 8.0, 9.0],
-        }
-    )
-    assert_eq(pql.LazyFrame(df).drop_nans().collect(), df.lazy().drop_nans().collect())
-    assert_eq(
-        pql.LazyFrame(df).drop_nans(subset="a").collect(),
-        df.lazy().drop_nans(subset="a").collect(),
-    )
-    assert_eq(
-        pql.LazyFrame(df).drop_nans(subset=["a", "b"]).collect(),
-        df.lazy().drop_nans(subset=["a", "b"]).collect(),
-    )
-
-
 def test_shift() -> None:
     df = pl.DataFrame({"a": [1, 2, 3, 4, 5]})
     assert_eq(pql.LazyFrame(df).shift(2).collect(), df.lazy().shift(2).collect())
@@ -446,29 +372,6 @@ def test_shift() -> None:
         pql.LazyFrame(df).shift(1, fill_value=999).collect(),
         df.lazy().shift(1, fill_value=999).collect(),
     )
-
-
-def test_is_unique() -> None:
-    df = pl.DataFrame({"a": [1, 1, 2], "b": [3, 4, 5]})
-    assert_eq(
-        pql.LazyFrame(df)
-        .with_columns(pql.col("a").is_unique().alias("is_unique"))
-        .collect(),
-        df.lazy().with_columns(pl.col("a").is_unique().alias("is_unique")).collect(),
-    )
-    assert_eq(
-        pql.LazyFrame(df).unique(subset="a").collect(),
-        df.lazy().unique(subset="a").collect(),
-    )
-    assert_eq(
-        pql.LazyFrame(df).unique(subset=["a", "b"]).collect(),
-        df.lazy().unique(subset=["a", "b"]).collect(),
-    )
-
-
-def test_unique_no_subset() -> None:
-    df = pl.DataFrame({"a": [1, 1, 2], "b": [3, 3, 4]})
-    assert_eq(pql.LazyFrame(df).unique().collect(), df.lazy().unique().collect())
 
 
 def test_std_var_ddof() -> None:

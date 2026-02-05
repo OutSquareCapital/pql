@@ -11,10 +11,11 @@ import pyochain as pc
 from . import sql
 
 if TYPE_CHECKING:
+    import duckdb
     import polars as pl
 
     from ._expr import Expr
-    from .sql import FrameInit, IntoExpr, SqlExpr
+    from .sql import FrameInit, IntoExpr, IntoExprColumn, SqlExpr
 TEMP_NAME = "__pql_temp__"
 TEMP_COL = sql.col(TEMP_NAME)
 
@@ -22,7 +23,7 @@ TEMP_COL = sql.col(TEMP_NAME)
 class LazyFrame:
     """LazyFrame providing Polars-like API over DuckDB relations."""
 
-    _rel: sql.Relation
+    _rel: duckdb.DuckDBPyRelation
     __slots__ = ("_rel",)
 
     def __init__(self, data: FrameInit = None) -> None:
@@ -31,16 +32,27 @@ class LazyFrame:
     def __repr__(self) -> str:
         return f"LazyFrame\n{self._rel}\n"
 
-    def __from_lf__(self, rel: sql.Relation) -> Self:
+    def __from_lf__(self, rel: duckdb.DuckDBPyRelation) -> Self:
         instance = self.__class__.__new__(self.__class__)
         instance._rel = rel
         return instance
 
-    def _select(self, exprs: sql.IntoExprColumn, groups: str = "") -> Self:
+    def _select(self, exprs: IntoExprColumn, groups: str = "") -> Self:
         return self.__from_lf__(self._rel.select(*sql.from_cols(exprs), groups=groups))
 
-    def _agg(self, exprs: sql.IntoExprColumn, group_expr: SqlExpr | str = "") -> Self:
-        return self.__from_lf__(self._rel.aggregate(exprs, group_expr))  # pyright: ignore[reportArgumentType]
+    def _filter(self, *predicates: IntoExprColumn) -> Self:
+        return pc.Iter(predicates).fold(
+            self, lambda lf, p: lf.__from_lf__(lf._rel.filter(*sql.from_cols(p)))
+        )
+
+    def _agg(self, exprs: IntoExprColumn, group_expr: SqlExpr | str = "") -> Self:
+        """Note: duckdb relation.aggregate has type issues, it does accept iterables of expressions but the type signature is wrong."""
+        return self.__from_lf__(
+            self._rel.aggregate(
+                sql.from_cols(exprs).map(sql.to_duckdb),  # pyright: ignore[reportArgumentType]
+                sql.to_duckdb(group_expr),
+            )
+        )
 
     def _iter_slct(self, func: Callable[[str], SqlExpr]) -> Self:
         return self.columns.iter().map(func).into(self._select)
@@ -49,7 +61,7 @@ class LazyFrame:
         return self.columns.iter().map(func).into(self._agg)
 
     @property
-    def relation(self) -> sql.Relation:
+    def relation(self) -> duckdb.DuckDBPyRelation:
         """Get the underlying DuckDB relation."""
         return self._rel
 
@@ -80,7 +92,7 @@ class LazyFrame:
     def filter(self, *predicates: Expr) -> Self:
         """Filter rows based on predicates."""
         return pc.Iter(predicates).fold(
-            self, lambda lf, p: lf.__from_lf__(lf._rel.filter(p.expr))
+            self, lambda lf, p: lf.__from_lf__(lf._rel.filter(p.to_duckdb()))
         )
 
     def sort(
@@ -114,6 +126,7 @@ class LazyFrame:
                 *sql.from_iter(*by)
                 .zip(_args_iter(arg=descending), _args_iter(arg=nulls_last))
                 .map_star(_make_order)
+                .map(lambda c: c.to_duckdb())
             )
         )
 
@@ -124,29 +137,6 @@ class LazyFrame:
     def head(self, n: int = 5) -> Self:
         """Get the first n rows."""
         return self.limit(n)
-
-    def unique(self, subset: str | Iterable[str] | None = None) -> Self:
-        """Get unique rows based on subset of columns."""
-
-        def _on_subset(cols: pc.Iter[str]) -> Self:
-            return self.__from_lf__(
-                self._rel.select(
-                    sql.all(),
-                    sql.over(
-                        sql.fns.row_number(), partition_by=cols.map(sql.col).collect()
-                    ).alias(TEMP_NAME),
-                )
-                .filter(TEMP_COL.__eq__(sql.lit(1)))
-                .project(sql.all(exclude=(TEMP_COL,)))
-            )
-
-        match subset:
-            case None:
-                return self.__from_lf__(self._rel.distinct())
-            case str():
-                return pc.Iter.once(subset).into(_on_subset)
-            case Iterable():
-                return pc.Iter(subset).into(_on_subset)
 
     def drop(self, *columns: str) -> Self:
         """Drop columns from the frame."""
@@ -205,78 +195,74 @@ class LazyFrame:
         """Apply a function to the LazyFrame."""
         return function(self, *args, **kwargs)
 
-    def reverse(self) -> Self:
-        """Reverse the LazyFrame rows."""
-        return self.__from_lf__(
-            self._rel.select(
-                sql.all(), sql.over(sql.fns.row_number()).alias(TEMP_NAME)
-            ).project(sql.all(exclude=(TEMP_COL,)))
-        )
-
     def first(self) -> Self:
         """Get the first row."""
         return self.head(1)
 
     def count(self) -> Self:
         """Return the count of each column."""
-        return self._iter_agg(lambda c: sql.fns.count(sql.col(c)).alias(c))
+        return self._iter_agg(lambda c: sql.col(c).count().alias(c))
 
     def sum(self) -> Self:
         """Aggregate the sum of each column."""
-        return self._iter_agg(lambda c: sql.fns.sum(sql.col(c)).alias(c))
+        return self._iter_agg(lambda c: sql.col(c).sum().alias(c))
 
     def mean(self) -> Self:
         """Aggregate the mean of each column."""
-        return self._iter_agg(lambda c: sql.fns.avg(sql.col(c)).alias(c))
+        return self._iter_agg(lambda c: sql.col(c).avg().alias(c))
 
     def median(self) -> Self:
         """Aggregate the median of each column."""
-        return self._iter_agg(lambda c: sql.fns.median(sql.col(c)).alias(c))
+        return self._iter_agg(lambda c: sql.col(c).median().alias(c))
 
     def min(self) -> Self:
         """Aggregate the minimum of each column."""
-        return self._iter_agg(lambda c: sql.fns.min(sql.col(c)).alias(c))
+        return self._iter_agg(lambda c: sql.col(c).min().alias(c))
 
     def max(self) -> Self:
         """Aggregate the maximum of each column."""
-        return self._iter_agg(lambda c: sql.fns.max(sql.col(c)).alias(c))
+        return self._iter_agg(lambda c: sql.col(c).max().alias(c))
 
     def std(self, ddof: int = 1) -> Self:
         """Aggregate the standard deviation of each column."""
-        std_func = sql.fns.stddev_samp if ddof == 1 else sql.fns.stddev_pop
-        return self._iter_agg(lambda c: std_func(sql.col(c)).alias(c))
+        match ddof:
+            case 1:
+
+                def _std_fn(c: str) -> sql.SqlExpr:
+                    return sql.col(c).stddev_samp().alias(c)
+            case _:
+
+                def _std_fn(c: str) -> sql.SqlExpr:
+                    return sql.col(c).stddev_pop().alias(c)
+
+        return self._iter_agg(_std_fn)
 
     def var(self, ddof: int = 1) -> Self:
         """Aggregate the variance of each column."""
-        var_func = sql.fns.var_samp if ddof == 1 else sql.fns.var_pop
-        return self._iter_agg(lambda c: var_func(sql.col(c)).alias(c))
+        match ddof:
+            case 1:
+
+                def _var_fn(c: str) -> sql.SqlExpr:
+                    return sql.col(c).var_samp().alias(c)
+            case _:
+
+                def _var_fn(c: str) -> sql.SqlExpr:
+                    return sql.col(c).var_pop().alias(c)
+
+        return self._iter_agg(_var_fn)
 
     def null_count(self) -> Self:
         """Return the null count of each column."""
-        return self._iter_agg(lambda c: sql.fns.count_if(sql.col(c).isnull()).alias(c))
+        return self._iter_agg(lambda c: sql.col(c).is_null().count_if().alias(c))
 
     def fill_nan(self, value: float | Expr | None) -> Self:
         """Fill NaN values."""
         return self._iter_slct(
             lambda c: (
-                sql.when(sql.fns.isnan(sql.col(c)), sql.from_expr(value))
+                sql.when(sql.col(c).isnan(), sql.from_expr(value))
                 .otherwise(sql.col(c))
                 .alias(c)
             )
-        )
-
-    def drop_nulls(self, subset: str | Iterable[str] | None = None) -> Self:
-        """Drop rows with null values."""
-        return self._col_or_subset(subset).fold(
-            self,
-            lambda lf, c: lf.__from_lf__(lf._rel.filter(sql.col(c).isnotnull())),
-        )
-
-    def drop_nans(self, subset: str | Iterable[str] | None = None) -> Self:
-        """Drop rows with NaN values."""
-        return self._col_or_subset(subset).fold(
-            self,
-            lambda lf, c: lf.__from_lf__(lf._rel.filter(~sql.fns.isnan(sql.col(c)))),
         )
 
     def _col_or_subset(self, subset: str | Iterable[str] | None) -> pc.Iter[str]:
@@ -288,43 +274,23 @@ class LazyFrame:
             case Iterable():
                 return pc.Iter(subset)
 
-    def with_row_index(self, name: str = "index", offset: int = 0) -> Self:
-        """Add a row index column."""
-        rel = self._rel.select(
-            sql.all(), sql.over(sql.fns.row_number()).alias(TEMP_NAME)
-        )
-        match offset:
-            case 0:
-                return self.__from_lf__(
-                    rel.project(
-                        TEMP_COL.__sub__(sql.lit(1))
-                        .cast(sql.datatypes.Int64)
-                        .alias(name),
-                        sql.all(exclude=(TEMP_COL,)),
-                    )
-                )
-            case _:
-                return self.__from_lf__(
-                    rel.project(
-                        TEMP_COL.__sub__(sql.lit(1))
-                        .__add__(sql.lit(offset))
-                        .cast(sql.datatypes.Int64)
-                        .alias(name),
-                        sql.all(exclude=(TEMP_COL,)),
-                    )
-                )
-
-    # Deprecated alias
-    with_row_count = with_row_index
-
     def shift(self, n: int = 1, *, fill_value: IntoExpr | None = None) -> Self:
         """Shift values by n positions."""
-        shift_func = sql.fns.lag if n > 0 else sql.fns.lead
         abs_n = abs(n)
+        match n:
+            case n_val if n_val < 0:
+
+                def _shift_fn(c: str) -> sql.SqlExpr:
+                    return sql.col(c).lead(sql.lit(abs_n)).alias(c)
+
+            case _:
+
+                def _shift_fn(c: str) -> sql.SqlExpr:
+                    return sql.col(c).lag(sql.lit(abs_n)).alias(c)
+
         return self._iter_slct(
             lambda c: sql.coalesce(
-                sql.over(shift_func(sql.col(c), sql.lit(abs_n))),
-                sql.from_value(fill_value),
+                _shift_fn(c).over(), sql.from_value(fill_value)
             ).alias(c)
         )
 
@@ -359,24 +325,7 @@ class LazyFrame:
     def quantile(self, quantile: float) -> Self:
         """Compute quantile for each column."""
         return self._iter_agg(
-            lambda c: sql.fns.quantile_cont(sql.col(c), sql.lit(quantile)).alias(c)
-        )
-
-    def gather_every(self, n: int, offset: int = 0) -> Self:
-        """Take every nth row."""
-        return self.__from_lf__(
-            self._rel.select(sql.all(), sql.over(sql.fns.row_number()).alias(TEMP_NAME))
-            .filter(
-                (
-                    sql.col(TEMP_NAME)
-                    .__sub__(sql.lit(1))
-                    .__sub__(sql.lit(offset))
-                    .__mod__(sql.lit(n))
-                )
-                .__eq__(sql.lit(0))
-                .__and__(TEMP_COL.__gt__(sql.lit(offset)))
-            )
-            .project(sql.all(exclude=(TEMP_COL,)))
+            lambda c: sql.col(c).quantile_cont(sql.lit(quantile)).alias(c)
         )
 
     def top_k(
