@@ -13,7 +13,7 @@ import pyochain as pc
 from . import sql
 
 if TYPE_CHECKING:
-    from .sql import IntoExpr
+    from .sql import IntoExpr, SqlExpr
 
 RoundMode = Literal["half_to_even", "half_away_from_zero"]
 
@@ -38,7 +38,7 @@ def all() -> Expr:
 class SqlExprHandler:
     """A wrapper for DuckDB expressions."""
 
-    _expr: sql.SqlExpr
+    _expr: SqlExpr
 
 
 @dataclass(slots=True)
@@ -64,7 +64,7 @@ class Expr(SqlExprHandler):
         return ExprStructNameSpace(self._expr)
 
     @property
-    def expr(self) -> sql.SqlExpr:
+    def expr(self) -> SqlExpr:
         """Get the underlying DuckDB expression."""
         return self._expr
 
@@ -448,7 +448,7 @@ class Expr(SqlExprHandler):
 class ExprStringNameSpace:
     """String operations namespace (equivalent to pl.Expr.str)."""
 
-    _expr: sql.SqlExpr
+    _expr: SqlExpr
 
     def to_uppercase(self) -> Expr:
         """Convert to uppercase."""
@@ -485,7 +485,7 @@ class ExprStringNameSpace:
         value_expr = sql.from_value(value)
         pattern_expr = sql.lit(re.escape(pattern) if literal else pattern)
 
-        def _replace_once(expr: sql.SqlExpr) -> sql.SqlExpr:
+        def _replace_once(expr: SqlExpr) -> SqlExpr:
             return sql.fns.regexp_replace(expr, pattern_expr, value_expr)
 
         match n:

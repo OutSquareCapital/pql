@@ -139,7 +139,7 @@ def test_fill_null(sample_df: pl.DataFrame) -> None:
         .select(pql.col("id"), pql.col("value"))
         .fill_null(0)
         .collect(),
-        (sample_df.lazy().select(pl.col("id"), pl.col("value")).fill_null(0).collect()),
+        sample_df.lazy().select(pl.col("id"), pl.col("value")).fill_null(0).collect(),
     )
 
     assert_eq(

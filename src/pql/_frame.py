@@ -14,7 +14,7 @@ if TYPE_CHECKING:
     import polars as pl
 
     from ._expr import Expr
-    from .sql import FrameInit, IntoExpr
+    from .sql import FrameInit, IntoExpr, SqlExpr
 
 
 class LazyFrame:
@@ -37,15 +37,13 @@ class LazyFrame:
     def _select(self, exprs: sql.IntoExprColumn, groups: str = "") -> Self:
         return self.__from_lf__(self._rel.select(*sql.from_cols(exprs), groups=groups))
 
-    def _agg(
-        self, exprs: sql.IntoExprColumn, group_expr: sql.SqlExpr | str = ""
-    ) -> Self:
+    def _agg(self, exprs: sql.IntoExprColumn, group_expr: SqlExpr | str = "") -> Self:
         return self.__from_lf__(self._rel.aggregate(exprs, group_expr))  # pyright: ignore[reportArgumentType]
 
-    def _iter_slct(self, func: Callable[[str], sql.SqlExpr]) -> Self:
+    def _iter_slct(self, func: Callable[[str], SqlExpr]) -> Self:
         return self.columns.iter().map(func).into(self._select)
 
-    def _iter_agg(self, func: Callable[[str], sql.SqlExpr]) -> Self:
+    def _iter_agg(self, func: Callable[[str], SqlExpr]) -> Self:
         return self.columns.iter().map(func).into(self._agg)
 
     @property
@@ -98,7 +96,7 @@ class LazyFrame:
                 case Iterable():
                     return pc.Iter(arg)
 
-        def _make_order(col: sql.SqlExpr, desc: bool, nl: bool) -> sql.SqlExpr:  # noqa: FBT001
+        def _make_order(col: SqlExpr, desc: bool, nl: bool) -> SqlExpr:  # noqa: FBT001
             match (desc, nl):
                 case (True, True):
                     return col.desc().nulls_last()
@@ -260,38 +258,33 @@ class LazyFrame:
         strategy: Literal["forward", "backward"] | None = None,
     ) -> Self:
         """Fill null values."""
+
+        def _with_strategy(
+            start: pc.Option[int], end: pc.Option[int], fn: Callable[[SqlExpr], SqlExpr]
+        ) -> Self:
+            return self._iter_slct(
+                lambda c: sql.coalesce(
+                    sql.col(c),
+                    sql.WindowExpr(
+                        rows_start=start,
+                        rows_end=end,
+                        ignore_nulls=True,
+                    ).call(fn(sql.col(c))),
+                ).alias(c)
+            )
+
         match (value, strategy):
             case (None, "forward"):
-                return self._fill_strategy("LAST_VALUE")
+                return _with_strategy(pc.Some(0), pc.NONE, sql.fns.first_value)
             case (None, "backward"):
-                return self._fill_strategy("FIRST_VALUE")
-            case (val, None) if val is not None:
+                return _with_strategy(pc.NONE, pc.Some(0), sql.fns.last_value)
+            case (val, None):
                 return self._iter_slct(
                     lambda c: sql.coalesce(sql.col(c), sql.from_expr(val)).alias(c)
                 )
             case _:
                 msg = "Either `value` or `strategy` must be provided."
                 raise ValueError(msg)
-
-    def _fill_strategy(self, func_name: Literal["LAST_VALUE", "FIRST_VALUE"]) -> Self:
-        """Internal fill strategy using window functions."""
-        match func_name:
-            case "FIRST_VALUE":
-                rows_start = pc.Some(0)
-                rows_end = pc.NONE
-                fill_func = sql.fns.first_value
-            case "LAST_VALUE":
-                rows_start = pc.NONE
-                rows_end = pc.Some(0)
-                fill_func = sql.fns.last_value
-        return self._iter_slct(
-            lambda c: sql.coalesce(
-                sql.col(c),
-                sql.WindowExpr(
-                    rows_start=rows_start, rows_end=rows_end, ignore_nulls=True
-                ).call(fill_func(sql.col(c))),
-            ).alias(c)
-        )
 
     def fill_nan(self, value: float | Expr | None) -> Self:
         """Fill NaN values."""
