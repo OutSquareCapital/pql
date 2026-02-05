@@ -88,7 +88,9 @@ def get_df() -> pl.LazyFrame:
                 .not_(),  # literals
                 dk.name.is_in(OPERATOR_MAP).not_(),
                 dk.name.str.starts_with("current_").not_(),  # Utility fns
+                dk.name.str.starts_with("has_").not_(),  # Utility fns
                 dk.name.str.starts_with("pg_").not_(),  # Postgres fns
+                dk.name.str.starts_with("icu_").not_(),  # timestamp extension
                 dk.alias_of.is_null().or_(dk.alias_of.is_in(OPERATOR_MAP)),
             )
         )
