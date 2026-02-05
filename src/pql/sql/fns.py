@@ -3696,83 +3696,6 @@ def map_values(map_arg: SqlExpr) -> SqlExpr:
 
 
 # ============================================================
-# Predicate
-# ============================================================
-
-
-def is_histogram_other_bin(val: SqlExpr) -> SqlExpr:
-    """Whether or not the provided value is the histogram "other" bin (used for values not belonging to any provided bin).
-
-    Args:
-        val (SqlExpr): `ANY` expression
-
-    Returns:
-        SqlExpr
-    """
-    return func("is_histogram_other_bin", val)
-
-
-def isfinite(x: SqlExpr | date | datetime | float) -> SqlExpr:
-    """Returns true if the floating point value is finite, false otherwise.
-
-    Args:
-        x (SqlExpr | date | datetime | float): `DATE | DOUBLE | FLOAT | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
-
-    Returns:
-        SqlExpr
-    """
-    return func("isfinite", x)
-
-
-def isinf(x: SqlExpr | date | datetime | float) -> SqlExpr:
-    """Returns true if the floating point value is infinite, false otherwise.
-
-    Args:
-        x (SqlExpr | date | datetime | float): `DATE | DOUBLE | FLOAT | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
-
-    Returns:
-        SqlExpr
-    """
-    return func("isinf", x)
-
-
-def isnan(x: SqlExpr | float) -> SqlExpr:
-    """Returns true if the floating point value is not a number, false otherwise.
-
-    Args:
-        x (SqlExpr | float): `DOUBLE | FLOAT` expression
-
-    Returns:
-        SqlExpr
-    """
-    return func("isnan", x)
-
-
-def isodow(ts: SqlExpr | date | datetime | timedelta) -> SqlExpr:
-    """Extract the isodow component from a date or timestamp.
-
-    Args:
-        ts (SqlExpr | date | datetime | timedelta): `DATE | INTERVAL | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
-
-    Returns:
-        SqlExpr
-    """
-    return func("isodow", ts)
-
-
-def isoyear(ts: SqlExpr | date | datetime | timedelta) -> SqlExpr:
-    """Extract the isoyear component from a date or timestamp.
-
-    Args:
-        ts (SqlExpr | date | datetime | timedelta): `DATE | INTERVAL | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
-
-    Returns:
-        SqlExpr
-    """
-    return func("isoyear", ts)
-
-
-# ============================================================
 # Regular Expression
 # ============================================================
 
@@ -4943,6 +4866,78 @@ def instr(string: SqlExpr | str, search_string: SqlExpr | str) -> SqlExpr:
         SqlExpr
     """
     return func("instr", string, search_string)
+
+
+def is_histogram_other_bin(val: SqlExpr) -> SqlExpr:
+    """Whether or not the provided value is the histogram "other" bin (used for values not belonging to any provided bin).
+
+    Args:
+        val (SqlExpr): `ANY` expression
+
+    Returns:
+        SqlExpr
+    """
+    return func("is_histogram_other_bin", val)
+
+
+def isfinite(x: SqlExpr | date | datetime | float) -> SqlExpr:
+    """Returns true if the floating point value is finite, false otherwise.
+
+    Args:
+        x (SqlExpr | date | datetime | float): `DATE | DOUBLE | FLOAT | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
+
+    Returns:
+        SqlExpr
+    """
+    return func("isfinite", x)
+
+
+def isinf(x: SqlExpr | date | datetime | float) -> SqlExpr:
+    """Returns true if the floating point value is infinite, false otherwise.
+
+    Args:
+        x (SqlExpr | date | datetime | float): `DATE | DOUBLE | FLOAT | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
+
+    Returns:
+        SqlExpr
+    """
+    return func("isinf", x)
+
+
+def isnan(x: SqlExpr | float) -> SqlExpr:
+    """Returns true if the floating point value is not a number, false otherwise.
+
+    Args:
+        x (SqlExpr | float): `DOUBLE | FLOAT` expression
+
+    Returns:
+        SqlExpr
+    """
+    return func("isnan", x)
+
+
+def isodow(ts: SqlExpr | date | datetime | timedelta) -> SqlExpr:
+    """Extract the isodow component from a date or timestamp.
+
+    Args:
+        ts (SqlExpr | date | datetime | timedelta): `DATE | INTERVAL | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
+
+    Returns:
+        SqlExpr
+    """
+    return func("isodow", ts)
+
+
+def isoyear(ts: SqlExpr | date | datetime | timedelta) -> SqlExpr:
+    """Extract the isoyear component from a date or timestamp.
+
+    Args:
+        ts (SqlExpr | date | datetime | timedelta): `DATE | INTERVAL | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
+
+    Returns:
+        SqlExpr
+    """
+    return func("isoyear", ts)
 
 
 def jaccard(s1: SqlExpr | str, s2: SqlExpr | str) -> SqlExpr:

@@ -236,7 +236,6 @@ CATEGORY_RULES = pc.Seq(
         Prefix("json", "JSON"),
         Prefix("to_", "Conversion"),
         Prefix("from_", "Conversion"),
-        Prefix("is", "Predicate"),
         Prefix("bit", "Bitwise"),
         TypeRule(FuncTypes.SCALAR, "Scalar"),
         TypeRule(FuncTypes.AGGREGATE, "Aggregate"),
