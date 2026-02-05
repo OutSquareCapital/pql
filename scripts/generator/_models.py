@@ -69,6 +69,7 @@ class TableSchema:
 class PyTypes(StrEnum):
     """Python type names for DuckDB type mapping."""
 
+    SELF = "Self"
     STR = auto()
     BOOL = auto()
     INT = auto()
@@ -153,12 +154,12 @@ CONVERSION_MAP: pc.Dict[DuckDbTypes, pc.Seq[PyTypes]] = pc.Dict(
         DuckDbTypes.BIT: pc.Seq((PyTypes.BYTES, PyTypes.BYTEARRAY, PyTypes.MEMORYVIEW)),
         DuckDbTypes.UUID: pc.Seq((PyTypes.STR,)),
         DuckDbTypes.JSON: pc.Seq((PyTypes.STR,)),
-        DuckDbTypes.ANY: pc.Seq((PyTypes.EXPR,)),
+        DuckDbTypes.ANY: pc.Seq((PyTypes.SELF,)),
         DuckDbTypes.LIST: pc.Seq((PyTypes.LIST,)),
-        DuckDbTypes.MAP: pc.Seq((PyTypes.EXPR,)),
+        DuckDbTypes.MAP: pc.Seq((PyTypes.SELF,)),
         DuckDbTypes.STRUCT: pc.Seq((PyTypes.DICT,)),
         DuckDbTypes.ARRAY: pc.Seq((PyTypes.LIST,)),
-        DuckDbTypes.UNION: pc.Seq((PyTypes.EXPR,)),
+        DuckDbTypes.UNION: pc.Seq((PyTypes.SELF,)),
         DuckDbTypes.TIMESTAMPTZ: pc.Seq((PyTypes.DATETIME,)),
         DuckDbTypes.BITSTRING: pc.Seq(
             (PyTypes.BYTES, PyTypes.BYTEARRAY, PyTypes.MEMORYVIEW)
@@ -170,7 +171,7 @@ CONVERSION_MAP: pc.Dict[DuckDbTypes, pc.Seq[PyTypes]] = pc.Dict(
 
 KWORDS = pc.Set(keyword.kwlist).union(
     pc.Iter(PyTypes)
-    .filter(lambda t: t != PyTypes.EXPR)
+    .filter(lambda t: t != PyTypes.SELF)
     .map(lambda t: t.value)
     .collect(pc.Set)
 )

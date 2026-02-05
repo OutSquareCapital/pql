@@ -91,6 +91,7 @@ def get_df() -> pl.LazyFrame:
                 dk.name.str.starts_with("has_").not_(),  # Utility fns
                 dk.name.str.starts_with("pg_").not_(),  # Postgres fns
                 dk.name.str.starts_with("icu_").not_(),  # timestamp extension
+                dk.name.ne("alias"),  # conflicts with duckdb alias method
                 dk.alias_of.is_null().or_(dk.alias_of.is_in(OPERATOR_MAP)),
             )
         )
@@ -141,7 +142,6 @@ def get_df() -> pl.LazyFrame:
             py.name,
             pl.col("param_names_list")
             .list.len()
-            .cast(pl.Boolean)
             .pipe(
                 _to_func,
                 py.name,
@@ -171,7 +171,7 @@ def _joined_parts(
 
     def _param_doc_join() -> pl.Expr:
         return pl.concat_str(
-            pl.lit("        "),
+            pl.lit("            "),
             expr,
             pl.lit(" ("),
             py_union,
@@ -191,9 +191,9 @@ def _joined_parts(
 
 def _make_type_union(py_type: pl.Expr) -> pl.Expr:
     return (
-        pl.when(py_type.eq(pl.lit(PyTypes.EXPR.value)))
+        pl.when(py_type.eq(pl.lit(PyTypes.SELF.value)))
         .then(py_type)
-        .otherwise(pl.concat_str(pl.lit(f"{PyTypes.EXPR.value} | "), py_type))
+        .otherwise(pl.concat_str(pl.lit(f"{PyTypes.SELF.value} | "), py_type))
     )
 
 
@@ -212,7 +212,7 @@ def _convert_duckdb_type_to_python(param_type: pl.Expr) -> pl.Expr:
 
     def _replace(pattern: str) -> pl.Expr:
         return param_type.str.extract(pattern, 1).replace_strict(
-            converter, default=PyTypes.EXPR.value, return_dtype=pl.String
+            converter, default=PyTypes.SELF.value, return_dtype=pl.String
         )
 
     return (
@@ -326,29 +326,20 @@ def _to_func(
 ) -> pl.Expr:
     def _signature(has_params: pl.Expr) -> pl.Expr:
         return pl.concat_str(
-            pl.when(has_params.or_(dk.varargs.is_not_null()))
+            pl.lit("    def "),
+            py_name,
+            pl.lit("(self"),
+            pl.when(has_params.gt(1))
             .then(
                 pl.concat_str(
-                    pl.lit("def "),
-                    py_name,
-                    pl.lit("("),
-                    p_lists.signatures.list.join(", "),
-                    pl.when(dk.varargs.is_not_null())
-                    .then(
-                        pl.concat_str(
-                            pl.when(has_params)
-                            .then(pl.lit(", *args: "))
-                            .otherwise(pl.lit("*args: ")),
-                            varargs_py_type,
-                        )
-                    )
-                    .otherwise(_EMPTY_STR),
-                    pl.lit(f") -> {PyTypes.EXPR}:"),
+                    pl.lit(", "), p_lists.signatures.list.slice(1).list.join(", ")
                 )
             )
-            .otherwise(
-                pl.concat_str(pl.lit("def "), py_name, pl.lit(f"() -> {PyTypes.EXPR}:"))
-            )
+            .otherwise(_EMPTY_STR),
+            pl.when(dk.varargs.is_not_null())
+            .then(pl.concat_str(pl.lit(", *args: "), varargs_py_type))
+            .otherwise(_EMPTY_STR),
+            pl.lit(") -> Self:"),
         )
 
     def _description() -> pl.Expr:
@@ -357,7 +348,7 @@ def _to_func(
             .then(
                 dk.description.str.strip_chars()
                 .str.replace_all("\u2019", "'")
-                .str.replace_all(r"\. ", ".\n\n    ")
+                .str.replace_all(r"\. ", ".\n\n        ")
                 .str.strip_chars_end(".")
                 .add(pl.lit("."))
             )
@@ -366,15 +357,15 @@ def _to_func(
 
     def _args_section(has_params: pl.Expr) -> pl.Expr:
         return (
-            pl.when(has_params.or_(dk.varargs.is_not_null()))
+            pl.when(has_params.gt(1).or_(dk.varargs.is_not_null()))
             .then(
                 pl.concat_str(
-                    pl.lit("\n\n    Args:\n"),
-                    p_lists.docs,
+                    pl.lit("\n\n        Args:\n"),
+                    p_lists.docs.str.split("\n").list.slice(1).list.join("\n"),
                     pl.when(dk.varargs.is_not_null())
                     .then(
                         pl.concat_str(
-                            pl.lit("\n        *args ("),
+                            pl.lit("\n            *args ("),
                             varargs_py_type,
                             pl.lit("): `"),
                             dk.varargs,
@@ -388,32 +379,46 @@ def _to_func(
         )
 
     def _body(has_params: pl.Expr) -> pl.Expr:
-        return (
-            pl.when(has_params.or_(dk.varargs.is_not_null()))
-            .then(
-                pl.concat_str(
-                    pl.lit(", "),
-                    p_lists.names,
-                    pl.when(dk.varargs.is_not_null())
-                    .then(
-                        pl.when(has_params)
-                        .then(pl.lit(", *args"))
-                        .otherwise(pl.lit("*args"))
-                    )
-                    .otherwise(_EMPTY_STR),
-                )
+        slf_arg = pl.lit(", self._expr")
+        sep = pl.lit(", ")
+        args = p_lists.names.str.split(", ").list.slice(1).list.join(", ")
+
+        def _reversed() -> pl.Expr:
+            """Special case for log function: other args first, then self._expr."""
+            return (
+                pl.when(dk.name.eq("log"))
+                .then(pl.concat_str(sep, args, slf_arg))
+                .otherwise(_EMPTY_STR)
             )
-            .otherwise(_EMPTY_STR)
+
+        def _normal() -> pl.Expr:
+            """Normal case: self._expr first, then other args."""
+            return pl.concat_str(
+                slf_arg,
+                pl.when(has_params.gt(1))
+                .then(pl.concat_str(sep, args))
+                .otherwise(_EMPTY_STR),
+            )
+
+        return pl.concat_str(
+            pl.when(dk.name.eq("log").and_(has_params.gt(1)))
+            .then(_reversed())
+            .otherwise(_normal()),
+            pl.when(dk.varargs.is_not_null())
+            .then(pl.lit(", *args"))
+            .otherwise(_EMPTY_STR),
         )
 
     return pl.concat_str(
         _signature(has_params),
-        pl.lit('\n    """'),
+        pl.lit('\n        """'),
         _description(),
         _args_section(has_params),
-        pl.lit(f'\n\n    Returns:\n        {PyTypes.EXPR}\n    """\n    return func("'),
+        pl.lit(
+            '\n\n        Returns:\n            Self\n        """\n        return self.__class__(func("'
+        ),
         dk.name,
         pl.lit('"'),
         _body(has_params),
-        pl.lit(")"),
+        pl.lit("))"),
     )
