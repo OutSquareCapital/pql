@@ -52,8 +52,6 @@ __all__ = [
     "array_to_string",
     "array_to_string_comma_default",
     "array_value",
-    "arrow_scan",
-    "arrow_scan_dumb",
     "ascii",
     "asin",
     "asinh",
@@ -85,7 +83,6 @@ __all__ = [
     "cbrt",
     "ceil",
     "century",
-    "checkpoint",
     "chr",
     "col_description",
     "collations",
@@ -143,7 +140,6 @@ __all__ = [
     "degrees",
     "dense_rank",
     "disable_checkpoint_on_shutdown",
-    "disable_logging",
     "disable_object_cache",
     "disable_optimizer",
     "disable_print_progress_bar",
@@ -156,36 +152,7 @@ __all__ = [
     "disable_verify_parallelism",
     "disable_verify_serializer",
     "divide",
-    "duckdb_approx_database_count",
-    "duckdb_columns",
-    "duckdb_connection_count",
-    "duckdb_constraints",
-    "duckdb_databases",
-    "duckdb_dependencies",
-    "duckdb_extensions",
-    "duckdb_external_file_cache",
-    "duckdb_functions",
-    "duckdb_indexes",
-    "duckdb_keywords",
-    "duckdb_log_contexts",
-    "duckdb_logs",
-    "duckdb_logs_parsed",
-    "duckdb_memory",
-    "duckdb_optimizers",
-    "duckdb_prepared_statements",
-    "duckdb_schemas",
-    "duckdb_secret_types",
-    "duckdb_secrets",
-    "duckdb_sequences",
-    "duckdb_settings",
-    "duckdb_table_sample",
-    "duckdb_tables",
-    "duckdb_temporary_files",
-    "duckdb_types",
-    "duckdb_variables",
-    "duckdb_views",
     "enable_checkpoint_on_shutdown",
-    "enable_logging",
     "enable_object_cache",
     "enable_optimizer",
     "enable_print_progress_bar",
@@ -240,7 +207,6 @@ __all__ = [
     "get_current_time",
     "get_current_timestamp",
     "getvariable",
-    "glob",
     "greatest",
     "greatest_common_divisor",
     "hamming",
@@ -257,11 +223,8 @@ __all__ = [
     "has_tablespace_privilege",
     "hash",
     "histogram",
-    "histogram_col_name_bin_count_technique",
     "histogram_exact",
-    "histogram_values",
     "hour",
-    "icu_calendar_names",
     "icu_collate_af",
     "icu_collate_am",
     "icu_collate_ar",
@@ -416,7 +379,6 @@ __all__ = [
     "json_array_length",
     "json_contains",
     "json_deserialize_sql",
-    "json_each",
     "json_execute_serialized_sql",
     "json_exists",
     "json_extract",
@@ -436,7 +398,6 @@ __all__ = [
     "json_structure",
     "json_transform",
     "json_transform_strict",
-    "json_tree",
     "json_type",
     "json_valid",
     "json_value",
@@ -479,7 +440,6 @@ __all__ = [
     "list_filter",
     "list_first",
     "list_fn",
-    "list_generate_series",
     "list_grade_up",
     "list_has_all",
     "list_has_any",
@@ -500,7 +460,6 @@ __all__ = [
     "list_position",
     "list_prepend",
     "list_product",
-    "list_range",
     "list_reduce",
     "list_resize",
     "list_reverse",
@@ -578,13 +537,6 @@ __all__ = [
     "numeric_hex",
     "numeric_length",
     "obj_description",
-    "pandas_scan",
-    "parquet_bloom_probe",
-    "parquet_file_metadata",
-    "parquet_kv_metadata",
-    "parquet_metadata",
-    "parquet_scan",
-    "parquet_schema",
     "parse_dirname",
     "parse_dirpath",
     "parse_duckdb_log_message",
@@ -607,7 +559,6 @@ __all__ = [
     "pg_postmaster_start_time",
     "pg_size_pretty",
     "pg_table_is_visible",
-    "pg_timezone_names",
     "pg_ts_config_is_visible",
     "pg_ts_dict_is_visible",
     "pg_ts_parser_is_visible",
@@ -618,40 +569,16 @@ __all__ = [
     "platform",
     "pow",
     "power",
-    "pragma_collations",
-    "pragma_database_size",
-    "pragma_metadata_info",
-    "pragma_platform",
-    "pragma_show",
-    "pragma_storage_info",
-    "pragma_table_info",
-    "pragma_user_agent",
-    "pragma_version",
     "prefix",
     "printf",
     "product",
-    "python_map_function",
     "quantile_cont",
     "quantile_disc",
     "quarter",
-    "query",
-    "query_table",
     "radians",
     "random",
     "range",
     "rank",
-    "read_blob",
-    "read_csv",
-    "read_csv_auto",
-    "read_json",
-    "read_json_auto",
-    "read_json_objects",
-    "read_json_objects_auto",
-    "read_ndjson",
-    "read_ndjson_auto",
-    "read_ndjson_objects",
-    "read_parquet",
-    "read_text",
     "regexp_escape",
     "regexp_extract",
     "regexp_extract_all",
@@ -671,7 +598,6 @@ __all__ = [
     "regr_syy",
     "remap_struct",
     "repeat",
-    "repeat_row",
     "replace",
     "replace_type",
     "reservoir_quantile",
@@ -688,7 +614,6 @@ __all__ = [
     "rtrim",
     "second",
     "sem",
-    "seq_scan",
     "session_user",
     "set_bit",
     "setseed",
@@ -702,7 +627,6 @@ __all__ = [
     "sin",
     "sinh",
     "skewness",
-    "sniff_csv",
     "split_part",
     "sqrt",
     "starts_with",
@@ -743,12 +667,9 @@ __all__ = [
     "suffix",
     "sum",
     "sum_no_overflow",
-    "summary",
     "table_info",
     "tan",
     "tanh",
-    "test_all_types",
-    "test_vector_types",
     "time_bucket",
     "timetz_byte_comparable",
     "timezone",
@@ -775,7 +696,6 @@ __all__ = [
     "translate",
     "trim",
     "trunc",
-    "truncate_duckdb_logs",
     "try_strptime",
     "txid_current",
     "typeof",
@@ -785,7 +705,6 @@ __all__ = [
     "union_extract",
     "union_tag",
     "union_value",
-    "unnest",
     "unpivot_list",
     "upper",
     "url_decode",
@@ -812,7 +731,6 @@ __all__ = [
     "weekday",
     "weekofyear",
     "weighted_avg",
-    "which_secret",
     "write_log",
     "xor",
     "year",
@@ -2484,19 +2402,6 @@ def json_deserialize_sql(col0: SqlExpr | str) -> SqlExpr:
     return func("json_deserialize_sql", col0)
 
 
-def json_each(col0: SqlExpr | str, col1: SqlExpr | str | None = None) -> SqlExpr:
-    """SQL json_each function.
-
-    Args:
-        col0 (SqlExpr | str): `JSON | VARCHAR` expression
-        col1 (SqlExpr | str | None): `VARCHAR` expression
-
-    Returns:
-        SqlExpr
-    """
-    return func("json_each", col0, col1)
-
-
 def json_execute_serialized_sql(col0: SqlExpr | str) -> SqlExpr:
     """SQL json_execute_serialized_sql function.
 
@@ -2764,19 +2669,6 @@ def json_transform_strict(col0: SqlExpr | str, col1: SqlExpr | str) -> SqlExpr:
         SqlExpr
     """
     return func("json_transform_strict", col0, col1)
-
-
-def json_tree(col0: SqlExpr | str, col1: SqlExpr | str | None = None) -> SqlExpr:
-    """SQL json_tree function.
-
-    Args:
-        col0 (SqlExpr | str): `JSON | VARCHAR` expression
-        col1 (SqlExpr | str | None): `VARCHAR` expression
-
-    Returns:
-        SqlExpr
-    """
-    return func("json_tree", col0, col1)
 
 
 def json_type(
@@ -3115,24 +3007,6 @@ def list_fn(arg: SqlExpr) -> SqlExpr:
     return func("list", arg)
 
 
-def list_generate_series(
-    start: SqlExpr | datetime | int,
-    stop: SqlExpr | datetime | int | None = None,
-    step: SqlExpr | int | timedelta | None = None,
-) -> SqlExpr:
-    """Creates a list of values between `start` and `stop` - the stop parameter is inclusive.
-
-    Args:
-        start (SqlExpr | datetime | int): `BIGINT | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
-        stop (SqlExpr | datetime | int | None): `BIGINT | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
-        step (SqlExpr | int | timedelta | None): `BIGINT | INTERVAL` expression
-
-    Returns:
-        SqlExpr
-    """
-    return func("generate_series", start, stop, step)
-
-
 def list_grade_up(
     list_arg: SqlExpr,
     col1: SqlExpr | str | None = None,
@@ -3399,24 +3273,6 @@ def list_product(l_arg: SqlExpr) -> SqlExpr:
         SqlExpr
     """
     return func("list_product", l_arg)
-
-
-def list_range(
-    start: SqlExpr | datetime | int,
-    stop: SqlExpr | datetime | int | None = None,
-    step: SqlExpr | int | timedelta | None = None,
-) -> SqlExpr:
-    """Creates a list of values between `start` and `stop` - the stop parameter is exclusive.
-
-    Args:
-        start (SqlExpr | datetime | int): `BIGINT | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
-        stop (SqlExpr | datetime | int | None): `BIGINT | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
-        step (SqlExpr | int | timedelta | None): `BIGINT | INTERVAL` expression
-
-    Returns:
-        SqlExpr
-    """
-    return func("range", start, stop, step)
 
 
 def list_reduce(
@@ -4883,6 +4739,15 @@ def extension_versions() -> SqlExpr:
     return func("extension_versions")
 
 
+def force_checkpoint() -> SqlExpr:
+    """SQL force_checkpoint function.
+
+    Returns:
+        SqlExpr
+    """
+    return func("force_checkpoint")
+
+
 def functions() -> SqlExpr:
     """SQL functions function.
 
@@ -6222,6 +6087,24 @@ def gamma(x: SqlExpr | float) -> SqlExpr:
         SqlExpr
     """
     return func("gamma", x)
+
+
+def generate_series(
+    start: SqlExpr | datetime | int,
+    stop: SqlExpr | datetime | int | None = None,
+    step: SqlExpr | int | timedelta | None = None,
+) -> SqlExpr:
+    """Creates a list of values between `start` and `stop` - the stop parameter is inclusive.
+
+    Args:
+        start (SqlExpr | datetime | int): `BIGINT | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
+        stop (SqlExpr | datetime | int | None): `BIGINT | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
+        step (SqlExpr | int | timedelta | None): `BIGINT | INTERVAL` expression
+
+    Returns:
+        SqlExpr
+    """
+    return func("generate_series", start, stop, step)
 
 
 def get_bit(bitstring: SqlExpr | bytes, index: SqlExpr | int) -> SqlExpr:
@@ -8826,6 +8709,24 @@ def random() -> SqlExpr:
     return func("random")
 
 
+def range(
+    start: SqlExpr | datetime | int,
+    stop: SqlExpr | datetime | int | None = None,
+    step: SqlExpr | int | timedelta | None = None,
+) -> SqlExpr:
+    """Creates a list of values between `start` and `stop` - the stop parameter is exclusive.
+
+    Args:
+        start (SqlExpr | datetime | int): `BIGINT | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
+        stop (SqlExpr | datetime | int | None): `BIGINT | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
+        step (SqlExpr | int | timedelta | None): `BIGINT | INTERVAL` expression
+
+    Returns:
+        SqlExpr
+    """
+    return func("range", start, stop, step)
+
+
 def remap_struct(
     input_arg: SqlExpr, target_type: SqlExpr, mapping: SqlExpr, defaults: SqlExpr
 ) -> SqlExpr:
@@ -8841,6 +8742,19 @@ def remap_struct(
         SqlExpr
     """
     return func("remap_struct", input_arg, target_type, mapping, defaults)
+
+
+def repeat(col0: SqlExpr, col1: SqlExpr | int) -> SqlExpr:
+    """SQL repeat function.
+
+    Args:
+        col0 (SqlExpr): `T[]` expression
+        col1 (SqlExpr | int): `BIGINT` expression
+
+    Returns:
+        SqlExpr
+    """
+    return func("repeat", col0, col1)
 
 
 def replace(
@@ -9749,1866 +9663,6 @@ def struct_update(*args: SqlExpr) -> SqlExpr:
         SqlExpr
     """
     return func("struct_update", *args)
-
-
-# ============================================================
-# Table
-# ============================================================
-
-
-def arrow_scan(col0: SqlExpr, col1: SqlExpr, col2: SqlExpr) -> SqlExpr:
-    """SQL arrow_scan function.
-
-    Args:
-        col0 (SqlExpr): `POINTER` expression
-        col1 (SqlExpr): `POINTER` expression
-        col2 (SqlExpr): `POINTER` expression
-
-    Returns:
-        SqlExpr
-    """
-    return func("arrow_scan", col0, col1, col2)
-
-
-def arrow_scan_dumb(col0: SqlExpr, col1: SqlExpr, col2: SqlExpr) -> SqlExpr:
-    """SQL arrow_scan_dumb function.
-
-    Args:
-        col0 (SqlExpr): `POINTER` expression
-        col1 (SqlExpr): `POINTER` expression
-        col2 (SqlExpr): `POINTER` expression
-
-    Returns:
-        SqlExpr
-    """
-    return func("arrow_scan_dumb", col0, col1, col2)
-
-
-def checkpoint(col0: SqlExpr | str | None = None) -> SqlExpr:
-    """SQL checkpoint function.
-
-    Args:
-        col0 (SqlExpr | SqlExpr | str | None): `VARCHAR` expression
-
-    Returns:
-        SqlExpr
-    """
-    return func("checkpoint", col0)
-
-
-def disable_logging() -> SqlExpr:
-    """SQL disable_logging function.
-
-    Returns:
-        SqlExpr
-    """
-    return func("disable_logging")
-
-
-def duckdb_approx_database_count() -> SqlExpr:
-    """SQL duckdb_approx_database_count function.
-
-    Returns:
-        SqlExpr
-    """
-    return func("duckdb_approx_database_count")
-
-
-def duckdb_columns() -> SqlExpr:
-    """SQL duckdb_columns function.
-
-    Returns:
-        SqlExpr
-    """
-    return func("duckdb_columns")
-
-
-def duckdb_connection_count() -> SqlExpr:
-    """SQL duckdb_connection_count function.
-
-    Returns:
-        SqlExpr
-    """
-    return func("duckdb_connection_count")
-
-
-def duckdb_constraints() -> SqlExpr:
-    """SQL duckdb_constraints function.
-
-    Returns:
-        SqlExpr
-    """
-    return func("duckdb_constraints")
-
-
-def duckdb_databases() -> SqlExpr:
-    """SQL duckdb_databases function.
-
-    Returns:
-        SqlExpr
-    """
-    return func("duckdb_databases")
-
-
-def duckdb_dependencies() -> SqlExpr:
-    """SQL duckdb_dependencies function.
-
-    Returns:
-        SqlExpr
-    """
-    return func("duckdb_dependencies")
-
-
-def duckdb_extensions() -> SqlExpr:
-    """SQL duckdb_extensions function.
-
-    Returns:
-        SqlExpr
-    """
-    return func("duckdb_extensions")
-
-
-def duckdb_external_file_cache() -> SqlExpr:
-    """SQL duckdb_external_file_cache function.
-
-    Returns:
-        SqlExpr
-    """
-    return func("duckdb_external_file_cache")
-
-
-def duckdb_functions() -> SqlExpr:
-    """SQL duckdb_functions function.
-
-    Returns:
-        SqlExpr
-    """
-    return func("duckdb_functions")
-
-
-def duckdb_indexes() -> SqlExpr:
-    """SQL duckdb_indexes function.
-
-    Returns:
-        SqlExpr
-    """
-    return func("duckdb_indexes")
-
-
-def duckdb_keywords() -> SqlExpr:
-    """SQL duckdb_keywords function.
-
-    Returns:
-        SqlExpr
-    """
-    return func("duckdb_keywords")
-
-
-def duckdb_log_contexts() -> SqlExpr:
-    """SQL duckdb_log_contexts function.
-
-    Returns:
-        SqlExpr
-    """
-    return func("duckdb_log_contexts")
-
-
-def duckdb_logs(denormalized_table: SqlExpr | bool) -> SqlExpr:
-    """SQL duckdb_logs function.
-
-    Args:
-        denormalized_table (SqlExpr | bool): `BOOLEAN` expression
-
-    Returns:
-        SqlExpr
-    """
-    return func("duckdb_logs", denormalized_table)
-
-
-def duckdb_memory() -> SqlExpr:
-    """SQL duckdb_memory function.
-
-    Returns:
-        SqlExpr
-    """
-    return func("duckdb_memory")
-
-
-def duckdb_optimizers() -> SqlExpr:
-    """SQL duckdb_optimizers function.
-
-    Returns:
-        SqlExpr
-    """
-    return func("duckdb_optimizers")
-
-
-def duckdb_prepared_statements() -> SqlExpr:
-    """SQL duckdb_prepared_statements function.
-
-    Returns:
-        SqlExpr
-    """
-    return func("duckdb_prepared_statements")
-
-
-def duckdb_schemas() -> SqlExpr:
-    """SQL duckdb_schemas function.
-
-    Returns:
-        SqlExpr
-    """
-    return func("duckdb_schemas")
-
-
-def duckdb_secret_types() -> SqlExpr:
-    """SQL duckdb_secret_types function.
-
-    Returns:
-        SqlExpr
-    """
-    return func("duckdb_secret_types")
-
-
-def duckdb_secrets(redact: SqlExpr | bool) -> SqlExpr:
-    """SQL duckdb_secrets function.
-
-    Args:
-        redact (SqlExpr | bool): `BOOLEAN` expression
-
-    Returns:
-        SqlExpr
-    """
-    return func("duckdb_secrets", redact)
-
-
-def duckdb_sequences() -> SqlExpr:
-    """SQL duckdb_sequences function.
-
-    Returns:
-        SqlExpr
-    """
-    return func("duckdb_sequences")
-
-
-def duckdb_settings() -> SqlExpr:
-    """SQL duckdb_settings function.
-
-    Returns:
-        SqlExpr
-    """
-    return func("duckdb_settings")
-
-
-def duckdb_table_sample(col0: SqlExpr | str) -> SqlExpr:
-    """SQL duckdb_table_sample function.
-
-    Args:
-        col0 (SqlExpr | str): `VARCHAR` expression
-
-    Returns:
-        SqlExpr
-    """
-    return func("duckdb_table_sample", col0)
-
-
-def duckdb_tables() -> SqlExpr:
-    """SQL duckdb_tables function.
-
-    Returns:
-        SqlExpr
-    """
-    return func("duckdb_tables")
-
-
-def duckdb_temporary_files() -> SqlExpr:
-    """SQL duckdb_temporary_files function.
-
-    Returns:
-        SqlExpr
-    """
-    return func("duckdb_temporary_files")
-
-
-def duckdb_types() -> SqlExpr:
-    """SQL duckdb_types function.
-
-    Returns:
-        SqlExpr
-    """
-    return func("duckdb_types")
-
-
-def duckdb_variables() -> SqlExpr:
-    """SQL duckdb_variables function.
-
-    Returns:
-        SqlExpr
-    """
-    return func("duckdb_variables")
-
-
-def duckdb_views() -> SqlExpr:
-    """SQL duckdb_views function.
-
-    Returns:
-        SqlExpr
-    """
-    return func("duckdb_views")
-
-
-def enable_logging(
-    level: SqlExpr | str,
-    storage: SqlExpr | str,
-    storage_config: SqlExpr,
-    storage_path: SqlExpr | str,
-    storage_normalize: SqlExpr | bool,
-    storage_buffer_size: SqlExpr | int,
-    *args: SqlExpr,
-) -> SqlExpr:
-    """SQL enable_logging function.
-
-    Args:
-        level (SqlExpr | str): `VARCHAR` expression
-        storage (SqlExpr | str): `VARCHAR` expression
-        storage_config (SqlExpr): `ANY` expression
-        storage_path (SqlExpr | str): `VARCHAR` expression
-        storage_normalize (SqlExpr | bool): `BOOLEAN` expression
-        storage_buffer_size (SqlExpr | int): `UBIGINT` expression
-        *args (SqlExpr): `ANY` expression
-
-    Returns:
-        SqlExpr
-    """
-    return func(
-        "enable_logging",
-        level,
-        storage,
-        storage_config,
-        storage_path,
-        storage_normalize,
-        storage_buffer_size,
-        *args,
-    )
-
-
-def force_checkpoint(col0: SqlExpr | str | None = None) -> SqlExpr:
-    """SQL force_checkpoint function.
-
-    Args:
-        col0 (SqlExpr | SqlExpr | str | None): `VARCHAR` expression
-
-    Returns:
-        SqlExpr
-    """
-    return func("force_checkpoint", col0)
-
-
-def generate_series(
-    col0: SqlExpr | datetime | int,
-    col1: SqlExpr | datetime | int | None = None,
-    col2: SqlExpr | int | timedelta | None = None,
-) -> SqlExpr:
-    """SQL generate_series function.
-
-    Args:
-        col0 (SqlExpr | datetime | int): `BIGINT | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
-        col1 (SqlExpr | datetime | int | None): `BIGINT | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
-        col2 (SqlExpr | int | timedelta | None): `BIGINT | INTERVAL` expression
-
-    Returns:
-        SqlExpr
-    """
-    return func("generate_series", col0, col1, col2)
-
-
-def glob(col0: SqlExpr | list[str] | str) -> SqlExpr:
-    """SQL glob function.
-
-    Args:
-        col0 (SqlExpr | list[str] | str): `VARCHAR | VARCHAR[]` expression
-
-    Returns:
-        SqlExpr
-    """
-    return func("glob", col0)
-
-
-def icu_calendar_names() -> SqlExpr:
-    """SQL icu_calendar_names function.
-
-    Returns:
-        SqlExpr
-    """
-    return func("icu_calendar_names")
-
-
-def pandas_scan(col0: SqlExpr) -> SqlExpr:
-    """SQL pandas_scan function.
-
-    Args:
-        col0 (SqlExpr): `POINTER` expression
-
-    Returns:
-        SqlExpr
-    """
-    return func("pandas_scan", col0)
-
-
-def parquet_bloom_probe(
-    col0: SqlExpr | list[str] | str, col1: SqlExpr | str, col2: SqlExpr
-) -> SqlExpr:
-    """SQL parquet_bloom_probe function.
-
-    Args:
-        col0 (SqlExpr | list[str] | str): `VARCHAR | VARCHAR[]` expression
-        col1 (SqlExpr | str): `VARCHAR` expression
-        col2 (SqlExpr): `ANY` expression
-
-    Returns:
-        SqlExpr
-    """
-    return func("parquet_bloom_probe", col0, col1, col2)
-
-
-def parquet_file_metadata(col0: SqlExpr | list[str] | str) -> SqlExpr:
-    """SQL parquet_file_metadata function.
-
-    Args:
-        col0 (SqlExpr | list[str] | str): `VARCHAR | VARCHAR[]` expression
-
-    Returns:
-        SqlExpr
-    """
-    return func("parquet_file_metadata", col0)
-
-
-def parquet_kv_metadata(col0: SqlExpr | list[str] | str) -> SqlExpr:
-    """SQL parquet_kv_metadata function.
-
-    Args:
-        col0 (SqlExpr | list[str] | str): `VARCHAR | VARCHAR[]` expression
-
-    Returns:
-        SqlExpr
-    """
-    return func("parquet_kv_metadata", col0)
-
-
-def parquet_metadata(col0: SqlExpr | list[str] | str) -> SqlExpr:
-    """SQL parquet_metadata function.
-
-    Args:
-        col0 (SqlExpr | list[str] | str): `VARCHAR | VARCHAR[]` expression
-
-    Returns:
-        SqlExpr
-    """
-    return func("parquet_metadata", col0)
-
-
-def parquet_scan(
-    col0: SqlExpr | list[str] | str,
-    filename: SqlExpr,
-    hive_partitioning: SqlExpr | bool,
-    union_by_name: SqlExpr | bool,
-    hive_types: SqlExpr | bool,
-    file_row_number: SqlExpr | bool,
-    hive_types_autocast: SqlExpr | bool,
-    binary_as_string: SqlExpr | bool,
-    debug_use_openssl: SqlExpr | bool,
-    compression: SqlExpr | str,
-    can_have_nan: SqlExpr | bool | int,
-    explicit_cardinality: SqlExpr | bool | int,
-    schema: SqlExpr,
-    encryption_config: SqlExpr,
-    parquet_version: SqlExpr | str,
-) -> SqlExpr:
-    """SQL parquet_scan function.
-
-    Args:
-        col0 (SqlExpr | list[str] | str): `VARCHAR | VARCHAR[]` expression
-        filename (SqlExpr): `ANY` expression
-        hive_partitioning (SqlExpr | bool): `BOOLEAN` expression
-        union_by_name (SqlExpr | bool): `BOOLEAN` expression
-        hive_types (SqlExpr | SqlExpr | bool): `ANY | BOOLEAN` expression
-        file_row_number (SqlExpr | SqlExpr | bool): `ANY | BOOLEAN` expression
-        hive_types_autocast (SqlExpr | bool): `BOOLEAN` expression
-        binary_as_string (SqlExpr | bool): `BOOLEAN` expression
-        debug_use_openssl (SqlExpr | bool): `BOOLEAN` expression
-        compression (SqlExpr | str): `VARCHAR` expression
-        can_have_nan (SqlExpr | bool | int): `BOOLEAN | UBIGINT` expression
-        explicit_cardinality (SqlExpr | bool | int): `BOOLEAN | UBIGINT` expression
-        schema (SqlExpr): `ANY` expression
-        encryption_config (SqlExpr): `ANY` expression
-        parquet_version (SqlExpr | str): `VARCHAR` expression
-
-    Returns:
-        SqlExpr
-    """
-    return func(
-        "parquet_scan",
-        col0,
-        filename,
-        hive_partitioning,
-        union_by_name,
-        hive_types,
-        file_row_number,
-        hive_types_autocast,
-        binary_as_string,
-        debug_use_openssl,
-        compression,
-        can_have_nan,
-        explicit_cardinality,
-        schema,
-        encryption_config,
-        parquet_version,
-    )
-
-
-def parquet_schema(col0: SqlExpr | list[str] | str) -> SqlExpr:
-    """SQL parquet_schema function.
-
-    Args:
-        col0 (SqlExpr | list[str] | str): `VARCHAR | VARCHAR[]` expression
-
-    Returns:
-        SqlExpr
-    """
-    return func("parquet_schema", col0)
-
-
-def pg_timezone_names() -> SqlExpr:
-    """SQL pg_timezone_names function.
-
-    Returns:
-        SqlExpr
-    """
-    return func("pg_timezone_names")
-
-
-def pragma_collations() -> SqlExpr:
-    """SQL pragma_collations function.
-
-    Returns:
-        SqlExpr
-    """
-    return func("pragma_collations")
-
-
-def pragma_database_size() -> SqlExpr:
-    """SQL pragma_database_size function.
-
-    Returns:
-        SqlExpr
-    """
-    return func("pragma_database_size")
-
-
-def pragma_metadata_info(col0: SqlExpr | str | None = None) -> SqlExpr:
-    """SQL pragma_metadata_info function.
-
-    Args:
-        col0 (SqlExpr | SqlExpr | str | None): `VARCHAR` expression
-
-    Returns:
-        SqlExpr
-    """
-    return func("pragma_metadata_info", col0)
-
-
-def pragma_platform() -> SqlExpr:
-    """SQL pragma_platform function.
-
-    Returns:
-        SqlExpr
-    """
-    return func("pragma_platform")
-
-
-def pragma_show(col0: SqlExpr | str) -> SqlExpr:
-    """SQL pragma_show function.
-
-    Args:
-        col0 (SqlExpr | str): `VARCHAR` expression
-
-    Returns:
-        SqlExpr
-    """
-    return func("pragma_show", col0)
-
-
-def pragma_storage_info(col0: SqlExpr | str) -> SqlExpr:
-    """SQL pragma_storage_info function.
-
-    Args:
-        col0 (SqlExpr | str): `VARCHAR` expression
-
-    Returns:
-        SqlExpr
-    """
-    return func("pragma_storage_info", col0)
-
-
-def pragma_table_info(col0: SqlExpr | str) -> SqlExpr:
-    """SQL pragma_table_info function.
-
-    Args:
-        col0 (SqlExpr | str): `VARCHAR` expression
-
-    Returns:
-        SqlExpr
-    """
-    return func("pragma_table_info", col0)
-
-
-def pragma_user_agent() -> SqlExpr:
-    """SQL pragma_user_agent function.
-
-    Returns:
-        SqlExpr
-    """
-    return func("pragma_user_agent")
-
-
-def pragma_version() -> SqlExpr:
-    """SQL pragma_version function.
-
-    Returns:
-        SqlExpr
-    """
-    return func("pragma_version")
-
-
-def python_map_function(col0: SqlExpr, col1: SqlExpr, col2: SqlExpr) -> SqlExpr:
-    """SQL python_map_function function.
-
-    Args:
-        col0 (SqlExpr): `TABLE` expression
-        col1 (SqlExpr): `POINTER` expression
-        col2 (SqlExpr): `POINTER` expression
-
-    Returns:
-        SqlExpr
-    """
-    return func("python_map_function", col0, col1, col2)
-
-
-def query(col0: SqlExpr | str) -> SqlExpr:
-    """SQL query function.
-
-    Args:
-        col0 (SqlExpr | str): `VARCHAR` expression
-
-    Returns:
-        SqlExpr
-    """
-    return func("query", col0)
-
-
-def query_table(
-    col0: SqlExpr | list[str] | str, col1: SqlExpr | bool | None = None
-) -> SqlExpr:
-    """SQL query_table function.
-
-    Args:
-        col0 (SqlExpr | list[str] | str): `VARCHAR | VARCHAR[]` expression
-        col1 (SqlExpr | bool | None): `BOOLEAN` expression
-
-    Returns:
-        SqlExpr
-    """
-    return func("query_table", col0, col1)
-
-
-def range(
-    col0: SqlExpr | datetime | int,
-    col1: SqlExpr | datetime | int | None = None,
-    col2: SqlExpr | int | timedelta | None = None,
-) -> SqlExpr:
-    """SQL range function.
-
-    Args:
-        col0 (SqlExpr | datetime | int): `BIGINT | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
-        col1 (SqlExpr | datetime | int | None): `BIGINT | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
-        col2 (SqlExpr | int | timedelta | None): `BIGINT | INTERVAL` expression
-
-    Returns:
-        SqlExpr
-    """
-    return func("range", col0, col1, col2)
-
-
-def read_blob(col0: SqlExpr | list[str] | str) -> SqlExpr:
-    """SQL read_blob function.
-
-    Args:
-        col0 (SqlExpr | list[str] | str): `VARCHAR | VARCHAR[]` expression
-
-    Returns:
-        SqlExpr
-    """
-    return func("read_blob", col0)
-
-
-def read_csv(
-    col0: SqlExpr | list[str] | str,
-    filename: SqlExpr | str,
-    skip: SqlExpr | int,
-    comment: SqlExpr | str,
-    hive_partitioning: SqlExpr | bool,
-    quote: SqlExpr | str,
-    union_by_name: SqlExpr | bool | int,
-    rejects_limit: SqlExpr | bool | int,
-    hive_types: SqlExpr,
-    hive_types_autocast: SqlExpr | bool,
-    sep: SqlExpr | str,
-    delim: SqlExpr | str,
-    new_line: SqlExpr | bool | str,
-    normalize_names: SqlExpr | bool | str,
-    escape: SqlExpr | str,
-    encoding: SqlExpr | str,
-    nullstr: SqlExpr | bool,
-    parallel: SqlExpr | bool,
-    columns: SqlExpr | str,
-    maximum_line_size: SqlExpr | str,
-    auto_type_candidates: SqlExpr | bool,
-    column_names: SqlExpr | list[str],
-    strict_mode: SqlExpr | bool,
-    header: SqlExpr | bool,
-    auto_detect: SqlExpr | bool,
-    sample_size: SqlExpr | int,
-    all_varchar: SqlExpr | bool,
-    dateformat: SqlExpr | str,
-    timestampformat: SqlExpr | str,
-    compression: SqlExpr | str,
-    max_line_size: SqlExpr | str,
-    thousands: SqlExpr | str,
-    ignore_errors: SqlExpr | bool,
-    store_rejects: SqlExpr | bool,
-    types: SqlExpr | bool,
-    rejects_table: SqlExpr | str,
-    rejects_scan: SqlExpr | str,
-    force_not_null: SqlExpr | int | list[str],
-    files_to_sniff: SqlExpr | int | list[str],
-    buffer_size: SqlExpr | int,
-    decimal_separator: SqlExpr | str,
-    null_padding: SqlExpr | bool,
-    allow_quoted_nulls: SqlExpr | bool,
-    column_types: SqlExpr,
-    dtypes: SqlExpr,
-    names: SqlExpr | list[str],
-) -> SqlExpr:
-    """SQL read_csv function.
-
-    Args:
-        col0 (SqlExpr | list[str] | str): `VARCHAR | VARCHAR[]` expression
-        filename (SqlExpr | SqlExpr | str): `ANY | VARCHAR` expression
-        skip (SqlExpr | int): `BIGINT` expression
-        comment (SqlExpr | SqlExpr | str): `ANY | VARCHAR` expression
-        hive_partitioning (SqlExpr | bool): `BOOLEAN` expression
-        quote (SqlExpr | str): `VARCHAR` expression
-        union_by_name (SqlExpr | bool | int): `BIGINT | BOOLEAN` expression
-        rejects_limit (SqlExpr | bool | int): `BIGINT | BOOLEAN` expression
-        hive_types (SqlExpr): `ANY` expression
-        hive_types_autocast (SqlExpr | bool): `BOOLEAN` expression
-        sep (SqlExpr | str): `VARCHAR` expression
-        delim (SqlExpr | str): `VARCHAR` expression
-        new_line (SqlExpr | bool | str): `BOOLEAN | VARCHAR` expression
-        normalize_names (SqlExpr | bool | str): `BOOLEAN | VARCHAR` expression
-        escape (SqlExpr | str): `VARCHAR` expression
-        encoding (SqlExpr | str): `VARCHAR` expression
-        nullstr (SqlExpr | SqlExpr | bool): `ANY | BOOLEAN` expression
-        parallel (SqlExpr | SqlExpr | bool): `ANY | BOOLEAN` expression
-        columns (SqlExpr | SqlExpr | str): `ANY | VARCHAR` expression
-        maximum_line_size (SqlExpr | SqlExpr | str): `ANY | VARCHAR` expression
-        auto_type_candidates (SqlExpr | SqlExpr | bool): `ANY | BOOLEAN` expression
-        column_names (SqlExpr | list[str]): `VARCHAR[]` expression
-        strict_mode (SqlExpr | SqlExpr | bool): `ANY | BOOLEAN` expression
-        header (SqlExpr | bool): `BOOLEAN` expression
-        auto_detect (SqlExpr | bool): `BOOLEAN` expression
-        sample_size (SqlExpr | int): `BIGINT` expression
-        all_varchar (SqlExpr | bool): `BOOLEAN` expression
-        dateformat (SqlExpr | str): `VARCHAR` expression
-        timestampformat (SqlExpr | str): `VARCHAR` expression
-        compression (SqlExpr | str): `VARCHAR` expression
-        max_line_size (SqlExpr | str): `VARCHAR` expression
-        thousands (SqlExpr | str): `VARCHAR` expression
-        ignore_errors (SqlExpr | bool): `BOOLEAN` expression
-        store_rejects (SqlExpr | SqlExpr | bool): `ANY | BOOLEAN` expression
-        types (SqlExpr | SqlExpr | bool): `ANY | BOOLEAN` expression
-        rejects_table (SqlExpr | str): `VARCHAR` expression
-        rejects_scan (SqlExpr | str): `VARCHAR` expression
-        force_not_null (SqlExpr | int | list[str]): `BIGINT | VARCHAR[]` expression
-        files_to_sniff (SqlExpr | int | list[str]): `BIGINT | VARCHAR[]` expression
-        buffer_size (SqlExpr | int): `UBIGINT` expression
-        decimal_separator (SqlExpr | str): `VARCHAR` expression
-        null_padding (SqlExpr | bool): `BOOLEAN` expression
-        allow_quoted_nulls (SqlExpr | bool): `BOOLEAN` expression
-        column_types (SqlExpr): `ANY` expression
-        dtypes (SqlExpr): `ANY` expression
-        names (SqlExpr | list[str]): `VARCHAR[]` expression
-
-    Returns:
-        SqlExpr
-    """
-    return func(
-        "read_csv",
-        col0,
-        filename,
-        skip,
-        comment,
-        hive_partitioning,
-        quote,
-        union_by_name,
-        rejects_limit,
-        hive_types,
-        hive_types_autocast,
-        sep,
-        delim,
-        new_line,
-        normalize_names,
-        escape,
-        encoding,
-        nullstr,
-        parallel,
-        columns,
-        maximum_line_size,
-        auto_type_candidates,
-        column_names,
-        strict_mode,
-        header,
-        auto_detect,
-        sample_size,
-        all_varchar,
-        dateformat,
-        timestampformat,
-        compression,
-        max_line_size,
-        thousands,
-        ignore_errors,
-        store_rejects,
-        types,
-        rejects_table,
-        rejects_scan,
-        force_not_null,
-        files_to_sniff,
-        buffer_size,
-        decimal_separator,
-        null_padding,
-        allow_quoted_nulls,
-        column_types,
-        dtypes,
-        names,
-    )
-
-
-def read_csv_auto(
-    col0: SqlExpr | list[str] | str,
-    filename: SqlExpr | str,
-    skip: SqlExpr | int,
-    comment: SqlExpr | str,
-    hive_partitioning: SqlExpr | bool,
-    quote: SqlExpr | str,
-    union_by_name: SqlExpr | bool | int,
-    rejects_limit: SqlExpr | bool | int,
-    hive_types: SqlExpr,
-    hive_types_autocast: SqlExpr | bool,
-    sep: SqlExpr | str,
-    delim: SqlExpr | str,
-    new_line: SqlExpr | bool | str,
-    normalize_names: SqlExpr | bool | str,
-    escape: SqlExpr | str,
-    encoding: SqlExpr | str,
-    nullstr: SqlExpr | bool,
-    parallel: SqlExpr | bool,
-    columns: SqlExpr | str,
-    maximum_line_size: SqlExpr | str,
-    auto_type_candidates: SqlExpr | bool,
-    column_names: SqlExpr | list[str],
-    strict_mode: SqlExpr | bool,
-    header: SqlExpr | bool,
-    auto_detect: SqlExpr | bool,
-    sample_size: SqlExpr | int,
-    all_varchar: SqlExpr | bool,
-    dateformat: SqlExpr | str,
-    timestampformat: SqlExpr | str,
-    compression: SqlExpr | str,
-    max_line_size: SqlExpr | str,
-    thousands: SqlExpr | str,
-    ignore_errors: SqlExpr | bool,
-    store_rejects: SqlExpr | bool,
-    types: SqlExpr | bool,
-    rejects_table: SqlExpr | str,
-    rejects_scan: SqlExpr | str,
-    force_not_null: SqlExpr | int | list[str],
-    files_to_sniff: SqlExpr | int | list[str],
-    buffer_size: SqlExpr | int,
-    decimal_separator: SqlExpr | str,
-    null_padding: SqlExpr | bool,
-    allow_quoted_nulls: SqlExpr | bool,
-    column_types: SqlExpr,
-    dtypes: SqlExpr,
-    names: SqlExpr | list[str],
-) -> SqlExpr:
-    """SQL read_csv_auto function.
-
-    Args:
-        col0 (SqlExpr | list[str] | str): `VARCHAR | VARCHAR[]` expression
-        filename (SqlExpr | SqlExpr | str): `ANY | VARCHAR` expression
-        skip (SqlExpr | int): `BIGINT` expression
-        comment (SqlExpr | SqlExpr | str): `ANY | VARCHAR` expression
-        hive_partitioning (SqlExpr | bool): `BOOLEAN` expression
-        quote (SqlExpr | str): `VARCHAR` expression
-        union_by_name (SqlExpr | bool | int): `BIGINT | BOOLEAN` expression
-        rejects_limit (SqlExpr | bool | int): `BIGINT | BOOLEAN` expression
-        hive_types (SqlExpr): `ANY` expression
-        hive_types_autocast (SqlExpr | bool): `BOOLEAN` expression
-        sep (SqlExpr | str): `VARCHAR` expression
-        delim (SqlExpr | str): `VARCHAR` expression
-        new_line (SqlExpr | bool | str): `BOOLEAN | VARCHAR` expression
-        normalize_names (SqlExpr | bool | str): `BOOLEAN | VARCHAR` expression
-        escape (SqlExpr | str): `VARCHAR` expression
-        encoding (SqlExpr | str): `VARCHAR` expression
-        nullstr (SqlExpr | SqlExpr | bool): `ANY | BOOLEAN` expression
-        parallel (SqlExpr | SqlExpr | bool): `ANY | BOOLEAN` expression
-        columns (SqlExpr | SqlExpr | str): `ANY | VARCHAR` expression
-        maximum_line_size (SqlExpr | SqlExpr | str): `ANY | VARCHAR` expression
-        auto_type_candidates (SqlExpr | SqlExpr | bool): `ANY | BOOLEAN` expression
-        column_names (SqlExpr | list[str]): `VARCHAR[]` expression
-        strict_mode (SqlExpr | SqlExpr | bool): `ANY | BOOLEAN` expression
-        header (SqlExpr | bool): `BOOLEAN` expression
-        auto_detect (SqlExpr | bool): `BOOLEAN` expression
-        sample_size (SqlExpr | int): `BIGINT` expression
-        all_varchar (SqlExpr | bool): `BOOLEAN` expression
-        dateformat (SqlExpr | str): `VARCHAR` expression
-        timestampformat (SqlExpr | str): `VARCHAR` expression
-        compression (SqlExpr | str): `VARCHAR` expression
-        max_line_size (SqlExpr | str): `VARCHAR` expression
-        thousands (SqlExpr | str): `VARCHAR` expression
-        ignore_errors (SqlExpr | bool): `BOOLEAN` expression
-        store_rejects (SqlExpr | SqlExpr | bool): `ANY | BOOLEAN` expression
-        types (SqlExpr | SqlExpr | bool): `ANY | BOOLEAN` expression
-        rejects_table (SqlExpr | str): `VARCHAR` expression
-        rejects_scan (SqlExpr | str): `VARCHAR` expression
-        force_not_null (SqlExpr | int | list[str]): `BIGINT | VARCHAR[]` expression
-        files_to_sniff (SqlExpr | int | list[str]): `BIGINT | VARCHAR[]` expression
-        buffer_size (SqlExpr | int): `UBIGINT` expression
-        decimal_separator (SqlExpr | str): `VARCHAR` expression
-        null_padding (SqlExpr | bool): `BOOLEAN` expression
-        allow_quoted_nulls (SqlExpr | bool): `BOOLEAN` expression
-        column_types (SqlExpr): `ANY` expression
-        dtypes (SqlExpr): `ANY` expression
-        names (SqlExpr | list[str]): `VARCHAR[]` expression
-
-    Returns:
-        SqlExpr
-    """
-    return func(
-        "read_csv_auto",
-        col0,
-        filename,
-        skip,
-        comment,
-        hive_partitioning,
-        quote,
-        union_by_name,
-        rejects_limit,
-        hive_types,
-        hive_types_autocast,
-        sep,
-        delim,
-        new_line,
-        normalize_names,
-        escape,
-        encoding,
-        nullstr,
-        parallel,
-        columns,
-        maximum_line_size,
-        auto_type_candidates,
-        column_names,
-        strict_mode,
-        header,
-        auto_detect,
-        sample_size,
-        all_varchar,
-        dateformat,
-        timestampformat,
-        compression,
-        max_line_size,
-        thousands,
-        ignore_errors,
-        store_rejects,
-        types,
-        rejects_table,
-        rejects_scan,
-        force_not_null,
-        files_to_sniff,
-        buffer_size,
-        decimal_separator,
-        null_padding,
-        allow_quoted_nulls,
-        column_types,
-        dtypes,
-        names,
-    )
-
-
-def read_json(
-    col0: SqlExpr | list[str] | str,
-    format_arg: SqlExpr | str,
-    filename: SqlExpr | str,
-    hive_partitioning: SqlExpr | bool | str,
-    date_format: SqlExpr | bool | str,
-    union_by_name: SqlExpr | bool,
-    maximum_object_size: SqlExpr | int,
-    hive_types: SqlExpr,
-    hive_types_autocast: SqlExpr | bool,
-    ignore_errors: SqlExpr | bool,
-    compression: SqlExpr | str,
-    columns: SqlExpr,
-    auto_detect: SqlExpr | bool,
-    sample_size: SqlExpr | int,
-    dateformat: SqlExpr | str,
-    maximum_depth: SqlExpr | int | str,
-    timestampformat: SqlExpr | int | str,
-    timestamp_format: SqlExpr | str,
-    records: SqlExpr | str,
-    maximum_sample_files: SqlExpr | int,
-    field_appearance_threshold: SqlExpr | float,
-    convert_strings_to_integers: SqlExpr | bool,
-    map_inference_threshold: SqlExpr | int,
-) -> SqlExpr:
-    """SQL read_json function.
-
-    Args:
-        col0 (SqlExpr | list[str] | str): `VARCHAR | VARCHAR[]` expression
-        format_arg (SqlExpr | SqlExpr | str): `ANY | VARCHAR` expression
-        filename (SqlExpr | SqlExpr | str): `ANY | VARCHAR` expression
-        hive_partitioning (SqlExpr | bool | str): `BOOLEAN | VARCHAR` expression
-        date_format (SqlExpr | bool | str): `BOOLEAN | VARCHAR` expression
-        union_by_name (SqlExpr | bool): `BOOLEAN` expression
-        maximum_object_size (SqlExpr | int): `UINTEGER` expression
-        hive_types (SqlExpr): `ANY` expression
-        hive_types_autocast (SqlExpr | bool): `BOOLEAN` expression
-        ignore_errors (SqlExpr | bool): `BOOLEAN` expression
-        compression (SqlExpr | str): `VARCHAR` expression
-        columns (SqlExpr): `ANY` expression
-        auto_detect (SqlExpr | bool): `BOOLEAN` expression
-        sample_size (SqlExpr | int): `BIGINT` expression
-        dateformat (SqlExpr | str): `VARCHAR` expression
-        maximum_depth (SqlExpr | int | str): `BIGINT | VARCHAR` expression
-        timestampformat (SqlExpr | int | str): `BIGINT | VARCHAR` expression
-        timestamp_format (SqlExpr | str): `VARCHAR` expression
-        records (SqlExpr | str): `VARCHAR` expression
-        maximum_sample_files (SqlExpr | int): `BIGINT` expression
-        field_appearance_threshold (SqlExpr | float): `DOUBLE` expression
-        convert_strings_to_integers (SqlExpr | bool): `BOOLEAN` expression
-        map_inference_threshold (SqlExpr | int): `BIGINT` expression
-
-    Returns:
-        SqlExpr
-    """
-    return func(
-        "read_json",
-        col0,
-        format_arg,
-        filename,
-        hive_partitioning,
-        date_format,
-        union_by_name,
-        maximum_object_size,
-        hive_types,
-        hive_types_autocast,
-        ignore_errors,
-        compression,
-        columns,
-        auto_detect,
-        sample_size,
-        dateformat,
-        maximum_depth,
-        timestampformat,
-        timestamp_format,
-        records,
-        maximum_sample_files,
-        field_appearance_threshold,
-        convert_strings_to_integers,
-        map_inference_threshold,
-    )
-
-
-def read_json_auto(
-    col0: SqlExpr | list[str] | str,
-    format_arg: SqlExpr | str,
-    filename: SqlExpr | str,
-    hive_partitioning: SqlExpr | bool | str,
-    date_format: SqlExpr | bool | str,
-    union_by_name: SqlExpr | bool,
-    maximum_object_size: SqlExpr | int,
-    hive_types: SqlExpr,
-    hive_types_autocast: SqlExpr | bool,
-    ignore_errors: SqlExpr | bool,
-    compression: SqlExpr | str,
-    columns: SqlExpr,
-    auto_detect: SqlExpr | bool,
-    sample_size: SqlExpr | int,
-    dateformat: SqlExpr | str,
-    maximum_depth: SqlExpr | int | str,
-    timestampformat: SqlExpr | int | str,
-    timestamp_format: SqlExpr | str,
-    records: SqlExpr | str,
-    maximum_sample_files: SqlExpr | int,
-    field_appearance_threshold: SqlExpr | float,
-    convert_strings_to_integers: SqlExpr | bool,
-    map_inference_threshold: SqlExpr | int,
-) -> SqlExpr:
-    """SQL read_json_auto function.
-
-    Args:
-        col0 (SqlExpr | list[str] | str): `VARCHAR | VARCHAR[]` expression
-        format_arg (SqlExpr | SqlExpr | str): `ANY | VARCHAR` expression
-        filename (SqlExpr | SqlExpr | str): `ANY | VARCHAR` expression
-        hive_partitioning (SqlExpr | bool | str): `BOOLEAN | VARCHAR` expression
-        date_format (SqlExpr | bool | str): `BOOLEAN | VARCHAR` expression
-        union_by_name (SqlExpr | bool): `BOOLEAN` expression
-        maximum_object_size (SqlExpr | int): `UINTEGER` expression
-        hive_types (SqlExpr): `ANY` expression
-        hive_types_autocast (SqlExpr | bool): `BOOLEAN` expression
-        ignore_errors (SqlExpr | bool): `BOOLEAN` expression
-        compression (SqlExpr | str): `VARCHAR` expression
-        columns (SqlExpr): `ANY` expression
-        auto_detect (SqlExpr | bool): `BOOLEAN` expression
-        sample_size (SqlExpr | int): `BIGINT` expression
-        dateformat (SqlExpr | str): `VARCHAR` expression
-        maximum_depth (SqlExpr | int | str): `BIGINT | VARCHAR` expression
-        timestampformat (SqlExpr | int | str): `BIGINT | VARCHAR` expression
-        timestamp_format (SqlExpr | str): `VARCHAR` expression
-        records (SqlExpr | str): `VARCHAR` expression
-        maximum_sample_files (SqlExpr | int): `BIGINT` expression
-        field_appearance_threshold (SqlExpr | float): `DOUBLE` expression
-        convert_strings_to_integers (SqlExpr | bool): `BOOLEAN` expression
-        map_inference_threshold (SqlExpr | int): `BIGINT` expression
-
-    Returns:
-        SqlExpr
-    """
-    return func(
-        "read_json_auto",
-        col0,
-        format_arg,
-        filename,
-        hive_partitioning,
-        date_format,
-        union_by_name,
-        maximum_object_size,
-        hive_types,
-        hive_types_autocast,
-        ignore_errors,
-        compression,
-        columns,
-        auto_detect,
-        sample_size,
-        dateformat,
-        maximum_depth,
-        timestampformat,
-        timestamp_format,
-        records,
-        maximum_sample_files,
-        field_appearance_threshold,
-        convert_strings_to_integers,
-        map_inference_threshold,
-    )
-
-
-def read_json_objects(
-    col0: SqlExpr | list[str] | str,
-    format_arg: SqlExpr | str,
-    filename: SqlExpr | str,
-    hive_partitioning: SqlExpr | bool,
-    union_by_name: SqlExpr | bool,
-    maximum_object_size: SqlExpr | int,
-    hive_types: SqlExpr,
-    hive_types_autocast: SqlExpr | bool,
-    ignore_errors: SqlExpr | bool,
-    compression: SqlExpr | str,
-) -> SqlExpr:
-    """SQL read_json_objects function.
-
-    Args:
-        col0 (SqlExpr | list[str] | str): `VARCHAR | VARCHAR[]` expression
-        format_arg (SqlExpr | SqlExpr | str): `ANY | VARCHAR` expression
-        filename (SqlExpr | SqlExpr | str): `ANY | VARCHAR` expression
-        hive_partitioning (SqlExpr | bool): `BOOLEAN` expression
-        union_by_name (SqlExpr | bool): `BOOLEAN` expression
-        maximum_object_size (SqlExpr | int): `UINTEGER` expression
-        hive_types (SqlExpr): `ANY` expression
-        hive_types_autocast (SqlExpr | bool): `BOOLEAN` expression
-        ignore_errors (SqlExpr | bool): `BOOLEAN` expression
-        compression (SqlExpr | str): `VARCHAR` expression
-
-    Returns:
-        SqlExpr
-    """
-    return func(
-        "read_json_objects",
-        col0,
-        format_arg,
-        filename,
-        hive_partitioning,
-        union_by_name,
-        maximum_object_size,
-        hive_types,
-        hive_types_autocast,
-        ignore_errors,
-        compression,
-    )
-
-
-def read_json_objects_auto(
-    col0: SqlExpr | list[str] | str,
-    format_arg: SqlExpr | str,
-    filename: SqlExpr | str,
-    hive_partitioning: SqlExpr | bool,
-    union_by_name: SqlExpr | bool,
-    maximum_object_size: SqlExpr | int,
-    hive_types: SqlExpr,
-    hive_types_autocast: SqlExpr | bool,
-    ignore_errors: SqlExpr | bool,
-    compression: SqlExpr | str,
-) -> SqlExpr:
-    """SQL read_json_objects_auto function.
-
-    Args:
-        col0 (SqlExpr | list[str] | str): `VARCHAR | VARCHAR[]` expression
-        format_arg (SqlExpr | SqlExpr | str): `ANY | VARCHAR` expression
-        filename (SqlExpr | SqlExpr | str): `ANY | VARCHAR` expression
-        hive_partitioning (SqlExpr | bool): `BOOLEAN` expression
-        union_by_name (SqlExpr | bool): `BOOLEAN` expression
-        maximum_object_size (SqlExpr | int): `UINTEGER` expression
-        hive_types (SqlExpr): `ANY` expression
-        hive_types_autocast (SqlExpr | bool): `BOOLEAN` expression
-        ignore_errors (SqlExpr | bool): `BOOLEAN` expression
-        compression (SqlExpr | str): `VARCHAR` expression
-
-    Returns:
-        SqlExpr
-    """
-    return func(
-        "read_json_objects_auto",
-        col0,
-        format_arg,
-        filename,
-        hive_partitioning,
-        union_by_name,
-        maximum_object_size,
-        hive_types,
-        hive_types_autocast,
-        ignore_errors,
-        compression,
-    )
-
-
-def read_ndjson(
-    col0: SqlExpr | list[str] | str,
-    format_arg: SqlExpr | str,
-    filename: SqlExpr | str,
-    hive_partitioning: SqlExpr | bool | str,
-    date_format: SqlExpr | bool | str,
-    union_by_name: SqlExpr | bool,
-    maximum_object_size: SqlExpr | int,
-    hive_types: SqlExpr,
-    hive_types_autocast: SqlExpr | bool,
-    ignore_errors: SqlExpr | bool,
-    compression: SqlExpr | str,
-    columns: SqlExpr,
-    auto_detect: SqlExpr | bool,
-    sample_size: SqlExpr | int,
-    dateformat: SqlExpr | str,
-    maximum_depth: SqlExpr | int | str,
-    timestampformat: SqlExpr | int | str,
-    timestamp_format: SqlExpr | str,
-    records: SqlExpr | str,
-    maximum_sample_files: SqlExpr | int,
-    field_appearance_threshold: SqlExpr | float,
-    convert_strings_to_integers: SqlExpr | bool,
-    map_inference_threshold: SqlExpr | int,
-) -> SqlExpr:
-    """SQL read_ndjson function.
-
-    Args:
-        col0 (SqlExpr | list[str] | str): `VARCHAR | VARCHAR[]` expression
-        format_arg (SqlExpr | SqlExpr | str): `ANY | VARCHAR` expression
-        filename (SqlExpr | SqlExpr | str): `ANY | VARCHAR` expression
-        hive_partitioning (SqlExpr | bool | str): `BOOLEAN | VARCHAR` expression
-        date_format (SqlExpr | bool | str): `BOOLEAN | VARCHAR` expression
-        union_by_name (SqlExpr | bool): `BOOLEAN` expression
-        maximum_object_size (SqlExpr | int): `UINTEGER` expression
-        hive_types (SqlExpr): `ANY` expression
-        hive_types_autocast (SqlExpr | bool): `BOOLEAN` expression
-        ignore_errors (SqlExpr | bool): `BOOLEAN` expression
-        compression (SqlExpr | str): `VARCHAR` expression
-        columns (SqlExpr): `ANY` expression
-        auto_detect (SqlExpr | bool): `BOOLEAN` expression
-        sample_size (SqlExpr | int): `BIGINT` expression
-        dateformat (SqlExpr | str): `VARCHAR` expression
-        maximum_depth (SqlExpr | int | str): `BIGINT | VARCHAR` expression
-        timestampformat (SqlExpr | int | str): `BIGINT | VARCHAR` expression
-        timestamp_format (SqlExpr | str): `VARCHAR` expression
-        records (SqlExpr | str): `VARCHAR` expression
-        maximum_sample_files (SqlExpr | int): `BIGINT` expression
-        field_appearance_threshold (SqlExpr | float): `DOUBLE` expression
-        convert_strings_to_integers (SqlExpr | bool): `BOOLEAN` expression
-        map_inference_threshold (SqlExpr | int): `BIGINT` expression
-
-    Returns:
-        SqlExpr
-    """
-    return func(
-        "read_ndjson",
-        col0,
-        format_arg,
-        filename,
-        hive_partitioning,
-        date_format,
-        union_by_name,
-        maximum_object_size,
-        hive_types,
-        hive_types_autocast,
-        ignore_errors,
-        compression,
-        columns,
-        auto_detect,
-        sample_size,
-        dateformat,
-        maximum_depth,
-        timestampformat,
-        timestamp_format,
-        records,
-        maximum_sample_files,
-        field_appearance_threshold,
-        convert_strings_to_integers,
-        map_inference_threshold,
-    )
-
-
-def read_ndjson_auto(
-    col0: SqlExpr | list[str] | str,
-    format_arg: SqlExpr | str,
-    filename: SqlExpr | str,
-    hive_partitioning: SqlExpr | bool | str,
-    date_format: SqlExpr | bool | str,
-    union_by_name: SqlExpr | bool,
-    maximum_object_size: SqlExpr | int,
-    hive_types: SqlExpr,
-    hive_types_autocast: SqlExpr | bool,
-    ignore_errors: SqlExpr | bool,
-    compression: SqlExpr | str,
-    columns: SqlExpr,
-    auto_detect: SqlExpr | bool,
-    sample_size: SqlExpr | int,
-    dateformat: SqlExpr | str,
-    maximum_depth: SqlExpr | int | str,
-    timestampformat: SqlExpr | int | str,
-    timestamp_format: SqlExpr | str,
-    records: SqlExpr | str,
-    maximum_sample_files: SqlExpr | int,
-    field_appearance_threshold: SqlExpr | float,
-    convert_strings_to_integers: SqlExpr | bool,
-    map_inference_threshold: SqlExpr | int,
-) -> SqlExpr:
-    """SQL read_ndjson_auto function.
-
-    Args:
-        col0 (SqlExpr | list[str] | str): `VARCHAR | VARCHAR[]` expression
-        format_arg (SqlExpr | SqlExpr | str): `ANY | VARCHAR` expression
-        filename (SqlExpr | SqlExpr | str): `ANY | VARCHAR` expression
-        hive_partitioning (SqlExpr | bool | str): `BOOLEAN | VARCHAR` expression
-        date_format (SqlExpr | bool | str): `BOOLEAN | VARCHAR` expression
-        union_by_name (SqlExpr | bool): `BOOLEAN` expression
-        maximum_object_size (SqlExpr | int): `UINTEGER` expression
-        hive_types (SqlExpr): `ANY` expression
-        hive_types_autocast (SqlExpr | bool): `BOOLEAN` expression
-        ignore_errors (SqlExpr | bool): `BOOLEAN` expression
-        compression (SqlExpr | str): `VARCHAR` expression
-        columns (SqlExpr): `ANY` expression
-        auto_detect (SqlExpr | bool): `BOOLEAN` expression
-        sample_size (SqlExpr | int): `BIGINT` expression
-        dateformat (SqlExpr | str): `VARCHAR` expression
-        maximum_depth (SqlExpr | int | str): `BIGINT | VARCHAR` expression
-        timestampformat (SqlExpr | int | str): `BIGINT | VARCHAR` expression
-        timestamp_format (SqlExpr | str): `VARCHAR` expression
-        records (SqlExpr | str): `VARCHAR` expression
-        maximum_sample_files (SqlExpr | int): `BIGINT` expression
-        field_appearance_threshold (SqlExpr | float): `DOUBLE` expression
-        convert_strings_to_integers (SqlExpr | bool): `BOOLEAN` expression
-        map_inference_threshold (SqlExpr | int): `BIGINT` expression
-
-    Returns:
-        SqlExpr
-    """
-    return func(
-        "read_ndjson_auto",
-        col0,
-        format_arg,
-        filename,
-        hive_partitioning,
-        date_format,
-        union_by_name,
-        maximum_object_size,
-        hive_types,
-        hive_types_autocast,
-        ignore_errors,
-        compression,
-        columns,
-        auto_detect,
-        sample_size,
-        dateformat,
-        maximum_depth,
-        timestampformat,
-        timestamp_format,
-        records,
-        maximum_sample_files,
-        field_appearance_threshold,
-        convert_strings_to_integers,
-        map_inference_threshold,
-    )
-
-
-def read_ndjson_objects(
-    col0: SqlExpr | list[str] | str,
-    format_arg: SqlExpr | str,
-    filename: SqlExpr | str,
-    hive_partitioning: SqlExpr | bool,
-    union_by_name: SqlExpr | bool,
-    maximum_object_size: SqlExpr | int,
-    hive_types: SqlExpr,
-    hive_types_autocast: SqlExpr | bool,
-    ignore_errors: SqlExpr | bool,
-    compression: SqlExpr | str,
-) -> SqlExpr:
-    """SQL read_ndjson_objects function.
-
-    Args:
-        col0 (SqlExpr | list[str] | str): `VARCHAR | VARCHAR[]` expression
-        format_arg (SqlExpr | SqlExpr | str): `ANY | VARCHAR` expression
-        filename (SqlExpr | SqlExpr | str): `ANY | VARCHAR` expression
-        hive_partitioning (SqlExpr | bool): `BOOLEAN` expression
-        union_by_name (SqlExpr | bool): `BOOLEAN` expression
-        maximum_object_size (SqlExpr | int): `UINTEGER` expression
-        hive_types (SqlExpr): `ANY` expression
-        hive_types_autocast (SqlExpr | bool): `BOOLEAN` expression
-        ignore_errors (SqlExpr | bool): `BOOLEAN` expression
-        compression (SqlExpr | str): `VARCHAR` expression
-
-    Returns:
-        SqlExpr
-    """
-    return func(
-        "read_ndjson_objects",
-        col0,
-        format_arg,
-        filename,
-        hive_partitioning,
-        union_by_name,
-        maximum_object_size,
-        hive_types,
-        hive_types_autocast,
-        ignore_errors,
-        compression,
-    )
-
-
-def read_parquet(
-    col0: SqlExpr | list[str] | str,
-    filename: SqlExpr,
-    hive_partitioning: SqlExpr | bool,
-    union_by_name: SqlExpr | bool,
-    hive_types: SqlExpr | bool,
-    file_row_number: SqlExpr | bool,
-    hive_types_autocast: SqlExpr | bool,
-    binary_as_string: SqlExpr | bool,
-    debug_use_openssl: SqlExpr | bool,
-    compression: SqlExpr | str,
-    can_have_nan: SqlExpr | bool | int,
-    explicit_cardinality: SqlExpr | bool | int,
-    schema: SqlExpr,
-    encryption_config: SqlExpr,
-    parquet_version: SqlExpr | str,
-) -> SqlExpr:
-    """SQL read_parquet function.
-
-    Args:
-        col0 (SqlExpr | list[str] | str): `VARCHAR | VARCHAR[]` expression
-        filename (SqlExpr): `ANY` expression
-        hive_partitioning (SqlExpr | bool): `BOOLEAN` expression
-        union_by_name (SqlExpr | bool): `BOOLEAN` expression
-        hive_types (SqlExpr | SqlExpr | bool): `ANY | BOOLEAN` expression
-        file_row_number (SqlExpr | SqlExpr | bool): `ANY | BOOLEAN` expression
-        hive_types_autocast (SqlExpr | bool): `BOOLEAN` expression
-        binary_as_string (SqlExpr | bool): `BOOLEAN` expression
-        debug_use_openssl (SqlExpr | bool): `BOOLEAN` expression
-        compression (SqlExpr | str): `VARCHAR` expression
-        can_have_nan (SqlExpr | bool | int): `BOOLEAN | UBIGINT` expression
-        explicit_cardinality (SqlExpr | bool | int): `BOOLEAN | UBIGINT` expression
-        schema (SqlExpr): `ANY` expression
-        encryption_config (SqlExpr): `ANY` expression
-        parquet_version (SqlExpr | str): `VARCHAR` expression
-
-    Returns:
-        SqlExpr
-    """
-    return func(
-        "read_parquet",
-        col0,
-        filename,
-        hive_partitioning,
-        union_by_name,
-        hive_types,
-        file_row_number,
-        hive_types_autocast,
-        binary_as_string,
-        debug_use_openssl,
-        compression,
-        can_have_nan,
-        explicit_cardinality,
-        schema,
-        encryption_config,
-        parquet_version,
-    )
-
-
-def read_text(col0: SqlExpr | list[str] | str) -> SqlExpr:
-    """SQL read_text function.
-
-    Args:
-        col0 (SqlExpr | list[str] | str): `VARCHAR | VARCHAR[]` expression
-
-    Returns:
-        SqlExpr
-    """
-    return func("read_text", col0)
-
-
-def repeat(col0: SqlExpr, col1: SqlExpr | int) -> SqlExpr:
-    """SQL repeat function.
-
-    Args:
-        col0 (SqlExpr): `ANY | T[]` expression
-        col1 (SqlExpr | int): `BIGINT` expression
-
-    Returns:
-        SqlExpr
-    """
-    return func("repeat", col0, col1)
-
-
-def repeat_row(num_rows: SqlExpr | int, *args: SqlExpr) -> SqlExpr:
-    """SQL repeat_row function.
-
-    Args:
-        num_rows (SqlExpr | int): `BIGINT` expression
-        *args (SqlExpr): `ANY` expression
-
-    Returns:
-        SqlExpr
-    """
-    return func("repeat_row", num_rows, *args)
-
-
-def seq_scan() -> SqlExpr:
-    """SQL seq_scan function.
-
-    Returns:
-        SqlExpr
-    """
-    return func("seq_scan")
-
-
-def sniff_csv(
-    col0: SqlExpr | str,
-    sep: SqlExpr | str,
-    delim: SqlExpr | str,
-    nullstr: SqlExpr,
-    parallel: SqlExpr | bool,
-    quote: SqlExpr | str,
-    new_line: SqlExpr | str,
-    normalize_names: SqlExpr | bool,
-    escape: SqlExpr | str,
-    encoding: SqlExpr | str,
-    columns: SqlExpr,
-    maximum_line_size: SqlExpr | str,
-    auto_type_candidates: SqlExpr,
-    column_names: SqlExpr | list[str],
-    strict_mode: SqlExpr | bool,
-    header: SqlExpr | bool,
-    auto_detect: SqlExpr | bool,
-    sample_size: SqlExpr | int,
-    all_varchar: SqlExpr | bool,
-    dateformat: SqlExpr | str,
-    timestampformat: SqlExpr | str,
-    compression: SqlExpr | str,
-    skip: SqlExpr | int,
-    comment: SqlExpr | str,
-    filename: SqlExpr,
-    max_line_size: SqlExpr | str,
-    thousands: SqlExpr | str,
-    ignore_errors: SqlExpr | bool,
-    store_rejects: SqlExpr | bool,
-    types: SqlExpr,
-    rejects_table: SqlExpr | str,
-    rejects_scan: SqlExpr | str,
-    rejects_limit: SqlExpr | int,
-    union_by_name: SqlExpr | bool,
-    force_not_null: SqlExpr | list[str],
-    files_to_sniff: SqlExpr | int,
-    buffer_size: SqlExpr | int,
-    decimal_separator: SqlExpr | str,
-    null_padding: SqlExpr | bool,
-    allow_quoted_nulls: SqlExpr | bool,
-    column_types: SqlExpr,
-    dtypes: SqlExpr,
-    names: SqlExpr | list[str],
-    hive_partitioning: SqlExpr | bool,
-    hive_types: SqlExpr,
-    hive_types_autocast: SqlExpr | bool,
-    force_match: SqlExpr | bool,
-) -> SqlExpr:
-    """SQL sniff_csv function.
-
-    Args:
-        col0 (SqlExpr | str): `VARCHAR` expression
-        sep (SqlExpr | str): `VARCHAR` expression
-        delim (SqlExpr | str): `VARCHAR` expression
-        nullstr (SqlExpr): `ANY` expression
-        parallel (SqlExpr | bool): `BOOLEAN` expression
-        quote (SqlExpr | str): `VARCHAR` expression
-        new_line (SqlExpr | str): `VARCHAR` expression
-        normalize_names (SqlExpr | bool): `BOOLEAN` expression
-        escape (SqlExpr | str): `VARCHAR` expression
-        encoding (SqlExpr | str): `VARCHAR` expression
-        columns (SqlExpr): `ANY` expression
-        maximum_line_size (SqlExpr | str): `VARCHAR` expression
-        auto_type_candidates (SqlExpr): `ANY` expression
-        column_names (SqlExpr | list[str]): `VARCHAR[]` expression
-        strict_mode (SqlExpr | bool): `BOOLEAN` expression
-        header (SqlExpr | bool): `BOOLEAN` expression
-        auto_detect (SqlExpr | bool): `BOOLEAN` expression
-        sample_size (SqlExpr | int): `BIGINT` expression
-        all_varchar (SqlExpr | bool): `BOOLEAN` expression
-        dateformat (SqlExpr | str): `VARCHAR` expression
-        timestampformat (SqlExpr | str): `VARCHAR` expression
-        compression (SqlExpr | str): `VARCHAR` expression
-        skip (SqlExpr | int): `BIGINT` expression
-        comment (SqlExpr | str): `VARCHAR` expression
-        filename (SqlExpr): `ANY` expression
-        max_line_size (SqlExpr | str): `VARCHAR` expression
-        thousands (SqlExpr | str): `VARCHAR` expression
-        ignore_errors (SqlExpr | bool): `BOOLEAN` expression
-        store_rejects (SqlExpr | bool): `BOOLEAN` expression
-        types (SqlExpr): `ANY` expression
-        rejects_table (SqlExpr | str): `VARCHAR` expression
-        rejects_scan (SqlExpr | str): `VARCHAR` expression
-        rejects_limit (SqlExpr | int): `BIGINT` expression
-        union_by_name (SqlExpr | bool): `BOOLEAN` expression
-        force_not_null (SqlExpr | list[str]): `VARCHAR[]` expression
-        files_to_sniff (SqlExpr | int): `BIGINT` expression
-        buffer_size (SqlExpr | int): `UBIGINT` expression
-        decimal_separator (SqlExpr | str): `VARCHAR` expression
-        null_padding (SqlExpr | bool): `BOOLEAN` expression
-        allow_quoted_nulls (SqlExpr | bool): `BOOLEAN` expression
-        column_types (SqlExpr): `ANY` expression
-        dtypes (SqlExpr): `ANY` expression
-        names (SqlExpr | list[str]): `VARCHAR[]` expression
-        hive_partitioning (SqlExpr | bool): `BOOLEAN` expression
-        hive_types (SqlExpr): `ANY` expression
-        hive_types_autocast (SqlExpr | bool): `BOOLEAN` expression
-        force_match (SqlExpr | bool): `BOOLEAN` expression
-
-    Returns:
-        SqlExpr
-    """
-    return func(
-        "sniff_csv",
-        col0,
-        sep,
-        delim,
-        nullstr,
-        parallel,
-        quote,
-        new_line,
-        normalize_names,
-        escape,
-        encoding,
-        columns,
-        maximum_line_size,
-        auto_type_candidates,
-        column_names,
-        strict_mode,
-        header,
-        auto_detect,
-        sample_size,
-        all_varchar,
-        dateformat,
-        timestampformat,
-        compression,
-        skip,
-        comment,
-        filename,
-        max_line_size,
-        thousands,
-        ignore_errors,
-        store_rejects,
-        types,
-        rejects_table,
-        rejects_scan,
-        rejects_limit,
-        union_by_name,
-        force_not_null,
-        files_to_sniff,
-        buffer_size,
-        decimal_separator,
-        null_padding,
-        allow_quoted_nulls,
-        column_types,
-        dtypes,
-        names,
-        hive_partitioning,
-        hive_types,
-        hive_types_autocast,
-        force_match,
-    )
-
-
-def summary(col0: SqlExpr) -> SqlExpr:
-    """SQL summary function.
-
-    Args:
-        col0 (SqlExpr): `TABLE` expression
-
-    Returns:
-        SqlExpr
-    """
-    return func("summary", col0)
-
-
-def test_all_types(
-    use_large_enum: SqlExpr | bool, use_large_bignum: SqlExpr | bool
-) -> SqlExpr:
-    """SQL test_all_types function.
-
-    Args:
-        use_large_enum (SqlExpr | bool): `BOOLEAN` expression
-        use_large_bignum (SqlExpr | bool): `BOOLEAN` expression
-
-    Returns:
-        SqlExpr
-    """
-    return func("test_all_types", use_large_enum, use_large_bignum)
-
-
-def test_vector_types(
-    col0: SqlExpr, all_flat: SqlExpr | bool, *args: SqlExpr
-) -> SqlExpr:
-    """SQL test_vector_types function.
-
-    Args:
-        col0 (SqlExpr): `ANY` expression
-        all_flat (SqlExpr | bool): `BOOLEAN` expression
-        *args (SqlExpr): `ANY` expression
-
-    Returns:
-        SqlExpr
-    """
-    return func("test_vector_types", col0, all_flat, *args)
-
-
-def truncate_duckdb_logs() -> SqlExpr:
-    """SQL truncate_duckdb_logs function.
-
-    Returns:
-        SqlExpr
-    """
-    return func("truncate_duckdb_logs")
-
-
-def unnest(col0: SqlExpr) -> SqlExpr:
-    """SQL unnest function.
-
-    Args:
-        col0 (SqlExpr): `ANY` expression
-
-    Returns:
-        SqlExpr
-    """
-    return func("unnest", col0)
-
-
-def which_secret(col0: SqlExpr | str, col1: SqlExpr | str) -> SqlExpr:
-    """SQL which_secret function.
-
-    Args:
-        col0 (SqlExpr | str): `VARCHAR` expression
-        col1 (SqlExpr | str): `VARCHAR` expression
-
-    Returns:
-        SqlExpr
-    """
-    return func("which_secret", col0, col1)
-
-
-# ============================================================
-# Table Macro
-# ============================================================
-
-
-def duckdb_logs_parsed(log_type: SqlExpr) -> SqlExpr:
-    """SQL duckdb_logs_parsed function.
-
-    Args:
-        log_type (SqlExpr): `ANY` expression
-
-    Returns:
-        SqlExpr
-    """
-    return func("duckdb_logs_parsed", log_type)
-
-
-def histogram_col_name_bin_count_technique(
-    source: SqlExpr,
-    col_name: SqlExpr | None = None,
-    bin_count: SqlExpr | None = None,
-    technique: SqlExpr | None = None,
-) -> SqlExpr:
-    """SQL histogram function.
-
-    Args:
-        source (SqlExpr): `ANY` expression
-        col_name (SqlExpr | None): `ANY` expression
-        bin_count (SqlExpr | None): `ANY` expression
-        technique (SqlExpr | None): `ANY` expression
-
-    Returns:
-        SqlExpr
-    """
-    return func("histogram", source, col_name, bin_count, technique)
-
-
-def histogram_values(
-    source: SqlExpr, col_name: SqlExpr, bin_count: SqlExpr, technique: SqlExpr
-) -> SqlExpr:
-    """SQL histogram_values function.
-
-    Args:
-        source (SqlExpr): `ANY` expression
-        col_name (SqlExpr): `ANY` expression
-        bin_count (SqlExpr): `ANY` expression
-        technique (SqlExpr): `ANY` expression
-
-    Returns:
-        SqlExpr
-    """
-    return func("histogram_values", source, col_name, bin_count, technique)
 
 
 # ============================================================

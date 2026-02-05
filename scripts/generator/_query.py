@@ -7,10 +7,12 @@ import polars as pl
 from ._models import (
     CATEGORY_RULES,
     CONVERSION_MAP,
+    FUNC_TYPES,
     KWORDS,
     OPERATOR_MAP,
     SHADOWERS,
     DuckDbTypes,
+    FuncTypes,
     PyTypes,
 )
 
@@ -55,6 +57,7 @@ class ParamLists:
 @dataclass(slots=True)
 class DuckCols:
     name: pl.Expr = field(default=pl.col("function_name"))
+    fn_type: pl.Expr = field(default=pl.col("function_type"))
     description: pl.Expr = field(default=pl.col("description"))
     cats: pl.Expr = field(default=pl.col("categories"))
     varargs: pl.Expr = field(default=pl.col("varargs"))
@@ -75,6 +78,11 @@ def get_df() -> pl.LazyFrame:
         .filter(
             dk.name.str.starts_with("__")
             .not_()
+            .and_(
+                dk.fn_type.cast(FUNC_TYPES)
+                .is_in({FuncTypes.TABLE, FuncTypes.TABLE_MACRO})
+                .not_()
+            )
             .and_(dk.name.is_in(OPERATOR_MAP).not_())
             .and_(dk.alias_of.is_null().or_(dk.alias_of.is_in(OPERATOR_MAP)))
         )
