@@ -241,6 +241,9 @@ CATEGORY_RULES = pc.Seq(
         TypeRule(FuncTypes.SCALAR, "Scalar"),
         TypeRule(FuncTypes.AGGREGATE, "Aggregate"),
         TypeRule(FuncTypes.MACRO, "Macro"),
+        TypeRule(FuncTypes.TABLE, "Table"),
+        TypeRule(FuncTypes.TABLE_MACRO, "Table Macro"),
+        TypeRule(FuncTypes.PRAGMA, "Pragma"),
     )
 )
 """Rules to categorize functions by name prefix or function type."""
