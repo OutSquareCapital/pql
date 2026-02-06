@@ -235,7 +235,7 @@ NAMESPACE_SPECS = pc.Seq(
         NamespaceSpec(
             name="StringFns",
             doc="Mixin providing auto-generated DuckDB string functions as methods.",
-            prefixes=pc.Seq(("string_", "regexp_")),
+            prefixes=pc.Seq(("string_", "regexp_", "str")),
         ),
         NamespaceSpec(
             name="ArrayFns",

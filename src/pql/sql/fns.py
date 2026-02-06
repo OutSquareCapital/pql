@@ -2808,48 +2808,6 @@ class Fns(ExprHandler[Expression]):
         """
         return self.__class__(func("stddev_samp", self._expr))
 
-    def strftime(self, format_arg: Self | date | datetime | str) -> Self:
-        """Converts a `date` to a string according to the format string.
-
-        Args:
-            format_arg (Self | date | datetime | str): `DATE | TIMESTAMP | TIMESTAMP_NS | VARCHAR` expression
-
-        Returns:
-            Self
-        """
-        return self.__class__(func("strftime", self._expr, format_arg))
-
-    def strip_accents(self) -> Self:
-        """Strips accents from `string`.
-
-        Returns:
-            Self
-        """
-        return self.__class__(func("strip_accents", self._expr))
-
-    def strlen(self) -> Self:
-        """Number of bytes in `string`.
-
-        Returns:
-            Self
-        """
-        return self.__class__(func("strlen", self._expr))
-
-    def strptime(self, format_arg: Self | list[str] | str) -> Self:
-        """Converts the `string` text to timestamp according to the format string.
-
-        Throws an error on failure.
-
-        To return `NULL` on failure, use try_strptime.
-
-        Args:
-            format_arg (Self | list[str] | str): `VARCHAR | VARCHAR[]` expression
-
-        Returns:
-            Self
-        """
-        return self.__class__(func("strptime", self._expr, format_arg))
-
     def substring(self, start: Self | int, length: Self | int | None = None) -> Self:
         """Extracts substring starting from character `start` up to the end of the string.
 
@@ -4368,6 +4326,19 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
             func("regexp_split_to_table", self._parent.inner(), pattern)
         )
 
+    def strftime(self, format_arg: T | date | datetime | str) -> T:
+        """Converts a `date` to a string according to the format string.
+
+        Args:
+            format_arg (T | date | datetime | str): `DATE | TIMESTAMP | TIMESTAMP_NS | VARCHAR` expression
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(
+            func("strftime", self._parent.inner(), format_arg)
+        )
+
     def string_agg(self, arg: T | str | None = None) -> T:
         """Concatenates the column string values with an optional separator.
 
@@ -4507,6 +4478,39 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._parent.__class__(
             func("string_split_regex", self._parent.inner(), regex, options)
+        )
+
+    def strip_accents(self) -> T:
+        """Strips accents from `string`.
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(func("strip_accents", self._parent.inner()))
+
+    def strlen(self) -> T:
+        """Number of bytes in `string`.
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(func("strlen", self._parent.inner()))
+
+    def strptime(self, format_arg: T | list[str] | str) -> T:
+        """Converts the `string` text to timestamp according to the format string.
+
+        Throws an error on failure.
+
+        To return `NULL` on failure, use try_strptime.
+
+        Args:
+            format_arg (T | list[str] | str): `VARCHAR | VARCHAR[]` expression
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(
+            func("strptime", self._parent.inner(), format_arg)
         )
 
 

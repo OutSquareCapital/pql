@@ -527,9 +527,7 @@ class ExprStringNameSpace:
             case None:
                 return Expr(self._expr.cast(sql.datatypes.Date))
             case _:
-                return Expr(
-                    self._expr.strptime(sql.lit(format)).cast(sql.datatypes.Date)
-                )
+                return Expr(self._expr.str.strptime(sql.lit(format)))
 
     def to_datetime(
         self,
@@ -540,10 +538,9 @@ class ExprStringNameSpace:
         """Convert string to datetime."""
         match format:
             case None:
-                base_expr = self._expr.cast(sql.datatypes.PRECISION_MAP[time_unit])
+                return Expr(self._expr.cast(sql.datatypes.PRECISION_MAP[time_unit]))
             case _:
-                base_expr = self._expr.strptime(sql.lit(format))
-        return Expr(base_expr)
+                return Expr(self._expr.str.strptime(sql.lit(format)))
 
     def to_time(self, format: str | None = None) -> Expr:  # noqa: A002
         """Convert string to time."""
@@ -552,7 +549,7 @@ class ExprStringNameSpace:
                 return Expr(self._expr.cast(sql.datatypes.Time))
             case _:
                 return Expr(
-                    self._expr.strptime(sql.lit(format)).cast(sql.datatypes.Time)
+                    self._expr.str.strptime(sql.lit(format)).cast(sql.datatypes.Time)
                 )
 
     def to_decimal(self, *, scale: int = 38) -> Expr:

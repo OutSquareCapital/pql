@@ -218,7 +218,11 @@ def _namespace_name(fn_name: pl.Expr) -> pl.Expr:
     return NAMESPACE_SPECS.iter().fold(
         pl.lit(value=None),
         lambda acc, spec: (
-            pl.when(_matches(spec.prefixes)).then(pl.lit(spec.name)).otherwise(acc)
+            pl.when(acc.is_not_null())
+            .then(acc)
+            .otherwise(
+                pl.when(_matches(spec.prefixes)).then(pl.lit(spec.name)).otherwise(acc)
+            )
         ),
     )
 
