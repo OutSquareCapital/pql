@@ -120,13 +120,18 @@ class ClassComparison:
 
 def render_summary_table(comps: pc.Seq[ComparisonReport]) -> pc.Iter[str]:
     data_rows = _summary_rows(comps)
-    widths = (
-        pc.Iter.once(_summary_header()).chain(data_rows).collect().into(_summary_widths)
-    )
+
     return (
-        pc.Iter.once(_format_row(_summary_header(), widths))
-        .chain(pc.Iter.once(_format_separator(widths)))
-        .chain(data_rows.iter().map(lambda row: _format_row(row, widths)))
+        pc.Iter.once(_summary_header())
+        .chain(data_rows)
+        .into(_summary_widths)
+        .collect()
+        .into(
+            lambda widths: pc.Iter.once(_format_row(_summary_header(), widths)).chain(
+                pc.Iter.once(_format_separator(widths)),
+                data_rows.iter().map(lambda row: _format_row(row, widths)),
+            )
+        )
     )
 
 
@@ -134,17 +139,11 @@ def _summary_rows(comps: pc.Seq[ComparisonReport]) -> pc.Seq[pc.Seq[str]]:
     return comps.iter().map(lambda comp: comp.to_row()).collect()
 
 
-def _summary_widths(rows: pc.Seq[pc.Seq[str]]) -> pc.Seq[int]:
-    return (
-        pc.Iter(range(_summary_header().length()))
-        .map(
-            lambda idx: (
-                rows.iter()
-                .map(lambda row: len(row[idx]))
-                .fold(0, lambda acc, length: max(length, acc))
-            )
+def _summary_widths(rows: pc.Iter[pc.Seq[str]]) -> pc.Iter[int]:
+    return pc.Iter(range(_summary_header().length())).map(
+        lambda idx: rows.map(lambda row: len(row[idx])).fold(
+            0, lambda acc, length: max(length, acc)
         )
-        .collect()
     )
 
 
@@ -155,16 +154,17 @@ def _format_separator(widths: pc.Seq[int]) -> str:
 
 def _format(results: pc.Vec[ComparisonResult], title: str, *, status: Status) -> str:
     """Format a section of the report."""
-    items = _by_status(results, status)
-    match items.length():
-        case 0:
-            return ""
-        case count:
-            return (
-                pc.Iter((f"\n### {title} ({count})\n",))
+    return (
+        results.into(_by_status, status)
+        .then(
+            lambda items: (
+                pc.Iter((f"\n### {title} ({items.length()})\n",))
                 .chain(items.iter().flat_map(lambda r: r.to_format(status=status)))
                 .join("\n")
             )
+        )
+        .unwrap_or("")
+    )
 
 
 def _format_row(row: pc.Seq[str], widths: pc.Seq[int]) -> str:
