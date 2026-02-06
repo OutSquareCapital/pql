@@ -178,14 +178,6 @@ class Fns(ExprHandler[Expression]):
         """
         return self.__class__(func("arg_min_null", self._expr, val))
 
-    def ascii(self) -> Self:
-        """Returns an integer that represents the Unicode code point of the first character of the `string`.
-
-        Returns:
-            Self
-        """
-        return self.__class__(func("ascii", self._expr))
-
     def asin(self) -> Self:
         """Computes the arcsine of x.
 
@@ -236,26 +228,6 @@ class Fns(ExprHandler[Expression]):
             Self
         """
         return self.__class__(func("avg", self._expr))
-
-    def bar(
-        self,
-        min_arg: Self | float,
-        max_arg: Self | float,
-        width: Self | float | None = None,
-    ) -> Self:
-        """Draws a band whose width is proportional to (`x - min`) and equal to `width` characters when `x` = `max`.
-
-        `width` defaults to 80.
-
-        Args:
-            min_arg (Self | float): `DOUBLE` expression
-            max_arg (Self | float): `DOUBLE` expression
-            width (Self | float | None): `DOUBLE` expression
-
-        Returns:
-            Self
-        """
-        return self.__class__(func("bar", self._expr, min_arg, max_arg, width))
 
     def bit_and(self) -> Self:
         """Returns the bitwise AND of all bits in a given expression.
@@ -467,14 +439,6 @@ class Fns(ExprHandler[Expression]):
         """
         return self.__class__(func("century", self._expr))
 
-    def chr(self) -> Self:
-        """Returns a character which is corresponding the ASCII code value or Unicode code point.
-
-        Returns:
-            Self
-        """
-        return self.__class__(func("chr", self._expr))
-
     def col_description(self, column_number: Self) -> Self:
         """SQL col_description function.
 
@@ -496,35 +460,6 @@ class Fns(ExprHandler[Expression]):
             Self
         """
         return self.__class__(func("combine", self._expr, col1))
-
-    def concat(self, *args: Self) -> Self:
-        """Concatenates multiple strings or lists.
-
-        `NULL` inputs are skipped.
-
-        See also operator `||`.
-
-        Args:
-            *args (Self): `ANY` expression
-
-        Returns:
-            Self
-        """
-        return self.__class__(func("concat", self._expr, *args))
-
-    def concat_ws(self, string: Self, *args: Self) -> Self:
-        """Concatenates many strings, separated by `separator`.
-
-        `NULL` inputs are skipped.
-
-        Args:
-            string (Self): `ANY` expression
-            *args (Self): `ANY` expression
-
-        Returns:
-            Self
-        """
-        return self.__class__(func("concat_ws", self._expr, string, *args))
 
     def constant_or_null(self, arg2: Self, *args: Self) -> Self:
         """If arg2 is NULL, return NULL.
@@ -1056,14 +991,6 @@ class Fns(ExprHandler[Expression]):
         """
         return self.__class__(func("first", self._expr))
 
-    def flatten(self) -> Self:
-        """Flattens a nested list by one level.
-
-        Returns:
-            Self
-        """
-        return self.__class__(func("flatten", self._expr))
-
     def floor(self) -> Self:
         """Rounds the number down.
 
@@ -1082,25 +1009,6 @@ class Fns(ExprHandler[Expression]):
             Self
         """
         return self.__class__(func("fmod", self._expr, y))
-
-    def format(self, *args: Self) -> Self:
-        """Formats a string using the fmt syntax.
-
-        Args:
-            *args (Self): `ANY` expression
-
-        Returns:
-            Self
-        """
-        return self.__class__(func("format", self._expr, *args))
-
-    def format_bytes(self) -> Self:
-        """Converts `integer` to a human-readable representation using units based on powers of 2 (KiB, MiB, GiB, etc.).
-
-        Returns:
-            Self
-        """
-        return self.__class__(func("format_bytes", self._expr))
 
     def format_pg_type(self, type_name: Self) -> Self:
         """SQL format_pg_type function.
@@ -1123,22 +1031,6 @@ class Fns(ExprHandler[Expression]):
             Self
         """
         return self.__class__(func("format_type", self._expr, typemod))
-
-    def formatreadabledecimalsize(self) -> Self:
-        """Converts `integer` to a human-readable representation using units based on powers of 10 (KB, MB, GB, etc.).
-
-        Returns:
-            Self
-        """
-        return self.__class__(func("formatReadableDecimalSize", self._expr))
-
-    def from_base64(self) -> Self:
-        """Converts a base64 encoded `string` to a character string (`BLOB`).
-
-        Returns:
-            Self
-        """
-        return self.__class__(func("from_base64", self._expr))
 
     def from_json(self, col1: Self | str) -> Self:
         """SQL from_json function.
@@ -1169,22 +1061,6 @@ class Fns(ExprHandler[Expression]):
             Self
         """
         return self.__class__(func("gamma", self._expr))
-
-    def generate_series(
-        self,
-        stop: Self | datetime | int | None = None,
-        step: Self | int | timedelta | None = None,
-    ) -> Self:
-        """Creates a list of values between `start` and `stop` - the stop parameter is inclusive.
-
-        Args:
-            stop (Self | datetime | int | None): `BIGINT | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
-            step (Self | int | timedelta | None): `BIGINT | INTERVAL` expression
-
-        Returns:
-            Self
-        """
-        return self.__class__(func("generate_series", self._expr, stop, step))
 
     def generate_subscripts(self, dim: Self) -> Self:
         """SQL generate_subscripts function.
@@ -1240,21 +1116,6 @@ class Fns(ExprHandler[Expression]):
         """
         return self.__class__(func("getvariable", self._expr))
 
-    def greatest(self, *args: Self) -> Self:
-        """Returns the largest value.
-
-        For strings lexicographical ordering is used.
-
-        Note that lowercase characters are considered “larger” than uppercase characters and collations are not supported.
-
-        Args:
-            *args (Self): `ANY` expression
-
-        Returns:
-            Self
-        """
-        return self.__class__(func("greatest", self._expr, *args))
-
     def greatest_common_divisor(self, y: Self | int) -> Self:
         """Computes the greatest common divisor of x and y.
 
@@ -1280,19 +1141,6 @@ class Fns(ExprHandler[Expression]):
             Self
         """
         return self.__class__(func("hamming", self._expr, s2))
-
-    def hash(self, *args: Self) -> Self:
-        """Returns a `UBIGINT` with the hash of the `value`.
-
-        Note that this is not a cryptographic hash.
-
-        Args:
-            *args (Self): `ANY` expression
-
-        Returns:
-            Self
-        """
-        return self.__class__(func("hash", self._expr, *args))
 
     def histogram(self, col1: Self | None = None) -> Self:
         """Returns a LIST of STRUCTs with the fields bucket and count.
@@ -1324,24 +1172,6 @@ class Fns(ExprHandler[Expression]):
         """
         return self.__class__(func("hour", self._expr))
 
-    def ilike_escape(
-        self, like_specifier: Self | str, escape_character: Self | str
-    ) -> Self:
-        """Returns `true` if the `string` matches the `like_specifier` (see Pattern Matching) using case-insensitive matching.
-
-        `escape_character` is used to search for wildcard characters in the `string`.
-
-        Args:
-            like_specifier (Self | str): `VARCHAR` expression
-            escape_character (Self | str): `VARCHAR` expression
-
-        Returns:
-            Self
-        """
-        return self.__class__(
-            func("ilike_escape", self._expr, like_specifier, escape_character)
-        )
-
     def in_search_path(self, schema_name: Self | str) -> Self:
         """Returns whether or not the database/schema are in the search path.
 
@@ -1352,19 +1182,6 @@ class Fns(ExprHandler[Expression]):
             Self
         """
         return self.__class__(func("in_search_path", self._expr, schema_name))
-
-    def instr(self, search_string: Self | str) -> Self:
-        """Returns location of first occurrence of `search_string` in `string`, counting from 1.
-
-        Returns 0 if no match found.
-
-        Args:
-            search_string (Self | str): `VARCHAR` expression
-
-        Returns:
-            Self
-        """
-        return self.__class__(func("instr", self._expr, search_string))
 
     def is_histogram_other_bin(self) -> Self:
         """Whether or not the provided value is the histogram "other" bin (used for values not belonging to any provided bin).
@@ -1533,21 +1350,6 @@ class Fns(ExprHandler[Expression]):
         """
         return self.__class__(func("last_day", self._expr))
 
-    def least(self, *args: Self) -> Self:
-        """Returns the smallest value.
-
-        For strings lexicographical ordering is used.
-
-        Note that uppercase characters are considered “smaller” than lowercase characters, and collations are not supported.
-
-        Args:
-            *args (Self): `ANY` expression
-
-        Returns:
-            Self
-        """
-        return self.__class__(func("least", self._expr, *args))
-
     def least_common_multiple(self, y: Self | int) -> Self:
         """Computes the least common multiple of x and y.
 
@@ -1558,36 +1360,6 @@ class Fns(ExprHandler[Expression]):
             Self
         """
         return self.__class__(func("least_common_multiple", self._expr, y))
-
-    def left(self, count: Self | int) -> Self:
-        """Extracts the left-most count characters.
-
-        Args:
-            count (Self | int): `BIGINT` expression
-
-        Returns:
-            Self
-        """
-        return self.__class__(func("left", self._expr, count))
-
-    def left_grapheme(self, count: Self | int) -> Self:
-        """Extracts the left-most count grapheme clusters.
-
-        Args:
-            count (Self | int): `BIGINT` expression
-
-        Returns:
-            Self
-        """
-        return self.__class__(func("left_grapheme", self._expr, count))
-
-    def length_grapheme(self) -> Self:
-        """Number of grapheme clusters in `string`.
-
-        Returns:
-            Self
-        """
-        return self.__class__(func("length_grapheme", self._expr))
 
     def levenshtein(self, s2: Self | str) -> Self:
         """The minimum number of single-character edits (insertions, deletions or substitutions) required to change one string to the other.
@@ -1609,24 +1381,6 @@ class Fns(ExprHandler[Expression]):
             Self
         """
         return self.__class__(func("lgamma", self._expr))
-
-    def like_escape(
-        self, like_specifier: Self | str, escape_character: Self | str
-    ) -> Self:
-        """Returns `true` if the `string` matches the `like_specifier` (see Pattern Matching) using case-sensitive matching.
-
-        `escape_character` is used to search for wildcard characters in the `string`.
-
-        Args:
-            like_specifier (Self | str): `VARCHAR` expression
-            escape_character (Self | str): `VARCHAR` expression
-
-        Returns:
-            Self
-        """
-        return self.__class__(
-            func("like_escape", self._expr, like_specifier, escape_character)
-        )
 
     def ln(self) -> Self:
         """Computes the natural logarithm of x.
@@ -1664,41 +1418,6 @@ class Fns(ExprHandler[Expression]):
             Self
         """
         return self.__class__(func("log2", self._expr))
-
-    def lower(self) -> Self:
-        """Converts `string` to lower case.
-
-        Returns:
-            Self
-        """
-        return self.__class__(func("lower", self._expr))
-
-    def lpad(self, count: Self | int, character: Self | str) -> Self:
-        """Pads the `string` with the `character` on the left until it has `count` characters.
-
-        Truncates the `string` on the right if it has more than `count` characters.
-
-        Args:
-            count (Self | int): `INTEGER` expression
-            character (Self | str): `VARCHAR` expression
-
-        Returns:
-            Self
-        """
-        return self.__class__(func("lpad", self._expr, count, character))
-
-    def ltrim(self, characters: Self | str | None = None) -> Self:
-        """Removes any occurrences of any of the `characters` from the left side of the `string`.
-
-        `characters` defaults to `space`.
-
-        Args:
-            characters (Self | str | None): `VARCHAR` expression
-
-        Returns:
-            Self
-        """
-        return self.__class__(func("ltrim", self._expr, characters))
 
     def mad(self) -> Self:
         """Returns the median absolute deviation for the values within x.
@@ -2093,16 +1812,6 @@ class Fns(ExprHandler[Expression]):
         """
         return self.__class__(func("nextval", self._expr))
 
-    def nfc_normalize(self) -> Self:
-        """Converts `string` to Unicode NFC normalized string.
-
-        Useful for comparisons and ordering if text data is mixed between NFC normalized and not.
-
-        Returns:
-            Self
-        """
-        return self.__class__(func("nfc_normalize", self._expr))
-
     def normalized_interval(self) -> Self:
         """Normalizes an INTERVAL to an equivalent interval.
 
@@ -2110,42 +1819,6 @@ class Fns(ExprHandler[Expression]):
             Self
         """
         return self.__class__(func("normalized_interval", self._expr))
-
-    def not_ilike_escape(
-        self, like_specifier: Self | str, escape_character: Self | str
-    ) -> Self:
-        """Returns `false` if the `string` matches the `like_specifier` (see Pattern Matching) using case-insensitive matching.
-
-        `escape_character` is used to search for wildcard characters in the `string`.
-
-        Args:
-            like_specifier (Self | str): `VARCHAR` expression
-            escape_character (Self | str): `VARCHAR` expression
-
-        Returns:
-            Self
-        """
-        return self.__class__(
-            func("not_ilike_escape", self._expr, like_specifier, escape_character)
-        )
-
-    def not_like_escape(
-        self, like_specifier: Self | str, escape_character: Self | str
-    ) -> Self:
-        """Returns `false` if the `string` matches the `like_specifier` (see Pattern Matching) using case-sensitive matching.
-
-        `escape_character` is used to search for wildcard characters in the `string`.
-
-        Args:
-            like_specifier (Self | str): `VARCHAR` expression
-            escape_character (Self | str): `VARCHAR` expression
-
-        Returns:
-            Self
-        """
-        return self.__class__(
-            func("not_like_escape", self._expr, like_specifier, escape_character)
-        )
 
     def nullif(self, b: Self) -> Self:
         """SQL nullif function.
@@ -2201,32 +1874,6 @@ class Fns(ExprHandler[Expression]):
         """
         return self.__class__(func("obj_description", self._expr, catalog_name))
 
-    def parse_dirname(self, separator: Self | str | None = None) -> Self:
-        """Returns the top-level directory name from the given `path`.
-
-        `separator` options: `system`, `both_slash` (default), `forward_slash`, `backslash`.
-
-        Args:
-            separator (Self | str | None): `VARCHAR` expression
-
-        Returns:
-            Self
-        """
-        return self.__class__(func("parse_dirname", self._expr, separator))
-
-    def parse_dirpath(self, separator: Self | str | None = None) -> Self:
-        """Returns the head of the `path` (the pathname until the last slash) similarly to Python's `os.path.dirname`.
-
-        `separator` options: `system`, `both_slash` (default), `forward_slash`, `backslash`.
-
-        Args:
-            separator (Self | str | None): `VARCHAR` expression
-
-        Returns:
-            Self
-        """
-        return self.__class__(func("parse_dirpath", self._expr, separator))
-
     def parse_duckdb_log_message(self, message: Self | str) -> Self:
         """Parse the message into the expected logical type.
 
@@ -2237,41 +1884,6 @@ class Fns(ExprHandler[Expression]):
             Self
         """
         return self.__class__(func("parse_duckdb_log_message", self._expr, message))
-
-    def parse_filename(
-        self,
-        trim_extension: Self | bool | str | None = None,
-        separator: Self | str | None = None,
-    ) -> Self:
-        """Returns the last component of the `path` similarly to Python's `os.path.basename` function.
-
-        If `trim_extension` is `true`, the file extension will be removed (defaults to `false`).
-
-        `separator` options: `system`, `both_slash` (default), `forward_slash`, `backslash`.
-
-        Args:
-            trim_extension (Self | bool | str | None): `BOOLEAN | VARCHAR` expression
-            separator (Self | str | None): `VARCHAR` expression
-
-        Returns:
-            Self
-        """
-        return self.__class__(
-            func("parse_filename", self._expr, trim_extension, separator)
-        )
-
-    def parse_path(self, separator: Self | str | None = None) -> Self:
-        """Returns a list of the components (directories and filename) in the `path` similarly to Python's `pathlib.parts` function.
-
-        `separator` options: `system`, `both_slash` (default), `forward_slash`, `backslash`.
-
-        Args:
-            separator (Self | str | None): `VARCHAR` expression
-
-        Returns:
-            Self
-        """
-        return self.__class__(func("parse_path", self._expr, separator))
 
     def pow(self, y: Self | float) -> Self:
         """Computes x to the power of y.
@@ -2294,28 +1906,6 @@ class Fns(ExprHandler[Expression]):
             Self
         """
         return self.__class__(func("power", self._expr, y))
-
-    def prefix(self, search_string: Self | str) -> Self:
-        """Returns `true` if `string` starts with `search_string`.
-
-        Args:
-            search_string (Self | str): `VARCHAR` expression
-
-        Returns:
-            Self
-        """
-        return self.__class__(func("prefix", self._expr, search_string))
-
-    def printf(self, *args: Self) -> Self:
-        """Formats a `string` using printf syntax.
-
-        Args:
-            *args (Self): `ANY` expression
-
-        Returns:
-            Self
-        """
-        return self.__class__(func("printf", self._expr, *args))
 
     def product(self) -> Self:
         """Calculates the product of all tuples in arg.
@@ -2366,22 +1956,6 @@ class Fns(ExprHandler[Expression]):
             Self
         """
         return self.__class__(func("radians", self._expr))
-
-    def range(
-        self,
-        stop: Self | datetime | int | None = None,
-        step: Self | int | timedelta | None = None,
-    ) -> Self:
-        """Creates a list of values between `start` and `stop` - the stop parameter is exclusive.
-
-        Args:
-            stop (Self | datetime | int | None): `BIGINT | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
-            step (Self | int | timedelta | None): `BIGINT | INTERVAL` expression
-
-        Returns:
-            Self
-        """
-        return self.__class__(func("range", self._expr, stop, step))
 
     def regr_avgx(self, x: Self | float) -> Self:
         """Returns the average of the independent variable for non-NULL pairs in a group, where x is the independent variable and y is the dependent variable.
@@ -2508,18 +2082,6 @@ class Fns(ExprHandler[Expression]):
         """
         return self.__class__(func("repeat", self._expr, col1))
 
-    def replace(self, source: Self | str, target: Self | str) -> Self:
-        """Replaces any occurrences of the `source` with `target` in `string`.
-
-        Args:
-            source (Self | str): `VARCHAR` expression
-            target (Self | str): `VARCHAR` expression
-
-        Returns:
-            Self
-        """
-        return self.__class__(func("replace", self._expr, source, target))
-
     def replace_type(self, type1: Self, type2: Self) -> Self:
         """Casts all fields of type1 to type2.
 
@@ -2549,36 +2111,6 @@ class Fns(ExprHandler[Expression]):
         return self.__class__(
             func("reservoir_quantile", self._expr, quantile, sample_size)
         )
-
-    def reverse(self) -> Self:
-        """Reverses the `string`.
-
-        Returns:
-            Self
-        """
-        return self.__class__(func("reverse", self._expr))
-
-    def right(self, count: Self | int) -> Self:
-        """Extract the right-most `count` characters.
-
-        Args:
-            count (Self | int): `BIGINT` expression
-
-        Returns:
-            Self
-        """
-        return self.__class__(func("right", self._expr, count))
-
-    def right_grapheme(self, count: Self | int) -> Self:
-        """Extracts the right-most `count` grapheme clusters.
-
-        Args:
-            count (Self | int): `BIGINT` expression
-
-        Returns:
-            Self
-        """
-        return self.__class__(func("right_grapheme", self._expr, count))
 
     def round(self, precision: Self | int | None = None) -> Self:
         """Rounds x to s decimal places.
@@ -2634,33 +2166,6 @@ class Fns(ExprHandler[Expression]):
             Self
         """
         return self.__class__(func("row_to_json", self._expr, *args))
-
-    def rpad(self, count: Self | int, character: Self | str) -> Self:
-        """Pads the `string` with the `character` on the right until it has `count` characters.
-
-        Truncates the `string` on the right if it has more than `count` characters.
-
-        Args:
-            count (Self | int): `INTEGER` expression
-            character (Self | str): `VARCHAR` expression
-
-        Returns:
-            Self
-        """
-        return self.__class__(func("rpad", self._expr, count, character))
-
-    def rtrim(self, characters: Self | str | None = None) -> Self:
-        """Removes any occurrences of any of the `characters` from the right side of the `string`.
-
-        `characters` defaults to `space`.
-
-        Args:
-            characters (Self | str | None): `VARCHAR` expression
-
-        Returns:
-            Self
-        """
-        return self.__class__(func("rtrim", self._expr, characters))
 
     def second(self) -> Self:
         """Extract the second component from a date or timestamp.
@@ -2771,17 +2276,6 @@ class Fns(ExprHandler[Expression]):
         """
         return self.__class__(func("sqrt", self._expr))
 
-    def starts_with(self, search_string: Self | str) -> Self:
-        """Returns `true` if `string` begins with `search_string`.
-
-        Args:
-            search_string (Self | str): `VARCHAR` expression
-
-        Returns:
-            Self
-        """
-        return self.__class__(func("starts_with", self._expr, search_string))
-
     def stats(self) -> Self:
         """Returns a string with statistics about the expression.
 
@@ -2808,40 +2302,6 @@ class Fns(ExprHandler[Expression]):
         """
         return self.__class__(func("stddev_samp", self._expr))
 
-    def substring(self, start: Self | int, length: Self | int | None = None) -> Self:
-        """Extracts substring starting from character `start` up to the end of the string.
-
-        If optional argument `length` is set, extracts a substring of `length` characters instead.
-
-        Note that a `start` value of `1` refers to the first character of the `string`.
-
-        Args:
-            start (Self | int): `BIGINT` expression
-            length (Self | int | None): `BIGINT` expression
-
-        Returns:
-            Self
-        """
-        return self.__class__(func("substring", self._expr, start, length))
-
-    def substring_grapheme(
-        self, start: Self | int, length: Self | int | None = None
-    ) -> Self:
-        """Extracts substring starting from grapheme clusters `start` up to the end of the string.
-
-        If optional argument `length` is set, extracts a substring of `length` grapheme clusters instead.
-
-        Note that a `start` value of `1` refers to the `first` character of the `string`.
-
-        Args:
-            start (Self | int): `BIGINT` expression
-            length (Self | int | None): `BIGINT` expression
-
-        Returns:
-            Self
-        """
-        return self.__class__(func("substring_grapheme", self._expr, start, length))
-
     def subtract(
         self, col1: Self | Decimal | date | datetime | float | timedelta | None = None
     ) -> Self:
@@ -2854,17 +2314,6 @@ class Fns(ExprHandler[Expression]):
             Self
         """
         return self.__class__(func("subtract", self._expr, col1))
-
-    def suffix(self, search_string: Self | str) -> Self:
-        """Returns `true` if `string` ends with `search_string`.
-
-        Args:
-            search_string (Self | str): `VARCHAR` expression
-
-        Returns:
-            Self
-        """
-        return self.__class__(func("suffix", self._expr, search_string))
 
     def sum(self) -> Self:
         """Calculates the sum value for all tuples in arg.
@@ -2954,26 +2403,6 @@ class Fns(ExprHandler[Expression]):
             Self
         """
         return self.__class__(func("timezone_minute", self._expr))
-
-    def to_base(self, radix: Self | int, min_length: Self | int | None = None) -> Self:
-        """Converts `number` to a string in the given base `radix`, optionally padding with leading zeros to `min_length`.
-
-        Args:
-            radix (Self | int): `INTEGER` expression
-            min_length (Self | int | None): `INTEGER` expression
-
-        Returns:
-            Self
-        """
-        return self.__class__(func("to_base", self._expr, radix, min_length))
-
-    def to_base64(self) -> Self:
-        """Converts a `blob` to a base64 encoded string.
-
-        Returns:
-            Self
-        """
-        return self.__class__(func("to_base64", self._expr))
 
     def to_centuries(self) -> Self:
         """Construct a century interval.
@@ -3098,33 +2527,6 @@ class Fns(ExprHandler[Expression]):
         """
         return self.__class__(func("to_years", self._expr))
 
-    def translate(self, from_arg: Self | str, to: Self | str) -> Self:
-        """Replaces each character in `string` that matches a character in the `from` set with the corresponding character in the `to` set.
-
-        If `from` is longer than `to`, occurrences of the extra characters in `from` are deleted.
-
-        Args:
-            from_arg (Self | str): `VARCHAR` expression
-            to (Self | str): `VARCHAR` expression
-
-        Returns:
-            Self
-        """
-        return self.__class__(func("translate", self._expr, from_arg, to))
-
-    def trim(self, characters: Self | str | None = None) -> Self:
-        """Removes any occurrences of any of the `characters` from either side of the `string`.
-
-        `characters` defaults to `space`.
-
-        Args:
-            characters (Self | str | None): `VARCHAR` expression
-
-        Returns:
-            Self
-        """
-        return self.__class__(func("trim", self._expr, characters))
-
     def trunc(self, col1: Self | int | None = None) -> Self:
         """Truncates the number.
 
@@ -3156,30 +2558,6 @@ class Fns(ExprHandler[Expression]):
             Self
         """
         return self.__class__(func("typeof", self._expr))
-
-    def unbin(self) -> Self:
-        """Converts a `value` from binary representation to a blob.
-
-        Returns:
-            Self
-        """
-        return self.__class__(func("unbin", self._expr))
-
-    def unhex(self) -> Self:
-        """Converts a `value` from hexadecimal representation to a blob.
-
-        Returns:
-            Self
-        """
-        return self.__class__(func("unhex", self._expr))
-
-    def unicode(self) -> Self:
-        """Returns an `INTEGER` representing the `unicode` codepoint of the first character in the `string`.
-
-        Returns:
-            Self
-        """
-        return self.__class__(func("unicode", self._expr))
 
     def union_extract(self, tag: Self | str) -> Self:
         """Extract the value with the named tags from the union.
@@ -3214,41 +2592,6 @@ class Fns(ExprHandler[Expression]):
             Self
         """
         return self.__class__(func("union_value", self._expr, *args))
-
-    def unpivot_list(self, *args: Self) -> Self:
-        """Identical to list_value, but generated as part of unpivot for better error messages.
-
-        Args:
-            *args (Self): `ANY` expression
-
-        Returns:
-            Self
-        """
-        return self.__class__(func("unpivot_list", self._expr, *args))
-
-    def upper(self) -> Self:
-        """Converts `string` to upper case.
-
-        Returns:
-            Self
-        """
-        return self.__class__(func("upper", self._expr))
-
-    def url_decode(self) -> Self:
-        """Decodes a URL from a representation using Percent-Encoding.
-
-        Returns:
-            Self
-        """
-        return self.__class__(func("url_decode", self._expr))
-
-    def url_encode(self) -> Self:
-        """Encodes a URL to a representation using Percent-Encoding.
-
-        Returns:
-            Self
-        """
-        return self.__class__(func("url_encode", self._expr))
 
     def uuid_extract_timestamp(self) -> Self:
         """Extract the timestamp for the given UUID v7.
@@ -3396,6 +2739,68 @@ class Fns(ExprHandler[Expression]):
 
 class ListFns[T: Fns](NameSpaceHandler[T]):
     """Mixin providing auto-generated DuckDB list functions as methods."""
+
+    def array_length(self) -> T:
+        """Returns the length of the `list`.
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(func("array_length", self._parent.inner()))
+
+    def array_length_dimension(self, dimension: T | int | None = None) -> T:
+        """`array_length` for lists with dimensions other than 1 not implemented.
+
+        Args:
+            dimension (T | int | None): `BIGINT` expression
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(
+            func("array_length", self._parent.inner(), dimension)
+        )
+
+    def concat(self, *args: T) -> T:
+        """Concatenates multiple strings or lists.
+
+        `NULL` inputs are skipped.
+
+        See also operator `||`.
+
+        Args:
+            *args (T): `ANY` expression
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(func("concat", self._parent.inner(), *args))
+
+    def flatten(self) -> T:
+        """Flattens a nested list by one level.
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(func("flatten", self._parent.inner()))
+
+    def generate_series(
+        self,
+        stop: T | datetime | int | None = None,
+        step: T | int | timedelta | None = None,
+    ) -> T:
+        """Creates a list of values between `start` and `stop` - the stop parameter is inclusive.
+
+        Args:
+            stop (T | datetime | int | None): `BIGINT | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
+            step (T | int | timedelta | None): `BIGINT | INTERVAL` expression
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(
+            func("generate_series", self._parent.inner(), stop, step)
+        )
 
     def list_aggregate(self, function_name: T | str, *args: T) -> T:
         """Executes the aggregate function `function_name` on the elements of `list`.
@@ -4055,6 +3460,33 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._parent.__class__(func("list_zip", self._parent.inner(), *args))
 
+    def range(
+        self,
+        stop: T | datetime | int | None = None,
+        step: T | int | timedelta | None = None,
+    ) -> T:
+        """Creates a list of values between `start` and `stop` - the stop parameter is exclusive.
+
+        Args:
+            stop (T | datetime | int | None): `BIGINT | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
+            step (T | int | timedelta | None): `BIGINT | INTERVAL` expression
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(func("range", self._parent.inner(), stop, step))
+
+    def unpivot_list(self, *args: T) -> T:
+        """Identical to list_value, but generated as part of unpivot for better error messages.
+
+        Args:
+            *args (T): `ANY` expression
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(func("unpivot_list", self._parent.inner(), *args))
+
 
 class StructFns[T: Fns](NameSpaceHandler[T]):
     """Mixin providing auto-generated DuckDB struct functions as methods."""
@@ -4183,6 +3615,396 @@ class StructFns[T: Fns](NameSpaceHandler[T]):
 
 class StringFns[T: Fns](NameSpaceHandler[T]):
     """Mixin providing auto-generated DuckDB string functions as methods."""
+
+    def ascii(self) -> T:
+        """Returns an integer that represents the Unicode code point of the first character of the `string`.
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(func("ascii", self._parent.inner()))
+
+    def bar(
+        self, min_arg: T | float, max_arg: T | float, width: T | float | None = None
+    ) -> T:
+        """Draws a band whose width is proportional to (`x - min`) and equal to `width` characters when `x` = `max`.
+
+        `width` defaults to 80.
+
+        Args:
+            min_arg (T | float): `DOUBLE` expression
+            max_arg (T | float): `DOUBLE` expression
+            width (T | float | None): `DOUBLE` expression
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(
+            func("bar", self._parent.inner(), min_arg, max_arg, width)
+        )
+
+    def chr(self) -> T:
+        """Returns a character which is corresponding the ASCII code value or Unicode code point.
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(func("chr", self._parent.inner()))
+
+    def concat_ws(self, string: T, *args: T) -> T:
+        """Concatenates many strings, separated by `separator`.
+
+        `NULL` inputs are skipped.
+
+        Args:
+            string (T): `ANY` expression
+            *args (T): `ANY` expression
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(
+            func("concat_ws", self._parent.inner(), string, *args)
+        )
+
+    def format(self, *args: T) -> T:
+        """Formats a string using the fmt syntax.
+
+        Args:
+            *args (T): `ANY` expression
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(func("format", self._parent.inner(), *args))
+
+    def format_bytes(self) -> T:
+        """Converts `integer` to a human-readable representation using units based on powers of 2 (KiB, MiB, GiB, etc.).
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(func("format_bytes", self._parent.inner()))
+
+    def formatreadabledecimalsize(self) -> T:
+        """Converts `integer` to a human-readable representation using units based on powers of 10 (KB, MB, GB, etc.).
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(
+            func("formatReadableDecimalSize", self._parent.inner())
+        )
+
+    def from_base64(self) -> T:
+        """Converts a base64 encoded `string` to a character string (`BLOB`).
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(func("from_base64", self._parent.inner()))
+
+    def greatest(self, *args: T) -> T:
+        """Returns the largest value.
+
+        For strings lexicographical ordering is used.
+
+        Note that lowercase characters are considered “larger” than uppercase characters and collations are not supported.
+
+        Args:
+            *args (T): `ANY` expression
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(func("greatest", self._parent.inner(), *args))
+
+    def hash(self, *args: T) -> T:
+        """Returns a `UBIGINT` with the hash of the `value`.
+
+        Note that this is not a cryptographic hash.
+
+        Args:
+            *args (T): `ANY` expression
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(func("hash", self._parent.inner(), *args))
+
+    def ilike_escape(self, like_specifier: T | str, escape_character: T | str) -> T:
+        """Returns `true` if the `string` matches the `like_specifier` (see Pattern Matching) using case-insensitive matching.
+
+        `escape_character` is used to search for wildcard characters in the `string`.
+
+        Args:
+            like_specifier (T | str): `VARCHAR` expression
+            escape_character (T | str): `VARCHAR` expression
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(
+            func("ilike_escape", self._parent.inner(), like_specifier, escape_character)
+        )
+
+    def instr(self, search_string: T | str) -> T:
+        """Returns location of first occurrence of `search_string` in `string`, counting from 1.
+
+        Returns 0 if no match found.
+
+        Args:
+            search_string (T | str): `VARCHAR` expression
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(
+            func("instr", self._parent.inner(), search_string)
+        )
+
+    def least(self, *args: T) -> T:
+        """Returns the smallest value.
+
+        For strings lexicographical ordering is used.
+
+        Note that uppercase characters are considered “smaller” than lowercase characters, and collations are not supported.
+
+        Args:
+            *args (T): `ANY` expression
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(func("least", self._parent.inner(), *args))
+
+    def left(self, count: T | int) -> T:
+        """Extracts the left-most count characters.
+
+        Args:
+            count (T | int): `BIGINT` expression
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(func("left", self._parent.inner(), count))
+
+    def left_grapheme(self, count: T | int) -> T:
+        """Extracts the left-most count grapheme clusters.
+
+        Args:
+            count (T | int): `BIGINT` expression
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(
+            func("left_grapheme", self._parent.inner(), count)
+        )
+
+    def length_grapheme(self) -> T:
+        """Number of grapheme clusters in `string`.
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(func("length_grapheme", self._parent.inner()))
+
+    def like_escape(self, like_specifier: T | str, escape_character: T | str) -> T:
+        """Returns `true` if the `string` matches the `like_specifier` (see Pattern Matching) using case-sensitive matching.
+
+        `escape_character` is used to search for wildcard characters in the `string`.
+
+        Args:
+            like_specifier (T | str): `VARCHAR` expression
+            escape_character (T | str): `VARCHAR` expression
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(
+            func("like_escape", self._parent.inner(), like_specifier, escape_character)
+        )
+
+    def lower(self) -> T:
+        """Converts `string` to lower case.
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(func("lower", self._parent.inner()))
+
+    def lpad(self, count: T | int, character: T | str) -> T:
+        """Pads the `string` with the `character` on the left until it has `count` characters.
+
+        Truncates the `string` on the right if it has more than `count` characters.
+
+        Args:
+            count (T | int): `INTEGER` expression
+            character (T | str): `VARCHAR` expression
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(
+            func("lpad", self._parent.inner(), count, character)
+        )
+
+    def ltrim(self, characters: T | str | None = None) -> T:
+        """Removes any occurrences of any of the `characters` from the left side of the `string`.
+
+        `characters` defaults to `space`.
+
+        Args:
+            characters (T | str | None): `VARCHAR` expression
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(func("ltrim", self._parent.inner(), characters))
+
+    def nfc_normalize(self) -> T:
+        """Converts `string` to Unicode NFC normalized string.
+
+        Useful for comparisons and ordering if text data is mixed between NFC normalized and not.
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(func("nfc_normalize", self._parent.inner()))
+
+    def not_ilike_escape(self, like_specifier: T | str, escape_character: T | str) -> T:
+        """Returns `false` if the `string` matches the `like_specifier` (see Pattern Matching) using case-insensitive matching.
+
+        `escape_character` is used to search for wildcard characters in the `string`.
+
+        Args:
+            like_specifier (T | str): `VARCHAR` expression
+            escape_character (T | str): `VARCHAR` expression
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(
+            func(
+                "not_ilike_escape",
+                self._parent.inner(),
+                like_specifier,
+                escape_character,
+            )
+        )
+
+    def not_like_escape(self, like_specifier: T | str, escape_character: T | str) -> T:
+        """Returns `false` if the `string` matches the `like_specifier` (see Pattern Matching) using case-sensitive matching.
+
+        `escape_character` is used to search for wildcard characters in the `string`.
+
+        Args:
+            like_specifier (T | str): `VARCHAR` expression
+            escape_character (T | str): `VARCHAR` expression
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(
+            func(
+                "not_like_escape",
+                self._parent.inner(),
+                like_specifier,
+                escape_character,
+            )
+        )
+
+    def parse_dirname(self, separator: T | str | None = None) -> T:
+        """Returns the top-level directory name from the given `path`.
+
+        `separator` options: `system`, `both_slash` (default), `forward_slash`, `backslash`.
+
+        Args:
+            separator (T | str | None): `VARCHAR` expression
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(
+            func("parse_dirname", self._parent.inner(), separator)
+        )
+
+    def parse_dirpath(self, separator: T | str | None = None) -> T:
+        """Returns the head of the `path` (the pathname until the last slash) similarly to Python's `os.path.dirname`.
+
+        `separator` options: `system`, `both_slash` (default), `forward_slash`, `backslash`.
+
+        Args:
+            separator (T | str | None): `VARCHAR` expression
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(
+            func("parse_dirpath", self._parent.inner(), separator)
+        )
+
+    def parse_filename(
+        self,
+        trim_extension: T | bool | str | None = None,
+        separator: T | str | None = None,
+    ) -> T:
+        """Returns the last component of the `path` similarly to Python's `os.path.basename` function.
+
+        If `trim_extension` is `true`, the file extension will be removed (defaults to `false`).
+
+        `separator` options: `system`, `both_slash` (default), `forward_slash`, `backslash`.
+
+        Args:
+            trim_extension (T | bool | str | None): `BOOLEAN | VARCHAR` expression
+            separator (T | str | None): `VARCHAR` expression
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(
+            func("parse_filename", self._parent.inner(), trim_extension, separator)
+        )
+
+    def parse_path(self, separator: T | str | None = None) -> T:
+        """Returns a list of the components (directories and filename) in the `path` similarly to Python's `pathlib.parts` function.
+
+        `separator` options: `system`, `both_slash` (default), `forward_slash`, `backslash`.
+
+        Args:
+            separator (T | str | None): `VARCHAR` expression
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(
+            func("parse_path", self._parent.inner(), separator)
+        )
+
+    def prefix(self, search_string: T | str) -> T:
+        """Returns `true` if `string` starts with `search_string`.
+
+        Args:
+            search_string (T | str): `VARCHAR` expression
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(
+            func("prefix", self._parent.inner(), search_string)
+        )
+
+    def printf(self, *args: T) -> T:
+        """Formats a `string` using printf syntax.
+
+        Args:
+            *args (T): `ANY` expression
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(func("printf", self._parent.inner(), *args))
 
     def regexp_escape(self) -> T:
         """Escapes special patterns to turn `string` into a regular expression similarly to Python's `re.escape` function.
@@ -4324,6 +4146,94 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._parent.__class__(
             func("regexp_split_to_table", self._parent.inner(), pattern)
+        )
+
+    def replace(self, source: T | str, target: T | str) -> T:
+        """Replaces any occurrences of the `source` with `target` in `string`.
+
+        Args:
+            source (T | str): `VARCHAR` expression
+            target (T | str): `VARCHAR` expression
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(
+            func("replace", self._parent.inner(), source, target)
+        )
+
+    def reverse(self) -> T:
+        """Reverses the `string`.
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(func("reverse", self._parent.inner()))
+
+    def right(self, count: T | int) -> T:
+        """Extract the right-most `count` characters.
+
+        Args:
+            count (T | int): `BIGINT` expression
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(func("right", self._parent.inner(), count))
+
+    def right_grapheme(self, count: T | int) -> T:
+        """Extracts the right-most `count` grapheme clusters.
+
+        Args:
+            count (T | int): `BIGINT` expression
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(
+            func("right_grapheme", self._parent.inner(), count)
+        )
+
+    def rpad(self, count: T | int, character: T | str) -> T:
+        """Pads the `string` with the `character` on the right until it has `count` characters.
+
+        Truncates the `string` on the right if it has more than `count` characters.
+
+        Args:
+            count (T | int): `INTEGER` expression
+            character (T | str): `VARCHAR` expression
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(
+            func("rpad", self._parent.inner(), count, character)
+        )
+
+    def rtrim(self, characters: T | str | None = None) -> T:
+        """Removes any occurrences of any of the `characters` from the right side of the `string`.
+
+        `characters` defaults to `space`.
+
+        Args:
+            characters (T | str | None): `VARCHAR` expression
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(func("rtrim", self._parent.inner(), characters))
+
+    def starts_with(self, search_string: T | str) -> T:
+        """Returns `true` if `string` begins with `search_string`.
+
+        Args:
+            search_string (T | str): `VARCHAR` expression
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(
+            func("starts_with", self._parent.inner(), search_string)
         )
 
     def strftime(self, format_arg: T | date | datetime | str) -> T:
@@ -4513,6 +4423,154 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
             func("strptime", self._parent.inner(), format_arg)
         )
 
+    def substring(self, start: T | int, length: T | int | None = None) -> T:
+        """Extracts substring starting from character `start` up to the end of the string.
+
+        If optional argument `length` is set, extracts a substring of `length` characters instead.
+
+        Note that a `start` value of `1` refers to the first character of the `string`.
+
+        Args:
+            start (T | int): `BIGINT` expression
+            length (T | int | None): `BIGINT` expression
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(
+            func("substring", self._parent.inner(), start, length)
+        )
+
+    def substring_grapheme(self, start: T | int, length: T | int | None = None) -> T:
+        """Extracts substring starting from grapheme clusters `start` up to the end of the string.
+
+        If optional argument `length` is set, extracts a substring of `length` grapheme clusters instead.
+
+        Note that a `start` value of `1` refers to the `first` character of the `string`.
+
+        Args:
+            start (T | int): `BIGINT` expression
+            length (T | int | None): `BIGINT` expression
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(
+            func("substring_grapheme", self._parent.inner(), start, length)
+        )
+
+    def suffix(self, search_string: T | str) -> T:
+        """Returns `true` if `string` ends with `search_string`.
+
+        Args:
+            search_string (T | str): `VARCHAR` expression
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(
+            func("suffix", self._parent.inner(), search_string)
+        )
+
+    def to_base(self, radix: T | int, min_length: T | int | None = None) -> T:
+        """Converts `number` to a string in the given base `radix`, optionally padding with leading zeros to `min_length`.
+
+        Args:
+            radix (T | int): `INTEGER` expression
+            min_length (T | int | None): `INTEGER` expression
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(
+            func("to_base", self._parent.inner(), radix, min_length)
+        )
+
+    def to_base64(self) -> T:
+        """Converts a `blob` to a base64 encoded string.
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(func("to_base64", self._parent.inner()))
+
+    def translate(self, from_arg: T | str, to: T | str) -> T:
+        """Replaces each character in `string` that matches a character in the `from` set with the corresponding character in the `to` set.
+
+        If `from` is longer than `to`, occurrences of the extra characters in `from` are deleted.
+
+        Args:
+            from_arg (T | str): `VARCHAR` expression
+            to (T | str): `VARCHAR` expression
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(
+            func("translate", self._parent.inner(), from_arg, to)
+        )
+
+    def trim(self, characters: T | str | None = None) -> T:
+        """Removes any occurrences of any of the `characters` from either side of the `string`.
+
+        `characters` defaults to `space`.
+
+        Args:
+            characters (T | str | None): `VARCHAR` expression
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(func("trim", self._parent.inner(), characters))
+
+    def unbin(self) -> T:
+        """Converts a `value` from binary representation to a blob.
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(func("unbin", self._parent.inner()))
+
+    def unhex(self) -> T:
+        """Converts a `value` from hexadecimal representation to a blob.
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(func("unhex", self._parent.inner()))
+
+    def unicode(self) -> T:
+        """Returns an `INTEGER` representing the `unicode` codepoint of the first character in the `string`.
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(func("unicode", self._parent.inner()))
+
+    def upper(self) -> T:
+        """Converts `string` to upper case.
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(func("upper", self._parent.inner()))
+
+    def url_decode(self) -> T:
+        """Decodes a URL from a representation using Percent-Encoding.
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(func("url_decode", self._parent.inner()))
+
+    def url_encode(self) -> T:
+        """Encodes a URL to a representation using Percent-Encoding.
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(func("url_encode", self._parent.inner()))
+
 
 class ArrayFns[T: Fns](NameSpaceHandler[T]):
     """Mixin providing auto-generated DuckDB array functions as methods."""
@@ -4632,27 +4690,6 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
             T
         """
         return self._parent.__class__(func("array_intersect", self._parent.inner(), l2))
-
-    def array_length(self) -> T:
-        """Returns the length of the `list`.
-
-        Returns:
-            T
-        """
-        return self._parent.__class__(func("array_length", self._parent.inner()))
-
-    def array_length_dimension(self, dimension: T | int | None = None) -> T:
-        """`array_length` for lists with dimensions other than 1 not implemented.
-
-        Args:
-            dimension (T | int | None): `BIGINT` expression
-
-        Returns:
-            T
-        """
-        return self._parent.__class__(
-            func("array_length", self._parent.inner(), dimension)
-        )
 
     def array_negative_inner_product(self, array2: T | float) -> T:
         """Computes the negative inner product between two arrays of the same size.

@@ -130,12 +130,12 @@ def get_df() -> pl.LazyFrame:
                     params.idx.ge(params.lens.by_fn_cat),
                     py.types,
                     dk.parameter_types,
-                    _self_type(py.name),
+                    _self_type(py.name, dk.categories),
                 )
             ),
         )
         .select(
-            py.name.pipe(_namespace_name).alias("namespace"),
+            py.name.pipe(_namespace_name, dk.categories).alias("namespace"),
             py.name,
             pl.col("param_names_list")
             .list.len()
@@ -145,9 +145,9 @@ def get_df() -> pl.LazyFrame:
                 ParamLists(),
                 dk.varargs.pipe(_convert_duckdb_type_to_python).pipe(_make_type_union),
                 dk,
-                py.name.pipe(_self_type),
-                py.name.pipe(_self_expr),
-                py.name.pipe(_return_ctor),
+                py.name.pipe(_self_type, dk.categories),
+                py.name.pipe(_self_expr, dk.categories),
+                py.name.pipe(_return_ctor, dk.categories),
             ),
         )
         .sort("namespace", py.name)
@@ -208,44 +208,72 @@ def _replace_self(expr: pl.Expr, self_type: pl.Expr) -> pl.Expr:
     return expr.str.replace_all("Self", self_type)
 
 
-def _namespace_name(fn_name: pl.Expr) -> pl.Expr:
+def _namespace_name(fn_name: pl.Expr, categories: pl.Expr) -> pl.Expr:
     def _matches(spec_prefixes: pc.Seq[str]) -> pl.Expr:
         return spec_prefixes.iter().fold(
             pl.lit(value=False),
             lambda acc, prefix: acc.or_(fn_name.str.starts_with(prefix)),
         )
 
-    return NAMESPACE_SPECS.iter().fold(
-        pl.lit(value=None),
-        lambda acc, spec: (
-            pl.when(acc.is_not_null())
-            .then(acc)
-            .otherwise(
-                pl.when(_matches(spec.prefixes)).then(pl.lit(spec.name)).otherwise(acc)
-            )
-        ),
+    def _matches_category(spec_name: str) -> pl.Expr:
+        return categories.list.contains(
+            spec_name.removesuffix("Fns").lower()
+        ).fill_null(value=False)
+
+    def _by_category() -> pl.Expr:
+        return NAMESPACE_SPECS.iter().fold(
+            pl.lit(value=None),
+            lambda acc, spec: (
+                pl.when(acc.is_not_null())
+                .then(acc)
+                .otherwise(
+                    pl.when(_matches_category(spec.name))
+                    .then(pl.lit(spec.name))
+                    .otherwise(acc)
+                )
+            ),
+        )
+
+    def _by_prefix() -> pl.Expr:
+        return NAMESPACE_SPECS.iter().fold(
+            pl.lit(value=None),
+            lambda acc, spec: (
+                pl.when(acc.is_not_null())
+                .then(acc)
+                .otherwise(
+                    pl.when(_matches(spec.prefixes))
+                    .then(pl.lit(spec.name))
+                    .otherwise(acc)
+                )
+            ),
+        )
+
+    return (
+        pl.when(_by_category().is_not_null())
+        .then(_by_category())
+        .otherwise(_by_prefix())
     )
 
 
-def _self_type(fn_name: pl.Expr) -> pl.Expr:
+def _self_type(fn_name: pl.Expr, categories: pl.Expr) -> pl.Expr:
     return (
-        pl.when(_namespace_name(fn_name).is_not_null())
+        pl.when(_namespace_name(fn_name, categories).is_not_null())
         .then(pl.lit("T"))
         .otherwise(pl.lit("Self"))
     )
 
 
-def _self_expr(fn_name: pl.Expr) -> pl.Expr:
+def _self_expr(fn_name: pl.Expr, categories: pl.Expr) -> pl.Expr:
     return (
-        pl.when(_namespace_name(fn_name).is_not_null())
+        pl.when(_namespace_name(fn_name, categories).is_not_null())
         .then(pl.lit("self._parent.inner()"))
         .otherwise(pl.lit("self._expr"))
     )
 
 
-def _return_ctor(fn_name: pl.Expr) -> pl.Expr:
+def _return_ctor(fn_name: pl.Expr, categories: pl.Expr) -> pl.Expr:
     return (
-        pl.when(_namespace_name(fn_name).is_not_null())
+        pl.when(_namespace_name(fn_name, categories).is_not_null())
         .then(pl.lit("self._parent.__class__"))
         .otherwise(pl.lit("self.__class__"))
     )

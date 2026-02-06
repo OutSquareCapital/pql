@@ -336,7 +336,7 @@ class Expr(ExprHandler[SqlExpr]):
 
     def hash(self, seed: int = 0) -> Self:
         """Compute a hash."""
-        return self.__class__(self._expr.hash(sql.lit(seed)))
+        return self.__class__(self._expr.str.hash(sql.lit(seed)))
 
     def replace(self, old: IntoExpr, new: IntoExpr) -> Self:
         """Replace values."""
@@ -350,7 +350,7 @@ class Expr(ExprHandler[SqlExpr]):
         """Repeat values by count, returning a list."""
         return self.__class__(
             SqlExpr.from_value(by)
-            .range()
+            .list.range()
             .list.list_transform(sql.fn_once("_", self._expr))
         )
 
@@ -396,11 +396,11 @@ class ExprStringNameSpace:
 
     def to_uppercase(self) -> Expr:
         """Convert to uppercase."""
-        return Expr(self._expr.upper())
+        return Expr(self._expr.str.upper())
 
     def to_lowercase(self) -> Expr:
         """Convert to lowercase."""
-        return Expr(self._expr.lower())
+        return Expr(self._expr.str.lower())
 
     def len_chars(self) -> Expr:
         """Get the length in characters."""
@@ -416,11 +416,11 @@ class ExprStringNameSpace:
 
     def starts_with(self, prefix: str) -> Expr:
         """Check if string starts with prefix."""
-        return Expr(self._expr.starts_with(sql.lit(prefix)))
+        return Expr(self._expr.str.starts_with(sql.lit(prefix)))
 
     def ends_with(self, suffix: str) -> Expr:
         """Check if string ends with suffix."""
-        return Expr(self._expr.suffix(sql.lit(suffix)))
+        return Expr(self._expr.str.suffix(sql.lit(suffix)))
 
     def replace(
         self, pattern: str, value: str | IntoExpr, *, literal: bool = False, n: int = 1
@@ -452,20 +452,20 @@ class ExprStringNameSpace:
         """Strip leading and trailing characters."""
         match characters:
             case None:
-                return Expr(self._expr.trim())
+                return Expr(self._expr.str.trim())
             case _:
-                return Expr(self._expr.trim(sql.lit(characters)))
+                return Expr(self._expr.str.trim(sql.lit(characters)))
 
     def strip_chars_start(self, characters: IntoExpr = None) -> Expr:
         """Strip leading characters."""
         match characters:
             case None:
-                return Expr(self._expr.ltrim())
+                return Expr(self._expr.str.ltrim())
             case _:
                 characters_expr = SqlExpr.from_value(characters)
                 return Expr(
                     sql.when(characters_expr.is_null(), sql.lit(None)).otherwise(
-                        self._expr.ltrim(characters_expr)
+                        self._expr.str.ltrim(characters_expr)
                     )
                 )
 
@@ -473,12 +473,12 @@ class ExprStringNameSpace:
         """Strip trailing characters."""
         match characters:
             case None:
-                return Expr(self._expr.rtrim())
+                return Expr(self._expr.str.rtrim())
             case _:
                 characters_expr = SqlExpr.from_value(characters)
                 return Expr(
                     sql.when(characters_expr.is_null(), sql.lit(None)).otherwise(
-                        self._expr.rtrim(characters_expr)
+                        self._expr.str.rtrim(characters_expr)
                     )
                 )
 
@@ -486,9 +486,11 @@ class ExprStringNameSpace:
         """Extract a substring."""
         match length:
             case None:
-                return Expr(self._expr.substring(sql.lit(offset + 1)))
+                return Expr(self._expr.str.substring(sql.lit(offset + 1)))
             case _:
-                return Expr(self._expr.substring(sql.lit(offset + 1), sql.lit(length)))
+                return Expr(
+                    self._expr.str.substring(sql.lit(offset + 1), sql.lit(length))
+                )
 
     def len_bytes(self) -> Expr:
         """Get the length in bytes."""
@@ -514,7 +516,7 @@ class ExprStringNameSpace:
                 return Expr(
                     self._expr.str.string_length()
                     .sub(
-                        self._expr.replace(
+                        self._expr.str.replace(
                             pattern_expr, sql.lit("")
                         ).str.string_length()
                     )
@@ -572,8 +574,8 @@ class ExprStringNameSpace:
                 return Expr(
                     sql.when(prefix_expr.is_null(), sql.lit(None)).otherwise(
                         sql.when(
-                            self._expr.starts_with(prefix_expr),
-                            self._expr.substring(
+                            self._expr.str.starts_with(prefix_expr),
+                            self._expr.str.substring(
                                 prefix_expr.str.string_length().__add__(sql.lit(1)),
                             ),
                         ).otherwise(self._expr)
@@ -594,8 +596,8 @@ class ExprStringNameSpace:
                 return Expr(
                     sql.when(suffix_expr.is_null(), sql.lit(None)).otherwise(
                         sql.when(
-                            self._expr.suffix(suffix_expr),
-                            self._expr.substring(
+                            self._expr.str.suffix(suffix_expr),
+                            self._expr.str.substring(
                                 sql.lit(1),
                                 self._expr.str.string_length().sub(
                                     suffix_expr.str.string_length()
@@ -607,15 +609,15 @@ class ExprStringNameSpace:
 
     def head(self, n: int) -> Expr:
         """Get first n characters."""
-        return Expr(self._expr.left(sql.lit(n)))
+        return Expr(self._expr.str.left(sql.lit(n)))
 
     def tail(self, n: int) -> Expr:
         """Get last n characters."""
-        return Expr(self._expr.right(sql.lit(n)))
+        return Expr(self._expr.str.right(sql.lit(n)))
 
     def reverse(self) -> Expr:
         """Reverse the string."""
-        return Expr(self._expr.reverse())
+        return Expr(self._expr.str.reverse())
 
     def replace_all(
         self, pattern: str, value: IntoExpr, *, literal: bool = False
@@ -624,7 +626,7 @@ class ExprStringNameSpace:
         value_expr = SqlExpr.from_value(value)
         match literal:
             case True:
-                return Expr(self._expr.replace(sql.lit(pattern), value_expr))
+                return Expr(self._expr.str.replace(sql.lit(pattern), value_expr))
             case False:
                 return Expr(
                     self._expr.str.regexp_replace(
@@ -638,11 +640,11 @@ class ExprStringNameSpace:
         lambda_expr = sql.fn_once(
             "_",
             elem.list.list_extract(sql.lit(1))
-            .upper()
-            .concat(elem.substring(sql.lit(2))),
+            .str.upper()
+            .list.concat(elem.str.substring(sql.lit(2))),
         )
         return Expr(
-            self._expr.lower()
+            self._expr.str.lower()
             .str.regexp_extract_all(sql.lit(r"[a-z]*[^a-z]*"))
             .list.list_transform(lambda_expr)
             .list.list_aggregate(sql.lit("string_agg"), sql.lit(""))
@@ -714,7 +716,7 @@ class ExprListNameSpace(ExprHandler[sql.SqlExpr]):
         )
         return Expr(
             sql.when(
-                expr_no_nulls.arr.array_length().eq(sql.lit(0)), sql.lit(0)
+                expr_no_nulls.list.list_length().eq(sql.lit(0)), sql.lit(0)
             ).otherwise(expr_no_nulls.list.list_sum())
         )
 
