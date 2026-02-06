@@ -444,10 +444,8 @@ def _to_func(  # noqa: PLR0913
 
         def _reversed() -> pl.Expr:
             """Special case for log function: other args first, then self._expr."""
-            return (
-                pl.when(dk.function_name.eq("log"))
-                .then(pl.concat_str(sep, args, slf_arg))
-                .otherwise(_EMPTY_STR)
+            return pl.when(dk.function_name.eq("log")).then(
+                pl.concat_str(sep, args, slf_arg)
             )
 
         def _normal() -> pl.Expr:
