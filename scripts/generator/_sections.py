@@ -3,10 +3,10 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 from textwrap import dedent
-from typing import TYPE_CHECKING
 
-if TYPE_CHECKING:
-    import pyochain as pc
+import pyochain as pc
+
+from ._models import NAMESPACE_SPECS, NamespaceSpec
 
 MANUAL_FNS_PATH = Path("src", "pql", "sql", "_manual_fns.py")
 
@@ -15,25 +15,45 @@ MANUAL_FNS_PATH = Path("src", "pql", "sql", "_manual_fns.py")
 class FunctionInfo:
     """Container for pre-formatted function parts."""
 
-    category: str
+    namespace: str | None
     python_name: str
     func: str
 
 
 def build_file(fns: pc.Seq[FunctionInfo]) -> str:
+    def _body(funcs: pc.Seq[FunctionInfo]) -> str:
+        return funcs.then(
+            lambda x: x.iter().map(lambda f: f.func).join("\n\n")
+        ).unwrap_or("    pass")
 
-    sections = (
-        fns.iter()
-        .group_by(lambda f: f.category)
-        .map_star(
-            lambda category, funcs: (
-                f"\n\n    # {'=' * 56}\n    # {category}\n    # {'=' * 56}\n\n"
-                + funcs.map(lambda f: f.func).join("\n\n")
-            )
+    def _class_block(
+        name: str,
+        doc: str,
+        funcs: pc.Seq[FunctionInfo],
+        base: str,
+        type_params: str | None = None,
+    ) -> str:
+        params = pc.Option(type_params).map(lambda tp: f"[{tp}]").unwrap_or("")
+        return (
+            f'\n\nclass {name}{params}({base}):\n    """{doc}"""\n{funcs.into(_body)}'
         )
-        .join("")
+
+    def _namespace_block(spec: NamespaceSpec) -> str:
+        return _class_block(
+            spec.name,
+            spec.doc,
+            fns.iter().filter(lambda f: f.namespace == spec.name).collect(),
+            "NameSpaceHandler[T]",
+            "T: Fns",
+        )
+
+    base_fns = fns.iter().filter(lambda f: f.namespace is None).collect()
+
+    return (
+        f"{_header()}"
+        f"{_class_block('Fns', 'Mixin providing auto-generated DuckDB functions as methods.', base_fns, 'ExprHandler[Expression]')}"
+        f"{NAMESPACE_SPECS.iter().map(_namespace_block).join('')}\n"
     )
-    return f"{_header()}{sections}\n"
 
 
 def _header() -> str:
@@ -53,15 +73,7 @@ def _header() -> str:
         from decimal import Decimal
         from typing import Self
 
-        from duckdb import Expression as SqlExpr
+        from duckdb import Expression
 
-        from ._core import ExprHandler, func
-
-
-        class FnsMixin(ExprHandler[SqlExpr]):
-            """Mixin providing all auto-generated DuckDB functions as methods.
-
-            All methods return Self for chaining.
-            """
-
+        from ._core import ExprHandler, NameSpaceHandler, func
     ''')

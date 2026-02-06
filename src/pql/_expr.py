@@ -3,9 +3,9 @@
 from __future__ import annotations
 
 import re
-from collections.abc import Callable, Collection
+from collections.abc import Collection
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Concatenate, Literal, Self
+from typing import TYPE_CHECKING, Any, Literal, Self
 
 import pyochain as pc
 
@@ -217,15 +217,6 @@ class Expr(ExprHandler[SqlExpr]):
         """Check if value is in an iterable of values."""
         return self.__class__(self._expr.is_in(*SqlExpr.from_iter(other)))
 
-    def pipe[**P, T](
-        self,
-        function: Callable[Concatenate[Self, P], T],
-        *args: P.args,
-        **kwargs: P.kwargs,
-    ) -> T:
-        """Apply a function to the expression."""
-        return function(self, *args, **kwargs)
-
     def floor(self) -> Self:
         """Round down to the nearest integer."""
         return self.__class__(self._expr.floor())
@@ -358,7 +349,9 @@ class Expr(ExprHandler[SqlExpr]):
     def repeat_by(self, by: Expr | int) -> Self:
         """Repeat values by count, returning a list."""
         return self.__class__(
-            SqlExpr.from_value(by).range().list_transform(sql.fn_once("_", self._expr))
+            SqlExpr.from_value(by)
+            .range()
+            .list.list_transform(sql.fn_once("_", self._expr))
         )
 
     def is_duplicated(self) -> Self:
@@ -411,15 +404,15 @@ class ExprStringNameSpace:
 
     def len_chars(self) -> Expr:
         """Get the length in characters."""
-        return Expr(self._expr.string_length())
+        return Expr(self._expr.str.string_length())
 
     def contains(self, pattern: str, *, literal: bool = False) -> Expr:
         """Check if string contains a pattern."""
         match literal:
             case True:
-                return Expr(self._expr.string_contains(sql.lit(pattern)))
+                return Expr(self._expr.str.string_contains(sql.lit(pattern)))
             case False:
-                return Expr(self._expr.regexp_matches(sql.lit(pattern)))
+                return Expr(self._expr.str.regexp_matches(sql.lit(pattern)))
 
     def starts_with(self, prefix: str) -> Expr:
         """Check if string starts with prefix."""
@@ -437,14 +430,16 @@ class ExprStringNameSpace:
         pattern_expr = sql.lit(re.escape(pattern) if literal else pattern)
 
         def _replace_once(expr: SqlExpr) -> SqlExpr:
-            return expr.regexp_replace(pattern_expr, value_expr)
+            return expr.str.regexp_replace(pattern_expr, value_expr)
 
         match n:
             case 0:
                 return Expr(self._expr)
             case n_val if n_val < 0:
                 return Expr(
-                    self._expr.regexp_replace(pattern_expr, value_expr, sql.lit("g"))
+                    self._expr.str.regexp_replace(
+                        pattern_expr, value_expr, sql.lit("g")
+                    )
                 )
             case _:
                 return Expr(
@@ -501,11 +496,11 @@ class ExprStringNameSpace:
 
     def split(self, by: str) -> Expr:
         """Split string by separator."""
-        return Expr(self._expr.string_split(sql.lit(by)))
+        return Expr(self._expr.str.string_split(sql.lit(by)))
 
     def extract_all(self, pattern: str | Expr) -> Expr:
         """Extract all regex matches."""
-        return Expr(self._expr.regexp_extract_all(SqlExpr.from_value(pattern)))
+        return Expr(self._expr.str.regexp_extract_all(SqlExpr.from_value(pattern)))
 
     def count_matches(self, pattern: str | Expr, *, literal: bool = False) -> Expr:
         """Count pattern matches."""
@@ -513,13 +508,17 @@ class ExprStringNameSpace:
         match literal:
             case False:
                 return Expr(
-                    self._expr.regexp_extract_all(pattern_expr).list_length(),
+                    self._expr.str.regexp_extract_all(pattern_expr).list.list_length(),
                 )
             case True:
                 return Expr(
-                    self._expr.string_length()
-                    .sub(self._expr.replace(pattern_expr, sql.lit("")).string_length())
-                    .truediv(pattern_expr.string_length())
+                    self._expr.str.string_length()
+                    .sub(
+                        self._expr.replace(
+                            pattern_expr, sql.lit("")
+                        ).str.string_length()
+                    )
+                    .truediv(pattern_expr.str.string_length())
                 )
 
     def to_date(self, format: str | None = None) -> Expr:  # noqa: A002
@@ -567,7 +566,7 @@ class ExprStringNameSpace:
         match prefix:
             case str() as prefix_str:
                 return Expr(
-                    self._expr.regexp_replace(
+                    self._expr.str.regexp_replace(
                         sql.lit(f"^{re.escape(prefix_str)}"), sql.lit("")
                     )
                 )
@@ -578,7 +577,7 @@ class ExprStringNameSpace:
                         sql.when(
                             self._expr.starts_with(prefix_expr),
                             self._expr.substring(
-                                prefix_expr.string_length().__add__(sql.lit(1)),
+                                prefix_expr.str.string_length().__add__(sql.lit(1)),
                             ),
                         ).otherwise(self._expr)
                     )
@@ -589,7 +588,7 @@ class ExprStringNameSpace:
         match suffix:
             case str() as suffix_str:
                 return Expr(
-                    self._expr.regexp_replace(
+                    self._expr.str.regexp_replace(
                         sql.lit(f"{re.escape(suffix_str)}$"), sql.lit("")
                     )
                 )
@@ -601,8 +600,8 @@ class ExprStringNameSpace:
                             self._expr.suffix(suffix_expr),
                             self._expr.substring(
                                 sql.lit(1),
-                                self._expr.string_length().sub(
-                                    suffix_expr.string_length()
+                                self._expr.str.string_length().sub(
+                                    suffix_expr.str.string_length()
                                 ),
                             ),
                         ).otherwise(self._expr)
@@ -631,7 +630,7 @@ class ExprStringNameSpace:
                 return Expr(self._expr.replace(sql.lit(pattern), value_expr))
             case False:
                 return Expr(
-                    self._expr.regexp_replace(
+                    self._expr.str.regexp_replace(
                         sql.lit(pattern), value_expr, sql.lit("g")
                     )
                 )
@@ -641,13 +640,15 @@ class ExprStringNameSpace:
         elem = sql.col("_")
         lambda_expr = sql.fn_once(
             "_",
-            elem.list_extract(sql.lit(1)).upper().concat(elem.substring(sql.lit(2))),
+            elem.list.list_extract(sql.lit(1))
+            .upper()
+            .concat(elem.substring(sql.lit(2))),
         )
         return Expr(
             self._expr.lower()
-            .regexp_extract_all(sql.lit(r"[a-z]*[^a-z]*"))
-            .list_transform(lambda_expr)
-            .list_aggregate(sql.lit("string_agg"), sql.lit(""))
+            .str.regexp_extract_all(sql.lit(r"[a-z]*[^a-z]*"))
+            .list.list_transform(lambda_expr)
+            .list.list_aggregate(sql.lit("string_agg"), sql.lit(""))
         )
 
 
@@ -657,28 +658,28 @@ class ExprListNameSpace(ExprHandler[sql.SqlExpr]):
 
     def len(self) -> Expr:
         """Return the number of elements in each list."""
-        return Expr(self._expr.list_length())
+        return Expr(self._expr.list.list_length())
 
     def unique(self) -> Expr:
         """Return unique values in each list."""
-        distinct_expr = self._expr.list_distinct()
+        distinct_expr = self._expr.list.list_distinct()
         return Expr(
             sql.when(
-                self._expr.list_position(sql.lit(None)).is_not_null(),
-                distinct_expr.list_append(sql.lit(None)),
+                self._expr.list.list_position(sql.lit(None)).is_not_null(),
+                distinct_expr.list.list_append(sql.lit(None)),
             ).otherwise(distinct_expr)
         )
 
     def contains(self, item: IntoExpr, *, nulls_equal: bool = True) -> Expr:
         """Check if sublists contain the given item."""
         item_expr = SqlExpr.from_value(item)
-        contains_expr = self._expr.list_contains(item_expr)
+        contains_expr = self._expr.list.list_contains(item_expr)
         if nulls_equal:
             return Expr(
                 sql.when(
                     item_expr.is_null(),
                     sql.coalesce(
-                        self._expr.list_position(sql.lit(None)).is_not_null(),
+                        self._expr.list.list_position(sql.lit(None)).is_not_null(),
                         sql.lit(value=False),
                     ),
                 ).otherwise(sql.coalesce(contains_expr, sql.lit(value=False)))
@@ -688,36 +689,36 @@ class ExprListNameSpace(ExprHandler[sql.SqlExpr]):
     def get(self, index: int) -> Expr:
         """Return the value by index in each list."""
         return Expr(
-            self._expr.list_extract(
+            self._expr.list.list_extract(
                 sql.lit(index + 1 if index >= 0 else index),
             )
         )
 
     def min(self) -> Expr:
         """Compute the min value of the lists in the array."""
-        return Expr(self._expr.list_min())
+        return Expr(self._expr.list.list_min())
 
     def max(self) -> Expr:
         """Compute the max value of the lists in the array."""
-        return Expr(self._expr.list_max())
+        return Expr(self._expr.list.list_max())
 
     def mean(self) -> Expr:
         """Compute the mean value of the lists in the array."""
-        return Expr(self._expr.list_avg())
+        return Expr(self._expr.list.list_avg())
 
     def median(self) -> Expr:
         """Compute the median value of the lists in the array."""
-        return Expr(self._expr.list_median())
+        return Expr(self._expr.list.list_median())
 
     def sum(self) -> Expr:
         """Compute the sum value of the lists in the array."""
-        expr_no_nulls = self._expr.list_filter(
+        expr_no_nulls = self._expr.list.list_filter(
             sql.fn_once("_", sql.col("_").is_not_null())
         )
         return Expr(
-            sql.when(expr_no_nulls.array_length().eq(sql.lit(0)), sql.lit(0)).otherwise(
-                expr_no_nulls.list_sum()
-            )
+            sql.when(
+                expr_no_nulls.arr.array_length().eq(sql.lit(0)), sql.lit(0)
+            ).otherwise(expr_no_nulls.list.list_sum())
         )
 
     def sort(self, *, descending: bool = False, nulls_last: bool = False) -> Expr:
@@ -725,7 +726,7 @@ class ExprListNameSpace(ExprHandler[sql.SqlExpr]):
         sort_direction = "DESC" if descending else "ASC"
         nulls_position = "NULLS LAST" if nulls_last else "NULLS FIRST"
         return Expr(
-            self._expr.list_sort(sql.lit(sort_direction), sql.lit(nulls_position))
+            self._expr.list.list_sort(sql.lit(sort_direction), sql.lit(nulls_position))
         )
 
 
@@ -735,4 +736,4 @@ class ExprStructNameSpace(ExprHandler[sql.SqlExpr]):
 
     def field(self, name: str) -> Expr:
         """Retrieve a struct field by name."""
-        return Expr(self._expr.struct_extract(sql.lit(name)))
+        return Expr(self._expr.struct.struct_extract(sql.lit(name)))

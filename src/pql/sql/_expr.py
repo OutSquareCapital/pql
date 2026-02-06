@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Iterable
+from dataclasses import dataclass
 from datetime import date, datetime, time, timedelta
 from typing import TYPE_CHECKING, Any, Self
 
@@ -9,7 +10,14 @@ import pyochain as pc
 
 from ._core import func
 from ._window import over
-from .fns import FnsMixin
+from .fns import (
+    ArrayFns,
+    Fns,
+    JsonFns,
+    ListFns,
+    StringFns,
+    StructFns,
+)
 
 if TYPE_CHECKING:
     from .._expr import Expr
@@ -99,10 +107,35 @@ def from_cols(exprs: IntoExprColumn) -> pc.Iter[duckdb.Expression | str]:
             return pc.Iter(exprs).map(from_cols).flatten()
 
 
-class SqlExpr(FnsMixin):  # noqa: PLW1641
+class SqlExpr(Fns):  # noqa: PLW1641
     """A wrapper around duckdb.Expression that provides operator overloading and SQL function methods."""
 
     __slots__ = ()
+
+    @property
+    def arr(self) -> SqlExprArrayNameSpace:
+        """Access array functions."""
+        return SqlExprArrayNameSpace(self)
+
+    @property
+    def str(self) -> SqlExprStringNameSpace:
+        """Access string functions."""
+        return SqlExprStringNameSpace(self)
+
+    @property
+    def list(self) -> SqlExprListNameSpace:
+        """Access list functions."""
+        return SqlExprListNameSpace(self)
+
+    @property
+    def struct(self) -> SqlExprStructNameSpace:
+        """Access struct functions."""
+        return SqlExprStructNameSpace(self)
+
+    @property
+    def js(self) -> SqlExprJsonNameSpace:
+        """Access JSON functions."""
+        return SqlExprJsonNameSpace(self)
 
     @classmethod
     def from_expr(cls, value: IntoExpr) -> SqlExpr:
@@ -538,3 +571,28 @@ class SqlExpr(FnsMixin):  # noqa: PLW1641
             Self
         """
         return self.__class__(func("row_number"))
+
+
+@dataclass(slots=True)
+class SqlExprStringNameSpace(StringFns[SqlExpr]):
+    """String function namespace for SQL expressions."""
+
+
+@dataclass(slots=True)
+class SqlExprListNameSpace(ListFns[SqlExpr]):
+    """List function namespace for SQL expressions."""
+
+
+@dataclass(slots=True)
+class SqlExprStructNameSpace(StructFns[SqlExpr]):
+    """Struct function namespace for SQL expressions."""
+
+
+@dataclass(slots=True)
+class SqlExprArrayNameSpace(ArrayFns[SqlExpr]):
+    """Array function namespace for SQL expressions."""
+
+
+@dataclass(slots=True)
+class SqlExprJsonNameSpace(JsonFns[SqlExpr]):
+    """JSON function namespace for SQL expressions."""

@@ -1,6 +1,5 @@
 import builtins
 import keyword
-from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from enum import StrEnum, auto
 
@@ -215,48 +214,39 @@ OPERATOR_MAP = pc.Set(
 
 
 @dataclass(slots=True)
-class CatRule[T](ABC):
-    pattern: T
-    label: str
-
-    @abstractmethod
-    def into_expr(self, expr: pl.Expr) -> pl.Expr: ...
+class NamespaceSpec:
+    name: str
+    doc: str
+    prefixes: pc.Seq[str]
 
 
-class Prefix(CatRule[str]):
-    def into_expr(self, expr: pl.Expr) -> pl.Expr:
-        return pl.when(expr.str.starts_with(self.pattern)).then(pl.lit(self.label))
-
-
-class TypeRule(CatRule[FuncTypes]):
-    def into_expr(self, expr: pl.Expr) -> pl.Expr:  # noqa: ARG002
-        return pl.when(
-            pl.col("function_type").eq(pl.lit(self.pattern, dtype=FUNC_TYPES))
-        ).then(pl.lit(self.label))
-
-
-CATEGORY_RULES = pc.Seq(
+NAMESPACE_SPECS = pc.Seq(
     (
-        Prefix("list", "List"),
-        Prefix("array", "Array"),
-        Prefix("map", "Map"),
-        Prefix("struct", "Struct"),
-        Prefix("regexp", "Regular Expression"),
-        Prefix("string", "Text"),
-        Prefix("date", "Date"),
-        Prefix("time", "Time"),
-        Prefix("enum_", "Enum"),
-        Prefix("union", "Union"),
-        Prefix("json", "JSON"),
-        Prefix("to_", "Conversion"),
-        Prefix("from_", "Conversion"),
-        Prefix("bit", "Bitwise"),
-        TypeRule(FuncTypes.SCALAR, "Scalar"),
-        TypeRule(FuncTypes.AGGREGATE, "Aggregate"),
-        TypeRule(FuncTypes.MACRO, "Macro"),
-        TypeRule(FuncTypes.TABLE, "Table"),
-        TypeRule(FuncTypes.TABLE_MACRO, "Table Macro"),
-        TypeRule(FuncTypes.PRAGMA, "Pragma"),
+        NamespaceSpec(
+            name="ListFns",
+            doc="Mixin providing auto-generated DuckDB list functions as methods.",
+            prefixes=pc.Seq(("list_",)),
+        ),
+        NamespaceSpec(
+            name="StructFns",
+            doc="Mixin providing auto-generated DuckDB struct functions as methods.",
+            prefixes=pc.Seq(("struct_",)),
+        ),
+        NamespaceSpec(
+            name="StringFns",
+            doc="Mixin providing auto-generated DuckDB string functions as methods.",
+            prefixes=pc.Seq(("string_", "regexp_")),
+        ),
+        NamespaceSpec(
+            name="ArrayFns",
+            doc="Mixin providing auto-generated DuckDB array functions as methods.",
+            prefixes=pc.Seq(("array_",)),
+        ),
+        NamespaceSpec(
+            name="JsonFns",
+            doc="Mixin providing auto-generated DuckDB JSON functions as methods.",
+            prefixes=pc.Seq(("json_",)),
+        ),
     )
 )
-"""Rules to categorize functions by name prefix or function type."""
+"""Namespace metadata and function prefixes."""

@@ -4,15 +4,15 @@ from __future__ import annotations
 
 from collections.abc import Callable, Iterable, Mapping
 from pathlib import Path
-from typing import TYPE_CHECKING, Concatenate, Self
+from typing import TYPE_CHECKING, Self
 
+import duckdb
 import pyochain as pc
 
 from . import sql
-from .sql import SqlExpr
+from .sql import ExprHandler, SqlExpr
 
 if TYPE_CHECKING:
-    import duckdb
     import polars as pl
 
     from ._expr import Expr
@@ -21,35 +21,34 @@ TEMP_NAME = "__pql_temp__"
 TEMP_COL = sql.col(TEMP_NAME)
 
 
-class LazyFrame:
+class LazyFrame(ExprHandler[duckdb.DuckDBPyRelation]):
     """LazyFrame providing Polars-like API over DuckDB relations."""
 
-    _rel: duckdb.DuckDBPyRelation
-    __slots__ = ("_rel",)
+    __slots__ = ()
 
     def __init__(self, data: FrameInit = None) -> None:
-        self._rel = sql.rel_from_data(data)
+        self._expr = sql.rel_from_data(data)
 
     def __repr__(self) -> str:
-        return f"LazyFrame\n{self._rel}\n"
+        return f"LazyFrame\n{self._expr}\n"
 
     def __from_lf__(self, rel: duckdb.DuckDBPyRelation) -> Self:
         instance = self.__class__.__new__(self.__class__)
-        instance._rel = rel
+        instance._expr = rel
         return instance
 
     def _select(self, exprs: IntoExprColumn, groups: str = "") -> Self:
-        return self.__from_lf__(self._rel.select(*sql.from_cols(exprs), groups=groups))
+        return self.__from_lf__(self._expr.select(*sql.from_cols(exprs), groups=groups))
 
     def _filter(self, *predicates: IntoExprColumn) -> Self:
         return pc.Iter(predicates).fold(
-            self, lambda lf, p: lf.__from_lf__(lf._rel.filter(*sql.from_cols(p)))
+            self, lambda lf, p: lf.__from_lf__(lf._expr.filter(*sql.from_cols(p)))
         )
 
     def _agg(self, exprs: IntoExprColumn, group_expr: SqlExpr | str = "") -> Self:
         """Note: duckdb relation.aggregate has type issues, it does accept iterables of expressions but the type signature is wrong."""
         return self.__from_lf__(
-            self._rel.aggregate(
+            self._expr.aggregate(
                 sql.from_cols(exprs).map(sql.to_duckdb),  # pyright: ignore[reportArgumentType]
                 sql.to_duckdb(group_expr),
             )
@@ -66,15 +65,15 @@ class LazyFrame:
     @property
     def relation(self) -> duckdb.DuckDBPyRelation:
         """Get the underlying DuckDB relation."""
-        return self._rel
+        return self._expr
 
     def lazy(self) -> pl.LazyFrame:
         """Get a Polars LazyFrame."""
-        return self._rel.pl(lazy=True)
+        return self._expr.pl(lazy=True)
 
     def collect(self) -> pl.DataFrame:
         """Execute the query and return a Polars DataFrame."""
-        return self._rel.pl()
+        return self._expr.pl()
 
     def select(
         self, *exprs: IntoExpr | Iterable[IntoExpr], **named_exprs: IntoExpr
@@ -95,7 +94,8 @@ class LazyFrame:
     def filter(self, *predicates: Expr) -> Self:
         """Filter rows based on predicates."""
         return pc.Iter(predicates).fold(
-            self, lambda lf, p: lf.__from_lf__(lf._rel.filter(sql.to_duckdb(p.inner())))
+            self,
+            lambda lf, p: lf.__from_lf__(lf._expr.filter(sql.to_duckdb(p.inner()))),
         )
 
     def sort(
@@ -125,7 +125,7 @@ class LazyFrame:
                     return col.asc()
 
         return self.__from_lf__(
-            self._rel.sort(
+            self._expr.sort(
                 *SqlExpr.from_iter(*by)
                 .zip(_args_iter(arg=descending), _args_iter(arg=nulls_last))
                 .map_star(_make_order)
@@ -135,7 +135,7 @@ class LazyFrame:
 
     def limit(self, n: int) -> Self:
         """Limit the number of rows."""
-        return self.__from_lf__(self._rel.limit(n))
+        return self.__from_lf__(self._expr.limit(n))
 
     def head(self, n: int = 5) -> Self:
         """Get the first n rows."""
@@ -176,7 +176,7 @@ class LazyFrame:
         qry = (
             pc.Iter(kwords)
             .fold(
-                self._rel.sql_query(),
+                self._expr.sql_query(),
                 lambda acc, kw: acc.replace(f" {kw} ", f"\n{kw} "),
             )
             .split("\n")
@@ -188,15 +188,6 @@ class LazyFrame:
             .filter(lambda line: bool(line.strip()))
             .join("\n")
         )
-
-    def pipe[**P, T](
-        self,
-        function: Callable[Concatenate[Self, P], T],
-        *args: P.args,
-        **kwargs: P.kwargs,
-    ) -> T:
-        """Apply a function to the LazyFrame."""
-        return function(self, *args, **kwargs)
 
     def first(self) -> Self:
         """Get the first row."""
@@ -279,27 +270,27 @@ class LazyFrame:
 
     def clone(self) -> Self:
         """Create a copy of the LazyFrame."""
-        return self.__from_lf__(self._rel)
+        return self.__from_lf__(self._expr)
 
     @property
     def columns(self) -> pc.Vec[str]:
         """Get column names."""
-        return pc.Vec.from_ref(self._rel.columns)
+        return pc.Vec.from_ref(self._expr.columns)
 
     @property
     def dtypes(self) -> pc.Vec[str]:
         """Get column data types."""
-        return pc.Vec.from_ref(self._rel.dtypes)
+        return pc.Vec.from_ref(self._expr.dtypes)
 
     @property
     def width(self) -> int:
         """Get number of columns."""
-        return len(self._rel.columns)
+        return len(self._expr.columns)
 
     @property
     def schema(self) -> pc.Dict[str, str]:
         """Get the schema as a dictionary."""
-        return self.columns.iter().zip(self._rel.dtypes).collect(pc.Dict)
+        return self.columns.iter().zip(self._expr.dtypes).collect(pc.Dict)
 
     def collect_schema(self) -> pc.Dict[str, str]:
         """Collect the schema (same as schema property for lazy)."""
@@ -340,14 +331,14 @@ class LazyFrame:
 
     def sink_parquet(self, path: str | Path, *, compression: str = "zstd") -> None:
         """Write to Parquet file."""
-        self._rel.write_parquet(str(path), compression=compression)
+        self._expr.write_parquet(str(path), compression=compression)
 
     def sink_csv(
         self, path: str | Path, *, separator: str = ",", include_header: bool = True
     ) -> None:
         """Write to CSV file."""
-        self._rel.write_csv(str(path), sep=separator, header=include_header)
+        self._expr.write_csv(str(path), sep=separator, header=include_header)
 
     def sink_ndjson(self, path: str | Path) -> None:
         """Write to newline-delimited JSON file."""
-        self._rel.pl(lazy=True).sink_ndjson(str(path))
+        self._expr.pl(lazy=True).sink_ndjson(str(path))

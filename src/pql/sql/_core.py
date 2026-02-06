@@ -1,7 +1,8 @@
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, Concatenate, Self
 
 import duckdb
 import polars as pl
@@ -19,9 +20,40 @@ class ExprHandler[T]:
 
     _expr: T
 
+    def pipe[**P, R](
+        self,
+        function: Callable[Concatenate[Self, P], R],
+        *args: P.args,
+        **kwargs: P.kwargs,
+    ) -> R:
+        """Apply a *function* to *Self* with *args* and *kwargs*.
+
+        Allow to do `x.pipe(func, ...)` instead of `func(x, ...)`.
+
+        This keep a fluent style for UDF, and is shared across `Expr` and `LazyFrame` objects.
+
+        This is similar to **polars** `.pipe` method.
+
+        Args:
+            function (Callable[Concatenate[Self, P], R]): The *function* to apply.
+            *args (P.args): Positional arguments to pass to *function*.
+            **kwargs (P.kwargs): Keyword arguments to pass to *function*.
+
+        Returns:
+            R: The result of applying the *function*.
+        """
+        return function(self, *args, **kwargs)
+
     def inner(self) -> T:
         """Unwrap the underlying expression."""
         return self._expr
+
+
+@dataclass(slots=True)
+class NameSpaceHandler[T: ExprHandler[duckdb.Expression]]:
+    """A wrapper for expression namespaces that return the parent type."""
+
+    _parent: T
 
 
 def func(name: str, *args: Any) -> duckdb.Expression:  # noqa: ANN401
