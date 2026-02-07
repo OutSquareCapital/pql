@@ -9,3 +9,6 @@ wheels/
 # Virtual environments
 .venv
 .coverage
+
+# temp file
+t.py
