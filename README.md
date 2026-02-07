@@ -11,3 +11,7 @@ Run scripts with `uv run -m scripts`.
 
 - the **generate** command will create a file of functions from Duckdb database in [fns](src\pql\sql\fns.py).
 - The **compare** command will create the [coverage](API_COVERAGE.md) report to compare `pql` vs `polar`s and `narwhals` API's.
+
+## References
+
+- [DuckDB functions](https://duckdb.org/docs/stable/sql/functions/overview)
