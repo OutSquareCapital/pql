@@ -1,9 +1,104 @@
 from dataclasses import asdict, dataclass, field
 from enum import StrEnum, auto
+from pathlib import Path
 
-import duckdb
 import polars as pl
 import pyochain as pc
+
+DATA_PATH = Path(__file__).parent.joinpath("functions.parquet")
+
+
+class SchemaName(StrEnum):
+    MAIN = auto()
+    PG_CATALOG = auto()
+
+
+class DuckDbTypes(StrEnum):
+    """DuckDB type names."""
+
+    NULL = '"NULL"'
+    AGGREGATE_STATE = "AGGREGATE_STATE<?>"
+    ANY = "ANY"
+    ARRAY = "ARRAY"
+    BIGINT = "BIGINT"
+    BIGNUM = "BIGNUM"
+    BIT = "BIT"
+    BLOB = "BLOB"
+    BOOLEAN = "BOOLEAN"
+    DATE = "DATE"
+    DECIMAL = "DECIMAL"
+    DOUBLE = "DOUBLE"
+    DOUBLE_3 = "DOUBLE[3]"
+    DOUBLE_ANY = "DOUBLE[ANY]"
+    FLOAT = "FLOAT"
+    FLOAT_3 = "FLOAT[3]"
+    FLOAT_ANY = "FLOAT[ANY]"
+    HUGEINT = "HUGEINT"
+    INTEGER = "INTEGER"
+    INTERVAL = "INTERVAL"
+    INVALID = "INVALID"
+    JSON = "JSON"
+    KEY = "K"
+    LAMBDA = "LAMBDA"
+    LIST = "LIST"
+    MAP = "MAP"
+    MAP_NULL_NULL = 'MAP("NULL", "NULL")'
+    MAP_K_V = "MAP(K, V)"
+    SMALLINT = "SMALLINT"
+    STRUCT = "STRUCT"
+    STRUCT_EMPTY = "STRUCT()"
+    GENERIC = "T"
+    POINTER = "POINTER"
+    TABLE = "TABLE"
+    TIME = "TIME"
+    TIME_NS = "TIME_NS"
+    TIME_WITH_TIME_ZONE = "TIME WITH TIME ZONE"
+    TIMESTAMP = "TIMESTAMP"
+    TIMESTAMP_WITH_TIME_ZONE = "TIMESTAMP WITH TIME ZONE"
+    TIMESTAMP_NS = "TIMESTAMP_NS"
+    TINYINT = "TINYINT"
+    UBIGINT = "UBIGINT"
+    UHUGEINT = "UHUGEINT"
+    UINTEGER = "UINTEGER"
+    UNION = "UNION"
+    USMALLINT = "USMALLINT"
+    UTINYINT = "UTINYINT"
+    UUID = "UUID"
+    V = "V"
+    VARCHAR = "VARCHAR"
+    VARIANT = "VARIANT"
+    YMD = "STRUCT(year BIGINT, month BIGINT, day BIGINT)"
+    YMD_QUOTED = 'STRUCT("year" BIGINT, "month" BIGINT, "day" BIGINT)'
+    ANY_ARRAY = "ANY[]"
+    BIG_INT_ARRAY = "BIGINT[]"
+    BOOLEAN_ARRAY = "BOOLEAN[]"
+    DATE_ARRAY = "DATE[]"
+    DECIMAL_ARRAY = "DECIMAL[]"
+    DOUBLE_ARRAY = "DOUBLE[]"
+    FLOAT_ARRAY = "FLOAT[]"
+    HUGEINT_ARRAY = "HUGEINT[]"
+    INTEGER_ARRAY = "INTEGER[]"
+    JSON_ARRAY = "JSON[]"
+    K_ARRAY = "K[]"
+    NULL_ARRAY = '"NULL"[]'
+    SMALLINT_ARRAY = "SMALLINT[]"
+    STRUCT_KV_ARRAY = 'STRUCT("key" K, "value" V)[]'
+    STRUCT_ARRAY = "STRUCT[]"
+    STRUCT_K_V_ARRAY = "STRUCT(K, V)[]"
+    TIME_TZ_ARRAY = "TIME WITH TIME ZONE[]"
+    TIMESTAMP_TZ_ARRAY = "TIMESTAMP WITH TIME ZONE[]"
+    TIMESTAMP_ARRAY = "TIMESTAMP[]"
+    TIME_ARRAY = "TIME[]"
+    TINYINT_ARRAY = "TINYINT[]"
+    GENERIC_ARRAY = "T[]"
+    GENERIC_2D_ARRAY = "T[][]"
+    UBIGINT_ARRAY = "UBIGINT[]"
+    VARCHAR_ARRAY = "VARCHAR[]"
+    VARCHAR_2D_ARRAY = "VARCHAR[][]"
+    V_ARRAY = "V[]"
+
+
+DTYPES = pl.Enum(DuckDbTypes)
 
 
 class FuncTypes(StrEnum):
@@ -23,6 +118,7 @@ FUNC_TYPES = pl.Enum(FuncTypes)
 class Categories(StrEnum):
     """DuckDB function categories."""
 
+    NULL = auto()
     AGGREGATE = auto()
     ARRAY = auto()
     BITSTRING = auto()
@@ -40,6 +136,14 @@ class Categories(StrEnum):
 
 
 CATEGORY_TYPES = pl.Enum(Categories)
+
+
+class Stability(StrEnum):
+    """DuckDB function stability categories."""
+
+    CONSISTENT = "CONSISTENT"
+    CONSISTENT_WITHIN_QUERY = "CONSISTENT_WITHIN_QUERY"
+    VOLATILE = "VOLATILE"
 
 
 def schema(cls: type[object]) -> pl.Schema:
@@ -64,25 +168,25 @@ class TableSchema:
     """Schema for DuckDB functions table."""
 
     database_name = pl.String
-    database_oid = pl.String
-    schema_name = pl.String
+    database_oid = pl.UInt8
+    schema_name = pl.Enum(SchemaName)
     function_name = pl.String
     alias_of = pl.String()
     function_type = FUNC_TYPES
     description = pl.String()
     """Only present for scalar and aggregate functions."""
     comment = pl.String()
-    tags = pl.List(pl.Struct({"key": pl.String, "value": pl.String}))
-    return_type = pl.String()
+    tags = pl.List(pl.Struct({"key": pl.Null(), "value": pl.Null()}))
+    return_type = DTYPES
     parameters = pl.List(pl.String)
-    parameter_types = pl.List(pl.String)
-    varargs = pl.String()
+    parameter_types = pl.List(DTYPES)
+    varargs = DTYPES
     macro_definition = pl.String()
     has_side_effects = pl.Boolean()
-    internal = pl.Boolean()
-    function_oid = pl.Int64()
+    internal = pl.Boolean
+    function_oid = pl.UInt16
     examples = pl.List(pl.String)
-    stability = pl.String()
+    stability = pl.Enum(Stability)
     categories = pl.List(CATEGORY_TYPES)
 
 
@@ -124,12 +228,6 @@ class DuckCols:
     parameters: pl.Expr = field(default=pl.col("parameters"))
     parameter_types: pl.Expr = field(default=pl.col("parameter_types"))
 
-    def query(self) -> duckdb.DuckDBPyRelation:
+    def to_dict(self) -> pc.Dict[str, pl.Expr]:
 
-        cols = pc.Dict.from_ref(asdict(self)).keys().join(", ")
-        qry = f"""--sql
-            SELECT {cols}
-            FROM duckdb_functions()
-            """
-
-        return duckdb.sql(qry)
+        return pc.Dict.from_ref(asdict(self))

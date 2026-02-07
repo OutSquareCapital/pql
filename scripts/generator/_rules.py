@@ -5,7 +5,7 @@ from enum import StrEnum, auto
 
 import pyochain as pc
 
-from ._schemas import Categories
+from ._schemas import Categories, DuckDbTypes
 
 
 class PyTypes(StrEnum):
@@ -30,86 +30,70 @@ class PyTypes(StrEnum):
     NONE = "None"
 
 
-class DuckDbTypes(StrEnum):
-    """DuckDB type names."""
-
-    VARCHAR = auto()
-    INTEGER = auto()
-    BIGINT = auto()
-    SMALLINT = auto()
-    TINYINT = auto()
-    HUGEINT = auto()
-    UINTEGER = auto()
-    UBIGINT = auto()
-    USMALLINT = auto()
-    UTINYINT = auto()
-    UHUGEINT = auto()
-    DOUBLE = auto()
-    FLOAT = auto()
-    REAL = auto()
-    DECIMAL = auto()
-    BOOLEAN = auto()
-    DATE = auto()
-    INTERVAL = auto()
-    BLOB = auto()
-    BIT = auto()
-    UUID = auto()
-    JSON = auto()
-    ANY = auto()
-    LIST = auto()
-    MAP = auto()
-    STRUCT = auto()
-    ARRAY = auto()
-    UNION = auto()
-    TIME = auto()
-    TIMESTAMP = auto()
-    TIMESTAMPTZ = auto()
-    BITSTRING = auto()
-    NULL = auto()
+def _py_types(*args: PyTypes) -> str:
+    return pc.Iter(args).map(lambda pt: pt.value).join(" | ")
 
 
-CONVERSION_MAP: pc.Dict[DuckDbTypes, pc.Seq[PyTypes]] = pc.Dict(
+CONVERSION_MAP: pc.Dict[str, str] = pc.Dict(
     {
-        DuckDbTypes.VARCHAR: pc.Seq((PyTypes.STR,)),
-        DuckDbTypes.INTEGER: pc.Seq((PyTypes.INT,)),
-        DuckDbTypes.BIGINT: pc.Seq((PyTypes.INT,)),
-        DuckDbTypes.SMALLINT: pc.Seq((PyTypes.INT,)),
-        DuckDbTypes.TINYINT: pc.Seq((PyTypes.INT,)),
-        DuckDbTypes.HUGEINT: pc.Seq((PyTypes.INT,)),
-        DuckDbTypes.UINTEGER: pc.Seq((PyTypes.INT,)),
-        DuckDbTypes.UBIGINT: pc.Seq((PyTypes.INT,)),
-        DuckDbTypes.USMALLINT: pc.Seq((PyTypes.INT,)),
-        DuckDbTypes.UTINYINT: pc.Seq((PyTypes.INT,)),
-        DuckDbTypes.UHUGEINT: pc.Seq((PyTypes.INT,)),
-        DuckDbTypes.DOUBLE: pc.Seq((PyTypes.FLOAT,)),
-        DuckDbTypes.FLOAT: pc.Seq((PyTypes.FLOAT,)),
-        DuckDbTypes.REAL: pc.Seq((PyTypes.FLOAT,)),
-        DuckDbTypes.DECIMAL: pc.Seq((PyTypes.DECIMAL,)),
-        DuckDbTypes.BOOLEAN: pc.Seq((PyTypes.BOOL,)),
-        DuckDbTypes.DATE: pc.Seq((PyTypes.DATE,)),
-        DuckDbTypes.TIME: pc.Seq((PyTypes.TIME,)),
-        DuckDbTypes.TIMESTAMP: pc.Seq((PyTypes.DATETIME,)),
-        DuckDbTypes.INTERVAL: pc.Seq((PyTypes.TIMEDELTA,)),
-        DuckDbTypes.BLOB: pc.Seq(
-            (PyTypes.BYTES, PyTypes.BYTEARRAY, PyTypes.MEMORYVIEW)
+        DuckDbTypes.VARCHAR: _py_types(PyTypes.STR),
+        DuckDbTypes.INTEGER: _py_types(PyTypes.INT),
+        DuckDbTypes.BIGINT: _py_types(PyTypes.INT),
+        DuckDbTypes.SMALLINT: _py_types(PyTypes.INT),
+        DuckDbTypes.TINYINT: _py_types(PyTypes.INT),
+        DuckDbTypes.HUGEINT: _py_types(PyTypes.INT),
+        DuckDbTypes.UINTEGER: _py_types(PyTypes.INT),
+        DuckDbTypes.UBIGINT: _py_types(PyTypes.INT),
+        DuckDbTypes.USMALLINT: _py_types(PyTypes.INT),
+        DuckDbTypes.UTINYINT: _py_types(PyTypes.INT),
+        DuckDbTypes.UHUGEINT: _py_types(PyTypes.INT),
+        DuckDbTypes.DOUBLE: _py_types(PyTypes.FLOAT),
+        DuckDbTypes.FLOAT: _py_types(PyTypes.FLOAT),
+        DuckDbTypes.DECIMAL: _py_types(PyTypes.DECIMAL),
+        DuckDbTypes.BOOLEAN: _py_types(PyTypes.BOOL),
+        DuckDbTypes.DATE: _py_types(PyTypes.DATE),
+        DuckDbTypes.TIME: _py_types(PyTypes.TIME),
+        DuckDbTypes.TIMESTAMP: _py_types(PyTypes.DATETIME),
+        DuckDbTypes.INTERVAL: _py_types(PyTypes.TIMEDELTA),
+        DuckDbTypes.BLOB: _py_types(
+            PyTypes.BYTES, PyTypes.BYTEARRAY, PyTypes.MEMORYVIEW
         ),
-        DuckDbTypes.BIT: pc.Seq((PyTypes.BYTES, PyTypes.BYTEARRAY, PyTypes.MEMORYVIEW)),
-        DuckDbTypes.UUID: pc.Seq((PyTypes.STR,)),
-        DuckDbTypes.JSON: pc.Seq((PyTypes.STR,)),
-        DuckDbTypes.ANY: pc.Seq((PyTypes.SELF,)),
-        DuckDbTypes.LIST: pc.Seq((PyTypes.LIST,)),
-        DuckDbTypes.MAP: pc.Seq((PyTypes.SELF,)),
-        DuckDbTypes.STRUCT: pc.Seq((PyTypes.DICT,)),
-        DuckDbTypes.ARRAY: pc.Seq((PyTypes.LIST,)),
-        DuckDbTypes.UNION: pc.Seq((PyTypes.SELF,)),
-        DuckDbTypes.TIMESTAMPTZ: pc.Seq((PyTypes.DATETIME,)),
-        DuckDbTypes.BITSTRING: pc.Seq(
-            (PyTypes.BYTES, PyTypes.BYTEARRAY, PyTypes.MEMORYVIEW)
+        DuckDbTypes.BIT: _py_types(
+            PyTypes.BYTES, PyTypes.BYTEARRAY, PyTypes.MEMORYVIEW
         ),
-        DuckDbTypes.NULL: pc.Seq((PyTypes.NONE,)),
+        DuckDbTypes.UUID: _py_types(PyTypes.STR),
+        DuckDbTypes.JSON: _py_types(PyTypes.STR),
+        DuckDbTypes.ANY: _py_types(PyTypes.SELF),
+        DuckDbTypes.LIST: _py_types(PyTypes.LIST),
+        DuckDbTypes.MAP: _py_types(PyTypes.SELF),
+        DuckDbTypes.STRUCT: _py_types(PyTypes.DICT),
+        DuckDbTypes.ARRAY: _py_types(PyTypes.LIST),
+        DuckDbTypes.UNION: _py_types(PyTypes.SELF),
+        DuckDbTypes.NULL: _py_types(PyTypes.NONE),
     }
 )
-"""DuckDB type -> Python type hint mapping (exhaustive)."""
+
+
+def _duckdb_type_to_py(enum_type: DuckDbTypes) -> str:
+    def _base_py_for_value(value: str) -> str:
+        mapped = CONVERSION_MAP.get_item(value).unwrap_or(PyTypes.SELF.value)
+        return "" if mapped == PyTypes.SELF.value else mapped
+
+    match enum_type.value:
+        case inner if inner.endswith("[]") and enum_type not in (
+            DuckDbTypes.ANY_ARRAY,
+            DuckDbTypes.GENERIC_ARRAY,
+            DuckDbTypes.V_ARRAY,
+        ):
+            return f"list[{_base_py_for_value(inner.removesuffix('[]'))}]"
+        case arr if "[" in arr:
+            return _base_py_for_value(arr.partition("[")[0])
+        case _ as value:
+            return _base_py_for_value(value)
+
+
+CONVERTER = pc.Iter(DuckDbTypes).map(lambda t: (t, _duckdb_type_to_py(t))).collect(dict)
+"""DuckDB type -> Python type hint mapping."""
 
 KWORDS = pc.Set(keyword.kwlist).union(
     pc.Iter(PyTypes)
@@ -124,8 +108,8 @@ OPERATOR_MAP = pc.Set(
     {
         "+",
         "-",
-        "*",
         "/",
+        "*",
         "//",
         "%",
         "**",

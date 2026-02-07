@@ -53,7 +53,7 @@ class Fns(ExprHandler[Expression]):
         """SQL add function.
 
         Args:
-            col1 (Self | Decimal | Self | date | datetime | float | int | time | timedelta | None): `BIGINT | BIGNUM | DATE | DECIMAL | DOUBLE | FLOAT | HUGEINT | INTEGER | INTERVAL | SMALLINT | TIME | TIME WITH TIME ZONE | TIMESTAMP | TINYINT | UBIGINT | UHUGEINT | UINTEGER | USMALLINT | UTINYINT` expression
+            col1 (Self | Decimal | date | datetime | float | int | time | timedelta | None): `BIGINT | BIGNUM | DATE | DECIMAL | DOUBLE | FLOAT | HUGEINT | INTEGER | INTERVAL | SMALLINT | TIME | TIME WITH TIME ZONE | TIMESTAMP | TINYINT | UBIGINT | UHUGEINT | UINTEGER | USMALLINT | UTINYINT` expression
             *args (Self): `ANY[]` expression
 
         Returns:
@@ -122,7 +122,7 @@ class Fns(ExprHandler[Expression]):
         Calculates the non-NULL arg expression at that row.
 
         Args:
-            val (Self | Self | bytes | bytearray | memoryview | date | datetime | float | int | str): `ANY | BIGINT | BLOB | DATE | DOUBLE | HUGEINT | INTEGER | TIMESTAMP | TIMESTAMP WITH TIME ZONE | VARCHAR` expression
+            val (Self | bytes | bytearray | memoryview | date | datetime | float | int | str): `ANY | BIGINT | BLOB | DATE | DOUBLE | HUGEINT | INTEGER | TIMESTAMP | TIMESTAMP WITH TIME ZONE | VARCHAR` expression
             col2 (Self | int | None): `BIGINT` expression
 
         Returns:
@@ -138,7 +138,7 @@ class Fns(ExprHandler[Expression]):
         Calculates the arg expression at that row.
 
         Args:
-            val (Self | Self | bytes | bytearray | memoryview | date | datetime | float | int | str): `ANY | BIGINT | BLOB | DATE | DOUBLE | HUGEINT | INTEGER | TIMESTAMP | TIMESTAMP WITH TIME ZONE | VARCHAR` expression
+            val (Self | bytes | bytearray | memoryview | date | datetime | float | int | str): `ANY | BIGINT | BLOB | DATE | DOUBLE | HUGEINT | INTEGER | TIMESTAMP | TIMESTAMP WITH TIME ZONE | VARCHAR` expression
 
         Returns:
             Self
@@ -155,7 +155,7 @@ class Fns(ExprHandler[Expression]):
         Calculates the non-NULL arg expression at that row.
 
         Args:
-            val (Self | Self | bytes | bytearray | memoryview | date | datetime | float | int | str): `ANY | BIGINT | BLOB | DATE | DOUBLE | HUGEINT | INTEGER | TIMESTAMP | TIMESTAMP WITH TIME ZONE | VARCHAR` expression
+            val (Self | bytes | bytearray | memoryview | date | datetime | float | int | str): `ANY | BIGINT | BLOB | DATE | DOUBLE | HUGEINT | INTEGER | TIMESTAMP | TIMESTAMP WITH TIME ZONE | VARCHAR` expression
             col2 (Self | int | None): `BIGINT` expression
 
         Returns:
@@ -171,7 +171,7 @@ class Fns(ExprHandler[Expression]):
         Calculates the arg expression at that row.
 
         Args:
-            val (Self | Self | bytes | bytearray | memoryview | date | datetime | float | int | str): `ANY | BIGINT | BLOB | DATE | DOUBLE | HUGEINT | INTEGER | TIMESTAMP | TIMESTAMP WITH TIME ZONE | VARCHAR` expression
+            val (Self | bytes | bytearray | memoryview | date | datetime | float | int | str): `ANY | BIGINT | BLOB | DATE | DOUBLE | HUGEINT | INTEGER | TIMESTAMP | TIMESTAMP WITH TIME ZONE | VARCHAR` expression
 
         Returns:
             Self
@@ -727,7 +727,7 @@ class Fns(ExprHandler[Expression]):
         If enabled nice_rounding makes the numbers more readable/less jagged.
 
         Args:
-            max_arg (Self | Self | datetime | float | int): `ANY | BIGINT | DOUBLE | TIMESTAMP` expression
+            max_arg (Self | datetime | float | int): `ANY | BIGINT | DOUBLE | TIMESTAMP` expression
             bin_count (Self | int): `BIGINT` expression
             nice_rounding (Self | bool): `BOOLEAN` expression
 
@@ -1268,11 +1268,11 @@ class Fns(ExprHandler[Expression]):
             func("make_timestamptz", self._expr, col1, col2, col3, col4, col5, col6)
         )
 
-    def map(self, values: Self | list[Self]) -> Self:
+    def map(self, values: Self) -> Self:
         """Creates a map from a set of keys and values.
 
         Args:
-            values (Self | list[Self]): `V[]` expression
+            values (Self): `V[]` expression
 
         Returns:
             Self
@@ -2045,7 +2045,7 @@ class Fns(ExprHandler[Expression]):
         """SQL subtract function.
 
         Args:
-            col1 (Self | Decimal | Self | date | datetime | float | int | timedelta | None): `BIGINT | BIGNUM | DATE | DECIMAL | DOUBLE | FLOAT | HUGEINT | INTEGER | INTERVAL | SMALLINT | TIMESTAMP | TINYINT | UBIGINT | UHUGEINT | UINTEGER | USMALLINT | UTINYINT` expression
+            col1 (Self | Decimal | date | datetime | float | int | timedelta | None): `BIGINT | BIGNUM | DATE | DECIMAL | DOUBLE | FLOAT | HUGEINT | INTEGER | INTERVAL | SMALLINT | TIMESTAMP | TINYINT | UBIGINT | UHUGEINT | UINTEGER | USMALLINT | UTINYINT` expression
 
         Returns:
             Self
@@ -2114,11 +2114,11 @@ class Fns(ExprHandler[Expression]):
         """
         return self.__class__(func("timetz_byte_comparable", self._expr))
 
-    def timezone(self, col1: Self | datetime | time | None = None) -> Self:
+    def timezone(self, col1: Self | datetime | None = None) -> Self:
         """Extract the timezone component from a date or timestamp.
 
         Args:
-            col1 (Self | datetime | time | None): `TIME WITH TIME ZONE | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
+            col1 (Self | datetime | None): `TIME WITH TIME ZONE | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
 
         Returns:
             Self
@@ -4449,7 +4449,7 @@ class DateTimeFns[T: Fns](NameSpaceHandler[T]):
         """Get subfield (equivalent to extract).
 
         Args:
-            col1 (T | date | datetime | time | timedelta): `DATE | INTERVAL | TIME | TIME WITH TIME ZONE | TIMESTAMP | TIMESTAMP WITH TIME ZONE | TIME_NS` expression
+            col1 (T | date | datetime | time | timedelta): `DATE | INTERVAL | TIME | TIME_NS | TIME WITH TIME ZONE | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
 
         Returns:
             T
@@ -4505,7 +4505,7 @@ class DateTimeFns[T: Fns](NameSpaceHandler[T]):
         """Get subfield (equivalent to extract).
 
         Args:
-            col1 (T | date | datetime | time | timedelta): `DATE | INTERVAL | TIME | TIME WITH TIME ZONE | TIMESTAMP | TIMESTAMP WITH TIME ZONE | TIME_NS` expression
+            col1 (T | date | datetime | time | timedelta): `DATE | INTERVAL | TIME | TIME_NS | TIME WITH TIME ZONE | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
 
         Returns:
             T
