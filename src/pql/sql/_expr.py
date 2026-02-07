@@ -12,6 +12,7 @@ from ._core import func
 from ._window import over
 from .fns import (
     ArrayFns,
+    DateTimeFns,
     Fns,
     JsonFns,
     ListFns,
@@ -131,6 +132,11 @@ class SqlExpr(Fns):  # noqa: PLW1641
     def struct(self) -> SqlExprStructNameSpace:
         """Access struct functions."""
         return SqlExprStructNameSpace(self)
+
+    @property
+    def dt(self) -> SqlExprDateTimeNameSpace:
+        """Access datetime functions."""
+        return SqlExprDateTimeNameSpace(self)
 
     @property
     def js(self) -> SqlExprJsonNameSpace:
@@ -586,6 +592,11 @@ class SqlExprListNameSpace(ListFns[SqlExpr]):
 @dataclass(slots=True)
 class SqlExprStructNameSpace(StructFns[SqlExpr]):
     """Struct function namespace for SQL expressions."""
+
+
+@dataclass(slots=True)
+class SqlExprDateTimeNameSpace(DateTimeFns[SqlExpr]):
+    """Datetime function namespace for SQL expressions."""
 
 
 @dataclass(slots=True)

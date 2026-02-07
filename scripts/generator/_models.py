@@ -38,6 +38,28 @@ class FuncTypes(StrEnum):
 FUNC_TYPES = pl.Enum(FuncTypes)
 
 
+class Categories(StrEnum):
+    """DuckDB function categories."""
+
+    AGGREGATE = auto()
+    ARRAY = auto()
+    BITSTRING = auto()
+    BLOB = auto()
+    DATE = auto()
+    LAMBDA = auto()
+    LIST = auto()
+    NUMERIC = auto()
+    REGEX = auto()
+    STRING = auto()
+    STRUCT = auto()
+    TEXT_SIMILARITY = auto()
+    TIMESTAMP = auto()
+    VARIANT = auto()
+
+
+CATEGORY_TYPES = pl.Enum(Categories)
+
+
 @schema
 class TableSchema:
     """Schema for DuckDB functions table."""
@@ -62,7 +84,7 @@ class TableSchema:
     function_oid = pl.Int64()
     examples = pl.List(pl.String)
     stability = pl.String()
-    categories = pl.List(pl.String)
+    categories = pl.List(CATEGORY_TYPES)
 
 
 class PyTypes(StrEnum):
@@ -218,6 +240,7 @@ class NamespaceSpec:
     name: str
     doc: str
     prefixes: pc.Seq[str]
+    categories: pc.Seq[Categories]
 
 
 NAMESPACE_SPECS = pc.Seq(
@@ -226,26 +249,39 @@ NAMESPACE_SPECS = pc.Seq(
             name="ListFns",
             doc="Mixin providing auto-generated DuckDB list functions as methods.",
             prefixes=pc.Seq(("list_",)),
+            categories=pc.Seq((Categories.LIST,)),
         ),
         NamespaceSpec(
             name="StructFns",
             doc="Mixin providing auto-generated DuckDB struct functions as methods.",
             prefixes=pc.Seq(("struct_",)),
+            categories=pc.Seq((Categories.STRUCT,)),
         ),
         NamespaceSpec(
             name="StringFns",
             doc="Mixin providing auto-generated DuckDB string functions as methods.",
             prefixes=pc.Seq(("string_", "regexp_", "str")),
+            categories=pc.Seq(
+                (Categories.STRING, Categories.REGEX, Categories.TEXT_SIMILARITY)
+            ),
+        ),
+        NamespaceSpec(
+            name="DateTimeFns",
+            doc="Mixin providing auto-generated DuckDB datetime functions as methods.",
+            prefixes=pc.Seq(("date", "day")),
+            categories=pc.Seq((Categories.TIMESTAMP,)),
         ),
         NamespaceSpec(
             name="ArrayFns",
             doc="Mixin providing auto-generated DuckDB array functions as methods.",
             prefixes=pc.Seq(("array_",)),
+            categories=pc.Seq((Categories.ARRAY,)),
         ),
         NamespaceSpec(
             name="JsonFns",
             doc="Mixin providing auto-generated DuckDB JSON functions as methods.",
             prefixes=pc.Seq(("json_",)),
+            categories=pc.Seq(()),
         ),
     )
 )

@@ -14,6 +14,7 @@ from ._models import (
     SHADOWERS,
     DuckDbTypes,
     FuncTypes,
+    NamespaceSpec,
     PyTypes,
 )
 
@@ -209,34 +210,24 @@ def _replace_self(expr: pl.Expr, self_type: pl.Expr) -> pl.Expr:
 
 
 def _namespace_name(fn_name: pl.Expr, categories: pl.Expr) -> pl.Expr:
+    init = pl.lit(None)
+
     def _matches(spec_prefixes: pc.Seq[str]) -> pl.Expr:
         return spec_prefixes.iter().fold(
-            pl.lit(value=False),
-            lambda acc, prefix: acc.or_(fn_name.str.starts_with(prefix)),
+            init, lambda acc, prefix: acc.or_(fn_name.str.starts_with(prefix))
         )
 
-    def _matches_category(spec_name: str) -> pl.Expr:
-        return categories.list.contains(
-            spec_name.removesuffix("Fns").lower()
-        ).fill_null(value=False)
-
-    def _by_category() -> pl.Expr:
-        return NAMESPACE_SPECS.iter().fold(
-            pl.lit(value=None),
-            lambda acc, spec: (
-                pl.when(acc.is_not_null())
-                .then(acc)
-                .otherwise(
-                    pl.when(_matches_category(spec.name))
-                    .then(pl.lit(spec.name))
-                    .otherwise(acc)
-                )
+    def _matches_category(spec: NamespaceSpec) -> pl.Expr:
+        return spec.categories.iter().fold(
+            init,
+            lambda acc, category: acc.or_(
+                categories.list.contains(category).fill_null(value=False)
             ),
         )
 
     def _by_prefix() -> pl.Expr:
         return NAMESPACE_SPECS.iter().fold(
-            pl.lit(value=None),
+            init,
             lambda acc, spec: (
                 pl.when(acc.is_not_null())
                 .then(acc)
@@ -249,9 +240,24 @@ def _namespace_name(fn_name: pl.Expr, categories: pl.Expr) -> pl.Expr:
         )
 
     return (
-        pl.when(_by_category().is_not_null())
-        .then(_by_category())
-        .otherwise(_by_prefix())
+        NAMESPACE_SPECS.iter()
+        .fold(
+            init,
+            lambda acc, spec: (
+                pl.when(acc.is_not_null())
+                .then(acc)
+                .otherwise(
+                    pl.when(_matches_category(spec))
+                    .then(pl.lit(spec.name))
+                    .otherwise(acc)
+                )
+            ),
+        )
+        .pipe(
+            lambda by_cat: (
+                pl.when(by_cat.is_not_null()).then(by_cat).otherwise(_by_prefix())
+            )
+        )
     )
 
 

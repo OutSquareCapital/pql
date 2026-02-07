@@ -580,180 +580,6 @@ class Fns(ExprHandler[Expression]):
         """
         return self.__class__(func("currval", self._expr))
 
-    def damerau_levenshtein(self, s2: Self | str) -> Self:
-        """Extension of Levenshtein distance to also include transposition of adjacent characters as an allowed edit operation.
-
-        In other words, the minimum number of edit operations (insertions, deletions, substitutions or transpositions) required to change one string to another.
-
-        Characters of different cases (e.g., `a` and `A`) are considered different.
-
-        Args:
-            s2 (Self | str): `VARCHAR` expression
-
-        Returns:
-            Self
-        """
-        return self.__class__(func("damerau_levenshtein", self._expr, s2))
-
-    def date_add(self, interval: Self) -> Self:
-        """SQL date_add function.
-
-        Args:
-            interval (Self): `ANY` expression
-
-        Returns:
-            Self
-        """
-        return self.__class__(func("date_add", self._expr, interval))
-
-    def date_diff(
-        self,
-        startdate: Self | date | datetime | time,
-        enddate: Self | date | datetime | time,
-    ) -> Self:
-        """The number of partition boundaries between the timestamps.
-
-        Args:
-            startdate (Self | date | datetime | time): `DATE | TIME | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
-            enddate (Self | date | datetime | time): `DATE | TIME | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
-
-        Returns:
-            Self
-        """
-        return self.__class__(func("date_diff", self._expr, startdate, enddate))
-
-    def date_part(self, col1: Self | date | datetime | time | timedelta) -> Self:
-        """Get subfield (equivalent to extract).
-
-        Args:
-            col1 (Self | date | datetime | time | timedelta): `DATE | INTERVAL | TIME | TIME WITH TIME ZONE | TIMESTAMP | TIMESTAMP WITH TIME ZONE | TIME_NS` expression
-
-        Returns:
-            Self
-        """
-        return self.__class__(func("date_part", self._expr, col1))
-
-    def date_sub(
-        self,
-        startdate: Self | date | datetime | time,
-        enddate: Self | date | datetime | time,
-    ) -> Self:
-        """The number of complete partitions between the timestamps.
-
-        Args:
-            startdate (Self | date | datetime | time): `DATE | TIME | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
-            enddate (Self | date | datetime | time): `DATE | TIME | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
-
-        Returns:
-            Self
-        """
-        return self.__class__(func("date_sub", self._expr, startdate, enddate))
-
-    def date_trunc(self, timestamp: Self | date | datetime | timedelta) -> Self:
-        """Truncate to specified precision.
-
-        Args:
-            timestamp (Self | date | datetime | timedelta): `DATE | INTERVAL | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
-
-        Returns:
-            Self
-        """
-        return self.__class__(func("date_trunc", self._expr, timestamp))
-
-    def datediff(
-        self,
-        startdate: Self | date | datetime | time,
-        enddate: Self | date | datetime | time,
-    ) -> Self:
-        """The number of partition boundaries between the timestamps.
-
-        Args:
-            startdate (Self | date | datetime | time): `DATE | TIME | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
-            enddate (Self | date | datetime | time): `DATE | TIME | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
-
-        Returns:
-            Self
-        """
-        return self.__class__(func("datediff", self._expr, startdate, enddate))
-
-    def datepart(self, col1: Self | date | datetime | time | timedelta) -> Self:
-        """Get subfield (equivalent to extract).
-
-        Args:
-            col1 (Self | date | datetime | time | timedelta): `DATE | INTERVAL | TIME | TIME WITH TIME ZONE | TIMESTAMP | TIMESTAMP WITH TIME ZONE | TIME_NS` expression
-
-        Returns:
-            Self
-        """
-        return self.__class__(func("datepart", self._expr, col1))
-
-    def datesub(
-        self,
-        startdate: Self | date | datetime | time,
-        enddate: Self | date | datetime | time,
-    ) -> Self:
-        """The number of complete partitions between the timestamps.
-
-        Args:
-            startdate (Self | date | datetime | time): `DATE | TIME | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
-            enddate (Self | date | datetime | time): `DATE | TIME | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
-
-        Returns:
-            Self
-        """
-        return self.__class__(func("datesub", self._expr, startdate, enddate))
-
-    def datetrunc(self, timestamp: Self | date | datetime | timedelta) -> Self:
-        """Truncate to specified precision.
-
-        Args:
-            timestamp (Self | date | datetime | timedelta): `DATE | INTERVAL | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
-
-        Returns:
-            Self
-        """
-        return self.__class__(func("datetrunc", self._expr, timestamp))
-
-    def day(self) -> Self:
-        """Extract the day component from a date or timestamp.
-
-        Returns:
-            Self
-        """
-        return self.__class__(func("day", self._expr))
-
-    def dayname(self) -> Self:
-        """The (English) name of the weekday.
-
-        Returns:
-            Self
-        """
-        return self.__class__(func("dayname", self._expr))
-
-    def dayofmonth(self) -> Self:
-        """Extract the dayofmonth component from a date or timestamp.
-
-        Returns:
-            Self
-        """
-        return self.__class__(func("dayofmonth", self._expr))
-
-    def dayofweek(self) -> Self:
-        """Extract the dayofweek component from a date or timestamp.
-
-        Returns:
-            Self
-        """
-        return self.__class__(func("dayofweek", self._expr))
-
-    def dayofyear(self) -> Self:
-        """Extract the dayofyear component from a date or timestamp.
-
-        Returns:
-            Self
-        """
-        return self.__class__(func("dayofyear", self._expr))
-
     def decade(self) -> Self:
         """Extract the decade component from a date or timestamp.
 
@@ -1127,21 +953,6 @@ class Fns(ExprHandler[Expression]):
         """
         return self.__class__(func("greatest_common_divisor", self._expr, y))
 
-    def hamming(self, s2: Self | str) -> Self:
-        """The Hamming distance between to strings, i.e., the number of positions with different characters for two strings of equal length.
-
-        Strings must be of equal length.
-
-        Characters of different cases (e.g., `a` and `A`) are considered different.
-
-        Args:
-            s2 (Self | str): `VARCHAR` expression
-
-        Returns:
-            Self
-        """
-        return self.__class__(func("hamming", self._expr, s2))
-
     def histogram(self, col1: Self | None = None) -> Self:
         """Returns a LIST of STRUCTs with the fields bucket and count.
 
@@ -1231,67 +1042,6 @@ class Fns(ExprHandler[Expression]):
         """
         return self.__class__(func("isoyear", self._expr))
 
-    def jaccard(self, s2: Self | str) -> Self:
-        """The Jaccard similarity between two strings.
-
-        Characters of different cases (e.g., `a` and `A`) are considered different.
-
-        Returns a number between 0 and 1.
-
-        Args:
-            s2 (Self | str): `VARCHAR` expression
-
-        Returns:
-            Self
-        """
-        return self.__class__(func("jaccard", self._expr, s2))
-
-    def jaro_similarity(
-        self, s2: Self | str, score_cutoff: Self | float | None = None
-    ) -> Self:
-        """The Jaro similarity between two strings.
-
-        Characters of different cases (e.g., `a` and `A`) are considered different.
-
-        Returns a number between 0 and 1.
-
-        For similarity < `score_cutoff`, 0 is returned instead.
-
-        `score_cutoff` defaults to 0.
-
-        Args:
-            s2 (Self | str): `VARCHAR` expression
-            score_cutoff (Self | float | None): `DOUBLE` expression
-
-        Returns:
-            Self
-        """
-        return self.__class__(func("jaro_similarity", self._expr, s2, score_cutoff))
-
-    def jaro_winkler_similarity(
-        self, s2: Self | str, score_cutoff: Self | float | None = None
-    ) -> Self:
-        """The Jaro-Winkler similarity between two strings.
-
-        Characters of different cases (e.g., `a` and `A`) are considered different.
-
-        Returns a number between 0 and 1.
-
-        For similarity < `score_cutoff`, 0 is returned instead.
-
-        `score_cutoff` defaults to 0.
-
-        Args:
-            s2 (Self | str): `VARCHAR` expression
-            score_cutoff (Self | float | None): `DOUBLE` expression
-
-        Returns:
-            Self
-        """
-        return self.__class__(
-            func("jaro_winkler_similarity", self._expr, s2, score_cutoff)
-        )
-
     def json(self) -> Self:
         """SQL json function.
 
@@ -1360,19 +1110,6 @@ class Fns(ExprHandler[Expression]):
             Self
         """
         return self.__class__(func("least_common_multiple", self._expr, y))
-
-    def levenshtein(self, s2: Self | str) -> Self:
-        """The minimum number of single-character edits (insertions, deletions or substitutions) required to change one string to the other.
-
-        Characters of different cases (e.g., `a` and `A`) are considered different.
-
-        Args:
-            s2 (Self | str): `VARCHAR` expression
-
-        Returns:
-            Self
-        """
-        return self.__class__(func("levenshtein", self._expr, s2))
 
     def lgamma(self) -> Self:
         """Computes the log of the gamma function.
@@ -3667,6 +3404,23 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
             func("concat_ws", self._parent.inner(), string, *args)
         )
 
+    def damerau_levenshtein(self, s2: T | str) -> T:
+        """Extension of Levenshtein distance to also include transposition of adjacent characters as an allowed edit operation.
+
+        In other words, the minimum number of edit operations (insertions, deletions, substitutions or transpositions) required to change one string to another.
+
+        Characters of different cases (e.g., `a` and `A`) are considered different.
+
+        Args:
+            s2 (T | str): `VARCHAR` expression
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(
+            func("damerau_levenshtein", self._parent.inner(), s2)
+        )
+
     def format(self, *args: T) -> T:
         """Formats a string using the fmt syntax.
 
@@ -3719,6 +3473,21 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._parent.__class__(func("greatest", self._parent.inner(), *args))
 
+    def hamming(self, s2: T | str) -> T:
+        """The Hamming distance between to strings, i.e., the number of positions with different characters for two strings of equal length.
+
+        Strings must be of equal length.
+
+        Characters of different cases (e.g., `a` and `A`) are considered different.
+
+        Args:
+            s2 (T | str): `VARCHAR` expression
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(func("hamming", self._parent.inner(), s2))
+
     def hash(self, *args: T) -> T:
         """Returns a `UBIGINT` with the hash of the `value`.
 
@@ -3761,6 +3530,67 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._parent.__class__(
             func("instr", self._parent.inner(), search_string)
+        )
+
+    def jaccard(self, s2: T | str) -> T:
+        """The Jaccard similarity between two strings.
+
+        Characters of different cases (e.g., `a` and `A`) are considered different.
+
+        Returns a number between 0 and 1.
+
+        Args:
+            s2 (T | str): `VARCHAR` expression
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(func("jaccard", self._parent.inner(), s2))
+
+    def jaro_similarity(self, s2: T | str, score_cutoff: T | float | None = None) -> T:
+        """The Jaro similarity between two strings.
+
+        Characters of different cases (e.g., `a` and `A`) are considered different.
+
+        Returns a number between 0 and 1.
+
+        For similarity < `score_cutoff`, 0 is returned instead.
+
+        `score_cutoff` defaults to 0.
+
+        Args:
+            s2 (T | str): `VARCHAR` expression
+            score_cutoff (T | float | None): `DOUBLE` expression
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(
+            func("jaro_similarity", self._parent.inner(), s2, score_cutoff)
+        )
+
+    def jaro_winkler_similarity(
+        self, s2: T | str, score_cutoff: T | float | None = None
+    ) -> T:
+        """The Jaro-Winkler similarity between two strings.
+
+        Characters of different cases (e.g., `a` and `A`) are considered different.
+
+        Returns a number between 0 and 1.
+
+        For similarity < `score_cutoff`, 0 is returned instead.
+
+        `score_cutoff` defaults to 0.
+
+        Args:
+            s2 (T | str): `VARCHAR` expression
+            score_cutoff (T | float | None): `DOUBLE` expression
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(
+            func("jaro_winkler_similarity", self._parent.inner(), s2, score_cutoff)
         )
 
     def least(self, *args: T) -> T:
@@ -3809,6 +3639,19 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
             T
         """
         return self._parent.__class__(func("length_grapheme", self._parent.inner()))
+
+    def levenshtein(self, s2: T | str) -> T:
+        """The minimum number of single-character edits (insertions, deletions or substitutions) required to change one string to the other.
+
+        Characters of different cases (e.g., `a` and `A`) are considered different.
+
+        Args:
+            s2 (T | str): `VARCHAR` expression
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(func("levenshtein", self._parent.inner(), s2))
 
     def like_escape(self, like_specifier: T | str, escape_character: T | str) -> T:
         """Returns `true` if the `string` matches the `like_specifier` (see Pattern Matching) using case-sensitive matching.
@@ -4570,6 +4413,173 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
             T
         """
         return self._parent.__class__(func("url_encode", self._parent.inner()))
+
+
+class DateTimeFns[T: Fns](NameSpaceHandler[T]):
+    """Mixin providing auto-generated DuckDB datetime functions as methods."""
+
+    def date_add(self, interval: T) -> T:
+        """SQL date_add function.
+
+        Args:
+            interval (T): `ANY` expression
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(func("date_add", self._parent.inner(), interval))
+
+    def date_diff(
+        self, startdate: T | date | datetime | time, enddate: T | date | datetime | time
+    ) -> T:
+        """The number of partition boundaries between the timestamps.
+
+        Args:
+            startdate (T | date | datetime | time): `DATE | TIME | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
+            enddate (T | date | datetime | time): `DATE | TIME | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(
+            func("date_diff", self._parent.inner(), startdate, enddate)
+        )
+
+    def date_part(self, col1: T | date | datetime | time | timedelta) -> T:
+        """Get subfield (equivalent to extract).
+
+        Args:
+            col1 (T | date | datetime | time | timedelta): `DATE | INTERVAL | TIME | TIME WITH TIME ZONE | TIMESTAMP | TIMESTAMP WITH TIME ZONE | TIME_NS` expression
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(func("date_part", self._parent.inner(), col1))
+
+    def date_sub(
+        self, startdate: T | date | datetime | time, enddate: T | date | datetime | time
+    ) -> T:
+        """The number of complete partitions between the timestamps.
+
+        Args:
+            startdate (T | date | datetime | time): `DATE | TIME | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
+            enddate (T | date | datetime | time): `DATE | TIME | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(
+            func("date_sub", self._parent.inner(), startdate, enddate)
+        )
+
+    def date_trunc(self, timestamp: T | date | datetime | timedelta) -> T:
+        """Truncate to specified precision.
+
+        Args:
+            timestamp (T | date | datetime | timedelta): `DATE | INTERVAL | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(
+            func("date_trunc", self._parent.inner(), timestamp)
+        )
+
+    def datediff(
+        self, startdate: T | date | datetime | time, enddate: T | date | datetime | time
+    ) -> T:
+        """The number of partition boundaries between the timestamps.
+
+        Args:
+            startdate (T | date | datetime | time): `DATE | TIME | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
+            enddate (T | date | datetime | time): `DATE | TIME | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(
+            func("datediff", self._parent.inner(), startdate, enddate)
+        )
+
+    def datepart(self, col1: T | date | datetime | time | timedelta) -> T:
+        """Get subfield (equivalent to extract).
+
+        Args:
+            col1 (T | date | datetime | time | timedelta): `DATE | INTERVAL | TIME | TIME WITH TIME ZONE | TIMESTAMP | TIMESTAMP WITH TIME ZONE | TIME_NS` expression
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(func("datepart", self._parent.inner(), col1))
+
+    def datesub(
+        self, startdate: T | date | datetime | time, enddate: T | date | datetime | time
+    ) -> T:
+        """The number of complete partitions between the timestamps.
+
+        Args:
+            startdate (T | date | datetime | time): `DATE | TIME | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
+            enddate (T | date | datetime | time): `DATE | TIME | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(
+            func("datesub", self._parent.inner(), startdate, enddate)
+        )
+
+    def datetrunc(self, timestamp: T | date | datetime | timedelta) -> T:
+        """Truncate to specified precision.
+
+        Args:
+            timestamp (T | date | datetime | timedelta): `DATE | INTERVAL | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(
+            func("datetrunc", self._parent.inner(), timestamp)
+        )
+
+    def day(self) -> T:
+        """Extract the day component from a date or timestamp.
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(func("day", self._parent.inner()))
+
+    def dayname(self) -> T:
+        """The (English) name of the weekday.
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(func("dayname", self._parent.inner()))
+
+    def dayofmonth(self) -> T:
+        """Extract the dayofmonth component from a date or timestamp.
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(func("dayofmonth", self._parent.inner()))
+
+    def dayofweek(self) -> T:
+        """Extract the dayofweek component from a date or timestamp.
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(func("dayofweek", self._parent.inner()))
+
+    def dayofyear(self) -> T:
+        """Extract the dayofyear component from a date or timestamp.
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(func("dayofyear", self._parent.inner()))
 
 
 class ArrayFns[T: Fns](NameSpaceHandler[T]):
