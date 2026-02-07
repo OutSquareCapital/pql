@@ -210,16 +210,15 @@ def _replace_self(expr: pl.Expr, self_type: pl.Expr) -> pl.Expr:
 
 
 def _namespace_name(fn_name: pl.Expr, categories: pl.Expr) -> pl.Expr:
-    init = pl.lit(None)
-
     def _matches(spec_prefixes: pc.Seq[str]) -> pl.Expr:
         return spec_prefixes.iter().fold(
-            init, lambda acc, prefix: acc.or_(fn_name.str.starts_with(prefix))
+            pl.lit(value=False),
+            lambda acc, prefix: acc.or_(fn_name.str.starts_with(prefix)),
         )
 
     def _matches_category(spec: NamespaceSpec) -> pl.Expr:
         return spec.categories.iter().fold(
-            init,
+            pl.lit(value=False),
             lambda acc, category: acc.or_(
                 categories.list.contains(category).fill_null(value=False)
             ),
@@ -227,7 +226,7 @@ def _namespace_name(fn_name: pl.Expr, categories: pl.Expr) -> pl.Expr:
 
     def _by_prefix() -> pl.Expr:
         return NAMESPACE_SPECS.iter().fold(
-            init,
+            pl.lit(value=None),
             lambda acc, spec: (
                 pl.when(acc.is_not_null())
                 .then(acc)
@@ -242,7 +241,7 @@ def _namespace_name(fn_name: pl.Expr, categories: pl.Expr) -> pl.Expr:
     return (
         NAMESPACE_SPECS.iter()
         .fold(
-            init,
+            pl.lit(value=None),
             lambda acc, spec: (
                 pl.when(acc.is_not_null())
                 .then(acc)
