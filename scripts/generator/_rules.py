@@ -3,88 +3,9 @@ import keyword
 from dataclasses import dataclass
 from enum import StrEnum, auto
 
-import polars as pl
 import pyochain as pc
 
-
-def schema(cls: type[object]) -> pl.Schema:
-    """Simple decorator for creating Polars Schema from class attributes."""
-
-    def _is_polars_dtype(_k: str, v: object) -> bool:
-        return isinstance(v, (type, pl.DataType)) and (
-            isinstance(v, pl.DataType) or issubclass(v, pl.DataType)
-        )
-
-    return (
-        pc.Dict.from_object(cls)
-        .items()
-        .iter()
-        .filter_star(_is_polars_dtype)
-        .collect(pl.Schema)
-    )
-
-
-class FuncTypes(StrEnum):
-    """Function types in DuckDB."""
-
-    PRAGMA = auto()
-    TABLE = auto()
-    TABLE_MACRO = auto()
-    AGGREGATE = auto()
-    MACRO = auto()
-    SCALAR = auto()
-
-
-FUNC_TYPES = pl.Enum(FuncTypes)
-
-
-class Categories(StrEnum):
-    """DuckDB function categories."""
-
-    AGGREGATE = auto()
-    ARRAY = auto()
-    BITSTRING = auto()
-    BLOB = auto()
-    DATE = auto()
-    LAMBDA = auto()
-    LIST = auto()
-    NUMERIC = auto()
-    REGEX = auto()
-    STRING = auto()
-    STRUCT = auto()
-    TEXT_SIMILARITY = auto()
-    TIMESTAMP = auto()
-    VARIANT = auto()
-
-
-CATEGORY_TYPES = pl.Enum(Categories)
-
-
-@schema
-class TableSchema:
-    """Schema for DuckDB functions table."""
-
-    database_name = pl.String
-    database_oid = pl.String
-    schema_name = pl.String
-    function_name = pl.String
-    alias_of = pl.String()
-    function_type = FUNC_TYPES
-    description = pl.String()
-    """Only present for scalar and aggregate functions."""
-    comment = pl.String()
-    tags = pl.List(pl.Struct({"key": pl.String, "value": pl.String}))
-    return_type = pl.String()
-    parameters = pl.List(pl.String)
-    parameter_types = pl.List(pl.String)
-    varargs = pl.String()
-    macro_definition = pl.String()
-    has_side_effects = pl.Boolean()
-    internal = pl.Boolean()
-    function_oid = pl.Int64()
-    examples = pl.List(pl.String)
-    stability = pl.String()
-    categories = pl.List(CATEGORY_TYPES)
+from ._schemas import Categories
 
 
 class PyTypes(StrEnum):

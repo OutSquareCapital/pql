@@ -1,73 +1,29 @@
 from collections.abc import Iterable
-from dataclasses import asdict, dataclass, field
 
-import duckdb
 import polars as pl
 import pyochain as pc
 
-from ._models import (
+from ._rules import (
     CONVERSION_MAP,
-    FUNC_TYPES,
     KWORDS,
     NAMESPACE_SPECS,
     OPERATOR_MAP,
     SHADOWERS,
     DuckDbTypes,
-    FuncTypes,
     NamespaceSpec,
     PyTypes,
 )
+from ._schemas import (
+    FUNC_TYPES,
+    DuckCols,
+    FuncTypes,
+    ParamLens,
+    ParamLists,
+    Params,
+    PyCols,
+)
 
 _EMPTY_STR = pl.lit("")
-
-
-@dataclass(slots=True)
-class ParamLens:
-    by_fn: pl.Expr = field(default=pl.col("p_len_by_fn"))
-    by_fn_cat: pl.Expr = field(default=pl.col("p_len_by_fn_cat"))
-    by_fn_cat_desc: pl.Expr = field(default=pl.col("p_len_by_fn_cat_desc"))
-
-
-@dataclass(slots=True)
-class PyCols:
-    name: pl.Expr = field(default=pl.col("py_name"))
-    types: pl.Expr = field(default=pl.col("py_types"))
-
-
-@dataclass(slots=True)
-class Params:
-    names: pl.Expr = field(default=pl.col("param_names"))
-    idx: pl.Expr = field(default=pl.col("param_idx"))
-    lens: ParamLens = field(default_factory=ParamLens)
-
-
-@dataclass(slots=True)
-class ParamLists:
-    signatures: pl.Expr = field(default=pl.col("param_sig_list"))
-    docs: pl.Expr = field(default=pl.col("param_doc_join"))
-    names: pl.Expr = field(default=pl.col("param_names_join"))
-
-
-@dataclass(slots=True)
-class DuckCols:
-    function_name: pl.Expr = field(default=pl.col("function_name"))
-    function_type: pl.Expr = field(default=pl.col("function_type"))
-    description: pl.Expr = field(default=pl.col("description"))
-    categories: pl.Expr = field(default=pl.col("categories"))
-    varargs: pl.Expr = field(default=pl.col("varargs"))
-    alias_of: pl.Expr = field(default=pl.col("alias_of"))
-    parameters: pl.Expr = field(default=pl.col("parameters"))
-    parameter_types: pl.Expr = field(default=pl.col("parameter_types"))
-
-    def query(self) -> duckdb.DuckDBPyRelation:
-
-        cols = pc.Dict.from_ref(asdict(self)).keys().join(", ")
-        qry = f"""--sql
-            SELECT {cols}
-            FROM duckdb_functions()
-            """
-
-        return duckdb.sql(qry)
 
 
 def get_df() -> pl.LazyFrame:

@@ -6,7 +6,7 @@ from textwrap import dedent
 
 import pyochain as pc
 
-from ._models import NAMESPACE_SPECS, NamespaceSpec
+from ._rules import NAMESPACE_SPECS, NamespaceSpec
 
 MANUAL_FNS_PATH = Path("src", "pql", "sql", "_manual_fns.py")
 
