@@ -131,7 +131,7 @@ def get_df() -> pl.LazyFrame:
                     params.idx.ge(params.lens.by_fn_cat),
                     py.types,
                     dk.parameter_types,
-                    _self_type(py.name, dk.categories),
+                    py.name.pipe(_self_type, dk.categories),
                 )
             ),
         )
@@ -140,16 +140,7 @@ def get_df() -> pl.LazyFrame:
             py.name,
             pl.col("param_names_list")
             .list.len()
-            .pipe(
-                _to_func,
-                py.name,
-                ParamLists(),
-                dk.varargs.pipe(_convert_duckdb_type_to_python).pipe(_make_type_union),
-                dk,
-                py.name.pipe(_self_type, dk.categories),
-                py.name.pipe(_self_expr, dk.categories),
-                py.name.pipe(_return_ctor, dk.categories),
-            ),
+            .pipe(_to_func, py.name, ParamLists(), dk),
         )
         .sort("namespace", py.name)
     )
@@ -167,7 +158,6 @@ def _joined_parts(
     self_type: pl.Expr,
 ) -> Iterable[pl.Expr]:
     py_type = _replace_self(py_union, self_type)
-    params_type = _replace_self(params_union, self_type)
 
     def _param_sig_list() -> pl.Expr:
         return pl.concat_str(
@@ -185,7 +175,7 @@ def _joined_parts(
             py_type,
             pl.when(cond).then(pl.lit(" | None")).otherwise(_EMPTY_STR),
             pl.lit("): `"),
-            params_type,
+            _replace_self(params_union, self_type),
             pl.lit("` expression"),
         ).str.join("\n")
 
@@ -404,17 +394,17 @@ def _to_py_name(dk: DuckCols, p_lens: ParamLens) -> pl.Expr:
     )
 
 
-def _to_func(  # noqa: PLR0913
-    has_params: pl.Expr,
-    py_name: pl.Expr,
-    p_lists: ParamLists,
-    varargs_py_type: pl.Expr,
-    dk: DuckCols,
-    self_type: pl.Expr,
-    self_expr: pl.Expr,
-    return_ctor: pl.Expr,
+def _to_func(
+    has_params: pl.Expr, py_name: pl.Expr, p_lists: ParamLists, dk: DuckCols
 ) -> pl.Expr:
-    varargs_type = _replace_self(varargs_py_type, self_type)
+    self_type = py_name.pipe(_self_type, dk.categories)
+    varargs_type = (
+        dk.varargs.pipe(_convert_duckdb_type_to_python)
+        .pipe(_make_type_union)
+        .pipe(_replace_self, self_type)
+    )
+
+    self_expr = py_name.pipe(_self_expr, dk.categories)
 
     def _signature(has_params: pl.Expr) -> pl.Expr:
         return pl.concat_str(
@@ -511,7 +501,7 @@ def _to_func(  # noqa: PLR0913
         pl.lit("\n\n        Returns:\n            "),
         self_type,
         pl.lit('\n        """\n        return '),
-        return_ctor,
+        py_name.pipe(_return_ctor, dk.categories),
         pl.lit('(func("'),
         dk.function_name,
         pl.lit('"'),
