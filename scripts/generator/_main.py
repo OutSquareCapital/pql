@@ -6,7 +6,19 @@ import pyochain as pc
 import typer
 
 from ._query import get_df
+from ._schemas import DATA_PATH, TableSchema
 from ._sections import FunctionInfo, build_file
+
+
+def get_data() -> None:
+
+    import duckdb
+
+    qry = """--sql
+    SELECT *
+    FROM duckdb_functions()
+    """
+    return duckdb.sql(qry).pl().cast(TableSchema).write_parquet(DATA_PATH)
 
 
 def run_pipeline() -> str:

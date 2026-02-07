@@ -11,11 +11,21 @@ from typing import Annotated
 
 import typer
 
-from .generator import run_pipeline
+from .generator import get_data, run_pipeline
 
 DEFAULT_OUTPUT = Path("src", "pql", "sql", "fns.py")
 
 app = typer.Typer()
+
+
+@app.command()
+def get_functions() -> None:
+    """Fetch function metadata from DuckDB and store as parquet at `scripts/generator/functions.parquet`."""
+    get_data()
+
+    typer.echo(
+        "Fetched function metadata and stored at scripts/generator/functions.parquet"
+    )
 
 
 @app.command()
