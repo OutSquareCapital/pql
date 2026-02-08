@@ -5,9 +5,9 @@ import polars as pl
 from ._rules import (
     CONVERTER,
     NAMESPACE_SPECS,
-    OPERATOR_MAP,
     PREFIXES,
     SHADOWERS,
+    SPECIAL_CASES,
     DuckDbTypes,
 )
 from ._schemas import (
@@ -108,11 +108,10 @@ def _filters(dk: DuckCols) -> Iterable[pl.Expr]:
             {FuncTypes.TABLE, FuncTypes.TABLE_MACRO, FuncTypes.PRAGMA}
         ).not_(),
         dk.parameters.list.len().eq(0).and_(dk.varargs.is_null()).not_(),  # literals
-        dk.function_name.is_in(OPERATOR_MAP).not_(),
+        dk.function_name.is_in(SPECIAL_CASES).not_(),
         *PREFIXES.iter().map(
             lambda prefix: dk.function_name.str.starts_with(prefix).not_()
         ),
-        dk.function_name.ne("alias"),  # conflicts with duckdb alias method
     )
 
 
@@ -278,37 +277,6 @@ def _to_func(
         _make_type_union, py.self_type
     )
 
-    def _duckdb_args(has_params: pl.Expr) -> pl.Expr:
-        def _self_expr() -> pl.Expr:
-            return format_kwords(
-                ", self.{expr}",
-                expr=pl.when(py.namespace.is_not_null())
-                .then(pl.lit("_parent.inner()"))
-                .otherwise(pl.lit("_expr")),
-            )
-
-        slf_arg = _self_expr()
-        sep = pl.lit(", ")
-        args = p_lists.names.list.slice(1).list.join(", ")
-
-        def _reversed() -> pl.Expr:
-            """Special case for log function: other args first, then self._expr."""
-            return pl.when(dk.function_name.eq("log")).then(
-                pl.concat_str(sep, args, slf_arg)
-            )
-
-        return (
-            pl.when(dk.function_name.eq("log").and_(has_params.gt(1)))
-            .then(_reversed())
-            .otherwise(
-                pl.concat_str(
-                    slf_arg,
-                    pl.when(has_params.gt(1)).then(pl.concat_str(sep, args)),
-                    ignore_nulls=True,
-                )
-            )
-        )
-
     return format_kwords(
         _txt(),
         func_name=py.name.alias("func_name"),
@@ -350,7 +318,16 @@ def _to_func(
         ),
         parent=pl.when(py.namespace.is_not_null()).then(pl.lit("_parent.")),
         duckdb_name=dk.function_name,
-        duckdb_args=has_params.pipe(_duckdb_args),
+        duckdb_args=format_kwords(
+            ", self.{expr}{args}",
+            expr=pl.when(py.namespace.is_not_null())
+            .then(pl.lit("_parent.inner()"))
+            .otherwise(pl.lit("_expr")),
+            args=pl.when(has_params.gt(1)).then(
+                pl.concat_str(pl.lit(", "), p_lists.names.list.slice(1).list.join(", "))
+            ),
+            ignore_nulls=True,
+        ),
         duckdb_varargs=pl.when(dk.varargs.is_not_null()).then(pl.lit(", *args")),
         ignore_nulls=True,
     )

@@ -211,6 +211,19 @@ class SqlExpr(Fns):  # noqa: PLW1641
             .map_star(lambda name, expr: cls.from_expr(expr).alias(name))
         )
 
+    def log(self, x: Self | float | None = None) -> Self:
+        """Computes the logarithm of x to base b.
+
+        b may be omitted, in which case the default 10.
+
+        Args:
+            x (Self | float | None): `DOUBLE` expression
+
+        Returns:
+            Self
+        """
+        return self.__class__(func("log", x, self._expr))
+
     def __str__(self) -> str:
         return str(self._expr)
 

@@ -104,7 +104,7 @@ SHADOWERS = pc.Set(keyword.kwlist).union(
     .union(pc.Set("l"))
 )
 """Names that should be renamed to avoid shadowing."""
-OPERATOR_MAP = pc.Set(
+SPECIAL_CASES = pc.Set(
     {
         "+",
         "-",
@@ -135,9 +135,11 @@ OPERATOR_MAP = pc.Set(
         "~~~",
         "!__postfix",
         "!",
+        "alias",  # conflicts with duckdb alias method
+        "log",  # Need to swap argument order to take self._expr as value and not as base
     }
 )
-"""Mapping of SQL operators to Python function names."""
+"""Function to exclude."""
 PREFIXES = pc.Set(
     (
         "__",

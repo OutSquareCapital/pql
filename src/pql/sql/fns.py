@@ -1332,19 +1332,6 @@ class Fns(ExprHandler[Expression]):
         """
         return self.__class__(func("ln", self._expr))
 
-    def log(self, x: Self | float | None = None) -> Self:
-        """Computes the logarithm of x to base b.
-
-        b may be omitted, in which case the default 10.
-
-        Args:
-            x (Self | float | None): `DOUBLE` expression
-
-        Returns:
-            Self
-        """
-        return self.__class__(func("log", x, self._expr))
-
     def log10(self) -> Self:
         """Computes the 10-log of x.
 
