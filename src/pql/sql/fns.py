@@ -1299,17 +1299,6 @@ class Fns(ExprHandler[Expression]):
         """
         return self.__class__(func("lgamma", self._expr))
 
-    def list(self) -> Self:
-        """Returns a LIST containing all the values of a column.
-
-        See Also:
-            array_agg
-
-        Returns:
-            Self
-        """
-        return self.__class__(func("list", self._expr))
-
     def listagg(self, arg: Self | str | None = None) -> Self:
         """Concatenates the column string values with an optional separator.
 
@@ -6071,9 +6060,6 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
 
     def array_agg(self) -> T:
         """Returns a LIST containing all the values of a column.
-
-        See Also:
-            list
 
         Returns:
             T

@@ -224,6 +224,17 @@ class SqlExpr(Fns):  # noqa: PLW1641
         """
         return self.__class__(func("log", x, self._expr))
 
+    def implode(self) -> Self:
+        """Returns a LIST containing all the values of a column.
+
+        See Also:
+            array_agg
+
+        Returns:
+            Self
+        """
+        return self.__class__(func("list", self._expr))
+
     def __str__(self) -> str:
         return str(self._expr)
 
