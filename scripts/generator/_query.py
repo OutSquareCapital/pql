@@ -60,13 +60,11 @@ def run_qry(lf: pl.LazyFrame) -> pl.LazyFrame:
             )
             .str.to_lowercase()
             .pipe(_strip_namespace_prefixes, py.namespace)
-            .alias("py_name")
-        )
-        .with_columns(
+            .alias("py_name"),
             pl.when(py.namespace.is_not_null())
             .then(pl.lit("T"))
             .otherwise(pl.lit("Self"))
-            .alias("self_type")
+            .alias("self_type"),
         )
         .with_row_index("sig_id")
         .explode("parameters", "parameter_types")
