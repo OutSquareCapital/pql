@@ -112,6 +112,19 @@ class Fns(ExprHandler[Expression]):
         """
         return self.__class__(func("approx_top_k", self._expr, k))
 
+    def arbitrary(self) -> Self:
+        """Returns the first value (NULL or non-NULL) from arg.
+
+        This function is affected by ordering.
+
+        See Also:
+            first
+
+        Returns:
+            Self
+        """
+        return self.__class__(func("arbitrary", self._expr))
+
     def arg_max(
         self,
         val: Self | bytes | bytearray | memoryview | date | datetime | float | str,
@@ -120,6 +133,9 @@ class Fns(ExprHandler[Expression]):
         """Finds the row with the maximum val.
 
         Calculates the non-NULL arg expression at that row.
+
+        See Also:
+            argmax, max_by
 
         Args:
             val (Self | bytes | bytearray | memoryview | date | datetime | float | int | str): `ANY | BIGINT | BLOB | DATE | DOUBLE | HUGEINT | INTEGER | TIMESTAMP | TIMESTAMP WITH TIME ZONE | VARCHAR` expression
@@ -154,6 +170,9 @@ class Fns(ExprHandler[Expression]):
 
         Calculates the non-NULL arg expression at that row.
 
+        See Also:
+            argmin, min_by
+
         Args:
             val (Self | bytes | bytearray | memoryview | date | datetime | float | int | str): `ANY | BIGINT | BLOB | DATE | DOUBLE | HUGEINT | INTEGER | TIMESTAMP | TIMESTAMP WITH TIME ZONE | VARCHAR` expression
             col2 (Self | int | None): `BIGINT` expression
@@ -177,6 +196,48 @@ class Fns(ExprHandler[Expression]):
             Self
         """
         return self.__class__(func("arg_min_null", self._expr, val))
+
+    def argmax(
+        self,
+        val: Self | bytes | bytearray | memoryview | date | datetime | float | str,
+        col2: Self | int | None = None,
+    ) -> Self:
+        """Finds the row with the maximum val.
+
+        Calculates the non-NULL arg expression at that row.
+
+        See Also:
+            arg_max, max_by
+
+        Args:
+            val (Self | bytes | bytearray | memoryview | date | datetime | float | int | str): `ANY | BIGINT | BLOB | DATE | DOUBLE | HUGEINT | INTEGER | TIMESTAMP | TIMESTAMP WITH TIME ZONE | VARCHAR` expression
+            col2 (Self | int | None): `BIGINT` expression
+
+        Returns:
+            Self
+        """
+        return self.__class__(func("argmax", self._expr, val, col2))
+
+    def argmin(
+        self,
+        val: Self | bytes | bytearray | memoryview | date | datetime | float | str,
+        col2: Self | int | None = None,
+    ) -> Self:
+        """Finds the row with the minimum val.
+
+        Calculates the non-NULL arg expression at that row.
+
+        See Also:
+            arg_min, min_by
+
+        Args:
+            val (Self | bytes | bytearray | memoryview | date | datetime | float | int | str): `ANY | BIGINT | BLOB | DATE | DOUBLE | HUGEINT | INTEGER | TIMESTAMP | TIMESTAMP WITH TIME ZONE | VARCHAR` expression
+            col2 (Self | int | None): `BIGINT` expression
+
+        Returns:
+            Self
+        """
+        return self.__class__(func("argmin", self._expr, val, col2))
 
     def asin(self) -> Self:
         """Computes the arcsine of x.
@@ -224,6 +285,9 @@ class Fns(ExprHandler[Expression]):
     def avg(self) -> Self:
         """Calculates the average value for all tuples in x.
 
+        See Also:
+            mean
+
         Returns:
             Self
         """
@@ -231,6 +295,9 @@ class Fns(ExprHandler[Expression]):
 
     def bin(self) -> Self:
         """Converts the `value` to binary representation.
+
+        See Also:
+            to_binary
 
         Returns:
             Self
@@ -375,10 +442,24 @@ class Fns(ExprHandler[Expression]):
     def ceil(self) -> Self:
         """Rounds the number up.
 
+        See Also:
+            ceiling
+
         Returns:
             Self
         """
         return self.__class__(func("ceil", self._expr))
+
+    def ceiling(self) -> Self:
+        """Rounds the number up.
+
+        See Also:
+            ceil
+
+        Returns:
+            Self
+        """
+        return self.__class__(func("ceiling", self._expr))
 
     def century(self) -> Self:
         """Extract the century component from a date or timestamp.
@@ -387,6 +468,28 @@ class Fns(ExprHandler[Expression]):
             Self
         """
         return self.__class__(func("century", self._expr))
+
+    def char_length(self) -> Self:
+        """Returns the bit-length of the `bit` argument.
+
+        See Also:
+            character_length, len, length
+
+        Returns:
+            Self
+        """
+        return self.__class__(func("char_length", self._expr))
+
+    def character_length(self) -> Self:
+        """Returns the bit-length of the `bit` argument.
+
+        See Also:
+            char_length, len, length
+
+        Returns:
+            Self
+        """
+        return self.__class__(func("character_length", self._expr))
 
     def col_description(self, column_number: Self) -> Self:
         """SQL col_description function.
@@ -481,10 +584,24 @@ class Fns(ExprHandler[Expression]):
     def count_if(self) -> Self:
         """Counts the total number of TRUE values for a boolean column.
 
+        See Also:
+            countif
+
         Returns:
             Self
         """
         return self.__class__(func("count_if", self._expr))
+
+    def countif(self) -> Self:
+        """Counts the total number of TRUE values for a boolean column.
+
+        See Also:
+            count_if
+
+        Returns:
+            Self
+        """
+        return self.__class__(func("countif", self._expr))
 
     def covar_pop(self, x: Self | float) -> Self:
         """Returns the population covariance of input values.
@@ -565,6 +682,22 @@ class Fns(ExprHandler[Expression]):
             Self
         """
         return self.__class__(func("divide", self._expr, col1))
+
+    def element_at(self, key: Self) -> Self:
+        """Returns a list containing the value for a given key or an empty list if the key is not contained in the map.
+
+        The type of the key provided in the second parameter must match the type of the map's keys else an error is returned.
+
+        See Also:
+            map_extract
+
+        Args:
+            key (Self): `K` expression
+
+        Returns:
+            Self
+        """
+        return self.__class__(func("element_at", self._expr, key))
 
     def encode(self) -> Self:
         """Converts the `string` to `BLOB`.
@@ -761,6 +894,9 @@ class Fns(ExprHandler[Expression]):
 
         This function is affected by ordering.
 
+        See Also:
+            arbitrary
+
         Returns:
             Self
         """
@@ -829,6 +965,17 @@ class Fns(ExprHandler[Expression]):
         """
         return self.__class__(func("from_json_strict", self._expr, col1))
 
+    def fsum(self) -> Self:
+        """Calculates the sum using a more accurate floating point summation (Kahan Sum).
+
+        See Also:
+            kahan_sum, sumkahan
+
+        Returns:
+            Self
+        """
+        return self.__class__(func("fsum", self._expr))
+
     def gamma(self) -> Self:
         """Interpolation of (x-1) factorial (so decimal inputs are allowed).
 
@@ -836,6 +983,20 @@ class Fns(ExprHandler[Expression]):
             Self
         """
         return self.__class__(func("gamma", self._expr))
+
+    def gcd(self, y: Self | int) -> Self:
+        """Computes the greatest common divisor of x and y.
+
+        See Also:
+            greatest_common_divisor
+
+        Args:
+            y (Self | int): `BIGINT | HUGEINT` expression
+
+        Returns:
+            Self
+        """
+        return self.__class__(func("gcd", self._expr, y))
 
     def generate_subscripts(self, dim: Self) -> Self:
         """SQL generate_subscripts function.
@@ -894,6 +1055,9 @@ class Fns(ExprHandler[Expression]):
     def greatest_common_divisor(self, y: Self | int) -> Self:
         """Computes the greatest common divisor of x and y.
 
+        See Also:
+            gcd
+
         Args:
             y (Self | int): `BIGINT | HUGEINT` expression
 
@@ -902,8 +1066,25 @@ class Fns(ExprHandler[Expression]):
         """
         return self.__class__(func("greatest_common_divisor", self._expr, y))
 
+    def group_concat(self, arg: Self | str | None = None) -> Self:
+        """Concatenates the column string values with an optional separator.
+
+        See Also:
+            listagg, string_agg
+
+        Args:
+            arg (Self | str | None): `VARCHAR` expression
+
+        Returns:
+            Self
+        """
+        return self.__class__(func("group_concat", self._expr, arg))
+
     def hex(self) -> Self:
         """Converts the `value` to `VARCHAR` using hexadecimal representation.
+
+        See Also:
+            to_hex
 
         Returns:
             Self
@@ -1018,6 +1199,9 @@ class Fns(ExprHandler[Expression]):
     def kahan_sum(self) -> Self:
         """Calculates the sum using a more accurate floating point summation (Kahan Sum).
 
+        See Also:
+            fsum, sumkahan
+
         Returns:
             Self
         """
@@ -1057,8 +1241,25 @@ class Fns(ExprHandler[Expression]):
         """
         return self.__class__(func("last_day", self._expr))
 
+    def lcm(self, y: Self | int) -> Self:
+        """Computes the least common multiple of x and y.
+
+        See Also:
+            least_common_multiple
+
+        Args:
+            y (Self | int): `BIGINT | HUGEINT` expression
+
+        Returns:
+            Self
+        """
+        return self.__class__(func("lcm", self._expr, y))
+
     def least_common_multiple(self, y: Self | int) -> Self:
         """Computes the least common multiple of x and y.
+
+        See Also:
+            lcm
 
         Args:
             y (Self | int): `BIGINT | HUGEINT` expression
@@ -1068,8 +1269,22 @@ class Fns(ExprHandler[Expression]):
         """
         return self.__class__(func("least_common_multiple", self._expr, y))
 
+    def len(self) -> Self:
+        """Returns the bit-length of the `bit` argument.
+
+        See Also:
+            char_length, character_length, length
+
+        Returns:
+            Self
+        """
+        return self.__class__(func("len", self._expr))
+
     def length(self) -> Self:
         """Returns the bit-length of the `bit` argument.
+
+        See Also:
+            char_length, character_length, len
 
         Returns:
             Self
@@ -1087,10 +1302,27 @@ class Fns(ExprHandler[Expression]):
     def list(self) -> Self:
         """Returns a LIST containing all the values of a column.
 
+        See Also:
+            array_agg
+
         Returns:
             Self
         """
         return self.__class__(func("list", self._expr))
+
+    def listagg(self, arg: Self | str | None = None) -> Self:
+        """Concatenates the column string values with an optional separator.
+
+        See Also:
+            group_concat, string_agg
+
+        Args:
+            arg (Self | str | None): `VARCHAR` expression
+
+        Returns:
+            Self
+        """
+        return self.__class__(func("listagg", self._expr, arg))
 
     def ln(self) -> Self:
         """Computes the natural logarithm of x.
@@ -1310,6 +1542,9 @@ class Fns(ExprHandler[Expression]):
 
         The type of the key provided in the second parameter must match the type of the map's keys else an error is returned.
 
+        See Also:
+            element_at
+
         Args:
             key (Self): `K` expression
 
@@ -1374,6 +1609,27 @@ class Fns(ExprHandler[Expression]):
         """
         return self.__class__(func("max", self._expr, col1))
 
+    def max_by(
+        self,
+        val: Self | bytes | bytearray | memoryview | date | datetime | float | str,
+        col2: Self | int | None = None,
+    ) -> Self:
+        """Finds the row with the maximum val.
+
+        Calculates the non-NULL arg expression at that row.
+
+        See Also:
+            arg_max, argmax
+
+        Args:
+            val (Self | bytes | bytearray | memoryview | date | datetime | float | int | str): `ANY | BIGINT | BLOB | DATE | DOUBLE | HUGEINT | INTEGER | TIMESTAMP | TIMESTAMP WITH TIME ZONE | VARCHAR` expression
+            col2 (Self | int | None): `BIGINT` expression
+
+        Returns:
+            Self
+        """
+        return self.__class__(func("max_by", self._expr, val, col2))
+
     def md5(self) -> Self:
         """Returns the MD5 hash of the `blob` as a `VARCHAR`.
 
@@ -1405,6 +1661,17 @@ class Fns(ExprHandler[Expression]):
             Self
         """
         return self.__class__(func("md5_number_upper", self._expr))
+
+    def mean(self) -> Self:
+        """Calculates the average value for all tuples in x.
+
+        See Also:
+            avg
+
+        Returns:
+            Self
+        """
+        return self.__class__(func("mean", self._expr))
 
     def median(self) -> Self:
         """Returns the middle value of the set.
@@ -1454,6 +1721,27 @@ class Fns(ExprHandler[Expression]):
             Self
         """
         return self.__class__(func("min", self._expr, col1))
+
+    def min_by(
+        self,
+        val: Self | bytes | bytearray | memoryview | date | datetime | float | str,
+        col2: Self | int | None = None,
+    ) -> Self:
+        """Finds the row with the minimum val.
+
+        Calculates the non-NULL arg expression at that row.
+
+        See Also:
+            arg_min, argmin
+
+        Args:
+            val (Self | bytes | bytearray | memoryview | date | datetime | float | int | str): `ANY | BIGINT | BLOB | DATE | DOUBLE | HUGEINT | INTEGER | TIMESTAMP | TIMESTAMP WITH TIME ZONE | VARCHAR` expression
+            col2 (Self | int | None): `BIGINT` expression
+
+        Returns:
+            Self
+        """
+        return self.__class__(func("min_by", self._expr, val, col2))
 
     def minute(self) -> Self:
         """Extract the minute component from a date or timestamp.
@@ -1590,6 +1878,9 @@ class Fns(ExprHandler[Expression]):
     def pow(self, y: Self | float) -> Self:
         """Computes x to the power of y.
 
+        See Also:
+            power
+
         Args:
             y (Self | float): `DOUBLE` expression
 
@@ -1600,6 +1891,9 @@ class Fns(ExprHandler[Expression]):
 
     def power(self, y: Self | float) -> Self:
         """Computes x to the power of y.
+
+        See Also:
+            pow
 
         Args:
             y (Self | float): `DOUBLE` expression
@@ -1616,6 +1910,22 @@ class Fns(ExprHandler[Expression]):
             Self
         """
         return self.__class__(func("product", self._expr))
+
+    def quantile(self, pos: Self | float | list[float] | None = None) -> Self:
+        """Returns the exact quantile number between 0 and 1 .
+
+        If pos is a LIST of FLOATs, then the result is a LIST of the corresponding exact quantiles.
+
+        See Also:
+            quantile_disc
+
+        Args:
+            pos (Self | float | list[float] | None): `DOUBLE | DOUBLE[]` expression
+
+        Returns:
+            Self
+        """
+        return self.__class__(func("quantile", self._expr, pos))
 
     def quantile_cont(self, pos: Self | float | list[float]) -> Self:
         """Returns the interpolated quantile number between 0 and 1 .
@@ -1634,6 +1944,9 @@ class Fns(ExprHandler[Expression]):
         """Returns the exact quantile number between 0 and 1 .
 
         If pos is a LIST of FLOATs, then the result is a LIST of the corresponding exact quantiles.
+
+        See Also:
+            quantile
 
         Args:
             pos (Self | float | list[float] | None): `DOUBLE | DOUBLE[]` expression
@@ -2004,6 +2317,17 @@ class Fns(ExprHandler[Expression]):
         """
         return self.__class__(func("stats", self._expr))
 
+    def stddev(self) -> Self:
+        """Returns the sample standard deviation.
+
+        See Also:
+            stddev_samp
+
+        Returns:
+            Self
+        """
+        return self.__class__(func("stddev", self._expr))
+
     def stddev_pop(self) -> Self:
         """Returns the population standard deviation.
 
@@ -2014,6 +2338,9 @@ class Fns(ExprHandler[Expression]):
 
     def stddev_samp(self) -> Self:
         """Returns the sample standard deviation.
+
+        See Also:
+            stddev
 
         Returns:
             Self
@@ -2050,6 +2377,17 @@ class Fns(ExprHandler[Expression]):
             Self
         """
         return self.__class__(func("sum_no_overflow", self._expr))
+
+    def sumkahan(self) -> Self:
+        """Calculates the sum using a more accurate floating point summation (Kahan Sum).
+
+        See Also:
+            fsum, kahan_sum
+
+        Returns:
+            Self
+        """
+        return self.__class__(func("sumkahan", self._expr))
 
     def tan(self) -> Self:
         """Computes the tan of x.
@@ -2122,6 +2460,17 @@ class Fns(ExprHandler[Expression]):
         """
         return self.__class__(func("timezone_minute", self._expr))
 
+    def to_binary(self) -> Self:
+        """Converts the `value` to binary representation.
+
+        See Also:
+            bin
+
+        Returns:
+            Self
+        """
+        return self.__class__(func("to_binary", self._expr))
+
     def to_centuries(self) -> Self:
         """Construct a century interval.
 
@@ -2145,6 +2494,17 @@ class Fns(ExprHandler[Expression]):
             Self
         """
         return self.__class__(func("to_decades", self._expr))
+
+    def to_hex(self) -> Self:
+        """Converts the `value` to `VARCHAR` using hexadecimal representation.
+
+        See Also:
+            hex
+
+        Returns:
+            Self
+        """
+        return self.__class__(func("to_hex", self._expr))
 
     def to_hours(self) -> Self:
         """Construct a hour interval.
@@ -2338,10 +2698,24 @@ class Fns(ExprHandler[Expression]):
     def var_samp(self) -> Self:
         """Returns the sample variance of all input values.
 
+        See Also:
+            variance
+
         Returns:
             Self
         """
         return self.__class__(func("var_samp", self._expr))
+
+    def variance(self) -> Self:
+        """Returns the sample variance of all input values.
+
+        See Also:
+            var_samp
+
+        Returns:
+            Self
+        """
+        return self.__class__(func("variance", self._expr))
 
     def variant_extract(self, col1: Self | int | str) -> Self:
         """SQL variant_extract function.
@@ -2458,6 +2832,263 @@ class Fns(ExprHandler[Expression]):
 class ListFns[T: Fns](NameSpaceHandler[T]):
     """Mixin providing auto-generated DuckDB list functions as methods."""
 
+    def aggregate(self, function_name: T | str, *args: T) -> T:
+        """Executes the aggregate function `function_name` on the elements of `list`.
+
+        See Also:
+            array_aggr, array_aggregate, list_aggr, list_aggregate
+
+        Args:
+            function_name (T | str): `VARCHAR` expression
+            *args (T): `ANY` expression
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(
+            func("aggregate", self._parent.inner(), function_name, *args)
+        )
+
+    def apply(self, lambda_arg: T) -> T:
+        """Returns a list that is the result of applying the `lambda` function to each element of the input `list`.
+
+        The return type is defined by the return type of the `lambda` function.
+
+        See Also:
+            array_apply, array_transform, list_apply, list_transform
+
+        Args:
+            lambda_arg (T): `LAMBDA` expression
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(func("apply", self._parent.inner(), lambda_arg))
+
+    def array_aggr(self, function_name: T | str, *args: T) -> T:
+        """Executes the aggregate function `function_name` on the elements of `list`.
+
+        See Also:
+            aggregate, array_aggregate, list_aggr, list_aggregate
+
+        Args:
+            function_name (T | str): `VARCHAR` expression
+            *args (T): `ANY` expression
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(
+            func("array_aggr", self._parent.inner(), function_name, *args)
+        )
+
+    def array_aggregate(self, function_name: T | str, *args: T) -> T:
+        """Executes the aggregate function `function_name` on the elements of `list`.
+
+        See Also:
+            aggregate, array_aggr, list_aggr, list_aggregate
+
+        Args:
+            function_name (T | str): `VARCHAR` expression
+            *args (T): `ANY` expression
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(
+            func("array_aggregate", self._parent.inner(), function_name, *args)
+        )
+
+    def array_apply(self, lambda_arg: T) -> T:
+        """Returns a list that is the result of applying the `lambda` function to each element of the input `list`.
+
+        The return type is defined by the return type of the `lambda` function.
+
+        See Also:
+            apply, array_transform, list_apply, list_transform
+
+        Args:
+            lambda_arg (T): `LAMBDA` expression
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(
+            func("array_apply", self._parent.inner(), lambda_arg)
+        )
+
+    def array_cat(self, *args: T) -> T:
+        """Concatenates lists.
+
+        `NULL` inputs are skipped.
+
+        See also operator `||`.
+
+        See Also:
+            array_concat, list_cat, list_concat
+
+        Args:
+            *args (T): `ANY[]` expression
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(func("array_cat", self._parent.inner(), *args))
+
+    def array_concat(self, *args: T) -> T:
+        """Concatenates lists.
+
+        `NULL` inputs are skipped.
+
+        See also operator `||`.
+
+        See Also:
+            array_cat, list_cat, list_concat
+
+        Args:
+            *args (T): `ANY[]` expression
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(func("array_concat", self._parent.inner(), *args))
+
+    def array_contains(self, element: T) -> T:
+        """Returns true if the list contains the element.
+
+        See Also:
+            array_has, list_contains, list_has
+
+        Args:
+            element (T): `T` expression
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(
+            func("array_contains", self._parent.inner(), element)
+        )
+
+    def array_distinct(self) -> T:
+        """Removes all duplicates and `NULL` values from a list.
+
+        Does not preserve the original order.
+
+        See Also:
+            list_distinct
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(func("array_distinct", self._parent.inner()))
+
+    def array_filter(self, lambda_arg: T) -> T:
+        """Constructs a list from those elements of the input `list` for which the `lambda` function returns `true`.
+
+        DuckDB must be able to cast the `lambda` function's return type to `BOOL`.
+
+        The return type of `list_filter` is the same as the input list's.
+
+        See Also:
+            filter, list_filter
+
+        Args:
+            lambda_arg (T): `LAMBDA` expression
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(
+            func("array_filter", self._parent.inner(), lambda_arg)
+        )
+
+    def array_grade_up(
+        self, col1: T | str | None = None, col2: T | str | None = None
+    ) -> T:
+        """Works like list_sort, but the results are the indexes that correspond to the position in the original list instead of the actual values.
+
+        See Also:
+            grade_up, list_grade_up
+
+        Args:
+            col1 (T | str | None): `VARCHAR` expression
+            col2 (T | str | None): `VARCHAR` expression
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(
+            func("array_grade_up", self._parent.inner(), col1, col2)
+        )
+
+    def array_has(self, element: T) -> T:
+        """Returns true if the list contains the element.
+
+        See Also:
+            array_contains, list_contains, list_has
+
+        Args:
+            element (T): `T` expression
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(func("array_has", self._parent.inner(), element))
+
+    def array_has_all(self, list2: T) -> T:
+        """Returns true if all elements of list2 are in list1.
+
+        NULLs are ignored.
+
+        See Also:
+            list_has_all
+
+        Args:
+            list2 (T): `T[]` expression
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(
+            func("array_has_all", self._parent.inner(), list2)
+        )
+
+    def array_has_any(self, list2: T) -> T:
+        """Returns true if the lists have any element in common.
+
+        NULLs are ignored.
+
+        See Also:
+            list_has_any
+
+        Args:
+            list2 (T): `T[]` expression
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(
+            func("array_has_any", self._parent.inner(), list2)
+        )
+
+    def array_indexof(self, element: T) -> T:
+        """Returns the index of the `element` if the `list` contains the `element`.
+
+        If the `element` is not found, it returns `NULL`.
+
+        See Also:
+            array_position, list_indexof, list_position
+
+        Args:
+            element (T): `T` expression
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(
+            func("array_indexof", self._parent.inner(), element)
+        )
+
     def array_length(self) -> T:
         """Returns the length of the `list`.
 
@@ -2479,6 +3110,216 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
             func("array_length", self._parent.inner(), dimension)
         )
 
+    def array_position(self, element: T) -> T:
+        """Returns the index of the `element` if the `list` contains the `element`.
+
+        If the `element` is not found, it returns `NULL`.
+
+        See Also:
+            array_indexof, list_indexof, list_position
+
+        Args:
+            element (T): `T` expression
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(
+            func("array_position", self._parent.inner(), element)
+        )
+
+    def array_reduce(self, lambda_arg: T, initial_value: T | None = None) -> T:
+        """Reduces all elements of the input `list` into a single scalar value by executing the `lambda` function on a running result and the next list element.
+
+        The `lambda` function has an optional `initial_value` argument.
+
+        See Also:
+            list_reduce, reduce
+
+        Args:
+            lambda_arg (T): `LAMBDA` expression
+            initial_value (T | None): `ANY` expression
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(
+            func("array_reduce", self._parent.inner(), lambda_arg, initial_value)
+        )
+
+    def array_resize(self, size: T, value: T | None = None) -> T:
+        """Resizes the `list` to contain `size` elements.
+
+        Initializes new elements with `value` or `NULL` if `value` is not set.
+
+        See Also:
+            list_resize
+
+        Args:
+            size (T): `ANY` expression
+            value (T | None): `ANY` expression
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(
+            func("array_resize", self._parent.inner(), size, value)
+        )
+
+    def array_reverse_sort(self, col1: T | str | None = None) -> T:
+        """Sorts the elements of the list in reverse order.
+
+        See Also:
+            list_reverse_sort
+
+        Args:
+            col1 (T | str | None): `VARCHAR` expression
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(
+            func("array_reverse_sort", self._parent.inner(), col1)
+        )
+
+    def array_select(self, index_list: T | list[int]) -> T:
+        """Returns a list based on the elements selected by the `index_list`.
+
+        See Also:
+            list_select
+
+        Args:
+            index_list (T | list[int]): `BIGINT[]` expression
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(
+            func("array_select", self._parent.inner(), index_list)
+        )
+
+    def array_slice(self, begin: T, end: T, step: T | int | None = None) -> T:
+        """Extracts a sublist or substring using slice conventions.
+
+        Negative values are accepted.
+
+        See Also:
+            list_slice
+
+        Args:
+            begin (T): `ANY` expression
+            end (T): `ANY` expression
+            step (T | int | None): `BIGINT` expression
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(
+            func("array_slice", self._parent.inner(), begin, end, step)
+        )
+
+    def array_sort(self, col1: T | str | None = None, col2: T | str | None = None) -> T:
+        """Sorts the elements of the list.
+
+        See Also:
+            list_sort
+
+        Args:
+            col1 (T | str | None): `VARCHAR` expression
+            col2 (T | str | None): `VARCHAR` expression
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(
+            func("array_sort", self._parent.inner(), col1, col2)
+        )
+
+    def array_transform(self, lambda_arg: T) -> T:
+        """Returns a list that is the result of applying the `lambda` function to each element of the input `list`.
+
+        The return type is defined by the return type of the `lambda` function.
+
+        See Also:
+            apply, array_apply, list_apply, list_transform
+
+        Args:
+            lambda_arg (T): `LAMBDA` expression
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(
+            func("array_transform", self._parent.inner(), lambda_arg)
+        )
+
+    def array_unique(self) -> T:
+        """Counts the unique elements of a `list`.
+
+        See Also:
+            list_unique
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(func("array_unique", self._parent.inner()))
+
+    def array_where(self, mask_list: T | list[bool]) -> T:
+        """Returns a list with the `BOOLEAN`s in `mask_list` applied as a mask to the `value_list`.
+
+        See Also:
+            list_where
+
+        Args:
+            mask_list (T | list[bool]): `BOOLEAN[]` expression
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(
+            func("array_where", self._parent.inner(), mask_list)
+        )
+
+    def array_zip(self, *args: T) -> T:
+        """Zips n `LIST`s to a new `LIST` whose length will be that of the longest list.
+
+        Its elements are structs of n elements from each list `list_1`, …, `list_n`, missing elements are replaced with `NULL`.
+
+        If `truncate` is set, all lists are truncated to the smallest list length.
+
+        See Also:
+            list_zip
+
+        Args:
+            *args (T): `ANY` expression
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(func("array_zip", self._parent.inner(), *args))
+
+    def char_length(self) -> T:
+        """Returns the length of the `list`.
+
+        See Also:
+            character_length, len, length
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(func("char_length", self._parent.inner()))
+
+    def character_length(self) -> T:
+        """Returns the length of the `list`.
+
+        See Also:
+            char_length, len, length
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(func("character_length", self._parent.inner()))
+
     def concat(self, *args: T) -> T:
         """Concatenates multiple strings or lists.
 
@@ -2493,6 +3334,24 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
             T
         """
         return self._parent.__class__(func("concat", self._parent.inner(), *args))
+
+    def filter(self, lambda_arg: T) -> T:
+        """Constructs a list from those elements of the input `list` for which the `lambda` function returns `true`.
+
+        DuckDB must be able to cast the `lambda` function's return type to `BOOL`.
+
+        The return type of `list_filter` is the same as the input list's.
+
+        See Also:
+            array_filter, list_filter
+
+        Args:
+            lambda_arg (T): `LAMBDA` expression
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(func("filter", self._parent.inner(), lambda_arg))
 
     def flatten(self) -> T:
         """Flattens a nested list by one level.
@@ -2520,16 +3379,67 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
             func("generate_series", self._parent.inner(), stop, step)
         )
 
+    def grade_up(self, col1: T | str | None = None, col2: T | str | None = None) -> T:
+        """Works like list_sort, but the results are the indexes that correspond to the position in the original list instead of the actual values.
+
+        See Also:
+            array_grade_up, list_grade_up
+
+        Args:
+            col1 (T | str | None): `VARCHAR` expression
+            col2 (T | str | None): `VARCHAR` expression
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(
+            func("grade_up", self._parent.inner(), col1, col2)
+        )
+
+    def len(self) -> T:
+        """Returns the length of the `list`.
+
+        See Also:
+            char_length, character_length, length
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(func("len", self._parent.inner()))
+
     def length(self) -> T:
         """Returns the length of the `list`.
+
+        See Also:
+            char_length, character_length, len
 
         Returns:
             T
         """
         return self._parent.__class__(func("length", self._parent.inner()))
 
+    def list_aggr(self, function_name: T | str, *args: T) -> T:
+        """Executes the aggregate function `function_name` on the elements of `list`.
+
+        See Also:
+            aggregate, array_aggr, array_aggregate, list_aggregate
+
+        Args:
+            function_name (T | str): `VARCHAR` expression
+            *args (T): `ANY` expression
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(
+            func("list_aggr", self._parent.inner(), function_name, *args)
+        )
+
     def list_aggregate(self, function_name: T | str, *args: T) -> T:
         """Executes the aggregate function `function_name` on the elements of `list`.
+
+        See Also:
+            aggregate, array_aggr, array_aggregate, list_aggr
 
         Args:
             function_name (T | str): `VARCHAR` expression
@@ -2560,6 +3470,24 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
             T
         """
         return self._parent.__class__(func("list_append", self._parent.inner(), e))
+
+    def list_apply(self, lambda_arg: T) -> T:
+        """Returns a list that is the result of applying the `lambda` function to each element of the input `list`.
+
+        The return type is defined by the return type of the `lambda` function.
+
+        See Also:
+            apply, array_apply, array_transform, list_transform
+
+        Args:
+            lambda_arg (T): `LAMBDA` expression
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(
+            func("list_apply", self._parent.inner(), lambda_arg)
+        )
 
     def list_approx_count_distinct(self) -> T:
         """SQL list_approx_count_distinct function.
@@ -2619,12 +3547,33 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._parent.__class__(func("list_bool_or", self._parent.inner()))
 
+    def list_cat(self, *args: T) -> T:
+        """Concatenates lists.
+
+        `NULL` inputs are skipped.
+
+        See also operator `||`.
+
+        See Also:
+            array_cat, array_concat, list_concat
+
+        Args:
+            *args (T): `ANY[]` expression
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(func("list_cat", self._parent.inner(), *args))
+
     def list_concat(self, *args: T) -> T:
         """Concatenates lists.
 
         `NULL` inputs are skipped.
 
         See also operator `||`.
+
+        See Also:
+            array_cat, array_concat, list_cat
 
         Args:
             *args (T): `ANY[]` expression
@@ -2636,6 +3585,9 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
 
     def list_contains(self, element: T) -> T:
         """Returns true if the list contains the element.
+
+        See Also:
+            array_contains, array_has, list_has
 
         Args:
             element (T): `T` expression
@@ -2699,10 +3651,43 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
 
         Does not preserve the original order.
 
+        See Also:
+            array_distinct
+
         Returns:
             T
         """
         return self._parent.__class__(func("list_distinct", self._parent.inner()))
+
+    def list_dot_product(self, list2: T | list[float]) -> T:
+        """Computes the inner product between two same-sized lists.
+
+        See Also:
+            list_inner_product
+
+        Args:
+            list2 (T | list[float]): `DOUBLE[] | FLOAT[]` expression
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(
+            func("list_dot_product", self._parent.inner(), list2)
+        )
+
+    def list_element(self, index: T | int) -> T:
+        """Extract the `index`th (1-based) value from the list.
+
+        See Also:
+            list_extract
+
+        Args:
+            index (T | int): `BIGINT` expression
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(func("list_element", self._parent.inner(), index))
 
     def list_entropy(self) -> T:
         """SQL list_entropy function.
@@ -2714,6 +3699,9 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
 
     def list_extract(self, index: T | int) -> T:
         """Extract the `index`th (1-based) value from the list.
+
+        See Also:
+            list_element
 
         Args:
             index (T | int): `BIGINT` expression
@@ -2729,6 +3717,9 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         DuckDB must be able to cast the `lambda` function's return type to `BOOL`.
 
         The return type of `list_filter` is the same as the input list's.
+
+        See Also:
+            array_filter, filter
 
         Args:
             lambda_arg (T): `LAMBDA` expression
@@ -2753,6 +3744,9 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
     ) -> T:
         """Works like list_sort, but the results are the indexes that correspond to the position in the original list instead of the actual values.
 
+        See Also:
+            array_grade_up, grade_up
+
         Args:
             col1 (T | str | None): `VARCHAR` expression
             col2 (T | str | None): `VARCHAR` expression
@@ -2764,10 +3758,27 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
             func("list_grade_up", self._parent.inner(), col1, col2)
         )
 
+    def list_has(self, element: T) -> T:
+        """Returns true if the list contains the element.
+
+        See Also:
+            array_contains, array_has, list_contains
+
+        Args:
+            element (T): `T` expression
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(func("list_has", self._parent.inner(), element))
+
     def list_has_all(self, list2: T) -> T:
         """Returns true if all elements of list2 are in list1.
 
         NULLs are ignored.
+
+        See Also:
+            array_has_all
 
         Args:
             list2 (T): `T[]` expression
@@ -2781,6 +3792,9 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         """Returns true if the lists have any element in common.
 
         NULLs are ignored.
+
+        See Also:
+            array_has_any
 
         Args:
             list2 (T): `T[]` expression
@@ -2798,8 +3812,29 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._parent.__class__(func("list_histogram", self._parent.inner()))
 
+    def list_indexof(self, element: T) -> T:
+        """Returns the index of the `element` if the `list` contains the `element`.
+
+        If the `element` is not found, it returns `NULL`.
+
+        See Also:
+            array_indexof, array_position, list_position
+
+        Args:
+            element (T): `T` expression
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(
+            func("list_indexof", self._parent.inner(), element)
+        )
+
     def list_inner_product(self, list2: T | list[float]) -> T:
         """Computes the inner product between two same-sized lists.
+
+        See Also:
+            list_dot_product
 
         Args:
             list2 (T | list[float]): `DOUBLE[] | FLOAT[]` expression
@@ -2886,8 +3921,27 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._parent.__class__(func("list_mode", self._parent.inner()))
 
+    def list_negative_dot_product(self, list2: T | list[float]) -> T:
+        """Computes the negative inner product between two same-sized lists.
+
+        See Also:
+            list_negative_inner_product
+
+        Args:
+            list2 (T | list[float]): `DOUBLE[] | FLOAT[]` expression
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(
+            func("list_negative_dot_product", self._parent.inner(), list2)
+        )
+
     def list_negative_inner_product(self, list2: T | list[float]) -> T:
         """Computes the negative inner product between two same-sized lists.
+
+        See Also:
+            list_negative_dot_product
 
         Args:
             list2 (T | list[float]): `DOUBLE[] | FLOAT[]` expression
@@ -2899,10 +3953,27 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
             func("list_negative_inner_product", self._parent.inner(), list2)
         )
 
+    def list_pack(self, *args: T) -> T:
+        """Creates a LIST containing the argument values.
+
+        See Also:
+            list_value
+
+        Args:
+            *args (T): `T` expression
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(func("list_pack", self._parent.inner(), *args))
+
     def list_position(self, element: T) -> T:
         """Returns the index of the `element` if the `list` contains the `element`.
 
         If the `element` is not found, it returns `NULL`.
+
+        See Also:
+            array_indexof, array_position, list_indexof
 
         Args:
             element (T): `T` expression
@@ -2938,6 +4009,9 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
 
         The `lambda` function has an optional `initial_value` argument.
 
+        See Also:
+            array_reduce, reduce
+
         Args:
             lambda_arg (T): `LAMBDA` expression
             initial_value (T | None): `ANY` expression
@@ -2953,6 +4027,9 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         """Resizes the `list` to contain `size` elements.
 
         Initializes new elements with `value` or `NULL` if `value` is not set.
+
+        See Also:
+            array_resize
 
         Args:
             size (T): `ANY` expression
@@ -2976,6 +4053,9 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
     def list_reverse_sort(self, col1: T | str | None = None) -> T:
         """Sorts the elements of the list in reverse order.
 
+        See Also:
+            array_reverse_sort
+
         Args:
             col1 (T | str | None): `VARCHAR` expression
 
@@ -2988,6 +4068,9 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
 
     def list_select(self, index_list: T | list[int]) -> T:
         """Returns a list based on the elements selected by the `index_list`.
+
+        See Also:
+            array_select
 
         Args:
             index_list (T | list[int]): `BIGINT[]` expression
@@ -3020,6 +4103,9 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
 
         Negative values are accepted.
 
+        See Also:
+            array_slice
+
         Args:
             begin (T): `ANY` expression
             end (T): `ANY` expression
@@ -3034,6 +4120,9 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
 
     def list_sort(self, col1: T | str | None = None, col2: T | str | None = None) -> T:
         """Sorts the elements of the list.
+
+        See Also:
+            array_sort
 
         Args:
             col1 (T | str | None): `VARCHAR` expression
@@ -3083,6 +4172,9 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
 
         The return type is defined by the return type of the `lambda` function.
 
+        See Also:
+            apply, array_apply, array_transform, list_apply
+
         Args:
             lambda_arg (T): `LAMBDA` expression
 
@@ -3096,6 +4188,9 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
     def list_unique(self) -> T:
         """Counts the unique elements of a `list`.
 
+        See Also:
+            array_unique
+
         Returns:
             T
         """
@@ -3103,6 +4198,9 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
 
     def list_value(self, *args: T) -> T:
         """Creates a LIST containing the argument values.
+
+        See Also:
+            list_pack
 
         Args:
             *args (T): `T` expression
@@ -3131,6 +4229,9 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
     def list_where(self, mask_list: T | list[bool]) -> T:
         """Returns a list with the `BOOLEAN`s in `mask_list` applied as a mask to the `value_list`.
 
+        See Also:
+            array_where
+
         Args:
             mask_list (T | list[bool]): `BOOLEAN[]` expression
 
@@ -3147,6 +4248,9 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         Its elements are structs of n elements from each list `list_1`, …, `list_n`, missing elements are replaced with `NULL`.
 
         If `truncate` is set, all lists are truncated to the smallest list length.
+
+        See Also:
+            array_zip
 
         Args:
             *args (T): `ANY` expression
@@ -3171,6 +4275,25 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
             T
         """
         return self._parent.__class__(func("range", self._parent.inner(), stop, step))
+
+    def reduce(self, lambda_arg: T, initial_value: T | None = None) -> T:
+        """Reduces all elements of the input `list` into a single scalar value by executing the `lambda` function on a running result and the next list element.
+
+        The `lambda` function has an optional `initial_value` argument.
+
+        See Also:
+            array_reduce, list_reduce
+
+        Args:
+            lambda_arg (T): `LAMBDA` expression
+            initial_value (T | None): `ANY` expression
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(
+            func("reduce", self._parent.inner(), lambda_arg, initial_value)
+        )
 
     def unpivot_list(self, *args: T) -> T:
         """Identical to list_value, but generated as part of unpivot for better error messages.
@@ -3216,6 +4339,9 @@ class StructFns[T: Fns](NameSpaceHandler[T]):
     def struct_contains(self, entry: T) -> T:
         """Check if an unnamed STRUCT contains the value.
 
+        See Also:
+            struct_has
+
         Args:
             entry (T): `ANY` expression
 
@@ -3252,6 +4378,36 @@ class StructFns[T: Fns](NameSpaceHandler[T]):
             func("struct_extract_at", self._parent.inner(), entry)
         )
 
+    def struct_has(self, entry: T) -> T:
+        """Check if an unnamed STRUCT contains the value.
+
+        See Also:
+            struct_contains
+
+        Args:
+            entry (T): `ANY` expression
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(func("struct_has", self._parent.inner(), entry))
+
+    def struct_indexof(self, entry: T) -> T:
+        """Get the position of the entry in an unnamed STRUCT, starting at 1.
+
+        See Also:
+            struct_position
+
+        Args:
+            entry (T): `ANY` expression
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(
+            func("struct_indexof", self._parent.inner(), entry)
+        )
+
     def struct_insert(self, *args: T) -> T:
         """Adds field(s)/value(s) to an existing STRUCT with the argument values.
 
@@ -3282,6 +4438,9 @@ class StructFns[T: Fns](NameSpaceHandler[T]):
 
     def struct_position(self, entry: T) -> T:
         """Get the position of the entry in an unnamed STRUCT, starting at 1.
+
+        See Also:
+            struct_indexof
 
         Args:
             entry (T): `ANY` expression
@@ -3352,8 +4511,22 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
             func("bar", self._parent.inner(), min_arg, max_arg, width)
         )
 
+    def base64(self) -> T:
+        """Converts a `blob` to a base64 encoded string.
+
+        See Also:
+            to_base64
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(func("base64", self._parent.inner()))
+
     def bin(self) -> T:
         """Converts the `string` to binary representation.
+
+        See Also:
+            to_binary
 
         Returns:
             T
@@ -3367,6 +4540,28 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
             T
         """
         return self._parent.__class__(func("bit_length", self._parent.inner()))
+
+    def char_length(self) -> T:
+        """Number of characters in `string`.
+
+        See Also:
+            character_length, len, length
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(func("char_length", self._parent.inner()))
+
+    def character_length(self) -> T:
+        """Number of characters in `string`.
+
+        See Also:
+            char_length, len, length
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(func("character_length", self._parent.inner()))
 
     def chr(self) -> T:
         """Returns a character which is corresponding the ASCII code value or Unicode code point.
@@ -3422,6 +4617,38 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
             func("damerau_levenshtein", self._parent.inner(), s2)
         )
 
+    def editdist3(self, s2: T | str) -> T:
+        """The minimum number of single-character edits (insertions, deletions or substitutions) required to change one string to the other.
+
+        Characters of different cases (e.g., `a` and `A`) are considered different.
+
+        See Also:
+            levenshtein
+
+        Args:
+            s2 (T | str): `VARCHAR` expression
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(func("editdist3", self._parent.inner(), s2))
+
+    def ends_with(self, search_string: T | str) -> T:
+        """Returns `true` if `string` ends with `search_string`.
+
+        See Also:
+            suffix
+
+        Args:
+            search_string (T | str): `VARCHAR` expression
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(
+            func("ends_with", self._parent.inner(), search_string)
+        )
+
     def format(self, *args: T) -> T:
         """Formats a string using the fmt syntax.
 
@@ -3435,6 +4662,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
 
     def format_bytes(self) -> T:
         """Converts `integer` to a human-readable representation using units based on powers of 2 (KiB, MiB, GiB, etc.).
+
+        See Also:
+            formatReadableSize
 
         Returns:
             T
@@ -3451,6 +4681,17 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
             func("formatReadableDecimalSize", self._parent.inner())
         )
 
+    def formatreadablesize(self) -> T:
+        """Converts `integer` to a human-readable representation using units based on powers of 2 (KiB, MiB, GiB, etc.).
+
+        See Also:
+            format_bytes
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(func("formatReadableSize", self._parent.inner()))
+
     def from_base64(self) -> T:
         """Converts a base64 encoded `string` to a character string (`BLOB`).
 
@@ -3458,6 +4699,28 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
             T
         """
         return self._parent.__class__(func("from_base64", self._parent.inner()))
+
+    def from_binary(self) -> T:
+        """Converts a `value` from binary representation to a blob.
+
+        See Also:
+            unbin
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(func("from_binary", self._parent.inner()))
+
+    def from_hex(self) -> T:
+        """Converts a `value` from hexadecimal representation to a blob.
+
+        See Also:
+            unhex
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(func("from_hex", self._parent.inner()))
 
     def greatest(self, *args: T) -> T:
         """Returns the largest value.
@@ -3480,6 +4743,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         Strings must be of equal length.
 
         Characters of different cases (e.g., `a` and `A`) are considered different.
+
+        See Also:
+            mismatches
 
         Args:
             s2 (T | str): `VARCHAR` expression
@@ -3504,6 +4770,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
 
     def hex(self) -> T:
         """Converts the `string` to hexadecimal representation.
+
+        See Also:
+            to_hex
 
         Returns:
             T
@@ -3530,6 +4799,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         """Returns location of first occurrence of `search_string` in `string`, counting from 1.
 
         Returns 0 if no match found.
+
+        See Also:
+            position, strpos
 
         Args:
             search_string (T | str): `VARCHAR` expression
@@ -3602,6 +4874,17 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
             func("jaro_winkler_similarity", self._parent.inner(), s2, score_cutoff)
         )
 
+    def lcase(self) -> T:
+        """Converts `string` to lower case.
+
+        See Also:
+            lower
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(func("lcase", self._parent.inner()))
+
     def least(self, *args: T) -> T:
         """Returns the smallest value.
 
@@ -3641,8 +4924,22 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
             func("left_grapheme", self._parent.inner(), count)
         )
 
+    def len(self) -> T:
+        """Number of characters in `string`.
+
+        See Also:
+            char_length, character_length, length
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(func("len", self._parent.inner()))
+
     def length(self) -> T:
         """Number of characters in `string`.
+
+        See Also:
+            char_length, character_length, len
 
         Returns:
             T
@@ -3661,6 +4958,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         """The minimum number of single-character edits (insertions, deletions or substitutions) required to change one string to the other.
 
         Characters of different cases (e.g., `a` and `A`) are considered different.
+
+        See Also:
+            editdist3
 
         Args:
             s2 (T | str): `VARCHAR` expression
@@ -3688,6 +4988,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
 
     def lower(self) -> T:
         """Converts `string` to lower case.
+
+        See Also:
+            lcase
 
         Returns:
             T
@@ -3738,6 +5041,24 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
             T
         """
         return self._parent.__class__(func("md5_number", self._parent.inner()))
+
+    def mismatches(self, s2: T | str) -> T:
+        """The Hamming distance between to strings, i.e., the number of positions with different characters for two strings of equal length.
+
+        Strings must be of equal length.
+
+        Characters of different cases (e.g., `a` and `A`) are considered different.
+
+        See Also:
+            hamming
+
+        Args:
+            s2 (T | str): `VARCHAR` expression
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(func("mismatches", self._parent.inner(), s2))
 
     def nfc_normalize(self) -> T:
         """Converts `string` to Unicode NFC normalized string.
@@ -3790,6 +5111,17 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
                 escape_character,
             )
         )
+
+    def ord(self) -> T:
+        """Returns an `INTEGER` representing the `unicode` codepoint of the first character in the `string`.
+
+        See Also:
+            unicode
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(func("ord", self._parent.inner()))
 
     def parse_dirname(self, separator: T | str | None = None) -> T:
         """Returns the top-level directory name from the given `path`.
@@ -3856,6 +5188,24 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._parent.__class__(
             func("parse_path", self._parent.inner(), separator)
+        )
+
+    def position(self, search_string: T | str) -> T:
+        """Returns location of first occurrence of `search_string` in `string`, counting from 1.
+
+        Returns 0 if no match found.
+
+        See Also:
+            instr, strpos
+
+        Args:
+            search_string (T | str): `VARCHAR` expression
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(
+            func("position", self._parent.inner(), search_string)
         )
 
     def prefix(self, search_string: T | str) -> T:
@@ -4011,6 +5361,27 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
             func("regexp_replace", self._parent.inner(), regex, replacement, options)
         )
 
+    def regexp_split_to_array(
+        self, regex: T | str, options: T | str | None = None
+    ) -> T:
+        """Splits the `string` along the `regex`.
+
+        A set of optional regex `options` can be set.
+
+        See Also:
+            str_split_regex, string_split_regex
+
+        Args:
+            regex (T | str): `VARCHAR` expression
+            options (T | str | None): `VARCHAR` expression
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(
+            func("regexp_split_to_array", self._parent.inner(), regex, options)
+        )
+
     def regexp_split_to_table(self, pattern: T) -> T:
         """SQL regexp_split_to_table function.
 
@@ -4126,6 +5497,20 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._parent.__class__(func("sha256", self._parent.inner()))
 
+    def split(self, separator: T | str) -> T:
+        """Splits the `string` along the `separator`.
+
+        See Also:
+            str_split, string_split, string_to_array
+
+        Args:
+            separator (T | str): `VARCHAR` expression
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(func("split", self._parent.inner(), separator))
+
     def starts_with(self, search_string: T | str) -> T:
         """Returns `true` if `string` begins with `search_string`.
 
@@ -4137,6 +5522,41 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._parent.__class__(
             func("starts_with", self._parent.inner(), search_string)
+        )
+
+    def str_split(self, separator: T | str) -> T:
+        """Splits the `string` along the `separator`.
+
+        See Also:
+            split, string_split, string_to_array
+
+        Args:
+            separator (T | str): `VARCHAR` expression
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(
+            func("str_split", self._parent.inner(), separator)
+        )
+
+    def str_split_regex(self, regex: T | str, options: T | str | None = None) -> T:
+        """Splits the `string` along the `regex`.
+
+        A set of optional regex `options` can be set.
+
+        See Also:
+            regexp_split_to_array, string_split_regex
+
+        Args:
+            regex (T | str): `VARCHAR` expression
+            options (T | str | None): `VARCHAR` expression
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(
+            func("str_split_regex", self._parent.inner(), regex, options)
         )
 
     def strftime(self, format_arg: T | date | datetime | str) -> T:
@@ -4155,6 +5575,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
     def string_agg(self, arg: T | str | None = None) -> T:
         """Concatenates the column string values with an optional separator.
 
+        See Also:
+            group_concat, listagg
+
         Args:
             arg (T | str | None): `VARCHAR` expression
 
@@ -4165,6 +5588,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
 
     def string_split(self, separator: T | str) -> T:
         """Splits the `string` along the `separator`.
+
+        See Also:
+            split, str_split, string_to_array
 
         Args:
             separator (T | str): `VARCHAR` expression
@@ -4181,6 +5607,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
 
         A set of optional regex `options` can be set.
 
+        See Also:
+            regexp_split_to_array, str_split_regex
+
         Args:
             regex (T | str): `VARCHAR` expression
             options (T | str | None): `VARCHAR` expression
@@ -4190,6 +5619,22 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._parent.__class__(
             func("string_split_regex", self._parent.inner(), regex, options)
+        )
+
+    def string_to_array(self, separator: T | str) -> T:
+        """Splits the `string` along the `separator`.
+
+        See Also:
+            split, str_split, string_split
+
+        Args:
+            separator (T | str): `VARCHAR` expression
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(
+            func("string_to_array", self._parent.inner(), separator)
         )
 
     def strip_accents(self) -> T:
@@ -4208,6 +5653,24 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._parent.__class__(func("strlen", self._parent.inner()))
 
+    def strpos(self, search_string: T | str) -> T:
+        """Returns location of first occurrence of `search_string` in `string`, counting from 1.
+
+        Returns 0 if no match found.
+
+        See Also:
+            instr, position
+
+        Args:
+            search_string (T | str): `VARCHAR` expression
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(
+            func("strpos", self._parent.inner(), search_string)
+        )
+
     def strptime(self, format_arg: T | list[str] | str) -> T:
         """Converts the `string` text to timestamp according to the format string.
 
@@ -4225,12 +5688,36 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
             func("strptime", self._parent.inner(), format_arg)
         )
 
+    def substr(self, start: T | int, length: T | int | None = None) -> T:
+        """Extracts substring starting from character `start` up to the end of the string.
+
+        If optional argument `length` is set, extracts a substring of `length` characters instead.
+
+        Note that a `start` value of `1` refers to the first character of the `string`.
+
+        See Also:
+            substring
+
+        Args:
+            start (T | int): `BIGINT` expression
+            length (T | int | None): `BIGINT` expression
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(
+            func("substr", self._parent.inner(), start, length)
+        )
+
     def substring(self, start: T | int, length: T | int | None = None) -> T:
         """Extracts substring starting from character `start` up to the end of the string.
 
         If optional argument `length` is set, extracts a substring of `length` characters instead.
 
         Note that a `start` value of `1` refers to the first character of the `string`.
+
+        See Also:
+            substr
 
         Args:
             start (T | int): `BIGINT` expression
@@ -4264,6 +5751,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
     def suffix(self, search_string: T | str) -> T:
         """Returns `true` if `string` ends with `search_string`.
 
+        See Also:
+            ends_with
+
         Args:
             search_string (T | str): `VARCHAR` expression
 
@@ -4291,10 +5781,35 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
     def to_base64(self) -> T:
         """Converts a `blob` to a base64 encoded string.
 
+        See Also:
+            base64
+
         Returns:
             T
         """
         return self._parent.__class__(func("to_base64", self._parent.inner()))
+
+    def to_binary(self) -> T:
+        """Converts the `string` to binary representation.
+
+        See Also:
+            bin
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(func("to_binary", self._parent.inner()))
+
+    def to_hex(self) -> T:
+        """Converts the `string` to hexadecimal representation.
+
+        See Also:
+            hex
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(func("to_hex", self._parent.inner()))
 
     def translate(self, from_arg: T | str, to: T | str) -> T:
         """Replaces each character in `string` that matches a character in the `from` set with the corresponding character in the `to` set.
@@ -4325,8 +5840,22 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._parent.__class__(func("trim", self._parent.inner(), characters))
 
+    def ucase(self) -> T:
+        """Converts `string` to upper case.
+
+        See Also:
+            upper
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(func("ucase", self._parent.inner()))
+
     def unbin(self) -> T:
         """Converts a `value` from binary representation to a blob.
+
+        See Also:
+            from_binary
 
         Returns:
             T
@@ -4336,6 +5865,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
     def unhex(self) -> T:
         """Converts a `value` from hexadecimal representation to a blob.
 
+        See Also:
+            from_hex
+
         Returns:
             T
         """
@@ -4344,6 +5876,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
     def unicode(self) -> T:
         """Returns an `INTEGER` representing the `unicode` codepoint of the first character in the `string`.
 
+        See Also:
+            ord
+
         Returns:
             T
         """
@@ -4351,6 +5886,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
 
     def upper(self) -> T:
         """Converts `string` to upper case.
+
+        See Also:
+            ucase
 
         Returns:
             T
@@ -4544,6 +6082,17 @@ class DateTimeFns[T: Fns](NameSpaceHandler[T]):
 class ArrayFns[T: Fns](NameSpaceHandler[T]):
     """Mixin providing auto-generated DuckDB array functions as methods."""
 
+    def array_agg(self) -> T:
+        """Returns a LIST containing all the values of a column.
+
+        See Also:
+            list
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(func("array_agg", self._parent.inner()))
+
     def array_append(self, el: T) -> T:
         """SQL array_append function.
 
@@ -4621,6 +6170,26 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
             func("array_distance", self._parent.inner(), array2)
         )
 
+    def array_dot_product(self, array2: T | float) -> T:
+        """Computes the inner product between two arrays of the same size.
+
+        The array elements can not be `NULL`.
+
+        The arrays can have any size as long as the size is the same for both arguments.
+
+        See Also:
+            array_inner_product
+
+        Args:
+            array2 (T | float): `DOUBLE[ANY] | FLOAT[ANY]` expression
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(
+            func("array_dot_product", self._parent.inner(), array2)
+        )
+
     def array_extract(self, col1: T | int) -> T:
         """SQL array_extract function.
 
@@ -4638,6 +6207,9 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
         The array elements can not be `NULL`.
 
         The arrays can have any size as long as the size is the same for both arguments.
+
+        See Also:
+            array_dot_product
 
         Args:
             array2 (T | float): `DOUBLE[ANY] | FLOAT[ANY]` expression
@@ -4660,12 +6232,35 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._parent.__class__(func("array_intersect", self._parent.inner(), l2))
 
+    def array_negative_dot_product(self, array2: T | float) -> T:
+        """Computes the negative inner product between two arrays of the same size.
+
+        The array elements can not be `NULL`.
+
+        The arrays can have any size as long as the size is the same for both arguments.
+
+        See Also:
+            array_negative_inner_product
+
+        Args:
+            array2 (T | float): `DOUBLE[ANY] | FLOAT[ANY]` expression
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(
+            func("array_negative_dot_product", self._parent.inner(), array2)
+        )
+
     def array_negative_inner_product(self, array2: T | float) -> T:
         """Computes the negative inner product between two arrays of the same size.
 
         The array elements can not be `NULL`.
 
         The arrays can have any size as long as the size is the same for both arguments.
+
+        See Also:
+            array_negative_dot_product
 
         Args:
             array2 (T | float): `DOUBLE[ANY] | FLOAT[ANY]` expression

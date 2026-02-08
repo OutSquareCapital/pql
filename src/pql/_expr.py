@@ -420,7 +420,7 @@ class ExprStringNameSpace:
 
     def ends_with(self, suffix: str) -> Expr:
         """Check if string ends with suffix."""
-        return Expr(self._expr.str.suffix(sql.lit(suffix)))
+        return Expr(self._expr.str.ends_with(sql.lit(suffix)))
 
     def replace(
         self, pattern: str, value: str | IntoExpr, *, literal: bool = False, n: int = 1
@@ -592,7 +592,7 @@ class ExprStringNameSpace:
                 return Expr(
                     sql.when(suffix_expr.is_null(), sql.lit(None)).otherwise(
                         sql.when(
-                            self._expr.str.suffix(suffix_expr),
+                            self._expr.str.ends_with(suffix_expr),
                             self._expr.str.substring(
                                 sql.lit(1),
                                 self._expr.str.length().sub(suffix_expr.str.length()),
