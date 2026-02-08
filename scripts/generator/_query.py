@@ -166,9 +166,7 @@ def _namespace_specs(cats: pl.Expr, py_name: pl.Expr) -> pl.Expr:
 
 
 def _convert_duckdb_type_to_python(param_type: pl.Expr) -> pl.Expr:
-    return param_type.replace_strict(
-        CONVERTER, default=EMPTY_STR, return_dtype=pl.String
-    )
+    return param_type.replace_strict(CONVERTER, return_dtype=pl.String)
 
 
 def _to_param_names(params: pl.Expr, py_name: pl.Expr) -> pl.Expr:
