@@ -1,6 +1,7 @@
 from collections.abc import Iterable
 
 import polars as pl
+import pyochain as pc
 
 from ._rules import (
     CONVERTER,
@@ -48,6 +49,7 @@ def run_qry(lf: pl.LazyFrame) -> pl.LazyFrame:
                 how="left",
             )
         )
+        .with_columns(dk.categories.pipe(_namespace_specs, dk.function_name))
         .with_columns(
             pl.concat_str(
                 dk.function_name,
@@ -57,9 +59,9 @@ def run_qry(lf: pl.LazyFrame) -> pl.LazyFrame:
                 ignore_nulls=True,
             )
             .str.to_lowercase()
+            .pipe(_strip_namespace_prefixes, py.namespace)
             .alias("py_name")
         )
-        .with_columns(dk.categories.pipe(_namespace_specs, py.name))
         .with_columns(
             pl.when(py.namespace.is_not_null())
             .then(pl.lit("T"))
@@ -185,7 +187,7 @@ def _make_type_union(py_type: pl.Expr, self_type: pl.Expr) -> pl.Expr:
     )
 
 
-def _namespace_specs(cats: pl.Expr, py_name: pl.Expr) -> pl.Expr:
+def _namespace_specs(cats: pl.Expr, fn_name: pl.Expr) -> pl.Expr:
 
     return pl.coalesce(
         *NAMESPACE_SPECS.iter().map(
@@ -200,11 +202,34 @@ def _namespace_specs(cats: pl.Expr, py_name: pl.Expr) -> pl.Expr:
         *NAMESPACE_SPECS.iter().map(
             lambda spec: pl.when(
                 spec.prefixes.iter()
-                .map(py_name.str.starts_with)
+                .map(fn_name.str.starts_with)
                 .fold(pl.lit(value=False), lambda a, b: a.or_(b))
             ).then(pl.lit(spec.name))
         ),
     ).alias("namespace")
+
+
+def _strip_namespace_prefixes(py_name: pl.Expr, namespace: pl.Expr) -> pl.Expr:
+    def _strip_prefixes(expr: pl.Expr, prefixes: pc.Seq[str]) -> pl.Expr:
+        return prefixes.iter().fold(
+            expr,
+            lambda acc, prefix: (
+                pl.when(acc.str.starts_with(prefix))
+                .then(acc.str.slice(len(prefix)))
+                .otherwise(acc)
+            ),
+        )
+
+    return pl.coalesce(
+        *NAMESPACE_SPECS.iter()
+        .filter(lambda spec: spec.strip_prefixes.length() > 0)
+        .map(
+            lambda spec: pl.when(namespace.eq(spec.name)).then(
+                py_name.pipe(_strip_prefixes, spec.strip_prefixes)
+            )
+        ),
+        py_name,
+    )
 
 
 def _convert_duckdb_type_to_python(param_type: pl.Expr) -> pl.Expr:

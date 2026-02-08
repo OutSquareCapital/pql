@@ -158,6 +158,7 @@ class NamespaceSpec:
     doc: str
     prefixes: pc.Seq[str]
     categories: pc.Seq[Categories]
+    strip_prefixes: pc.Seq[str]
 
 
 NAMESPACE_SPECS = pc.Seq(
@@ -167,12 +168,14 @@ NAMESPACE_SPECS = pc.Seq(
             doc="Mixin providing auto-generated DuckDB list functions as methods.",
             prefixes=pc.Seq(("list_",)),
             categories=pc.Seq((Categories.LIST,)),
+            strip_prefixes=pc.Seq(("list_",)),
         ),
         NamespaceSpec(
             name="StructFns",
             doc="Mixin providing auto-generated DuckDB struct functions as methods.",
             prefixes=pc.Seq(("struct_",)),
             categories=pc.Seq((Categories.STRUCT,)),
+            strip_prefixes=pc.Seq(("struct_",)),
         ),
         NamespaceSpec(
             name="StringFns",
@@ -181,24 +184,28 @@ NAMESPACE_SPECS = pc.Seq(
             categories=pc.Seq(
                 (Categories.STRING, Categories.REGEX, Categories.TEXT_SIMILARITY)
             ),
+            strip_prefixes=pc.Seq(()),
         ),
         NamespaceSpec(
             name="DateTimeFns",
             doc="Mixin providing auto-generated DuckDB datetime functions as methods.",
             prefixes=pc.Seq(("date", "day")),
             categories=pc.Seq((Categories.TIMESTAMP,)),
+            strip_prefixes=pc.Seq(()),
         ),
         NamespaceSpec(
             name="ArrayFns",
             doc="Mixin providing auto-generated DuckDB array functions as methods.",
             prefixes=pc.Seq(("array_",)),
             categories=pc.Seq((Categories.ARRAY,)),
+            strip_prefixes=pc.Seq(("array_",)),
         ),
         NamespaceSpec(
             name="JsonFns",
             doc="Mixin providing auto-generated DuckDB JSON functions as methods.",
             prefixes=pc.Seq(("json_",)),
             categories=pc.Seq(()),
+            strip_prefixes=pc.Seq(("json_",)),
         ),
     )
 )
