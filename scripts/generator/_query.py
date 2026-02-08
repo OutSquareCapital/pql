@@ -201,7 +201,7 @@ def _namespace_specs(cats: pl.Expr, fn_name: pl.Expr) -> pl.Expr:
             lambda spec: pl.when(
                 spec.prefixes.iter()
                 .map(fn_name.str.starts_with)
-                .fold(pl.lit(value=False), lambda a, b: a.or_(b))
+                .into(pl.any_horizontal)
             ).then(pl.lit(spec.name))
         ),
     ).alias("namespace")
