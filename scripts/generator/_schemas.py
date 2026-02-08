@@ -213,8 +213,8 @@ class Params:
 @dataclass(slots=True)
 class ParamLists:
     signatures: pl.Expr = field(default=pl.col("param_sig_list"))
-    docs: pl.Expr = field(default=pl.col("param_doc_join"))
-    names: pl.Expr = field(default=pl.col("param_names_join"))
+    docs: pl.Expr = field(default=pl.col("param_doc_list"))
+    names: pl.Expr = field(default=pl.col("param_names_list"))
 
 
 @dataclass(slots=True)

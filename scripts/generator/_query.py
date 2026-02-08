@@ -121,7 +121,7 @@ def _joined_parts(
             union=pl.when(cond).then(pl.lit(" | None = None")).otherwise(_EMPTY_STR),
         )
 
-    def _param_doc_join() -> pl.Expr:
+    def _param_doc_list() -> pl.Expr:
         txt = """            {param_name} ({py_type}{union}): `{dk_type}` expression"""
         return _format_kwords(
             txt,
@@ -129,13 +129,12 @@ def _joined_parts(
             py_type=py_type,
             union=pl.when(cond).then(pl.lit(" | None")).otherwise(_EMPTY_STR),
             dk_type=_replace_self(params_union, self_type),
-        ).str.join("\n")
+        )
 
     return (
         expr.alias("param_names_list"),
-        expr.str.join(", ").alias("param_names_join"),
         _param_sig_list().alias("param_sig_list"),
-        _param_doc_join().alias("param_doc_join"),
+        _param_doc_list().alias("param_doc_list"),
     )
 
 
@@ -317,7 +316,7 @@ def _to_func(
 
         slf_arg = _self_expr()
         sep = pl.lit(", ")
-        args = p_lists.names.str.split(", ").list.slice(1).list.join(", ")
+        args = p_lists.names.list.slice(1).list.join(", ")
 
         def _reversed() -> pl.Expr:
             """Special case for log function: other args first, then self._expr."""
@@ -359,7 +358,7 @@ def _to_func(
         .then(
             pl.format(
                 "\n\n        Args:\n{}{}",
-                p_lists.docs.str.split("\n").list.slice(1).list.join("\n"),
+                p_lists.docs.list.slice(1).list.join("\n"),
                 pl.when(dk.varargs.is_not_null())
                 .then(
                     pl.format(
