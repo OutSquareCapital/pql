@@ -1,11 +1,8 @@
 from dataclasses import asdict, dataclass, field
 from enum import StrEnum, auto
-from pathlib import Path
 
 import polars as pl
 import pyochain as pc
-
-DATA_PATH = Path(__file__).parent.joinpath("functions.parquet")
 
 
 class SchemaName(StrEnum):

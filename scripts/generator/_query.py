@@ -14,7 +14,6 @@ from ._rules import (
 )
 from ._schemas import (
     CATEGORY_TYPES,
-    DATA_PATH,
     DuckCols,
     FuncTypes,
     ParamLens,
@@ -26,13 +25,12 @@ from ._schemas import (
 _EMPTY_STR = pl.lit("")
 
 
-def get_df() -> pl.LazyFrame:
+def run_qry(lf: pl.LazyFrame) -> pl.LazyFrame:
     py = PyCols()
     params = Params()
     dk = DuckCols()
     return (
-        pl.scan_parquet(DATA_PATH)
-        .select(dk.to_dict().keys())
+        lf.select(dk.to_dict().keys())
         .filter(
             dk.function_type.is_in(
                 {FuncTypes.TABLE, FuncTypes.TABLE_MACRO, FuncTypes.PRAGMA}

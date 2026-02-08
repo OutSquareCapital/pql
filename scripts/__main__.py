@@ -15,17 +15,17 @@ from .generator import get_data, run_pipeline
 
 DEFAULT_OUTPUT = Path("src", "pql", "sql", "fns.py")
 
+DATA_PATH = Path("scripts", "generator", "functions.parquet")
+PathArg = Annotated[Path, typer.Option("--path", "-p")]
 app = typer.Typer()
 
 
 @app.command()
-def get_functions() -> None:
+def get_functions(path: PathArg = DATA_PATH) -> None:
     """Fetch function metadata from DuckDB and store as parquet at `scripts/generator/functions.parquet`."""
-    get_data()
+    get_data(path)
 
-    typer.echo(
-        "Fetched function metadata and stored at scripts/generator/functions.parquet"
-    )
+    typer.echo(f"Fetched function metadata and stored at {path}")
 
 
 @app.command()
@@ -38,7 +38,7 @@ def compare() -> None:
 
 @app.command()
 def generate(
-    output: Annotated[Path, typer.Option("--output", "-o")] = DEFAULT_OUTPUT,
+    output: PathArg = DEFAULT_OUTPUT,
     *,
     ruff_fix: Annotated[bool, typer.Option("--fix/--check-only")] = True,
 ) -> None:
@@ -57,7 +57,7 @@ def generate(
         run_ruff((*uv_args, "format", str(output)))
 
     typer.echo("Fetching functions from DuckDB...")
-    content = run_pipeline()
+    content = run_pipeline(DATA_PATH)
 
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(content, encoding="utf-8")
