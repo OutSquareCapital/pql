@@ -40,6 +40,7 @@ def run_qry(lf: pl.LazyFrame) -> pl.LazyFrame:
                 )
             ),
         )
+        .pipe(lambda lf: lf.join(_alias_map(lf, dk), on=dk.function_name, how="left"))
         .pipe(
             lambda lf: lf.join(
                 _py_name_map(lf, dk, params.lens),
@@ -112,7 +113,32 @@ def _filters(dk: DuckCols) -> Iterable[pl.Expr]:
             lambda prefix: dk.function_name.str.starts_with(prefix).not_()
         ),
         dk.function_name.ne("alias"),  # conflicts with duckdb alias method
-        dk.alias_of.is_null().or_(dk.alias_of.is_in(OPERATOR_MAP)),
+    )
+
+
+def _alias_map(lf: pl.LazyFrame, dk: DuckCols) -> pl.LazyFrame:
+    return (
+        lf.select(
+            dk.function_name,
+            dk.alias_of,
+            pl.coalesce(dk.alias_of, dk.function_name).alias("alias_root"),
+        )
+        .pipe(
+            lambda lf: lf.join(
+                lf.group_by("alias_root").agg(
+                    dk.function_name.unique().sort().alias("alias_group")
+                ),
+                on="alias_root",
+                how="left",
+            )
+        )
+        .select(
+            dk.function_name,
+            pl.col("alias_group")
+            .list.set_difference(pl.concat_list(dk.function_name))
+            .alias("aliases"),
+        )
+        .unique()
     )
 
 
@@ -301,6 +327,13 @@ def _to_func(
             .str.strip_chars_end(".")
         )
         .otherwise(pl.format("SQL {} function", dk.function_name)),
+        see_also_section=pl.when(py.aliases.list.len().gt(0)).then(
+            format_kwords(
+                "\n\n        See Also:\n            {aliases}",
+                aliases=py.aliases.list.sort().list.join(", "),
+                ignore_nulls=True,
+            )
+        ),
         args_section=pl.when(has_params.gt(1).or_(dk.varargs.is_not_null())).then(
             format_kwords(
                 "\n\n        Args:\n{posargs}{varargs}",
@@ -326,7 +359,7 @@ def _to_func(
 def _txt() -> str:
     return '''
     def {func_name}(self{args}{varargs}) -> {self_type}:
-        """{description}.{args_section}
+        """{description}.{see_also_section}{args_section}
 
         Returns:
             {self_type}
