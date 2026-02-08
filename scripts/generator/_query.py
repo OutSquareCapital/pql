@@ -114,7 +114,8 @@ def _joined_parts(
             expr,
             pl.lit(": "),
             py_type,
-            pl.when(cond).then(pl.lit(" | None = None")).otherwise(_EMPTY_STR),
+            pl.when(cond).then(pl.lit(" | None = None")),
+            ignore_nulls=True,
         )
 
     def _param_doc_join() -> pl.Expr:
@@ -123,10 +124,11 @@ def _joined_parts(
             expr,
             pl.lit(" ("),
             py_type,
-            pl.when(cond).then(pl.lit(" | None")).otherwise(_EMPTY_STR),
+            pl.when(cond).then(pl.lit(" | None")),
             pl.lit("): `"),
             _replace_self(params_union, self_type),
             pl.lit("` expression"),
+            ignore_nulls=True,
         ).str.join("\n")
 
     return (
@@ -310,26 +312,6 @@ def _to_func(
         .pipe(_replace_self, self_type)
     )
 
-    def _signature(has_params: pl.Expr) -> pl.Expr:
-        return pl.concat_str(
-            pl.lit("    def "),
-            py.name,
-            pl.lit("(self"),
-            pl.when(has_params.gt(1))
-            .then(
-                pl.concat_str(
-                    pl.lit(", "), p_lists.signatures.list.slice(1).list.join(", ")
-                )
-            )
-            .otherwise(_EMPTY_STR),
-            pl.when(dk.varargs.is_not_null())
-            .then(pl.concat_str(pl.lit(", *args: "), varargs_type))
-            .otherwise(_EMPTY_STR),
-            pl.lit(") -> "),
-            self_type,
-            pl.lit(":"),
-        )
-
     def _description() -> pl.Expr:
         return (
             pl.when(dk.description.is_not_null())
@@ -346,33 +328,21 @@ def _to_func(
         )
 
     def _args_section(has_params: pl.Expr) -> pl.Expr:
-        return (
-            pl.when(has_params.gt(1).or_(dk.varargs.is_not_null()))
-            .then(
-                pl.concat_str(
-                    pl.lit("\n\n        Args:\n"),
-                    p_lists.docs.str.split("\n").list.slice(1).list.join("\n"),
-                    pl.when(dk.varargs.is_not_null())
-                    .then(
-                        pl.concat_str(
-                            pl.lit("\n            *args ("),
-                            varargs_type,
-                            pl.lit("): `"),
-                            dk.varargs,
-                            pl.lit("` expression"),
-                        )
+        return pl.when(has_params.gt(1).or_(dk.varargs.is_not_null())).then(
+            pl.concat_str(
+                pl.lit("\n\n        Args:\n"),
+                p_lists.docs.str.split("\n").list.slice(1).list.join("\n"),
+                pl.when(dk.varargs.is_not_null()).then(
+                    pl.concat_str(
+                        pl.lit("\n            *args ("),
+                        varargs_type,
+                        pl.lit("): `"),
+                        dk.varargs,
+                        pl.lit("` expression"),
                     )
-                    .otherwise(_EMPTY_STR),
-                )
+                ),
+                ignore_nulls=True,
             )
-            .otherwise(_EMPTY_STR)
-        )
-
-    def _return_cls() -> pl.Expr:
-        return (
-            pl.when(py.namespace.is_not_null())
-            .then(pl.lit("self._parent.__class__"))
-            .otherwise(pl.lit("self.__class__"))
         )
 
     def _body(has_params: pl.Expr) -> pl.Expr:
@@ -390,32 +360,44 @@ def _to_func(
             """Normal case: self._expr first, then other args."""
             return pl.concat_str(
                 slf_arg,
-                pl.when(has_params.gt(1))
-                .then(pl.concat_str(sep, args))
-                .otherwise(_EMPTY_STR),
+                pl.when(has_params.gt(1)).then(pl.concat_str(sep, args)),
+                ignore_nulls=True,
             )
 
-        return pl.concat_str(
+        return (
             pl.when(dk.function_name.eq("log").and_(has_params.gt(1)))
             .then(_reversed())
-            .otherwise(_normal()),
-            pl.when(dk.varargs.is_not_null())
-            .then(pl.lit(", *args"))
-            .otherwise(_EMPTY_STR),
+            .otherwise(_normal())
         )
 
     return pl.concat_str(
-        _signature(has_params),
-        pl.lit('\n        """'),
+        pl.lit("    def "),
+        py.name,
+        pl.lit("(self"),
+        pl.when(has_params.gt(1)).then(
+            pl.concat_str(
+                pl.lit(", "), p_lists.signatures.list.slice(1).list.join(", ")
+            )
+        ),
+        pl.when(dk.varargs.is_not_null()).then(
+            pl.concat_str(pl.lit(", *args: "), varargs_type)
+        ),
+        pl.lit(") -> "),
+        self_type,
+        pl.lit(':\n        """'),
         _description(),
         _args_section(has_params),
         pl.lit("\n\n        Returns:\n            "),
         self_type,
         pl.lit('\n        """\n        return '),
-        _return_cls(),
+        pl.when(py.namespace.is_not_null())
+        .then(pl.lit("self._parent.__class__"))
+        .otherwise(pl.lit("self.__class__")),
         pl.lit('(func("'),
         dk.function_name,
         pl.lit('"'),
         _body(has_params),
+        pl.when(dk.varargs.is_not_null()).then(pl.lit(", *args")),
         pl.lit("))"),
+        ignore_nulls=True,
     )
