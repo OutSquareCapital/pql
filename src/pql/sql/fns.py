@@ -2808,6 +2808,23 @@ class Fns(ExprHandler[Expression]):
 class ListFns[T: Fns](NameSpaceHandler[T]):
     """Mixin providing auto-generated DuckDB list functions as methods."""
 
+    def aggr(self, function_name: T | str, *args: T) -> T:
+        """Executes the aggregate function `function_name` on the elements of `list`.
+
+        See Also:
+            aggregate, array_aggr, array_aggregate, list_aggregate
+
+        Args:
+            function_name (T | str): `VARCHAR` expression
+            *args (T): `ANY` expression
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(
+            func("list_aggr", self._parent.inner(), function_name, *args)
+        )
+
     def aggregate(self, function_name: T | str, *args: T) -> T:
         """Executes the aggregate function `function_name` on the elements of `list`.
 
@@ -2825,6 +2842,25 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
             func("aggregate", self._parent.inner(), function_name, *args)
         )
 
+    def any_value(self) -> T:
+        """SQL list_any_value function.
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(func("list_any_value", self._parent.inner()))
+
+    def append(self, e: T) -> T:
+        """SQL list_append function.
+
+        Args:
+            e (T): `ANY` expression
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(func("list_append", self._parent.inner(), e))
+
     def apply(self, lambda_arg: T) -> T:
         """Returns a list that is the result of applying the `lambda` function to each element of the input `list`.
 
@@ -2840,6 +2876,16 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
             T
         """
         return self._parent.__class__(func("apply", self._parent.inner(), lambda_arg))
+
+    def approx_count_distinct(self) -> T:
+        """SQL list_approx_count_distinct function.
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(
+            func("list_approx_count_distinct", self._parent.inner())
+        )
 
     def array_aggr(self, function_name: T | str, *args: T) -> T:
         """Executes the aggregate function `function_name` on the elements of `list`.
@@ -3274,6 +3320,72 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._parent.__class__(func("array_zip", self._parent.inner(), *args))
 
+    def avg(self) -> T:
+        """SQL list_avg function.
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(func("list_avg", self._parent.inner()))
+
+    def bit_and(self) -> T:
+        """SQL list_bit_and function.
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(func("list_bit_and", self._parent.inner()))
+
+    def bit_or(self) -> T:
+        """SQL list_bit_or function.
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(func("list_bit_or", self._parent.inner()))
+
+    def bit_xor(self) -> T:
+        """SQL list_bit_xor function.
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(func("list_bit_xor", self._parent.inner()))
+
+    def bool_and(self) -> T:
+        """SQL list_bool_and function.
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(func("list_bool_and", self._parent.inner()))
+
+    def bool_or(self) -> T:
+        """SQL list_bool_or function.
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(func("list_bool_or", self._parent.inner()))
+
+    def cat(self, *args: T) -> T:
+        """Concatenates lists.
+
+        `NULL` inputs are skipped.
+
+        See also operator `||`.
+
+        See Also:
+            array_cat, array_concat, list_concat
+
+        Args:
+            *args (T): `ANY[]` expression
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(func("list_cat", self._parent.inner(), *args))
+
     def char_length(self) -> T:
         """Returns the length of the `list`.
 
@@ -3311,6 +3423,134 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._parent.__class__(func("concat", self._parent.inner(), *args))
 
+    def contains(self, element: T) -> T:
+        """Returns true if the list contains the element.
+
+        See Also:
+            array_contains, array_has, list_has
+
+        Args:
+            element (T): `T` expression
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(
+            func("list_contains", self._parent.inner(), element)
+        )
+
+    def cosine_distance(self, list2: T | list[float]) -> T:
+        """Computes the cosine distance between two same-sized lists.
+
+        Args:
+            list2 (T | list[float]): `DOUBLE[] | FLOAT[]` expression
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(
+            func("list_cosine_distance", self._parent.inner(), list2)
+        )
+
+    def cosine_similarity(self, list2: T | list[float]) -> T:
+        """Computes the cosine similarity between two same-sized lists.
+
+        Args:
+            list2 (T | list[float]): `DOUBLE[] | FLOAT[]` expression
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(
+            func("list_cosine_similarity", self._parent.inner(), list2)
+        )
+
+    def count(self) -> T:
+        """SQL list_count function.
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(func("list_count", self._parent.inner()))
+
+    def distance(self, list2: T | list[float]) -> T:
+        """Calculates the Euclidean distance between two points with coordinates given in two inputs lists of equal length.
+
+        Args:
+            list2 (T | list[float]): `DOUBLE[] | FLOAT[]` expression
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(
+            func("list_distance", self._parent.inner(), list2)
+        )
+
+    def distinct(self) -> T:
+        """Removes all duplicates and `NULL` values from a list.
+
+        Does not preserve the original order.
+
+        See Also:
+            array_distinct
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(func("list_distinct", self._parent.inner()))
+
+    def dot_product(self, list2: T | list[float]) -> T:
+        """Computes the inner product between two same-sized lists.
+
+        See Also:
+            list_inner_product
+
+        Args:
+            list2 (T | list[float]): `DOUBLE[] | FLOAT[]` expression
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(
+            func("list_dot_product", self._parent.inner(), list2)
+        )
+
+    def element(self, index: T | int) -> T:
+        """Extract the `index`th (1-based) value from the list.
+
+        See Also:
+            list_extract
+
+        Args:
+            index (T | int): `BIGINT` expression
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(func("list_element", self._parent.inner(), index))
+
+    def entropy(self) -> T:
+        """SQL list_entropy function.
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(func("list_entropy", self._parent.inner()))
+
+    def extract(self, index: T | int) -> T:
+        """Extract the `index`th (1-based) value from the list.
+
+        See Also:
+            list_element
+
+        Args:
+            index (T | int): `BIGINT` expression
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(func("list_extract", self._parent.inner(), index))
+
     def filter(self, lambda_arg: T) -> T:
         """Constructs a list from those elements of the input `list` for which the `lambda` function returns `true`.
 
@@ -3328,6 +3568,14 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
             T
         """
         return self._parent.__class__(func("filter", self._parent.inner(), lambda_arg))
+
+    def first(self) -> T:
+        """SQL list_first function.
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(func("list_first", self._parent.inner()))
 
     def flatten(self) -> T:
         """Flattens a nested list by one level.
@@ -3372,6 +3620,129 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
             func("grade_up", self._parent.inner(), col1, col2)
         )
 
+    def has(self, element: T) -> T:
+        """Returns true if the list contains the element.
+
+        See Also:
+            array_contains, array_has, list_contains
+
+        Args:
+            element (T): `T` expression
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(func("list_has", self._parent.inner(), element))
+
+    def has_all(self, list2: T) -> T:
+        """Returns true if all elements of list2 are in list1.
+
+        NULLs are ignored.
+
+        See Also:
+            array_has_all
+
+        Args:
+            list2 (T): `T[]` expression
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(func("list_has_all", self._parent.inner(), list2))
+
+    def has_any(self, list2: T) -> T:
+        """Returns true if the lists have any element in common.
+
+        NULLs are ignored.
+
+        See Also:
+            array_has_any
+
+        Args:
+            list2 (T): `T[]` expression
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(func("list_has_any", self._parent.inner(), list2))
+
+    def histogram(self) -> T:
+        """SQL list_histogram function.
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(func("list_histogram", self._parent.inner()))
+
+    def indexof(self, element: T) -> T:
+        """Returns the index of the `element` if the `list` contains the `element`.
+
+        If the `element` is not found, it returns `NULL`.
+
+        See Also:
+            array_indexof, array_position, list_position
+
+        Args:
+            element (T): `T` expression
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(
+            func("list_indexof", self._parent.inner(), element)
+        )
+
+    def inner_product(self, list2: T | list[float]) -> T:
+        """Computes the inner product between two same-sized lists.
+
+        See Also:
+            list_dot_product
+
+        Args:
+            list2 (T | list[float]): `DOUBLE[] | FLOAT[]` expression
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(
+            func("list_inner_product", self._parent.inner(), list2)
+        )
+
+    def intersect(self, l2: T) -> T:
+        """SQL list_intersect function.
+
+        Args:
+            l2 (T): `ANY` expression
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(func("list_intersect", self._parent.inner(), l2))
+
+    def kurtosis(self) -> T:
+        """SQL list_kurtosis function.
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(func("list_kurtosis", self._parent.inner()))
+
+    def kurtosis_pop(self) -> T:
+        """SQL list_kurtosis_pop function.
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(func("list_kurtosis_pop", self._parent.inner()))
+
+    def last(self) -> T:
+        """SQL list_last function.
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(func("list_last", self._parent.inner()))
+
     def len(self) -> T:
         """Returns the length of the `list`.
 
@@ -3394,470 +3765,7 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._parent.__class__(func("length", self._parent.inner()))
 
-    def list_aggr(self, function_name: T | str, *args: T) -> T:
-        """Executes the aggregate function `function_name` on the elements of `list`.
-
-        See Also:
-            aggregate, array_aggr, array_aggregate, list_aggregate
-
-        Args:
-            function_name (T | str): `VARCHAR` expression
-            *args (T): `ANY` expression
-
-        Returns:
-            T
-        """
-        return self._parent.__class__(
-            func("list_aggr", self._parent.inner(), function_name, *args)
-        )
-
-    def list_aggregate(self, function_name: T | str, *args: T) -> T:
-        """Executes the aggregate function `function_name` on the elements of `list`.
-
-        See Also:
-            aggregate, array_aggr, array_aggregate, list_aggr
-
-        Args:
-            function_name (T | str): `VARCHAR` expression
-            *args (T): `ANY` expression
-
-        Returns:
-            T
-        """
-        return self._parent.__class__(
-            func("list_aggregate", self._parent.inner(), function_name, *args)
-        )
-
-    def list_any_value(self) -> T:
-        """SQL list_any_value function.
-
-        Returns:
-            T
-        """
-        return self._parent.__class__(func("list_any_value", self._parent.inner()))
-
-    def list_append(self, e: T) -> T:
-        """SQL list_append function.
-
-        Args:
-            e (T): `ANY` expression
-
-        Returns:
-            T
-        """
-        return self._parent.__class__(func("list_append", self._parent.inner(), e))
-
-    def list_apply(self, lambda_arg: T) -> T:
-        """Returns a list that is the result of applying the `lambda` function to each element of the input `list`.
-
-        The return type is defined by the return type of the `lambda` function.
-
-        See Also:
-            apply, array_apply, array_transform, list_transform
-
-        Args:
-            lambda_arg (T): `LAMBDA` expression
-
-        Returns:
-            T
-        """
-        return self._parent.__class__(
-            func("list_apply", self._parent.inner(), lambda_arg)
-        )
-
-    def list_approx_count_distinct(self) -> T:
-        """SQL list_approx_count_distinct function.
-
-        Returns:
-            T
-        """
-        return self._parent.__class__(
-            func("list_approx_count_distinct", self._parent.inner())
-        )
-
-    def list_avg(self) -> T:
-        """SQL list_avg function.
-
-        Returns:
-            T
-        """
-        return self._parent.__class__(func("list_avg", self._parent.inner()))
-
-    def list_bit_and(self) -> T:
-        """SQL list_bit_and function.
-
-        Returns:
-            T
-        """
-        return self._parent.__class__(func("list_bit_and", self._parent.inner()))
-
-    def list_bit_or(self) -> T:
-        """SQL list_bit_or function.
-
-        Returns:
-            T
-        """
-        return self._parent.__class__(func("list_bit_or", self._parent.inner()))
-
-    def list_bit_xor(self) -> T:
-        """SQL list_bit_xor function.
-
-        Returns:
-            T
-        """
-        return self._parent.__class__(func("list_bit_xor", self._parent.inner()))
-
-    def list_bool_and(self) -> T:
-        """SQL list_bool_and function.
-
-        Returns:
-            T
-        """
-        return self._parent.__class__(func("list_bool_and", self._parent.inner()))
-
-    def list_bool_or(self) -> T:
-        """SQL list_bool_or function.
-
-        Returns:
-            T
-        """
-        return self._parent.__class__(func("list_bool_or", self._parent.inner()))
-
-    def list_cat(self, *args: T) -> T:
-        """Concatenates lists.
-
-        `NULL` inputs are skipped.
-
-        See also operator `||`.
-
-        See Also:
-            array_cat, array_concat, list_concat
-
-        Args:
-            *args (T): `ANY[]` expression
-
-        Returns:
-            T
-        """
-        return self._parent.__class__(func("list_cat", self._parent.inner(), *args))
-
-    def list_concat(self, *args: T) -> T:
-        """Concatenates lists.
-
-        `NULL` inputs are skipped.
-
-        See also operator `||`.
-
-        See Also:
-            array_cat, array_concat, list_cat
-
-        Args:
-            *args (T): `ANY[]` expression
-
-        Returns:
-            T
-        """
-        return self._parent.__class__(func("list_concat", self._parent.inner(), *args))
-
-    def list_contains(self, element: T) -> T:
-        """Returns true if the list contains the element.
-
-        See Also:
-            array_contains, array_has, list_has
-
-        Args:
-            element (T): `T` expression
-
-        Returns:
-            T
-        """
-        return self._parent.__class__(
-            func("list_contains", self._parent.inner(), element)
-        )
-
-    def list_cosine_distance(self, list2: T | list[float]) -> T:
-        """Computes the cosine distance between two same-sized lists.
-
-        Args:
-            list2 (T | list[float]): `DOUBLE[] | FLOAT[]` expression
-
-        Returns:
-            T
-        """
-        return self._parent.__class__(
-            func("list_cosine_distance", self._parent.inner(), list2)
-        )
-
-    def list_cosine_similarity(self, list2: T | list[float]) -> T:
-        """Computes the cosine similarity between two same-sized lists.
-
-        Args:
-            list2 (T | list[float]): `DOUBLE[] | FLOAT[]` expression
-
-        Returns:
-            T
-        """
-        return self._parent.__class__(
-            func("list_cosine_similarity", self._parent.inner(), list2)
-        )
-
-    def list_count(self) -> T:
-        """SQL list_count function.
-
-        Returns:
-            T
-        """
-        return self._parent.__class__(func("list_count", self._parent.inner()))
-
-    def list_distance(self, list2: T | list[float]) -> T:
-        """Calculates the Euclidean distance between two points with coordinates given in two inputs lists of equal length.
-
-        Args:
-            list2 (T | list[float]): `DOUBLE[] | FLOAT[]` expression
-
-        Returns:
-            T
-        """
-        return self._parent.__class__(
-            func("list_distance", self._parent.inner(), list2)
-        )
-
-    def list_distinct(self) -> T:
-        """Removes all duplicates and `NULL` values from a list.
-
-        Does not preserve the original order.
-
-        See Also:
-            array_distinct
-
-        Returns:
-            T
-        """
-        return self._parent.__class__(func("list_distinct", self._parent.inner()))
-
-    def list_dot_product(self, list2: T | list[float]) -> T:
-        """Computes the inner product between two same-sized lists.
-
-        See Also:
-            list_inner_product
-
-        Args:
-            list2 (T | list[float]): `DOUBLE[] | FLOAT[]` expression
-
-        Returns:
-            T
-        """
-        return self._parent.__class__(
-            func("list_dot_product", self._parent.inner(), list2)
-        )
-
-    def list_element(self, index: T | int) -> T:
-        """Extract the `index`th (1-based) value from the list.
-
-        See Also:
-            list_extract
-
-        Args:
-            index (T | int): `BIGINT` expression
-
-        Returns:
-            T
-        """
-        return self._parent.__class__(func("list_element", self._parent.inner(), index))
-
-    def list_entropy(self) -> T:
-        """SQL list_entropy function.
-
-        Returns:
-            T
-        """
-        return self._parent.__class__(func("list_entropy", self._parent.inner()))
-
-    def list_extract(self, index: T | int) -> T:
-        """Extract the `index`th (1-based) value from the list.
-
-        See Also:
-            list_element
-
-        Args:
-            index (T | int): `BIGINT` expression
-
-        Returns:
-            T
-        """
-        return self._parent.__class__(func("list_extract", self._parent.inner(), index))
-
-    def list_filter(self, lambda_arg: T) -> T:
-        """Constructs a list from those elements of the input `list` for which the `lambda` function returns `true`.
-
-        DuckDB must be able to cast the `lambda` function's return type to `BOOL`.
-
-        The return type of `list_filter` is the same as the input list's.
-
-        See Also:
-            array_filter, filter
-
-        Args:
-            lambda_arg (T): `LAMBDA` expression
-
-        Returns:
-            T
-        """
-        return self._parent.__class__(
-            func("list_filter", self._parent.inner(), lambda_arg)
-        )
-
-    def list_first(self) -> T:
-        """SQL list_first function.
-
-        Returns:
-            T
-        """
-        return self._parent.__class__(func("list_first", self._parent.inner()))
-
-    def list_grade_up(
-        self, col1: T | str | None = None, col2: T | str | None = None
-    ) -> T:
-        """Works like list_sort, but the results are the indexes that correspond to the position in the original list instead of the actual values.
-
-        See Also:
-            array_grade_up, grade_up
-
-        Args:
-            col1 (T | str | None): `VARCHAR` expression
-            col2 (T | str | None): `VARCHAR` expression
-
-        Returns:
-            T
-        """
-        return self._parent.__class__(
-            func("list_grade_up", self._parent.inner(), col1, col2)
-        )
-
-    def list_has(self, element: T) -> T:
-        """Returns true if the list contains the element.
-
-        See Also:
-            array_contains, array_has, list_contains
-
-        Args:
-            element (T): `T` expression
-
-        Returns:
-            T
-        """
-        return self._parent.__class__(func("list_has", self._parent.inner(), element))
-
-    def list_has_all(self, list2: T) -> T:
-        """Returns true if all elements of list2 are in list1.
-
-        NULLs are ignored.
-
-        See Also:
-            array_has_all
-
-        Args:
-            list2 (T): `T[]` expression
-
-        Returns:
-            T
-        """
-        return self._parent.__class__(func("list_has_all", self._parent.inner(), list2))
-
-    def list_has_any(self, list2: T) -> T:
-        """Returns true if the lists have any element in common.
-
-        NULLs are ignored.
-
-        See Also:
-            array_has_any
-
-        Args:
-            list2 (T): `T[]` expression
-
-        Returns:
-            T
-        """
-        return self._parent.__class__(func("list_has_any", self._parent.inner(), list2))
-
-    def list_histogram(self) -> T:
-        """SQL list_histogram function.
-
-        Returns:
-            T
-        """
-        return self._parent.__class__(func("list_histogram", self._parent.inner()))
-
-    def list_indexof(self, element: T) -> T:
-        """Returns the index of the `element` if the `list` contains the `element`.
-
-        If the `element` is not found, it returns `NULL`.
-
-        See Also:
-            array_indexof, array_position, list_position
-
-        Args:
-            element (T): `T` expression
-
-        Returns:
-            T
-        """
-        return self._parent.__class__(
-            func("list_indexof", self._parent.inner(), element)
-        )
-
-    def list_inner_product(self, list2: T | list[float]) -> T:
-        """Computes the inner product between two same-sized lists.
-
-        See Also:
-            list_dot_product
-
-        Args:
-            list2 (T | list[float]): `DOUBLE[] | FLOAT[]` expression
-
-        Returns:
-            T
-        """
-        return self._parent.__class__(
-            func("list_inner_product", self._parent.inner(), list2)
-        )
-
-    def list_intersect(self, l2: T) -> T:
-        """SQL list_intersect function.
-
-        Args:
-            l2 (T): `ANY` expression
-
-        Returns:
-            T
-        """
-        return self._parent.__class__(func("list_intersect", self._parent.inner(), l2))
-
-    def list_kurtosis(self) -> T:
-        """SQL list_kurtosis function.
-
-        Returns:
-            T
-        """
-        return self._parent.__class__(func("list_kurtosis", self._parent.inner()))
-
-    def list_kurtosis_pop(self) -> T:
-        """SQL list_kurtosis_pop function.
-
-        Returns:
-            T
-        """
-        return self._parent.__class__(func("list_kurtosis_pop", self._parent.inner()))
-
-    def list_last(self) -> T:
-        """SQL list_last function.
-
-        Returns:
-            T
-        """
-        return self._parent.__class__(func("list_last", self._parent.inner()))
-
-    def list_mad(self) -> T:
+    def mad(self) -> T:
         """SQL list_mad function.
 
         Returns:
@@ -3865,7 +3773,7 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._parent.__class__(func("list_mad", self._parent.inner()))
 
-    def list_max(self) -> T:
+    def max(self) -> T:
         """SQL list_max function.
 
         Returns:
@@ -3873,7 +3781,7 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._parent.__class__(func("list_max", self._parent.inner()))
 
-    def list_median(self) -> T:
+    def median(self) -> T:
         """SQL list_median function.
 
         Returns:
@@ -3881,7 +3789,7 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._parent.__class__(func("list_median", self._parent.inner()))
 
-    def list_min(self) -> T:
+    def min(self) -> T:
         """SQL list_min function.
 
         Returns:
@@ -3889,7 +3797,7 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._parent.__class__(func("list_min", self._parent.inner()))
 
-    def list_mode(self) -> T:
+    def mode(self) -> T:
         """SQL list_mode function.
 
         Returns:
@@ -3897,7 +3805,7 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._parent.__class__(func("list_mode", self._parent.inner()))
 
-    def list_negative_dot_product(self, list2: T | list[float]) -> T:
+    def negative_dot_product(self, list2: T | list[float]) -> T:
         """Computes the negative inner product between two same-sized lists.
 
         See Also:
@@ -3913,7 +3821,7 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
             func("list_negative_dot_product", self._parent.inner(), list2)
         )
 
-    def list_negative_inner_product(self, list2: T | list[float]) -> T:
+    def negative_inner_product(self, list2: T | list[float]) -> T:
         """Computes the negative inner product between two same-sized lists.
 
         See Also:
@@ -3929,7 +3837,7 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
             func("list_negative_inner_product", self._parent.inner(), list2)
         )
 
-    def list_pack(self, *args: T) -> T:
+    def pack(self, *args: T) -> T:
         """Creates a LIST containing the argument values.
 
         See Also:
@@ -3943,7 +3851,7 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._parent.__class__(func("list_pack", self._parent.inner(), *args))
 
-    def list_position(self, element: T) -> T:
+    def position(self, element: T) -> T:
         """Returns the index of the `element` if the `list` contains the `element`.
 
         If the `element` is not found, it returns `NULL`.
@@ -3961,7 +3869,7 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
             func("list_position", self._parent.inner(), element)
         )
 
-    def list_prepend(self, l_arg: T) -> T:
+    def prepend(self, l_arg: T) -> T:
         """SQL list_prepend function.
 
         Args:
@@ -3972,269 +3880,13 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._parent.__class__(func("list_prepend", self._parent.inner(), l_arg))
 
-    def list_product(self) -> T:
+    def product(self) -> T:
         """SQL list_product function.
 
         Returns:
             T
         """
         return self._parent.__class__(func("list_product", self._parent.inner()))
-
-    def list_reduce(self, lambda_arg: T, initial_value: T | None = None) -> T:
-        """Reduces all elements of the input `list` into a single scalar value by executing the `lambda` function on a running result and the next list element.
-
-        The `lambda` function has an optional `initial_value` argument.
-
-        See Also:
-            array_reduce, reduce
-
-        Args:
-            lambda_arg (T): `LAMBDA` expression
-            initial_value (T | None): `ANY` expression
-
-        Returns:
-            T
-        """
-        return self._parent.__class__(
-            func("list_reduce", self._parent.inner(), lambda_arg, initial_value)
-        )
-
-    def list_resize(self, size: T, value: T | None = None) -> T:
-        """Resizes the `list` to contain `size` elements.
-
-        Initializes new elements with `value` or `NULL` if `value` is not set.
-
-        See Also:
-            array_resize
-
-        Args:
-            size (T): `ANY` expression
-            value (T | None): `ANY` expression
-
-        Returns:
-            T
-        """
-        return self._parent.__class__(
-            func("list_resize", self._parent.inner(), size, value)
-        )
-
-    def list_reverse(self) -> T:
-        """SQL list_reverse function.
-
-        Returns:
-            T
-        """
-        return self._parent.__class__(func("list_reverse", self._parent.inner()))
-
-    def list_reverse_sort(self, col1: T | str | None = None) -> T:
-        """Sorts the elements of the list in reverse order.
-
-        See Also:
-            array_reverse_sort
-
-        Args:
-            col1 (T | str | None): `VARCHAR` expression
-
-        Returns:
-            T
-        """
-        return self._parent.__class__(
-            func("list_reverse_sort", self._parent.inner(), col1)
-        )
-
-    def list_select(self, index_list: T | list[int]) -> T:
-        """Returns a list based on the elements selected by the `index_list`.
-
-        See Also:
-            array_select
-
-        Args:
-            index_list (T | list[int]): `BIGINT[]` expression
-
-        Returns:
-            T
-        """
-        return self._parent.__class__(
-            func("list_select", self._parent.inner(), index_list)
-        )
-
-    def list_sem(self) -> T:
-        """SQL list_sem function.
-
-        Returns:
-            T
-        """
-        return self._parent.__class__(func("list_sem", self._parent.inner()))
-
-    def list_skewness(self) -> T:
-        """SQL list_skewness function.
-
-        Returns:
-            T
-        """
-        return self._parent.__class__(func("list_skewness", self._parent.inner()))
-
-    def list_slice(self, begin: T, end: T, step: T | int | None = None) -> T:
-        """Extracts a sublist or substring using slice conventions.
-
-        Negative values are accepted.
-
-        See Also:
-            array_slice
-
-        Args:
-            begin (T): `ANY` expression
-            end (T): `ANY` expression
-            step (T | int | None): `BIGINT` expression
-
-        Returns:
-            T
-        """
-        return self._parent.__class__(
-            func("list_slice", self._parent.inner(), begin, end, step)
-        )
-
-    def list_sort(self, col1: T | str | None = None, col2: T | str | None = None) -> T:
-        """Sorts the elements of the list.
-
-        See Also:
-            array_sort
-
-        Args:
-            col1 (T | str | None): `VARCHAR` expression
-            col2 (T | str | None): `VARCHAR` expression
-
-        Returns:
-            T
-        """
-        return self._parent.__class__(
-            func("list_sort", self._parent.inner(), col1, col2)
-        )
-
-    def list_stddev_pop(self) -> T:
-        """SQL list_stddev_pop function.
-
-        Returns:
-            T
-        """
-        return self._parent.__class__(func("list_stddev_pop", self._parent.inner()))
-
-    def list_stddev_samp(self) -> T:
-        """SQL list_stddev_samp function.
-
-        Returns:
-            T
-        """
-        return self._parent.__class__(func("list_stddev_samp", self._parent.inner()))
-
-    def list_string_agg(self) -> T:
-        """SQL list_string_agg function.
-
-        Returns:
-            T
-        """
-        return self._parent.__class__(func("list_string_agg", self._parent.inner()))
-
-    def list_sum(self) -> T:
-        """SQL list_sum function.
-
-        Returns:
-            T
-        """
-        return self._parent.__class__(func("list_sum", self._parent.inner()))
-
-    def list_transform(self, lambda_arg: T) -> T:
-        """Returns a list that is the result of applying the `lambda` function to each element of the input `list`.
-
-        The return type is defined by the return type of the `lambda` function.
-
-        See Also:
-            apply, array_apply, array_transform, list_apply
-
-        Args:
-            lambda_arg (T): `LAMBDA` expression
-
-        Returns:
-            T
-        """
-        return self._parent.__class__(
-            func("list_transform", self._parent.inner(), lambda_arg)
-        )
-
-    def list_unique(self) -> T:
-        """Counts the unique elements of a `list`.
-
-        See Also:
-            array_unique
-
-        Returns:
-            T
-        """
-        return self._parent.__class__(func("list_unique", self._parent.inner()))
-
-    def list_value(self, *args: T) -> T:
-        """Creates a LIST containing the argument values.
-
-        See Also:
-            list_pack
-
-        Args:
-            *args (T): `T` expression
-
-        Returns:
-            T
-        """
-        return self._parent.__class__(func("list_value", self._parent.inner(), *args))
-
-    def list_var_pop(self) -> T:
-        """SQL list_var_pop function.
-
-        Returns:
-            T
-        """
-        return self._parent.__class__(func("list_var_pop", self._parent.inner()))
-
-    def list_var_samp(self) -> T:
-        """SQL list_var_samp function.
-
-        Returns:
-            T
-        """
-        return self._parent.__class__(func("list_var_samp", self._parent.inner()))
-
-    def list_where(self, mask_list: T | list[bool]) -> T:
-        """Returns a list with the `BOOLEAN`s in `mask_list` applied as a mask to the `value_list`.
-
-        See Also:
-            array_where
-
-        Args:
-            mask_list (T | list[bool]): `BOOLEAN[]` expression
-
-        Returns:
-            T
-        """
-        return self._parent.__class__(
-            func("list_where", self._parent.inner(), mask_list)
-        )
-
-    def list_zip(self, *args: T) -> T:
-        """Zips n `LIST`s to a new `LIST` whose length will be that of the longest list.
-
-        Its elements are structs of n elements from each list `list_1`, …, `list_n`, missing elements are replaced with `NULL`.
-
-        If `truncate` is set, all lists are truncated to the smallest list length.
-
-        See Also:
-            array_zip
-
-        Args:
-            *args (T): `ANY` expression
-
-        Returns:
-            T
-        """
-        return self._parent.__class__(func("list_zip", self._parent.inner(), *args))
 
     def range(
         self,
@@ -4258,7 +3910,7 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         The `lambda` function has an optional `initial_value` argument.
 
         See Also:
-            array_reduce, list_reduce
+            array_reduce, reduce
 
         Args:
             lambda_arg (T): `LAMBDA` expression
@@ -4268,8 +3920,181 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
             T
         """
         return self._parent.__class__(
-            func("reduce", self._parent.inner(), lambda_arg, initial_value)
+            func("list_reduce", self._parent.inner(), lambda_arg, initial_value)
         )
+
+    def resize(self, size: T, value: T | None = None) -> T:
+        """Resizes the `list` to contain `size` elements.
+
+        Initializes new elements with `value` or `NULL` if `value` is not set.
+
+        See Also:
+            array_resize
+
+        Args:
+            size (T): `ANY` expression
+            value (T | None): `ANY` expression
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(
+            func("list_resize", self._parent.inner(), size, value)
+        )
+
+    def reverse(self) -> T:
+        """SQL list_reverse function.
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(func("list_reverse", self._parent.inner()))
+
+    def reverse_sort(self, col1: T | str | None = None) -> T:
+        """Sorts the elements of the list in reverse order.
+
+        See Also:
+            array_reverse_sort
+
+        Args:
+            col1 (T | str | None): `VARCHAR` expression
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(
+            func("list_reverse_sort", self._parent.inner(), col1)
+        )
+
+    def select(self, index_list: T | list[int]) -> T:
+        """Returns a list based on the elements selected by the `index_list`.
+
+        See Also:
+            array_select
+
+        Args:
+            index_list (T | list[int]): `BIGINT[]` expression
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(
+            func("list_select", self._parent.inner(), index_list)
+        )
+
+    def sem(self) -> T:
+        """SQL list_sem function.
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(func("list_sem", self._parent.inner()))
+
+    def skewness(self) -> T:
+        """SQL list_skewness function.
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(func("list_skewness", self._parent.inner()))
+
+    def slice(self, begin: T, end: T, step: T | int | None = None) -> T:
+        """Extracts a sublist or substring using slice conventions.
+
+        Negative values are accepted.
+
+        See Also:
+            array_slice
+
+        Args:
+            begin (T): `ANY` expression
+            end (T): `ANY` expression
+            step (T | int | None): `BIGINT` expression
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(
+            func("list_slice", self._parent.inner(), begin, end, step)
+        )
+
+    def sort(self, col1: T | str | None = None, col2: T | str | None = None) -> T:
+        """Sorts the elements of the list.
+
+        See Also:
+            array_sort
+
+        Args:
+            col1 (T | str | None): `VARCHAR` expression
+            col2 (T | str | None): `VARCHAR` expression
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(
+            func("list_sort", self._parent.inner(), col1, col2)
+        )
+
+    def stddev_pop(self) -> T:
+        """SQL list_stddev_pop function.
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(func("list_stddev_pop", self._parent.inner()))
+
+    def stddev_samp(self) -> T:
+        """SQL list_stddev_samp function.
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(func("list_stddev_samp", self._parent.inner()))
+
+    def string_agg(self) -> T:
+        """SQL list_string_agg function.
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(func("list_string_agg", self._parent.inner()))
+
+    def sum(self) -> T:
+        """SQL list_sum function.
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(func("list_sum", self._parent.inner()))
+
+    def transform(self, lambda_arg: T) -> T:
+        """Returns a list that is the result of applying the `lambda` function to each element of the input `list`.
+
+        The return type is defined by the return type of the `lambda` function.
+
+        See Also:
+            apply, array_apply, array_transform, list_apply
+
+        Args:
+            lambda_arg (T): `LAMBDA` expression
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(
+            func("list_transform", self._parent.inner(), lambda_arg)
+        )
+
+    def unique(self) -> T:
+        """Counts the unique elements of a `list`.
+
+        See Also:
+            array_unique
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(func("list_unique", self._parent.inner()))
 
     def unpivot_list(self, *args: T) -> T:
         """Identical to list_value, but generated as part of unpivot for better error messages.
@@ -4281,6 +4106,70 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
             T
         """
         return self._parent.__class__(func("unpivot_list", self._parent.inner(), *args))
+
+    def value(self, *args: T) -> T:
+        """Creates a LIST containing the argument values.
+
+        See Also:
+            list_pack
+
+        Args:
+            *args (T): `T` expression
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(func("list_value", self._parent.inner(), *args))
+
+    def var_pop(self) -> T:
+        """SQL list_var_pop function.
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(func("list_var_pop", self._parent.inner()))
+
+    def var_samp(self) -> T:
+        """SQL list_var_samp function.
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(func("list_var_samp", self._parent.inner()))
+
+    def where(self, mask_list: T | list[bool]) -> T:
+        """Returns a list with the `BOOLEAN`s in `mask_list` applied as a mask to the `value_list`.
+
+        See Also:
+            array_where
+
+        Args:
+            mask_list (T | list[bool]): `BOOLEAN[]` expression
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(
+            func("list_where", self._parent.inner(), mask_list)
+        )
+
+    def zip(self, *args: T) -> T:
+        """Zips n `LIST`s to a new `LIST` whose length will be that of the longest list.
+
+        Its elements are structs of n elements from each list `list_1`, …, `list_n`, missing elements are replaced with `NULL`.
+
+        If `truncate` is set, all lists are truncated to the smallest list length.
+
+        See Also:
+            array_zip
+
+        Args:
+            *args (T): `ANY` expression
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(func("list_zip", self._parent.inner(), *args))
 
 
 class StructFns[T: Fns](NameSpaceHandler[T]):
@@ -4299,7 +4188,7 @@ class StructFns[T: Fns](NameSpaceHandler[T]):
             func("array_extract", self._parent.inner(), entry)
         )
 
-    def struct_concat(self, *args: T) -> T:
+    def concat(self, *args: T) -> T:
         """Merge the multiple STRUCTs into a single STRUCT.
 
         Args:
@@ -4312,7 +4201,7 @@ class StructFns[T: Fns](NameSpaceHandler[T]):
             func("struct_concat", self._parent.inner(), *args)
         )
 
-    def struct_contains(self, entry: T) -> T:
+    def contains(self, entry: T) -> T:
         """Check if an unnamed STRUCT contains the value.
 
         See Also:
@@ -4328,7 +4217,7 @@ class StructFns[T: Fns](NameSpaceHandler[T]):
             func("struct_contains", self._parent.inner(), entry)
         )
 
-    def struct_extract(self, entry: T | int | str) -> T:
+    def extract(self, entry: T | int | str) -> T:
         """Extract the named entry from the STRUCT.
 
         Args:
@@ -4341,7 +4230,7 @@ class StructFns[T: Fns](NameSpaceHandler[T]):
             func("struct_extract", self._parent.inner(), entry)
         )
 
-    def struct_extract_at(self, entry: T | int) -> T:
+    def extract_at(self, entry: T | int) -> T:
         """Extract the entry from the STRUCT by position (starts at 1!).
 
         Args:
@@ -4354,7 +4243,7 @@ class StructFns[T: Fns](NameSpaceHandler[T]):
             func("struct_extract_at", self._parent.inner(), entry)
         )
 
-    def struct_has(self, entry: T) -> T:
+    def has(self, entry: T) -> T:
         """Check if an unnamed STRUCT contains the value.
 
         See Also:
@@ -4368,7 +4257,7 @@ class StructFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._parent.__class__(func("struct_has", self._parent.inner(), entry))
 
-    def struct_indexof(self, entry: T) -> T:
+    def indexof(self, entry: T) -> T:
         """Get the position of the entry in an unnamed STRUCT, starting at 1.
 
         See Also:
@@ -4384,7 +4273,7 @@ class StructFns[T: Fns](NameSpaceHandler[T]):
             func("struct_indexof", self._parent.inner(), entry)
         )
 
-    def struct_insert(self, *args: T) -> T:
+    def insert(self, *args: T) -> T:
         """Adds field(s)/value(s) to an existing STRUCT with the argument values.
 
         The entry name(s) will be the bound variable name(s).
@@ -4399,7 +4288,7 @@ class StructFns[T: Fns](NameSpaceHandler[T]):
             func("struct_insert", self._parent.inner(), *args)
         )
 
-    def struct_pack(self, *args: T) -> T:
+    def pack(self, *args: T) -> T:
         """Create a STRUCT containing the argument values.
 
         The entry name will be the bound variable name.
@@ -4412,7 +4301,7 @@ class StructFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._parent.__class__(func("struct_pack", self._parent.inner(), *args))
 
-    def struct_position(self, entry: T) -> T:
+    def position(self, entry: T) -> T:
         """Get the position of the entry in an unnamed STRUCT, starting at 1.
 
         See Also:
@@ -4428,7 +4317,7 @@ class StructFns[T: Fns](NameSpaceHandler[T]):
             func("struct_position", self._parent.inner(), entry)
         )
 
-    def struct_update(self, *args: T) -> T:
+    def update(self, *args: T) -> T:
         """Changes field(s)/value(s) to an existing STRUCT with the argument values.
 
         The entry name(s) will be the bound variable name(s).
@@ -6058,7 +5947,7 @@ class DateTimeFns[T: Fns](NameSpaceHandler[T]):
 class ArrayFns[T: Fns](NameSpaceHandler[T]):
     """Mixin providing auto-generated DuckDB array functions as methods."""
 
-    def array_agg(self) -> T:
+    def agg(self) -> T:
         """Returns a LIST containing all the values of a column.
 
         Returns:
@@ -6066,7 +5955,7 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._parent.__class__(func("array_agg", self._parent.inner()))
 
-    def array_append(self, el: T) -> T:
+    def append(self, el: T) -> T:
         """SQL array_append function.
 
         Args:
@@ -6077,7 +5966,7 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._parent.__class__(func("array_append", self._parent.inner(), el))
 
-    def array_cosine_distance(self, array2: T | float) -> T:
+    def cosine_distance(self, array2: T | float) -> T:
         """Computes the cosine distance between two arrays of the same size.
 
         The array elements can not be `NULL`.
@@ -6094,7 +5983,7 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
             func("array_cosine_distance", self._parent.inner(), array2)
         )
 
-    def array_cosine_similarity(self, array2: T | float) -> T:
+    def cosine_similarity(self, array2: T | float) -> T:
         """Computes the cosine similarity between two arrays of the same size.
 
         The array elements can not be `NULL`.
@@ -6111,7 +6000,7 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
             func("array_cosine_similarity", self._parent.inner(), array2)
         )
 
-    def array_cross_product(self, array_2: T | float) -> T:
+    def cross_product(self, array_2: T | float) -> T:
         """Computes the cross product of two arrays of size 3.
 
         The array elements can not be `NULL`.
@@ -6126,7 +6015,7 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
             func("array_cross_product", self._parent.inner(), array_2)
         )
 
-    def array_distance(self, array2: T | float) -> T:
+    def distance(self, array2: T | float) -> T:
         """Computes the distance between two arrays of the same size.
 
         The array elements can not be `NULL`.
@@ -6143,7 +6032,7 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
             func("array_distance", self._parent.inner(), array2)
         )
 
-    def array_dot_product(self, array2: T | float) -> T:
+    def dot_product(self, array2: T | float) -> T:
         """Computes the inner product between two arrays of the same size.
 
         The array elements can not be `NULL`.
@@ -6163,7 +6052,7 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
             func("array_dot_product", self._parent.inner(), array2)
         )
 
-    def array_extract(self, col1: T | int) -> T:
+    def extract(self, col1: T | int) -> T:
         """SQL array_extract function.
 
         Args:
@@ -6174,7 +6063,7 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._parent.__class__(func("array_extract", self._parent.inner(), col1))
 
-    def array_inner_product(self, array2: T | float) -> T:
+    def inner_product(self, array2: T | float) -> T:
         """Computes the inner product between two arrays of the same size.
 
         The array elements can not be `NULL`.
@@ -6194,18 +6083,20 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
             func("array_inner_product", self._parent.inner(), array2)
         )
 
-    def array_intersect(self, l2: T) -> T:
+    def intersect(self, l2_2: T) -> T:
         """SQL array_intersect function.
 
         Args:
-            l2 (T): `ANY` expression
+            l2_2 (T): `ANY` expression
 
         Returns:
             T
         """
-        return self._parent.__class__(func("array_intersect", self._parent.inner(), l2))
+        return self._parent.__class__(
+            func("array_intersect", self._parent.inner(), l2_2)
+        )
 
-    def array_negative_dot_product(self, array2: T | float) -> T:
+    def negative_dot_product(self, array2: T | float) -> T:
         """Computes the negative inner product between two arrays of the same size.
 
         The array elements can not be `NULL`.
@@ -6225,7 +6116,7 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
             func("array_negative_dot_product", self._parent.inner(), array2)
         )
 
-    def array_negative_inner_product(self, array2: T | float) -> T:
+    def negative_inner_product(self, array2: T | float) -> T:
         """Computes the negative inner product between two arrays of the same size.
 
         The array elements can not be `NULL`.
@@ -6245,7 +6136,7 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
             func("array_negative_inner_product", self._parent.inner(), array2)
         )
 
-    def array_pop_back(self) -> T:
+    def pop_back(self) -> T:
         """SQL array_pop_back function.
 
         Returns:
@@ -6253,7 +6144,7 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._parent.__class__(func("array_pop_back", self._parent.inner()))
 
-    def array_pop_front(self) -> T:
+    def pop_front(self) -> T:
         """SQL array_pop_front function.
 
         Returns:
@@ -6261,7 +6152,7 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._parent.__class__(func("array_pop_front", self._parent.inner()))
 
-    def array_prepend(self, arr: T) -> T:
+    def prepend(self, arr: T) -> T:
         """SQL array_prepend function.
 
         Args:
@@ -6272,7 +6163,7 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._parent.__class__(func("array_prepend", self._parent.inner(), arr))
 
-    def array_push_back(self, e: T) -> T:
+    def push_back(self, e: T) -> T:
         """SQL array_push_back function.
 
         Args:
@@ -6283,7 +6174,7 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._parent.__class__(func("array_push_back", self._parent.inner(), e))
 
-    def array_push_front(self, e: T) -> T:
+    def push_front(self, e: T) -> T:
         """SQL array_push_front function.
 
         Args:
@@ -6294,7 +6185,7 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._parent.__class__(func("array_push_front", self._parent.inner(), e))
 
-    def array_reverse(self) -> T:
+    def reverse(self) -> T:
         """SQL array_reverse function.
 
         Returns:
@@ -6302,7 +6193,7 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._parent.__class__(func("array_reverse", self._parent.inner()))
 
-    def array_to_json(self, *args: T) -> T:
+    def to_json(self, *args: T) -> T:
         """SQL array_to_json function.
 
         Args:
@@ -6315,7 +6206,7 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
             func("array_to_json", self._parent.inner(), *args)
         )
 
-    def array_to_string(self, sep: T) -> T:
+    def to_string(self, sep: T) -> T:
         """SQL array_to_string function.
 
         Args:
@@ -6328,7 +6219,7 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
             func("array_to_string", self._parent.inner(), sep)
         )
 
-    def array_to_string_comma_default(self, sep: T) -> T:
+    def to_string_comma_default(self, sep: T) -> T:
         """SQL array_to_string_comma_default function.
 
         Args:
@@ -6341,7 +6232,7 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
             func("array_to_string_comma_default", self._parent.inner(), sep)
         )
 
-    def array_value(self, *args: T) -> T:
+    def value(self, *args: T) -> T:
         """Creates an `ARRAY` containing the argument values.
 
         Args:
@@ -6356,7 +6247,7 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
 class JsonFns[T: Fns](NameSpaceHandler[T]):
     """Mixin providing auto-generated DuckDB JSON functions as methods."""
 
-    def json_array(self, *args: T) -> T:
+    def array(self, *args: T) -> T:
         """SQL json_array function.
 
         Args:
@@ -6367,7 +6258,7 @@ class JsonFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._parent.__class__(func("json_array", self._parent.inner(), *args))
 
-    def json_array_length(self, col1: T | list[str] | str | None = None) -> T:
+    def array_length(self, col1: T | list[str] | str | None = None) -> T:
         """SQL json_array_length function.
 
         Args:
@@ -6380,18 +6271,20 @@ class JsonFns[T: Fns](NameSpaceHandler[T]):
             func("json_array_length", self._parent.inner(), col1)
         )
 
-    def json_contains(self, col1: T | str) -> T:
+    def contains(self, col1_4: T | str) -> T:
         """SQL json_contains function.
 
         Args:
-            col1 (T | str): `JSON | VARCHAR` expression
+            col1_4 (T | str): `JSON | VARCHAR` expression
 
         Returns:
             T
         """
-        return self._parent.__class__(func("json_contains", self._parent.inner(), col1))
+        return self._parent.__class__(
+            func("json_contains", self._parent.inner(), col1_4)
+        )
 
-    def json_deserialize_sql(self) -> T:
+    def deserialize_sql(self) -> T:
         """SQL json_deserialize_sql function.
 
         Returns:
@@ -6401,7 +6294,7 @@ class JsonFns[T: Fns](NameSpaceHandler[T]):
             func("json_deserialize_sql", self._parent.inner())
         )
 
-    def json_exists(self, col1: T | list[str] | str) -> T:
+    def exists(self, col1: T | list[str] | str) -> T:
         """SQL json_exists function.
 
         Args:
@@ -6412,18 +6305,20 @@ class JsonFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._parent.__class__(func("json_exists", self._parent.inner(), col1))
 
-    def json_extract(self, col1: T | int | list[str] | str) -> T:
+    def extract(self, col1_2: T | int | list[str] | str) -> T:
         """SQL json_extract function.
 
         Args:
-            col1 (T | int | list[str] | str): `BIGINT | VARCHAR | VARCHAR[]` expression
+            col1_2 (T | int | list[str] | str): `BIGINT | VARCHAR | VARCHAR[]` expression
 
         Returns:
             T
         """
-        return self._parent.__class__(func("json_extract", self._parent.inner(), col1))
+        return self._parent.__class__(
+            func("json_extract", self._parent.inner(), col1_2)
+        )
 
-    def json_extract_path(self, col1: T | int | list[str] | str) -> T:
+    def extract_path(self, col1: T | int | list[str] | str) -> T:
         """SQL json_extract_path function.
 
         Args:
@@ -6436,7 +6331,7 @@ class JsonFns[T: Fns](NameSpaceHandler[T]):
             func("json_extract_path", self._parent.inner(), col1)
         )
 
-    def json_extract_path_text(self, col1: T | int | list[str] | str) -> T:
+    def extract_path_text(self, col1: T | int | list[str] | str) -> T:
         """SQL json_extract_path_text function.
 
         Args:
@@ -6449,7 +6344,7 @@ class JsonFns[T: Fns](NameSpaceHandler[T]):
             func("json_extract_path_text", self._parent.inner(), col1)
         )
 
-    def json_extract_string(self, col1: T | int | list[str] | str) -> T:
+    def extract_string(self, col1: T | int | list[str] | str) -> T:
         """SQL json_extract_string function.
 
         Args:
@@ -6462,7 +6357,7 @@ class JsonFns[T: Fns](NameSpaceHandler[T]):
             func("json_extract_string", self._parent.inner(), col1)
         )
 
-    def json_group_array(self) -> T:
+    def group_array(self) -> T:
         """SQL json_group_array function.
 
         Returns:
@@ -6470,7 +6365,7 @@ class JsonFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._parent.__class__(func("json_group_array", self._parent.inner()))
 
-    def json_group_object(self, v: T) -> T:
+    def group_object(self, v: T) -> T:
         """SQL json_group_object function.
 
         Args:
@@ -6483,7 +6378,7 @@ class JsonFns[T: Fns](NameSpaceHandler[T]):
             func("json_group_object", self._parent.inner(), v)
         )
 
-    def json_group_structure(self) -> T:
+    def group_structure(self) -> T:
         """SQL json_group_structure function.
 
         Returns:
@@ -6493,7 +6388,7 @@ class JsonFns[T: Fns](NameSpaceHandler[T]):
             func("json_group_structure", self._parent.inner())
         )
 
-    def json_keys(self, col1: T | list[str] | str | None = None) -> T:
+    def keys(self, col1: T | list[str] | str | None = None) -> T:
         """SQL json_keys function.
 
         Args:
@@ -6504,7 +6399,7 @@ class JsonFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._parent.__class__(func("json_keys", self._parent.inner(), col1))
 
-    def json_merge_patch(self, col1: T | str, *args: T | str) -> T:
+    def merge_patch(self, col1: T | str, *args: T | str) -> T:
         """SQL json_merge_patch function.
 
         Args:
@@ -6518,7 +6413,7 @@ class JsonFns[T: Fns](NameSpaceHandler[T]):
             func("json_merge_patch", self._parent.inner(), col1, *args)
         )
 
-    def json_object(self, *args: T) -> T:
+    def object(self, *args: T) -> T:
         """SQL json_object function.
 
         Args:
@@ -6529,7 +6424,7 @@ class JsonFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._parent.__class__(func("json_object", self._parent.inner(), *args))
 
-    def json_pretty(self) -> T:
+    def pretty(self) -> T:
         """SQL json_pretty function.
 
         Returns:
@@ -6537,7 +6432,7 @@ class JsonFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._parent.__class__(func("json_pretty", self._parent.inner()))
 
-    def json_quote(self, *args: T) -> T:
+    def quote(self, *args: T) -> T:
         """SQL json_quote function.
 
         Args:
@@ -6548,7 +6443,7 @@ class JsonFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._parent.__class__(func("json_quote", self._parent.inner(), *args))
 
-    def json_serialize_plan(
+    def serialize_plan(
         self,
         col1: T | bool | None = None,
         col2: T | bool | None = None,
@@ -6570,7 +6465,7 @@ class JsonFns[T: Fns](NameSpaceHandler[T]):
             func("json_serialize_plan", self._parent.inner(), col1, col2, col3, col4)
         )
 
-    def json_serialize_sql(
+    def serialize_sql(
         self,
         col1: T | bool | None = None,
         col2: T | bool | None = None,
@@ -6592,7 +6487,7 @@ class JsonFns[T: Fns](NameSpaceHandler[T]):
             func("json_serialize_sql", self._parent.inner(), col1, col2, col3, col4)
         )
 
-    def json_structure(self) -> T:
+    def structure(self) -> T:
         """SQL json_structure function.
 
         Returns:
@@ -6600,7 +6495,7 @@ class JsonFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._parent.__class__(func("json_structure", self._parent.inner()))
 
-    def json_transform(self, col1: T | str) -> T:
+    def transform(self, col1: T | str) -> T:
         """SQL json_transform function.
 
         Args:
@@ -6613,7 +6508,7 @@ class JsonFns[T: Fns](NameSpaceHandler[T]):
             func("json_transform", self._parent.inner(), col1)
         )
 
-    def json_transform_strict(self, col1: T | str) -> T:
+    def transform_strict(self, col1: T | str) -> T:
         """SQL json_transform_strict function.
 
         Args:
@@ -6626,7 +6521,7 @@ class JsonFns[T: Fns](NameSpaceHandler[T]):
             func("json_transform_strict", self._parent.inner(), col1)
         )
 
-    def json_type(self, col1: T | list[str] | str | None = None) -> T:
+    def type(self, col1: T | list[str] | str | None = None) -> T:
         """SQL json_type function.
 
         Args:
@@ -6637,7 +6532,7 @@ class JsonFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._parent.__class__(func("json_type", self._parent.inner(), col1))
 
-    def json_valid(self) -> T:
+    def valid(self) -> T:
         """SQL json_valid function.
 
         Returns:
@@ -6645,7 +6540,7 @@ class JsonFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._parent.__class__(func("json_valid", self._parent.inner()))
 
-    def json_value(self, col1: T | int | list[str] | str) -> T:
+    def value(self, col1: T | int | list[str] | str) -> T:
         """SQL json_value function.
 
         Args:
