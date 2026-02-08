@@ -1,6 +1,8 @@
 from collections.abc import Iterable
+from string import Formatter
 
 import polars as pl
+import pyochain as pc
 
 from ._rules import (
     CONVERTER,
@@ -78,7 +80,7 @@ def run_qry(lf: pl.LazyFrame) -> pl.LazyFrame:
         .agg(
             pl.all().exclude("param_names").first(),
             *params.names.pipe(
-                lambda expr: expr.filter(expr.is_not_null()).pipe(
+                lambda expr: expr.pipe(
                     _joined_parts,
                     params.idx.ge(params.lens.min_params_per_fn),
                     py.types,
@@ -110,25 +112,23 @@ def _joined_parts(
     py_type = _replace_self(py_union, self_type)
 
     def _param_sig_list() -> pl.Expr:
-        return pl.concat_str(
-            expr,
-            pl.lit(": "),
-            py_type,
-            pl.when(cond).then(pl.lit(" | None = None")),
-            ignore_nulls=True,
+        txt = """{param_name}: {py_type}{union}"""
+
+        return _format_kwords(
+            txt,
+            param_name=expr,
+            py_type=py_type,
+            union=pl.when(cond).then(pl.lit(" | None = None")).otherwise(_EMPTY_STR),
         )
 
     def _param_doc_join() -> pl.Expr:
-        return pl.concat_str(
-            pl.lit("            "),
-            expr,
-            pl.lit(" ("),
-            py_type,
-            pl.when(cond).then(pl.lit(" | None")),
-            pl.lit("): `"),
-            _replace_self(params_union, self_type),
-            pl.lit("` expression"),
-            ignore_nulls=True,
+        txt = """            {param_name} ({py_type}{union}): `{dk_type}` expression"""
+        return _format_kwords(
+            txt,
+            param_name=expr,
+            py_type=py_type,
+            union=pl.when(cond).then(pl.lit(" | None")).otherwise(_EMPTY_STR),
+            dk_type=_replace_self(params_union, self_type),
         ).str.join("\n")
 
     return (
@@ -141,10 +141,12 @@ def _joined_parts(
 
 def _make_type_union(py_type: pl.Expr) -> pl.Expr:
     self_value = pl.lit(PyTypes.SELF.value)
+    txt = "{self_value} | {py_type}"
+
     return (
         pl.when(py_type.eq(_EMPTY_STR))
         .then(self_value)
-        .otherwise(pl.concat_str(self_value, pl.lit(" | "), py_type))
+        .otherwise(_format_kwords(txt, self_value=self_value, py_type=py_type))
     )
 
 
@@ -176,14 +178,6 @@ def _namespace_specs(cats: pl.Expr, py_name: pl.Expr) -> pl.Expr:
 
 def _self_type(namespace: pl.Expr) -> pl.Expr:
     return pl.when(namespace.is_not_null()).then(pl.lit("T")).otherwise(pl.lit("Self"))
-
-
-def _self_expr(namespace: pl.Expr) -> pl.Expr:
-    return (
-        pl.when(namespace.is_not_null())
-        .then(pl.lit("self._parent.inner()"))
-        .otherwise(pl.lit("self._expr"))
-    )
 
 
 def _convert_duckdb_type_to_python(param_type: pl.Expr) -> pl.Expr:
@@ -233,7 +227,6 @@ def _to_py_name(dk: DuckCols, p_lens: ParamLens) -> pl.Expr:
                         pl.when(expr.is_in(KWORDS))
                         .then(pl.concat_str(expr, pl.lit("_fn")))
                         .otherwise(expr)
-                        .str.to_lowercase()
                     )
                 )
                 .pipe(
@@ -287,7 +280,6 @@ def _to_py_name(dk: DuckCols, p_lens: ParamLens) -> pl.Expr:
                                 )
                                 .otherwise(pl.lit([], dtype=pl.List(pl.String)))
                                 .list.join("_")
-                                .str.to_lowercase()
                                 .max()
                                 .over(dk.function_name, dk.categories, dk.description),
                             )
@@ -295,6 +287,7 @@ def _to_py_name(dk: DuckCols, p_lens: ParamLens) -> pl.Expr:
                         .otherwise(base)
                     )
                 )
+                .str.to_lowercase()
                 .alias("py_name")
             )
         )
@@ -304,49 +297,25 @@ def _to_py_name(dk: DuckCols, p_lens: ParamLens) -> pl.Expr:
 def _to_func(
     has_params: pl.Expr, py: PyCols, p_lists: ParamLists, dk: DuckCols
 ) -> pl.Expr:
+
     self_type = py.namespace.pipe(_self_type)
-    self_expr = py.namespace.pipe(_self_expr)
     varargs_type = (
         dk.varargs.pipe(_convert_duckdb_type_to_python)
         .pipe(_make_type_union)
         .pipe(_replace_self, self_type)
     )
 
-    def _description() -> pl.Expr:
-        return (
-            pl.when(dk.description.is_not_null())
-            .then(
-                dk.description.str.strip_chars()
-                .str.replace_all("\u2019", "'")
-                .str.replace_all(r"\. ", ".\n\n        ")
-                .str.strip_chars_end(".")
-                .add(pl.lit("."))
+    def _duckdb_args(has_params: pl.Expr) -> pl.Expr:
+        def _self_expr() -> pl.Expr:
+            txt = ", self.{expr}"
+            return _format_kwords(
+                txt,
+                expr=pl.when(py.namespace.is_not_null())
+                .then(pl.lit("_parent.inner()"))
+                .otherwise(pl.lit("_expr")),
             )
-            .otherwise(
-                pl.concat_str(pl.lit("SQL "), dk.function_name, pl.lit(" function."))
-            )
-        )
 
-    def _args_section(has_params: pl.Expr) -> pl.Expr:
-        return pl.when(has_params.gt(1).or_(dk.varargs.is_not_null())).then(
-            pl.concat_str(
-                pl.lit("\n\n        Args:\n"),
-                p_lists.docs.str.split("\n").list.slice(1).list.join("\n"),
-                pl.when(dk.varargs.is_not_null()).then(
-                    pl.concat_str(
-                        pl.lit("\n            *args ("),
-                        varargs_type,
-                        pl.lit("): `"),
-                        dk.varargs,
-                        pl.lit("` expression"),
-                    )
-                ),
-                ignore_nulls=True,
-            )
-        )
-
-    def _body(has_params: pl.Expr) -> pl.Expr:
-        slf_arg = pl.concat_str(pl.lit(", "), self_expr)
+        slf_arg = _self_expr()
         sep = pl.lit(", ")
         args = p_lists.names.str.split(", ").list.slice(1).list.join(", ")
 
@@ -356,48 +325,93 @@ def _to_func(
                 pl.concat_str(sep, args, slf_arg)
             )
 
-        def _normal() -> pl.Expr:
-            """Normal case: self._expr first, then other args."""
-            return pl.concat_str(
-                slf_arg,
-                pl.when(has_params.gt(1)).then(pl.concat_str(sep, args)),
-                ignore_nulls=True,
-            )
-
         return (
             pl.when(dk.function_name.eq("log").and_(has_params.gt(1)))
             .then(_reversed())
-            .otherwise(_normal())
+            .otherwise(
+                pl.concat_str(
+                    slf_arg,
+                    pl.when(has_params.gt(1)).then(pl.concat_str(sep, args)),
+                    ignore_nulls=True,
+                )
+            )
         )
 
-    return pl.concat_str(
-        pl.lit("    def "),
-        py.name,
-        pl.lit("(self"),
-        pl.when(has_params.gt(1)).then(
-            pl.concat_str(
-                pl.lit(", "), p_lists.signatures.list.slice(1).list.join(", ")
+    return _format_kwords(
+        _txt(),
+        func_name=py.name.alias("func_name"),
+        args=pl.when(has_params.gt(1))
+        .then(pl.format(", {}", p_lists.signatures.list.slice(1).list.join(", ")))
+        .otherwise(_EMPTY_STR),
+        varargs=pl.when(dk.varargs.is_not_null())
+        .then(pl.format(", *args: {}", varargs_type))
+        .otherwise(_EMPTY_STR),
+        self_type=self_type,
+        description=pl.when(dk.description.is_not_null())
+        .then(
+            dk.description.str.strip_chars()
+            .str.replace_all("\u2019", "'")
+            .str.replace_all(r"\. ", ".\n\n        ")
+            .str.strip_chars_end(".")
+        )
+        .otherwise(pl.format("SQL {} function", dk.function_name)),
+        args_section=pl.when(has_params.gt(1).or_(dk.varargs.is_not_null()))
+        .then(
+            pl.format(
+                "\n\n        Args:\n{}{}",
+                p_lists.docs.str.split("\n").list.slice(1).list.join("\n"),
+                pl.when(dk.varargs.is_not_null())
+                .then(
+                    pl.format(
+                        "\n            *args ({}): `{}` expression",
+                        varargs_type,
+                        dk.varargs,
+                    )
+                )
+                .otherwise(_EMPTY_STR),
             )
-        ),
-        pl.when(dk.varargs.is_not_null()).then(
-            pl.concat_str(pl.lit(", *args: "), varargs_type)
-        ),
-        pl.lit(") -> "),
-        self_type,
-        pl.lit(':\n        """'),
-        _description(),
-        _args_section(has_params),
-        pl.lit("\n\n        Returns:\n            "),
-        self_type,
-        pl.lit('\n        """\n        return '),
-        pl.when(py.namespace.is_not_null())
-        .then(pl.lit("self._parent.__class__"))
-        .otherwise(pl.lit("self.__class__")),
-        pl.lit('(func("'),
-        dk.function_name,
-        pl.lit('"'),
-        _body(has_params),
-        pl.when(dk.varargs.is_not_null()).then(pl.lit(", *args")),
-        pl.lit("))"),
-        ignore_nulls=True,
+        )
+        .otherwise(_EMPTY_STR),
+        parent=pl.when(py.namespace.is_not_null())
+        .then(pl.lit("_parent."))
+        .otherwise(_EMPTY_STR),
+        duckdb_name=dk.function_name,
+        duckdb_args=has_params.pipe(_duckdb_args),
+        duckdb_varargs=pl.when(dk.varargs.is_not_null())
+        .then(pl.lit(", *args"))
+        .otherwise(_EMPTY_STR),
+    )
+
+
+def _txt() -> str:
+    return '''
+    def {func_name}(self{args}{varargs}) -> {self_type}:
+        """{description}.{args_section}
+
+        Returns:
+            {self_type}
+        """
+        return self.{parent}__class__(func("{duckdb_name}"{duckdb_args}{duckdb_varargs}))
+        '''
+
+
+def _format_kwords(txt: str, **kwords: pl.Expr) -> pl.Expr:
+    kword_map = pc.Dict.from_ref(kwords)
+
+    return (
+        pc.Iter(Formatter().parse(txt))
+        .map_star(lambda lit, field, _fmt, _conv: (lit, pc.Option(field)))
+        .collect()
+        .into(
+            lambda parts: pl.format(
+                parts.iter()
+                .map_star(
+                    lambda lit, field: field.map(lambda _: f"{lit}{{}}").unwrap_or(lit)
+                )
+                .join(""),
+                *parts.iter()
+                .filter_map_star(lambda _lit, field: field)
+                .filter_map(kword_map.get_item),
+            )
+        )
     )
