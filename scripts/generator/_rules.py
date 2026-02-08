@@ -138,6 +138,15 @@ OPERATOR_MAP = pc.Set(
     }
 )
 """Mapping of SQL operators to Python function names."""
+PREFIXES = pc.Set(
+    (
+        "__",
+        "current_",  # Utility fns
+        "has_",  # Utility fns
+        "pg_",  # Postgres fns
+        "icu_",  # timestamp extension
+    )
+)
 
 
 @dataclass(slots=True)

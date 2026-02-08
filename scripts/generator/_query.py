@@ -7,6 +7,7 @@ from ._rules import (
     KWORDS,
     NAMESPACE_SPECS,
     OPERATOR_MAP,
+    PREFIXES,
     SHADOWERS,
     DuckDbTypes,
     PyTypes,
@@ -41,11 +42,9 @@ def get_df() -> pl.LazyFrame:
             .and_(dk.varargs.is_null())
             .not_(),  # literals
             dk.function_name.is_in(OPERATOR_MAP).not_(),
-            dk.function_name.str.starts_with("__").not_(),
-            dk.function_name.str.starts_with("current_").not_(),  # Utility fns
-            dk.function_name.str.starts_with("has_").not_(),  # Utility fns
-            dk.function_name.str.starts_with("pg_").not_(),  # Postgres fns
-            dk.function_name.str.starts_with("icu_").not_(),  # timestamp extension
+            *PREFIXES.iter().map(
+                lambda prefix: dk.function_name.str.starts_with(prefix).not_()
+            ),
             dk.function_name.ne("alias"),  # conflicts with duckdb alias method
             dk.alias_of.is_null().or_(dk.alias_of.is_in(OPERATOR_MAP)),
         )
@@ -107,7 +106,7 @@ def get_df() -> pl.LazyFrame:
             py.name,
             pl.col("param_names_list").list.len().pipe(_to_func, py, ParamLists(), dk),
         )
-        .sort("namespace", py.name)
+        .sort(py.namespace, py.name)
     )
 
 
@@ -198,7 +197,7 @@ def _namespace_by_category(lf: pl.LazyFrame, py: PyCols, dk: DuckCols) -> pl.Laz
         )
         .sort(py.name, "spec_idx")
         .group_by(py.name, maintain_order=True)
-        .agg(pl.col("namespace").drop_nulls().first().alias("namespace_by_cat"))
+        .agg(py.namespace.drop_nulls().first().alias("namespace_by_cat"))
     )
 
 
@@ -227,9 +226,9 @@ def _namespace_by_prefix(lf: pl.LazyFrame, py: PyCols) -> pl.LazyFrame:
             )
         )
         .filter(py.name.str.starts_with(pl.col("prefix")))
-        .sort(by=[py.name, "spec_idx"])
+        .sort(py.name, "spec_idx")
         .group_by(py.name, maintain_order=True)
-        .agg(pl.col("namespace").drop_nulls().first().alias("namespace_by_prefix"))
+        .agg(py.namespace.drop_nulls().first().alias("namespace_by_prefix"))
     )
 
 
