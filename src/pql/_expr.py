@@ -350,8 +350,8 @@ class Expr(ExprHandler[SqlExpr]):
         """Repeat values by count, returning a list."""
         return self.__class__(
             SqlExpr.from_value(by)
-            .lst.range()
-            .lst.list_transform(sql.fn_once("_", self._expr))
+            .list.range()
+            .list.list_transform(sql.fn_once("_", self._expr))
         )
 
     def is_duplicated(self) -> Self:
@@ -510,7 +510,7 @@ class ExprStringNameSpace:
         match literal:
             case False:
                 return Expr(
-                    self._expr.str.regexp_extract_all(pattern_expr).lst.length(),
+                    self._expr.str.regexp_extract_all(pattern_expr).list.length(),
                 )
             case True:
                 return Expr(
@@ -633,15 +633,15 @@ class ExprStringNameSpace:
         elem = sql.col("_")
         lambda_expr = sql.fn_once(
             "_",
-            elem.lst.list_extract(sql.lit(1))
+            elem.list.list_extract(sql.lit(1))
             .str.upper()
-            .lst.concat(elem.str.substring(sql.lit(2))),
+            .list.concat(elem.str.substring(sql.lit(2))),
         )
         return Expr(
             self._expr.str.lower()
             .str.regexp_extract_all(sql.lit(r"[a-z]*[^a-z]*"))
-            .lst.list_transform(lambda_expr)
-            .lst.list_aggregate(sql.lit("string_agg"), sql.lit(""))
+            .list.list_transform(lambda_expr)
+            .list.list_aggregate(sql.lit("string_agg"), sql.lit(""))
         )
 
 
@@ -651,28 +651,28 @@ class ExprListNameSpace(ExprHandler[sql.SqlExpr]):
 
     def len(self) -> Expr:
         """Return the number of elements in each list."""
-        return Expr(self._expr.lst.length())
+        return Expr(self._expr.list.length())
 
     def unique(self) -> Expr:
         """Return unique values in each list."""
-        distinct_expr = self._expr.lst.list_distinct()
+        distinct_expr = self._expr.list.list_distinct()
         return Expr(
             sql.when(
-                self._expr.lst.list_position(sql.lit(None)).is_not_null(),
-                distinct_expr.lst.list_append(sql.lit(None)),
+                self._expr.list.list_position(sql.lit(None)).is_not_null(),
+                distinct_expr.list.list_append(sql.lit(None)),
             ).otherwise(distinct_expr)
         )
 
     def contains(self, item: IntoExpr, *, nulls_equal: bool = True) -> Expr:
         """Check if sublists contain the given item."""
         item_expr = SqlExpr.from_value(item)
-        contains_expr = self._expr.lst.list_contains(item_expr)
+        contains_expr = self._expr.list.list_contains(item_expr)
         if nulls_equal:
             return Expr(
                 sql.when(
                     item_expr.is_null(),
                     sql.coalesce(
-                        self._expr.lst.list_position(sql.lit(None)).is_not_null(),
+                        self._expr.list.list_position(sql.lit(None)).is_not_null(),
                         sql.lit(value=False),
                     ),
                 ).otherwise(sql.coalesce(contains_expr, sql.lit(value=False)))
@@ -682,35 +682,35 @@ class ExprListNameSpace(ExprHandler[sql.SqlExpr]):
     def get(self, index: int) -> Expr:
         """Return the value by index in each list."""
         return Expr(
-            self._expr.lst.list_extract(
+            self._expr.list.list_extract(
                 sql.lit(index + 1 if index >= 0 else index),
             )
         )
 
     def min(self) -> Expr:
         """Compute the min value of the lists in the array."""
-        return Expr(self._expr.lst.list_min())
+        return Expr(self._expr.list.list_min())
 
     def max(self) -> Expr:
         """Compute the max value of the lists in the array."""
-        return Expr(self._expr.lst.list_max())
+        return Expr(self._expr.list.list_max())
 
     def mean(self) -> Expr:
         """Compute the mean value of the lists in the array."""
-        return Expr(self._expr.lst.list_avg())
+        return Expr(self._expr.list.list_avg())
 
     def median(self) -> Expr:
         """Compute the median value of the lists in the array."""
-        return Expr(self._expr.lst.list_median())
+        return Expr(self._expr.list.list_median())
 
     def sum(self) -> Expr:
         """Compute the sum value of the lists in the array."""
-        expr_no_nulls = self._expr.lst.list_filter(
+        expr_no_nulls = self._expr.list.list_filter(
             sql.fn_once("_", sql.col("_").is_not_null())
         )
         return Expr(
-            sql.when(expr_no_nulls.lst.length().eq(sql.lit(0)), sql.lit(0)).otherwise(
-                expr_no_nulls.lst.list_sum()
+            sql.when(expr_no_nulls.list.length().eq(sql.lit(0)), sql.lit(0)).otherwise(
+                expr_no_nulls.list.list_sum()
             )
         )
 
@@ -719,7 +719,7 @@ class ExprListNameSpace(ExprHandler[sql.SqlExpr]):
         sort_direction = "DESC" if descending else "ASC"
         nulls_position = "NULLS LAST" if nulls_last else "NULLS FIRST"
         return Expr(
-            self._expr.lst.list_sort(sql.lit(sort_direction), sql.lit(nulls_position))
+            self._expr.list.list_sort(sql.lit(sort_direction), sql.lit(nulls_position))
         )
 
 
