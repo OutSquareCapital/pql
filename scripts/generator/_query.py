@@ -28,21 +28,7 @@ def run_qry(lf: pl.LazyFrame) -> pl.LazyFrame:
     dk = DuckCols()
     return (
         lf.select(dk.to_dict().keys())
-        .filter(
-            dk.function_type.is_in(
-                {FuncTypes.TABLE, FuncTypes.TABLE_MACRO, FuncTypes.PRAGMA}
-            ).not_(),
-            dk.parameters.list.len()
-            .eq(0)
-            .and_(dk.varargs.is_null())
-            .not_(),  # literals
-            dk.function_name.is_in(OPERATOR_MAP).not_(),
-            *PREFIXES.iter().map(
-                lambda prefix: dk.function_name.str.starts_with(prefix).not_()
-            ),
-            dk.function_name.ne("alias"),  # conflicts with duckdb alias method
-            dk.alias_of.is_null().or_(dk.alias_of.is_in(OPERATOR_MAP)),
-        )
+        .filter(_filters(dk))
         .with_columns(
             dk.parameter_types.list.eval(pl.element().fill_null(DuckDbTypes.ANY)),
             *dk.parameters.list.len().pipe(
@@ -96,6 +82,21 @@ def run_qry(lf: pl.LazyFrame) -> pl.LazyFrame:
             pl.col("param_names_list").list.len().pipe(_to_func, py, ParamLists(), dk),
         )
         .sort(py.namespace, py.name)
+    )
+
+
+def _filters(dk: DuckCols) -> Iterable[pl.Expr]:
+    return (
+        dk.function_type.is_in(
+            {FuncTypes.TABLE, FuncTypes.TABLE_MACRO, FuncTypes.PRAGMA}
+        ).not_(),
+        dk.parameters.list.len().eq(0).and_(dk.varargs.is_null()).not_(),  # literals
+        dk.function_name.is_in(OPERATOR_MAP).not_(),
+        *PREFIXES.iter().map(
+            lambda prefix: dk.function_name.str.starts_with(prefix).not_()
+        ),
+        dk.function_name.ne("alias"),  # conflicts with duckdb alias method
+        dk.alias_of.is_null().or_(dk.alias_of.is_in(OPERATOR_MAP)),
     )
 
 
