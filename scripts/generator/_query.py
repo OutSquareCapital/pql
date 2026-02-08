@@ -13,7 +13,6 @@ from ._rules import (
     PyTypes,
 )
 from ._schemas import (
-    CATEGORY_TYPES,
     DuckCols,
     FuncTypes,
     ParamLens,
@@ -59,18 +58,7 @@ def run_qry(lf: pl.LazyFrame) -> pl.LazyFrame:
             ),
         )
         .with_columns(_to_py_name(dk, params.lens))
-        .pipe(
-            lambda lf: lf.join(
-                lf.pipe(_namespace_by_category, py, dk), on=py.name, how="left"
-            ).join(lf.pipe(_namespace_by_prefix, py), on=py.name, how="left")
-        )
-        .with_columns(
-            pl.concat_list(pl.col("namespace_by_cat"), pl.col("namespace_by_prefix"))
-            .list.drop_nulls()
-            .list.first()
-            .alias("namespace")
-        )
-        .drop("namespace_by_cat", "namespace_by_prefix")
+        .with_columns(dk.categories.pipe(_namespace_specs, py.name))
         .with_row_index("sig_id")
         .explode("parameters", "parameter_types")
         .with_columns(
@@ -162,72 +150,26 @@ def _replace_self(expr: pl.Expr, self_type: pl.Expr) -> pl.Expr:
     return expr.str.replace_all("Self", self_type)
 
 
-def _namespace_by_category(lf: pl.LazyFrame, py: PyCols, dk: DuckCols) -> pl.LazyFrame:
+def _namespace_specs(cats: pl.Expr, py_name: pl.Expr) -> pl.Expr:
 
-    return (
-        NAMESPACE_SPECS.iter()
-        .enumerate()
-        .map_star(
-            lambda idx, spec: spec.categories.iter().map(
-                lambda category: (idx, spec.name, category)
-            )
-        )
-        .flatten()
-        .into(
-            pl.LazyFrame,
-            schema={
-                "spec_idx": pl.Int64,
-                "namespace": pl.String,
-                "category": CATEGORY_TYPES,
-            },
-        )
-        .pipe(
-            lambda namespace_specs_categories: (
-                lf.select(py.name, dk.categories)
-                .explode("categories")
-                .join(
-                    namespace_specs_categories,
-                    left_on=dk.categories,
-                    right_on="category",
-                    how="left",
-                )
-            )
-        )
-        .sort(py.name, "spec_idx")
-        .group_by(py.name, maintain_order=True)
-        .agg(py.namespace.drop_nulls().first().alias("namespace_by_cat"))
-    )
-
-
-def _namespace_by_prefix(lf: pl.LazyFrame, py: PyCols) -> pl.LazyFrame:
-
-    return (
-        NAMESPACE_SPECS.iter()
-        .enumerate()
-        .map_star(
-            lambda idx, spec: spec.prefixes.iter().map(
-                lambda prefix: (idx, spec.name, prefix)
-            )
-        )
-        .flatten()
-        .into(
-            pl.LazyFrame,
-            schema={
-                "spec_idx": pl.Int64,
-                "namespace": pl.String,
-                "prefix": pl.String,
-            },
-        )
-        .pipe(
-            lambda namespace_specs_prefixes: lf.select(py.name).join(
-                namespace_specs_prefixes, how="cross"
-            )
-        )
-        .filter(py.name.str.starts_with(pl.col("prefix")))
-        .sort(py.name, "spec_idx")
-        .group_by(py.name, maintain_order=True)
-        .agg(py.namespace.drop_nulls().first().alias("namespace_by_prefix"))
-    )
+    return pl.coalesce(
+        *NAMESPACE_SPECS.iter().map(
+            lambda spec: pl.when(
+                spec.categories.iter()
+                .map(lambda c: c.value)
+                .into(lambda x: cats.list.set_intersection(x.collect(tuple)))
+                .list.len()
+                .gt(0)
+            ).then(pl.lit(spec.name))
+        ),
+        *NAMESPACE_SPECS.iter().map(
+            lambda spec: pl.when(
+                spec.prefixes.iter()
+                .map(py_name.str.starts_with)
+                .fold(pl.lit(value=False), lambda a, b: a.or_(b))
+            ).then(pl.lit(spec.name))
+        ),
+    ).alias("namespace")
 
 
 def _self_type(namespace: pl.Expr) -> pl.Expr:
