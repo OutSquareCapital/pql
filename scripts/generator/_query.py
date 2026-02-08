@@ -1,8 +1,6 @@
 from collections.abc import Iterable
-from string import Formatter
 
 import polars as pl
-import pyochain as pc
 
 from ._rules import (
     CONVERTER,
@@ -22,8 +20,7 @@ from ._schemas import (
     Params,
     PyCols,
 )
-
-_EMPTY_STR = pl.lit("")
+from ._str_builder import EMPTY_STR, format_kwords
 
 
 def run_qry(lf: pl.LazyFrame) -> pl.LazyFrame:
@@ -99,7 +96,7 @@ def run_qry(lf: pl.LazyFrame) -> pl.LazyFrame:
 
 
 def _into_union(expr: pl.Expr) -> pl.Expr:
-    return expr.filter(expr.ne(_EMPTY_STR)).unique().sort().str.join(" | ")
+    return expr.filter(expr.ne(EMPTY_STR)).unique().sort().str.join(" | ")
 
 
 def _joined_parts(
@@ -114,21 +111,23 @@ def _joined_parts(
     def _param_sig_list() -> pl.Expr:
         txt = """{param_name}: {py_type}{union}"""
 
-        return _format_kwords(
+        return format_kwords(
             txt,
             param_name=expr,
             py_type=py_type,
-            union=pl.when(cond).then(pl.lit(" | None = None")).otherwise(_EMPTY_STR),
+            union=pl.when(cond).then(pl.lit(" | None = None")),
+            ignore_nulls=True,
         )
 
     def _param_doc_list() -> pl.Expr:
         txt = """            {param_name} ({py_type}{union}): `{dk_type}` expression"""
-        return _format_kwords(
+        return format_kwords(
             txt,
             param_name=expr,
             py_type=py_type,
-            union=pl.when(cond).then(pl.lit(" | None")).otherwise(_EMPTY_STR),
+            union=pl.when(cond).then(pl.lit(" | None")),
             dk_type=_replace_self(params_union, self_type),
+            ignore_nulls=True,
         )
 
     return (
@@ -143,9 +142,9 @@ def _make_type_union(py_type: pl.Expr) -> pl.Expr:
     txt = "{self_value} | {py_type}"
 
     return (
-        pl.when(py_type.eq(_EMPTY_STR))
+        pl.when(py_type.eq(EMPTY_STR))
         .then(self_value)
-        .otherwise(_format_kwords(txt, self_value=self_value, py_type=py_type))
+        .otherwise(format_kwords(txt, self_value=self_value, py_type=py_type))
     )
 
 
@@ -189,8 +188,8 @@ def _to_param_names(params: pl.Expr, py_name: pl.Expr) -> pl.Expr:
     return (
         params.str.strip_chars_start("'\"[")
         .str.strip_chars_end("'\"[]")
-        .str.replace(r"\(.*$", _EMPTY_STR)
-        .str.replace_all(r"\.\.\.", _EMPTY_STR)
+        .str.replace(r"\(.*$", EMPTY_STR)
+        .str.replace_all(r"\.\.\.", EMPTY_STR)
         .pipe(
             lambda expr: (
                 pl.when(expr.is_in(SHADOWERS))
@@ -234,7 +233,7 @@ def _to_py_name(dk: DuckCols, p_lens: ParamLens) -> pl.Expr:
                             cat_str.n_unique()
                             .over(dk.function_name)
                             .gt(1)
-                            .and_(cat_str.ne(_EMPTY_STR))
+                            .and_(cat_str.ne(EMPTY_STR))
                         )
                         .then(pl.concat_str(cat_str, pl.lit("_"), base_name))
                         .otherwise(base_name)
@@ -307,7 +306,7 @@ def _to_func(
     def _duckdb_args(has_params: pl.Expr) -> pl.Expr:
         def _self_expr() -> pl.Expr:
             txt = ", self.{expr}"
-            return _format_kwords(
+            return format_kwords(
                 txt,
                 expr=pl.when(py.namespace.is_not_null())
                 .then(pl.lit("_parent.inner()"))
@@ -336,15 +335,15 @@ def _to_func(
             )
         )
 
-    return _format_kwords(
+    return format_kwords(
         _txt(),
         func_name=py.name.alias("func_name"),
-        args=pl.when(has_params.gt(1))
-        .then(pl.format(", {}", p_lists.signatures.list.slice(1).list.join(", ")))
-        .otherwise(_EMPTY_STR),
-        varargs=pl.when(dk.varargs.is_not_null())
-        .then(pl.format(", *args: {}", varargs_type))
-        .otherwise(_EMPTY_STR),
+        args=pl.when(has_params.gt(1)).then(
+            pl.format(", {}", p_lists.signatures.list.slice(1).list.join(", "))
+        ),
+        varargs=pl.when(dk.varargs.is_not_null()).then(
+            pl.format(", *args: {}", varargs_type)
+        ),
         self_type=self_type,
         description=pl.when(dk.description.is_not_null())
         .then(
@@ -354,31 +353,25 @@ def _to_func(
             .str.strip_chars_end(".")
         )
         .otherwise(pl.format("SQL {} function", dk.function_name)),
-        args_section=pl.when(has_params.gt(1).or_(dk.varargs.is_not_null()))
-        .then(
-            pl.format(
-                "\n\n        Args:\n{}{}",
-                p_lists.docs.list.slice(1).list.join("\n"),
-                pl.when(dk.varargs.is_not_null())
-                .then(
+        args_section=pl.when(has_params.gt(1).or_(dk.varargs.is_not_null())).then(
+            format_kwords(
+                "\n\n        Args:\n{posargs}{varargs}",
+                posargs=p_lists.docs.list.slice(1).list.join("\n"),
+                varargs=pl.when(dk.varargs.is_not_null()).then(
                     pl.format(
                         "\n            *args ({}): `{}` expression",
                         varargs_type,
                         dk.varargs,
                     )
-                )
-                .otherwise(_EMPTY_STR),
+                ),
+                ignore_nulls=True,
             )
-        )
-        .otherwise(_EMPTY_STR),
-        parent=pl.when(py.namespace.is_not_null())
-        .then(pl.lit("_parent."))
-        .otherwise(_EMPTY_STR),
+        ),
+        parent=pl.when(py.namespace.is_not_null()).then(pl.lit("_parent.")),
         duckdb_name=dk.function_name,
         duckdb_args=has_params.pipe(_duckdb_args),
-        duckdb_varargs=pl.when(dk.varargs.is_not_null())
-        .then(pl.lit(", *args"))
-        .otherwise(_EMPTY_STR),
+        duckdb_varargs=pl.when(dk.varargs.is_not_null()).then(pl.lit(", *args")),
+        ignore_nulls=True,
     )
 
 
@@ -392,25 +385,3 @@ def _txt() -> str:
         """
         return self.{parent}__class__(func("{duckdb_name}"{duckdb_args}{duckdb_varargs}))
         '''
-
-
-def _format_kwords(txt: str, **kwords: pl.Expr) -> pl.Expr:
-    kword_map = pc.Dict.from_ref(kwords)
-
-    return (
-        pc.Iter(Formatter().parse(txt))
-        .map_star(lambda lit, field, _fmt, _conv: (lit, pc.Option(field)))
-        .collect()
-        .into(
-            lambda parts: pl.format(
-                parts.iter()
-                .map_star(
-                    lambda lit, field: field.map(lambda _: f"{lit}{{}}").unwrap_or(lit)
-                )
-                .join(""),
-                *parts.iter()
-                .filter_map_star(lambda _lit, field: field)
-                .filter_map(kword_map.get_item),
-            )
-        )
-    )
