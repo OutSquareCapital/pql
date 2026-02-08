@@ -1,7 +1,6 @@
 from collections.abc import Iterable
 
 import polars as pl
-import pyochain as pc
 
 from ._rules import (
     CONVERTER,
@@ -10,10 +9,10 @@ from ._rules import (
     OPERATOR_MAP,
     SHADOWERS,
     DuckDbTypes,
-    NamespaceSpec,
     PyTypes,
 )
 from ._schemas import (
+    CATEGORY_TYPES,
     DATA_PATH,
     DuckCols,
     FuncTypes,
@@ -63,6 +62,18 @@ def get_df() -> pl.LazyFrame:
             ),
         )
         .with_columns(_to_py_name(dk, params.lens))
+        .pipe(
+            lambda lf: lf.join(
+                lf.pipe(_namespace_by_category, py, dk), on=py.name, how="left"
+            ).join(lf.pipe(_namespace_by_prefix, py), on=py.name, how="left")
+        )
+        .with_columns(
+            pl.concat_list(pl.col("namespace_by_cat"), pl.col("namespace_by_prefix"))
+            .list.drop_nulls()
+            .list.first()
+            .alias("namespace")
+        )
+        .drop("namespace_by_cat", "namespace_by_prefix")
         .with_row_index("sig_id")
         .explode("parameters", "parameter_types")
         .with_columns(
@@ -87,16 +98,14 @@ def get_df() -> pl.LazyFrame:
                     params.idx.ge(params.lens.by_fn_cat),
                     py.types,
                     dk.parameter_types,
-                    py.name.pipe(_self_type, dk.categories),
+                    py.namespace.pipe(_self_type),
                 )
             ),
         )
         .select(
-            py.name.pipe(_namespace_name, dk.categories).alias("namespace"),
+            py.namespace,
             py.name,
-            pl.col("param_names_list")
-            .list.len()
-            .pipe(_to_func, py.name, ParamLists(), dk),
+            pl.col("param_names_list").list.len().pipe(_to_func, py, ParamLists(), dk),
         )
         .sort("namespace", py.name)
     )
@@ -156,78 +165,83 @@ def _replace_self(expr: pl.Expr, self_type: pl.Expr) -> pl.Expr:
     return expr.str.replace_all("Self", self_type)
 
 
-def _namespace_name(fn_name: pl.Expr, categories: pl.Expr) -> pl.Expr:
-    def _matches(spec_prefixes: pc.Seq[str]) -> pl.Expr:
-        return spec_prefixes.iter().fold(
-            pl.lit(value=False),
-            lambda acc, prefix: acc.or_(fn_name.str.starts_with(prefix)),
-        )
-
-    def _matches_category(spec: NamespaceSpec) -> pl.Expr:
-        return spec.categories.iter().fold(
-            pl.lit(value=False),
-            lambda acc, category: acc.or_(
-                categories.list.contains(category).fill_null(value=False)
-            ),
-        )
-
-    def _by_prefix() -> pl.Expr:
-        return NAMESPACE_SPECS.iter().fold(
-            pl.lit(value=None),
-            lambda acc, spec: (
-                pl.when(acc.is_not_null())
-                .then(acc)
-                .otherwise(
-                    pl.when(_matches(spec.prefixes))
-                    .then(pl.lit(spec.name))
-                    .otherwise(acc)
-                )
-            ),
-        )
+def _namespace_by_category(lf: pl.LazyFrame, py: PyCols, dk: DuckCols) -> pl.LazyFrame:
 
     return (
         NAMESPACE_SPECS.iter()
-        .fold(
-            pl.lit(value=None),
-            lambda acc, spec: (
-                pl.when(acc.is_not_null())
-                .then(acc)
-                .otherwise(
-                    pl.when(_matches_category(spec))
-                    .then(pl.lit(spec.name))
-                    .otherwise(acc)
-                )
-            ),
-        )
-        .pipe(
-            lambda by_cat: (
-                pl.when(by_cat.is_not_null()).then(by_cat).otherwise(_by_prefix())
+        .enumerate()
+        .map_star(
+            lambda idx, spec: spec.categories.iter().map(
+                lambda category: (idx, spec.name, category)
             )
         )
+        .flatten()
+        .into(
+            pl.LazyFrame,
+            schema={
+                "spec_idx": pl.Int64,
+                "namespace": pl.String,
+                "category": CATEGORY_TYPES,
+            },
+        )
+        .pipe(
+            lambda namespace_specs_categories: (
+                lf.select(py.name, dk.categories)
+                .explode("categories")
+                .join(
+                    namespace_specs_categories,
+                    left_on=dk.categories,
+                    right_on="category",
+                    how="left",
+                )
+            )
+        )
+        .sort(py.name, "spec_idx")
+        .group_by(py.name, maintain_order=True)
+        .agg(pl.col("namespace").drop_nulls().first().alias("namespace_by_cat"))
     )
 
 
-def _self_type(fn_name: pl.Expr, categories: pl.Expr) -> pl.Expr:
+def _namespace_by_prefix(lf: pl.LazyFrame, py: PyCols) -> pl.LazyFrame:
+
     return (
-        pl.when(_namespace_name(fn_name, categories).is_not_null())
-        .then(pl.lit("T"))
-        .otherwise(pl.lit("Self"))
+        NAMESPACE_SPECS.iter()
+        .enumerate()
+        .map_star(
+            lambda idx, spec: spec.prefixes.iter().map(
+                lambda prefix: (idx, spec.name, prefix)
+            )
+        )
+        .flatten()
+        .into(
+            pl.LazyFrame,
+            schema={
+                "spec_idx": pl.Int64,
+                "namespace": pl.String,
+                "prefix": pl.String,
+            },
+        )
+        .pipe(
+            lambda namespace_specs_prefixes: lf.select(py.name).join(
+                namespace_specs_prefixes, how="cross"
+            )
+        )
+        .filter(py.name.str.starts_with(pl.col("prefix")))
+        .sort(by=[py.name, "spec_idx"])
+        .group_by(py.name, maintain_order=True)
+        .agg(pl.col("namespace").drop_nulls().first().alias("namespace_by_prefix"))
     )
 
 
-def _self_expr(fn_name: pl.Expr, categories: pl.Expr) -> pl.Expr:
+def _self_type(namespace: pl.Expr) -> pl.Expr:
+    return pl.when(namespace.is_not_null()).then(pl.lit("T")).otherwise(pl.lit("Self"))
+
+
+def _self_expr(namespace: pl.Expr) -> pl.Expr:
     return (
-        pl.when(_namespace_name(fn_name, categories).is_not_null())
+        pl.when(namespace.is_not_null())
         .then(pl.lit("self._parent.inner()"))
         .otherwise(pl.lit("self._expr"))
-    )
-
-
-def _return_ctor(fn_name: pl.Expr, categories: pl.Expr) -> pl.Expr:
-    return (
-        pl.when(_namespace_name(fn_name, categories).is_not_null())
-        .then(pl.lit("self._parent.__class__"))
-        .otherwise(pl.lit("self.__class__"))
     )
 
 
@@ -333,21 +347,20 @@ def _to_py_name(dk: DuckCols, p_lens: ParamLens) -> pl.Expr:
 
 
 def _to_func(
-    has_params: pl.Expr, py_name: pl.Expr, p_lists: ParamLists, dk: DuckCols
+    has_params: pl.Expr, py: PyCols, p_lists: ParamLists, dk: DuckCols
 ) -> pl.Expr:
-    self_type = py_name.pipe(_self_type, dk.categories)
+    self_type = py.namespace.pipe(_self_type)
+    self_expr = py.namespace.pipe(_self_expr)
     varargs_type = (
         dk.varargs.pipe(_convert_duckdb_type_to_python)
         .pipe(_make_type_union)
         .pipe(_replace_self, self_type)
     )
 
-    self_expr = py_name.pipe(_self_expr, dk.categories)
-
     def _signature(has_params: pl.Expr) -> pl.Expr:
         return pl.concat_str(
             pl.lit("    def "),
-            py_name,
+            py.name,
             pl.lit("(self"),
             pl.when(has_params.gt(1))
             .then(
@@ -402,6 +415,13 @@ def _to_func(
             .otherwise(_EMPTY_STR)
         )
 
+    def _return_cls() -> pl.Expr:
+        return (
+            pl.when(py.namespace.is_not_null())
+            .then(pl.lit("self._parent.__class__"))
+            .otherwise(pl.lit("self.__class__"))
+        )
+
     def _body(has_params: pl.Expr) -> pl.Expr:
         slf_arg = pl.concat_str(pl.lit(", "), self_expr)
         sep = pl.lit(", ")
@@ -439,7 +459,7 @@ def _to_func(
         pl.lit("\n\n        Returns:\n            "),
         self_type,
         pl.lit('\n        """\n        return '),
-        py_name.pipe(_return_ctor, dk.categories),
+        _return_cls(),
         pl.lit('(func("'),
         dk.function_name,
         pl.lit('"'),
