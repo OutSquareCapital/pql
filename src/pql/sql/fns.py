@@ -229,6 +229,14 @@ class Fns(ExprHandler[Expression]):
         """
         return self.__class__(func("avg", self._expr))
 
+    def bin(self) -> Self:
+        """Converts the `value` to binary representation.
+
+        Returns:
+            Self
+        """
+        return self.__class__(func("bin", self._expr))
+
     def bit_and(self) -> Self:
         """Returns the bitwise AND of all bits in a given expression.
 
@@ -244,6 +252,14 @@ class Fns(ExprHandler[Expression]):
             Self
         """
         return self.__class__(func("bit_count", self._expr))
+
+    def bit_length(self) -> Self:
+        """Returns the bit-length of the `bit` argument.
+
+        Returns:
+            Self
+        """
+        return self.__class__(func("bit_length", self._expr))
 
     def bit_or(self) -> Self:
         """Returns the bitwise OR of all bits in a given expression.
@@ -298,73 +314,6 @@ class Fns(ExprHandler[Expression]):
             Self
         """
         return self.__class__(func("bitstring_agg", self._expr, col1, col2))
-
-    def bitstring_octet_length(self) -> Self:
-        """Returns the number of bytes in the `bitstring`.
-
-        Returns:
-            Self
-        """
-        return self.__class__(func("octet_length", self._expr))
-
-    def blob_hex(self) -> Self:
-        """Converts `blob` to `VARCHAR` using hexadecimal encoding.
-
-        Returns:
-            Self
-        """
-        return self.__class__(func("hex", self._expr))
-
-    def blob_md5(self) -> Self:
-        """Returns the MD5 hash of the `blob` as a `VARCHAR`.
-
-        Returns:
-            Self
-        """
-        return self.__class__(func("md5", self._expr))
-
-    def blob_md5_number(self) -> Self:
-        """Returns the MD5 hash of the `blob` as a `HUGEINT`.
-
-        Returns:
-            Self
-        """
-        return self.__class__(func("md5_number", self._expr))
-
-    def blob_octet_length(self) -> Self:
-        """Number of bytes in `blob`.
-
-        Returns:
-            Self
-        """
-        return self.__class__(func("octet_length", self._expr))
-
-    def blob_repeat(self, count: Self | int) -> Self:
-        """Repeats the `blob` `count` number of times.
-
-        Args:
-            count (Self | int): `BIGINT` expression
-
-        Returns:
-            Self
-        """
-        return self.__class__(func("repeat", self._expr, count))
-
-    def blob_sha1(self) -> Self:
-        """Returns a `VARCHAR` with the SHA-1 hash of the `blob`.
-
-        Returns:
-            Self
-        """
-        return self.__class__(func("sha1", self._expr))
-
-    def blob_sha256(self) -> Self:
-        """Returns a `VARCHAR` with the SHA-256 hash of the `blob`.
-
-        Returns:
-            Self
-        """
-        return self.__class__(func("sha256", self._expr))
 
     def bool_and(self) -> Self:
         """Returns TRUE if every input value is TRUE, otherwise FALSE.
@@ -953,6 +902,14 @@ class Fns(ExprHandler[Expression]):
         """
         return self.__class__(func("greatest_common_divisor", self._expr, y))
 
+    def hex(self) -> Self:
+        """Converts the `value` to `VARCHAR` using hexadecimal representation.
+
+        Returns:
+            Self
+        """
+        return self.__class__(func("hex", self._expr))
+
     def histogram(self, col1: Self | None = None) -> Self:
         """Returns a LIST of STRUCTs with the fields bucket and count.
 
@@ -1110,6 +1067,14 @@ class Fns(ExprHandler[Expression]):
             Self
         """
         return self.__class__(func("least_common_multiple", self._expr, y))
+
+    def length(self) -> Self:
+        """Returns the bit-length of the `bit` argument.
+
+        Returns:
+            Self
+        """
+        return self.__class__(func("length", self._expr))
 
     def lgamma(self) -> Self:
         """Computes the log of the gamma function.
@@ -1401,6 +1366,22 @@ class Fns(ExprHandler[Expression]):
         """
         return self.__class__(func("max", self._expr, col1))
 
+    def md5(self) -> Self:
+        """Returns the MD5 hash of the `blob` as a `VARCHAR`.
+
+        Returns:
+            Self
+        """
+        return self.__class__(func("md5", self._expr))
+
+    def md5_number(self) -> Self:
+        """Returns the MD5 hash of the `blob` as a `HUGEINT`.
+
+        Returns:
+            Self
+        """
+        return self.__class__(func("md5_number", self._expr))
+
     def md5_number_lower(self) -> Self:
         """SQL md5_number_lower function.
 
@@ -1568,38 +1549,6 @@ class Fns(ExprHandler[Expression]):
         """
         return self.__class__(func("nullif", self._expr, b))
 
-    def numeric_bin(self) -> Self:
-        """Converts the `value` to binary representation.
-
-        Returns:
-            Self
-        """
-        return self.__class__(func("bin", self._expr))
-
-    def numeric_bit_length(self) -> Self:
-        """Returns the bit-length of the `bit` argument.
-
-        Returns:
-            Self
-        """
-        return self.__class__(func("bit_length", self._expr))
-
-    def numeric_hex(self) -> Self:
-        """Converts the `value` to `VARCHAR` using hexadecimal representation.
-
-        Returns:
-            Self
-        """
-        return self.__class__(func("hex", self._expr))
-
-    def numeric_length(self) -> Self:
-        """Returns the bit-length of the `bit` argument.
-
-        Returns:
-            Self
-        """
-        return self.__class__(func("length", self._expr))
-
     def obj_description(self, catalog_name: Self) -> Self:
         """SQL obj_description function.
 
@@ -1610,6 +1559,14 @@ class Fns(ExprHandler[Expression]):
             Self
         """
         return self.__class__(func("obj_description", self._expr, catalog_name))
+
+    def octet_length(self) -> Self:
+        """Number of bytes in `blob`.
+
+        Returns:
+            Self
+        """
+        return self.__class__(func("octet_length", self._expr))
 
     def parse_duckdb_log_message(self, message: Self | str) -> Self:
         """Parse the message into the expected logical type.
@@ -1808,16 +1765,16 @@ class Fns(ExprHandler[Expression]):
             func("remap_struct", self._expr, target_type, mapping, defaults)
         )
 
-    def repeat(self, col1: Self | int) -> Self:
-        """SQL repeat function.
+    def repeat(self, count_2: Self | int) -> Self:
+        """Repeats the `blob` `count` number of times.
 
         Args:
-            col1 (Self | int): `BIGINT` expression
+            count_2 (Self | int): `BIGINT` expression
 
         Returns:
             Self
         """
-        return self.__class__(func("repeat", self._expr, col1))
+        return self.__class__(func("repeat", self._expr, count_2))
 
     def replace_type(self, type1: Self, type2: Self) -> Self:
         """Casts all fields of type1 to type2.
@@ -1941,6 +1898,22 @@ class Fns(ExprHandler[Expression]):
             Self
         """
         return self.__class__(func("setseed", self._expr))
+
+    def sha1(self) -> Self:
+        """Returns a `VARCHAR` with the SHA-1 hash of the `blob`.
+
+        Returns:
+            Self
+        """
+        return self.__class__(func("sha1", self._expr))
+
+    def sha256(self) -> Self:
+        """Returns a `VARCHAR` with the SHA-256 hash of the `blob`.
+
+        Returns:
+            Self
+        """
+        return self.__class__(func("sha256", self._expr))
 
     def shobj_description(self, catalog_name: Self) -> Self:
         """SQL shobj_description function.
@@ -2539,6 +2512,14 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
             func("generate_series", self._parent.inner(), stop, step)
         )
 
+    def length(self) -> T:
+        """Returns the length of the `list`.
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(func("length", self._parent.inner()))
+
     def list_aggregate(self, function_name: T | str, *args: T) -> T:
         """Executes the aggregate function `function_name` on the elements of `list`.
 
@@ -2865,29 +2846,6 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._parent.__class__(func("list_last", self._parent.inner()))
 
-    def list_length(self) -> T:
-        """Returns the length of the `list`.
-
-        Returns:
-            T
-        """
-        return self._parent.__class__(func("length", self._parent.inner()))
-
-    def list_list_slice(self, begin: T, end: T, step: T | int | None = None) -> T:
-        """list_slice with added step feature.
-
-        Args:
-            begin (T): `ANY` expression
-            end (T): `ANY` expression
-            step (T | int | None): `BIGINT` expression
-
-        Returns:
-            T
-        """
-        return self._parent.__class__(
-            func("list_slice", self._parent.inner(), begin, end, step)
-        )
-
     def list_mad(self) -> T:
         """SQL list_mad function.
 
@@ -3057,6 +3015,23 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._parent.__class__(func("list_skewness", self._parent.inner()))
 
+    def list_slice(self, begin: T, end: T, step: T | int | None = None) -> T:
+        """Extracts a sublist or substring using slice conventions.
+
+        Negative values are accepted.
+
+        Args:
+            begin (T): `ANY` expression
+            end (T): `ANY` expression
+            step (T | int | None): `BIGINT` expression
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(
+            func("list_slice", self._parent.inner(), begin, end, step)
+        )
+
     def list_sort(self, col1: T | str | None = None, col2: T | str | None = None) -> T:
         """Sorts the elements of the list.
 
@@ -3094,22 +3069,6 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
             T
         """
         return self._parent.__class__(func("list_string_agg", self._parent.inner()))
-
-    def list_string_list_slice(self, begin: T, end: T) -> T:
-        """Extracts a sublist or substring using slice conventions.
-
-        Negative values are accepted.
-
-        Args:
-            begin (T): `ANY` expression
-            end (T): `ANY` expression
-
-        Returns:
-            T
-        """
-        return self._parent.__class__(
-            func("list_slice", self._parent.inner(), begin, end)
-        )
 
     def list_sum(self) -> T:
         """SQL list_sum function.
@@ -3228,7 +3187,7 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
 class StructFns[T: Fns](NameSpaceHandler[T]):
     """Mixin providing auto-generated DuckDB struct functions as methods."""
 
-    def struct_array_extract(self, entry: T | int | str) -> T:
+    def array_extract(self, entry: T | int | str) -> T:
         """Extracts the named `entry` from the `STRUCT`.
 
         Args:
@@ -3353,6 +3312,19 @@ class StructFns[T: Fns](NameSpaceHandler[T]):
 class StringFns[T: Fns](NameSpaceHandler[T]):
     """Mixin providing auto-generated DuckDB string functions as methods."""
 
+    def array_extract(self, index: T | int) -> T:
+        """Extracts a single character from a `string` using a (1-based) `index`.
+
+        Args:
+            index (T | int): `BIGINT` expression
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(
+            func("array_extract", self._parent.inner(), index)
+        )
+
     def ascii(self) -> T:
         """Returns an integer that represents the Unicode code point of the first character of the `string`.
 
@@ -3380,6 +3352,22 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
             func("bar", self._parent.inner(), min_arg, max_arg, width)
         )
 
+    def bin(self) -> T:
+        """Converts the `string` to binary representation.
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(func("bin", self._parent.inner()))
+
+    def bit_length(self) -> T:
+        """Number of bits in a `string`.
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(func("bit_length", self._parent.inner()))
+
     def chr(self) -> T:
         """Returns a character which is corresponding the ASCII code value or Unicode code point.
 
@@ -3402,6 +3390,19 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._parent.__class__(
             func("concat_ws", self._parent.inner(), string, *args)
+        )
+
+    def contains(self, search_string: T | str) -> T:
+        """Returns `true` if `search_string` is found within `string`.
+
+        Args:
+            search_string (T | str): `VARCHAR` expression
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(
+            func("contains", self._parent.inner(), search_string)
         )
 
     def damerau_levenshtein(self, s2: T | str) -> T:
@@ -3500,6 +3501,14 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
             T
         """
         return self._parent.__class__(func("hash", self._parent.inner(), *args))
+
+    def hex(self) -> T:
+        """Converts the `string` to hexadecimal representation.
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(func("hex", self._parent.inner()))
 
     def ilike_escape(self, like_specifier: T | str, escape_character: T | str) -> T:
         """Returns `true` if the `string` matches the `like_specifier` (see Pattern Matching) using case-insensitive matching.
@@ -3632,6 +3641,14 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
             func("left_grapheme", self._parent.inner(), count)
         )
 
+    def length(self) -> T:
+        """Number of characters in `string`.
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(func("length", self._parent.inner()))
+
     def length_grapheme(self) -> T:
         """Number of grapheme clusters in `string`.
 
@@ -3705,6 +3722,22 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
             T
         """
         return self._parent.__class__(func("ltrim", self._parent.inner(), characters))
+
+    def md5(self) -> T:
+        """Returns the MD5 hash of the `string` as a `VARCHAR`.
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(func("md5", self._parent.inner()))
+
+    def md5_number(self) -> T:
+        """Returns the MD5 hash of the `string` as a `HUGEINT`.
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(func("md5_number", self._parent.inner()))
 
     def nfc_normalize(self) -> T:
         """Converts `string` to Unicode NFC normalized string.
@@ -3991,6 +4024,17 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
             func("regexp_split_to_table", self._parent.inner(), pattern)
         )
 
+    def repeat(self, count: T | int) -> T:
+        """Repeats the `string` `count` number of times.
+
+        Args:
+            count (T | int): `BIGINT` expression
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(func("repeat", self._parent.inner(), count))
+
     def replace(self, source: T | str, target: T | str) -> T:
         """Replaces any occurrences of the `source` with `target` in `string`.
 
@@ -4066,6 +4110,22 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._parent.__class__(func("rtrim", self._parent.inner(), characters))
 
+    def sha1(self) -> T:
+        """Returns a `VARCHAR` with the SHA-1 hash of the `value`.
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(func("sha1", self._parent.inner()))
+
+    def sha256(self) -> T:
+        """Returns a `VARCHAR` with the SHA-256 hash of the `value`.
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(func("sha256", self._parent.inner()))
+
     def starts_with(self, search_string: T | str) -> T:
         """Returns `true` if `string` begins with `search_string`.
 
@@ -4102,107 +4162,6 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
             T
         """
         return self._parent.__class__(func("string_agg", self._parent.inner(), arg))
-
-    def string_array_extract(self, index: T | int) -> T:
-        """Extracts a single character from a `string` using a (1-based) `index`.
-
-        Args:
-            index (T | int): `BIGINT` expression
-
-        Returns:
-            T
-        """
-        return self._parent.__class__(
-            func("array_extract", self._parent.inner(), index)
-        )
-
-    def string_bin(self) -> T:
-        """Converts the `string` to binary representation.
-
-        Returns:
-            T
-        """
-        return self._parent.__class__(func("bin", self._parent.inner()))
-
-    def string_bit_length(self) -> T:
-        """Number of bits in a `string`.
-
-        Returns:
-            T
-        """
-        return self._parent.__class__(func("bit_length", self._parent.inner()))
-
-    def string_contains(self, search_string: T | str) -> T:
-        """Returns `true` if `search_string` is found within `string`.
-
-        Args:
-            search_string (T | str): `VARCHAR` expression
-
-        Returns:
-            T
-        """
-        return self._parent.__class__(
-            func("contains", self._parent.inner(), search_string)
-        )
-
-    def string_hex(self) -> T:
-        """Converts the `string` to hexadecimal representation.
-
-        Returns:
-            T
-        """
-        return self._parent.__class__(func("hex", self._parent.inner()))
-
-    def string_length(self) -> T:
-        """Number of characters in `string`.
-
-        Returns:
-            T
-        """
-        return self._parent.__class__(func("length", self._parent.inner()))
-
-    def string_md5(self) -> T:
-        """Returns the MD5 hash of the `string` as a `VARCHAR`.
-
-        Returns:
-            T
-        """
-        return self._parent.__class__(func("md5", self._parent.inner()))
-
-    def string_md5_number(self) -> T:
-        """Returns the MD5 hash of the `string` as a `HUGEINT`.
-
-        Returns:
-            T
-        """
-        return self._parent.__class__(func("md5_number", self._parent.inner()))
-
-    def string_repeat(self, count: T | int) -> T:
-        """Repeats the `string` `count` number of times.
-
-        Args:
-            count (T | int): `BIGINT` expression
-
-        Returns:
-            T
-        """
-        return self._parent.__class__(func("repeat", self._parent.inner(), count))
-
-    def string_sha1(self) -> T:
-        """Returns a `VARCHAR` with the SHA-1 hash of the `value`.
-
-        Returns:
-            T
-        """
-        return self._parent.__class__(func("sha1", self._parent.inner()))
-
-    def string_sha256(self) -> T:
-        """Returns a `VARCHAR` with the SHA-256 hash of the `value`.
-
-        Returns:
-            T
-        """
-        return self._parent.__class__(func("sha256", self._parent.inner()))
 
     def string_split(self, separator: T | str) -> T:
         """Splits the `string` along the `separator`.

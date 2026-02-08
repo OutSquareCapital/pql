@@ -404,13 +404,13 @@ class ExprStringNameSpace:
 
     def len_chars(self) -> Expr:
         """Get the length in characters."""
-        return Expr(self._expr.str.string_length())
+        return Expr(self._expr.str.length())
 
     def contains(self, pattern: str, *, literal: bool = False) -> Expr:
         """Check if string contains a pattern."""
         match literal:
             case True:
-                return Expr(self._expr.str.string_contains(sql.lit(pattern)))
+                return Expr(self._expr.str.contains(sql.lit(pattern)))
             case False:
                 return Expr(self._expr.str.regexp_matches(sql.lit(pattern)))
 
@@ -494,7 +494,7 @@ class ExprStringNameSpace:
 
     def len_bytes(self) -> Expr:
         """Get the length in bytes."""
-        return Expr(self._expr.encode().bitstring_octet_length())
+        return Expr(self._expr.encode().octet_length())
 
     def split(self, by: str) -> Expr:
         """Split string by separator."""
@@ -510,17 +510,13 @@ class ExprStringNameSpace:
         match literal:
             case False:
                 return Expr(
-                    self._expr.str.regexp_extract_all(pattern_expr).list.list_length(),
+                    self._expr.str.regexp_extract_all(pattern_expr).list.length(),
                 )
             case True:
                 return Expr(
-                    self._expr.str.string_length()
-                    .sub(
-                        self._expr.str.replace(
-                            pattern_expr, sql.lit("")
-                        ).str.string_length()
-                    )
-                    .truediv(pattern_expr.str.string_length())
+                    self._expr.str.length()
+                    .sub(self._expr.str.replace(pattern_expr, sql.lit("")).str.length())
+                    .truediv(pattern_expr.str.length())
                 )
 
     def to_date(self, format: str | None = None) -> Expr:  # noqa: A002
@@ -576,7 +572,7 @@ class ExprStringNameSpace:
                         sql.when(
                             self._expr.str.starts_with(prefix_expr),
                             self._expr.str.substring(
-                                prefix_expr.str.string_length().__add__(sql.lit(1)),
+                                prefix_expr.str.length().__add__(sql.lit(1))
                             ),
                         ).otherwise(self._expr)
                     )
@@ -599,9 +595,7 @@ class ExprStringNameSpace:
                             self._expr.str.suffix(suffix_expr),
                             self._expr.str.substring(
                                 sql.lit(1),
-                                self._expr.str.string_length().sub(
-                                    suffix_expr.str.string_length()
-                                ),
+                                self._expr.str.length().sub(suffix_expr.str.length()),
                             ),
                         ).otherwise(self._expr)
                     )
@@ -657,7 +651,7 @@ class ExprListNameSpace(ExprHandler[sql.SqlExpr]):
 
     def len(self) -> Expr:
         """Return the number of elements in each list."""
-        return Expr(self._expr.list.list_length())
+        return Expr(self._expr.list.length())
 
     def unique(self) -> Expr:
         """Return unique values in each list."""
@@ -715,9 +709,9 @@ class ExprListNameSpace(ExprHandler[sql.SqlExpr]):
             sql.fn_once("_", sql.col("_").is_not_null())
         )
         return Expr(
-            sql.when(
-                expr_no_nulls.list.list_length().eq(sql.lit(0)), sql.lit(0)
-            ).otherwise(expr_no_nulls.list.list_sum())
+            sql.when(expr_no_nulls.list.length().eq(sql.lit(0)), sql.lit(0)).otherwise(
+                expr_no_nulls.list.list_sum()
+            )
         )
 
     def sort(self, *, descending: bool = False, nulls_last: bool = False) -> Expr:

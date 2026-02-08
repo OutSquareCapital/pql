@@ -201,79 +201,57 @@ def _to_param_names(params: pl.Expr, py_name: pl.Expr) -> pl.Expr:
 
 def _to_py_name(dk: DuckCols, p_lens: ParamLens) -> pl.Expr:
     return (
-        dk.categories.cast(pl.List(pl.String()))
-        .list.join("_")
+        dk.function_name.pipe(
+            lambda expr: (
+                pl.when(expr.is_in(KWORDS))
+                .then(pl.concat_str(expr, pl.lit("_fn")))
+                .otherwise(expr)
+            )
+        )
         .pipe(
-            lambda cat_str: (
-                dk.function_name.pipe(
-                    lambda expr: (
-                        pl.when(expr.is_in(KWORDS))
-                        .then(pl.concat_str(expr, pl.lit("_fn")))
-                        .otherwise(expr)
+            lambda base: (
+                pl.when(
+                    dk.description.n_unique()
+                    .over(dk.function_name, dk.categories)
+                    .gt(1)
+                    .and_(
+                        p_lens.min_params_per_fn_cat_desc.gt(p_lens.min_params_per_fn)
                     )
                 )
-                .pipe(
-                    lambda base_name: (
+                .then(
+                    pl.concat_str(
+                        base,
+                        pl.lit("_"),
                         pl.when(
-                            cat_str.n_unique()
-                            .over(dk.function_name)
-                            .gt(1)
-                            .and_(cat_str.ne(EMPTY_STR))
+                            p_lens.sig_param_count.eq(p_lens.min_params_per_fn_cat_desc)
                         )
-                        .then(pl.concat_str(cat_str, pl.lit("_"), base_name))
-                        .otherwise(base_name)
-                    )
-                )
-                .pipe(
-                    lambda base: (
-                        pl.when(
-                            dk.description.n_unique()
-                            .over(dk.function_name, dk.categories)
-                            .gt(1)
-                            .and_(
-                                p_lens.min_params_per_fn_cat_desc.gt(
+                        .then(
+                            pl.when(
+                                p_lens.min_params_per_fn_cat_desc.eq(
                                     p_lens.min_params_per_fn
                                 )
                             )
-                        )
-                        .then(
-                            pl.concat_str(
-                                base,
-                                pl.lit("_"),
-                                pl.when(
-                                    p_lens.sig_param_count.eq(
-                                        p_lens.min_params_per_fn_cat_desc
-                                    )
+                            .then(dk.parameters)
+                            .otherwise(
+                                dk.parameters.list.slice(
+                                    p_lens.min_params_per_fn,
+                                    p_lens.sig_param_count.sub(
+                                        p_lens.min_params_per_fn
+                                    ),
                                 )
-                                .then(
-                                    pl.when(
-                                        p_lens.min_params_per_fn_cat_desc.eq(
-                                            p_lens.min_params_per_fn
-                                        )
-                                    )
-                                    .then(dk.parameters)
-                                    .otherwise(
-                                        dk.parameters.list.slice(
-                                            p_lens.min_params_per_fn,
-                                            p_lens.sig_param_count.sub(
-                                                p_lens.min_params_per_fn
-                                            ),
-                                        )
-                                    )
-                                )
-                                .otherwise(pl.lit([], dtype=pl.List(pl.String)))
-                                .list.join("_")
-                                .max()
-                                .over(dk.function_name, dk.categories, dk.description),
                             )
                         )
-                        .otherwise(base)
+                        .otherwise(pl.lit([], dtype=pl.List(pl.String)))
+                        .list.join("_")
+                        .max()
+                        .over(dk.function_name, dk.categories, dk.description),
                     )
                 )
-                .str.to_lowercase()
-                .alias("py_name")
+                .otherwise(base)
             )
         )
+        .str.to_lowercase()
+        .alias("py_name")
     )
 
 
