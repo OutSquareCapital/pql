@@ -1084,6 +1084,14 @@ class Fns(ExprHandler[Expression]):
         """
         return self.__class__(func("lgamma", self._expr))
 
+    def list(self) -> Self:
+        """Returns a LIST containing all the values of a column.
+
+        Returns:
+            Self
+        """
+        return self.__class__(func("list", self._expr))
+
     def ln(self) -> Self:
         """Computes the natural logarithm of x.
 
@@ -2739,14 +2747,6 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
             T
         """
         return self._parent.__class__(func("list_first", self._parent.inner()))
-
-    def list_fn(self) -> T:
-        """Returns a LIST containing all the values of a column.
-
-        Returns:
-            T
-        """
-        return self._parent.__class__(func("list", self._parent.inner()))
 
     def list_grade_up(
         self, col1: T | str | None = None, col2: T | str | None = None

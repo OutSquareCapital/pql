@@ -124,7 +124,7 @@ class SqlExpr(Fns):  # noqa: PLW1641
         return SqlExprStringNameSpace(self)
 
     @property
-    def list(self) -> SqlExprListNameSpace:
+    def lst(self) -> SqlExprListNameSpace:
         """Access list functions."""
         return SqlExprListNameSpace(self)
 
