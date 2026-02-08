@@ -189,9 +189,11 @@ class TableSchema:
 
 @dataclass(slots=True)
 class ParamLens:
-    by_fn: pl.Expr = field(default=pl.col("p_len_by_fn"))
-    by_fn_cat: pl.Expr = field(default=pl.col("p_len_by_fn_cat"))
-    by_fn_cat_desc: pl.Expr = field(default=pl.col("p_len_by_fn_cat_desc"))
+    sig_param_count: pl.Expr = field(default=pl.col("sig_param_count"))
+    min_params_per_fn: pl.Expr = field(default=pl.col("min_params_per_fn"))
+    min_params_per_fn_cat_desc: pl.Expr = field(
+        default=pl.col("min_params_per_fn_cat_desc")
+    )
 
 
 @dataclass(slots=True)

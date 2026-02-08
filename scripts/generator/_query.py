@@ -50,11 +50,11 @@ def run_qry(lf: pl.LazyFrame) -> pl.LazyFrame:
             dk.parameter_types.list.eval(pl.element().fill_null(DuckDbTypes.ANY)),
             *dk.parameters.list.len().pipe(
                 lambda expr_len: (
-                    expr_len.alias("p_len_by_fn"),
-                    expr_len.min().over(dk.function_name).alias("p_len_by_fn_cat"),
+                    expr_len.alias("sig_param_count"),
+                    expr_len.min().over(dk.function_name).alias("min_params_per_fn"),
                     expr_len.min()
                     .over(dk.function_name, dk.categories, dk.description)
-                    .alias("p_len_by_fn_cat_desc"),
+                    .alias("min_params_per_fn_cat_desc"),
                 )
             ),
         )
@@ -92,7 +92,7 @@ def run_qry(lf: pl.LazyFrame) -> pl.LazyFrame:
             *params.names.pipe(
                 lambda expr: expr.filter(expr.is_not_null()).pipe(
                     _joined_parts,
-                    params.idx.ge(params.lens.by_fn_cat),
+                    params.idx.ge(params.lens.min_params_per_fn),
                     py.types,
                     dk.parameter_types,
                     py.namespace.pipe(_self_type),
@@ -310,20 +310,34 @@ def _to_py_name(dk: DuckCols, p_lens: ParamLens) -> pl.Expr:
                             dk.description.n_unique()
                             .over(dk.function_name, dk.categories)
                             .gt(1)
-                            .and_(p_lens.by_fn_cat_desc.gt(p_lens.by_fn_cat))
+                            .and_(
+                                p_lens.min_params_per_fn_cat_desc.gt(
+                                    p_lens.min_params_per_fn
+                                )
+                            )
                         )
                         .then(
                             pl.concat_str(
                                 base,
                                 pl.lit("_"),
-                                pl.when(p_lens.by_fn.eq(p_lens.by_fn_cat_desc))
+                                pl.when(
+                                    p_lens.sig_param_count.eq(
+                                        p_lens.min_params_per_fn_cat_desc
+                                    )
+                                )
                                 .then(
-                                    pl.when(p_lens.by_fn_cat_desc.eq(p_lens.by_fn_cat))
+                                    pl.when(
+                                        p_lens.min_params_per_fn_cat_desc.eq(
+                                            p_lens.min_params_per_fn
+                                        )
+                                    )
                                     .then(dk.parameters)
                                     .otherwise(
                                         dk.parameters.list.slice(
-                                            p_lens.by_fn_cat,
-                                            p_lens.by_fn.sub(p_lens.by_fn_cat),
+                                            p_lens.min_params_per_fn,
+                                            p_lens.sig_param_count.sub(
+                                                p_lens.min_params_per_fn
+                                            ),
                                         )
                                     )
                                 )
