@@ -318,10 +318,10 @@ def _to_func(
                 "\n\n        Args:\n{posargs}{varargs}",
                 posargs=p_lists.docs.list.slice(1).list.join("\n"),
                 varargs=pl.when(dk.varargs.is_not_null()).then(
-                    pl.format(
-                        "\n            *args ({}): `{}` expression",
-                        varargs_type,
-                        dk.varargs,
+                    format_kwords(
+                        "\n            *args ({pytypes}): `{ducktypes}` expression",
+                        pytypes=varargs_type,
+                        ducktypes=dk.varargs,
                     )
                 ),
                 ignore_nulls=True,
