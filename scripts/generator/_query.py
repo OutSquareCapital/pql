@@ -10,7 +10,6 @@ from ._rules import (
     PREFIXES,
     SHADOWERS,
     DuckDbTypes,
-    PyTypes,
 )
 from ._schemas import (
     DuckCols,
@@ -58,22 +57,28 @@ def run_qry(lf: pl.LazyFrame) -> pl.LazyFrame:
         )
         .with_columns(_to_py_name(dk, params.lens))
         .with_columns(dk.categories.pipe(_namespace_specs, py.name))
+        .with_columns(
+            pl.when(py.namespace.is_not_null())
+            .then(pl.lit("T"))
+            .otherwise(pl.lit("Self"))
+            .alias("self_type")
+        )
         .with_row_index("sig_id")
         .explode("parameters", "parameter_types")
         .with_columns(
             pl.int_range(pl.len()).over("sig_id").alias("param_idx"),
             dk.parameters.pipe(_to_param_names, py.name),
         )
-        .group_by(py.name, params.idx, maintain_order=True)
+        .group_by(py.namespace, py.name, params.idx, maintain_order=True)
         .agg(
             pl.all().exclude("parameter_types").drop_nulls().first(),
             dk.parameter_types.pipe(_into_union),
             dk.parameter_types.pipe(_convert_duckdb_type_to_python)
             .pipe(_into_union)
-            .pipe(_make_type_union)
+            .pipe(_make_type_union, py.self_type.first())
             .alias("py_types"),
         )
-        .group_by(py.name, maintain_order=True)
+        .group_by(py.namespace, py.name, maintain_order=True)
         .agg(
             pl.all().exclude("param_names").first(),
             *params.names.pipe(
@@ -82,7 +87,6 @@ def run_qry(lf: pl.LazyFrame) -> pl.LazyFrame:
                     params.idx.ge(params.lens.min_params_per_fn),
                     py.types,
                     dk.parameter_types,
-                    py.namespace.pipe(_self_type),
                 )
             ),
         )
@@ -100,33 +104,25 @@ def _into_union(expr: pl.Expr) -> pl.Expr:
 
 
 def _joined_parts(
-    expr: pl.Expr,
-    cond: pl.Expr,
-    py_union: pl.Expr,
-    params_union: pl.Expr,
-    self_type: pl.Expr,
+    expr: pl.Expr, cond: pl.Expr, py_union: pl.Expr, params_union: pl.Expr
 ) -> Iterable[pl.Expr]:
-    py_type = _replace_self(py_union, self_type)
-
     def _param_sig_list() -> pl.Expr:
-        txt = """{param_name}: {py_type}{union}"""
 
         return format_kwords(
-            txt,
+            "{param_name}: {py_type}{union}",
             param_name=expr,
-            py_type=py_type,
+            py_type=py_union,
             union=pl.when(cond).then(pl.lit(" | None = None")),
             ignore_nulls=True,
         )
 
     def _param_doc_list() -> pl.Expr:
-        txt = """            {param_name} ({py_type}{union}): `{dk_type}` expression"""
         return format_kwords(
-            txt,
+            "            {param_name} ({py_type}{union}): `{dk_type}` expression",
             param_name=expr,
-            py_type=py_type,
+            py_type=py_union,
             union=pl.when(cond).then(pl.lit(" | None")),
-            dk_type=_replace_self(params_union, self_type),
+            dk_type=params_union,
             ignore_nulls=True,
         )
 
@@ -137,19 +133,14 @@ def _joined_parts(
     )
 
 
-def _make_type_union(py_type: pl.Expr) -> pl.Expr:
-    self_value = pl.lit(PyTypes.SELF.value)
-    txt = "{self_value} | {py_type}"
+def _make_type_union(py_type: pl.Expr, self_type: pl.Expr) -> pl.Expr:
+    txt = "{self_type} | {py_type}"
 
     return (
         pl.when(py_type.eq(EMPTY_STR))
-        .then(self_value)
-        .otherwise(format_kwords(txt, self_value=self_value, py_type=py_type))
+        .then(self_type)
+        .otherwise(format_kwords(txt, self_type=self_type, py_type=py_type))
     )
-
-
-def _replace_self(expr: pl.Expr, self_type: pl.Expr) -> pl.Expr:
-    return expr.str.replace_all("Self", self_type)
 
 
 def _namespace_specs(cats: pl.Expr, py_name: pl.Expr) -> pl.Expr:
@@ -174,13 +165,9 @@ def _namespace_specs(cats: pl.Expr, py_name: pl.Expr) -> pl.Expr:
     ).alias("namespace")
 
 
-def _self_type(namespace: pl.Expr) -> pl.Expr:
-    return pl.when(namespace.is_not_null()).then(pl.lit("T")).otherwise(pl.lit("Self"))
-
-
 def _convert_duckdb_type_to_python(param_type: pl.Expr) -> pl.Expr:
     return param_type.replace_strict(
-        CONVERTER, default=PyTypes.SELF.value, return_dtype=pl.String
+        CONVERTER, default=EMPTY_STR, return_dtype=pl.String
     )
 
 
@@ -296,18 +283,14 @@ def _to_func(
     has_params: pl.Expr, py: PyCols, p_lists: ParamLists, dk: DuckCols
 ) -> pl.Expr:
 
-    self_type = py.namespace.pipe(_self_type)
-    varargs_type = (
-        dk.varargs.pipe(_convert_duckdb_type_to_python)
-        .pipe(_make_type_union)
-        .pipe(_replace_self, self_type)
+    varargs_type = dk.varargs.pipe(_convert_duckdb_type_to_python).pipe(
+        _make_type_union, py.self_type
     )
 
     def _duckdb_args(has_params: pl.Expr) -> pl.Expr:
         def _self_expr() -> pl.Expr:
-            txt = ", self.{expr}"
             return format_kwords(
-                txt,
+                ", self.{expr}",
                 expr=pl.when(py.namespace.is_not_null())
                 .then(pl.lit("_parent.inner()"))
                 .otherwise(pl.lit("_expr")),
@@ -344,7 +327,7 @@ def _to_func(
         varargs=pl.when(dk.varargs.is_not_null()).then(
             pl.format(", *args: {}", varargs_type)
         ),
-        self_type=self_type,
+        self_type=py.self_type,
         description=pl.when(dk.description.is_not_null())
         .then(
             dk.description.str.strip_chars()
