@@ -4,7 +4,6 @@ import polars as pl
 
 from ._rules import (
     CONVERTER,
-    KWORDS,
     NAMESPACE_SPECS,
     OPERATOR_MAP,
     PREFIXES,
@@ -41,7 +40,24 @@ def run_qry(lf: pl.LazyFrame) -> pl.LazyFrame:
                 )
             ),
         )
-        .with_columns(_to_py_name(dk, params.lens))
+        .pipe(
+            lambda lf: lf.join(
+                _py_name_map(lf, dk, params.lens),
+                on=[dk.function_name, dk.categories, dk.description],
+                how="left",
+            )
+        )
+        .with_columns(
+            pl.concat_str(
+                dk.function_name,
+                pl.when(py.suffixes.is_not_null()).then(
+                    pl.concat_str(pl.lit("_"), py.suffixes)
+                ),
+                ignore_nulls=True,
+            )
+            .str.to_lowercase()
+            .alias("py_name")
+        )
         .with_columns(dk.categories.pipe(_namespace_specs, py.name))
         .with_columns(
             pl.when(py.namespace.is_not_null())
@@ -200,59 +216,31 @@ def _to_param_names(params: pl.Expr, py_name: pl.Expr) -> pl.Expr:
     )
 
 
-def _to_py_name(dk: DuckCols, p_lens: ParamLens) -> pl.Expr:
+def _py_name_map(lf: pl.LazyFrame, dk: DuckCols, p_lens: ParamLens) -> pl.LazyFrame:
     return (
-        dk.function_name.pipe(
-            lambda expr: (
-                pl.when(expr.is_in(KWORDS))
-                .then(pl.concat_str(expr, pl.lit("_fn")))
-                .otherwise(expr)
-            )
+        lf.filter(
+            dk.description.n_unique()
+            .over(dk.function_name, dk.categories)
+            .gt(1)
+            .and_(p_lens.min_params_per_fn_cat_desc.gt(p_lens.min_params_per_fn))
+            .and_(p_lens.sig_param_count.eq(p_lens.min_params_per_fn_cat_desc))
         )
-        .pipe(
-            lambda base: (
-                pl.when(
-                    dk.description.n_unique()
-                    .over(dk.function_name, dk.categories)
-                    .gt(1)
-                    .and_(
-                        p_lens.min_params_per_fn_cat_desc.gt(p_lens.min_params_per_fn)
-                    )
+        .select(
+            dk.function_name,
+            dk.categories,
+            dk.description,
+            pl.when(p_lens.min_params_per_fn_cat_desc.eq(p_lens.min_params_per_fn))
+            .then(dk.parameters)
+            .otherwise(
+                dk.parameters.list.slice(
+                    p_lens.min_params_per_fn,
+                    p_lens.sig_param_count.sub(p_lens.min_params_per_fn),
                 )
-                .then(
-                    pl.concat_str(
-                        base,
-                        pl.lit("_"),
-                        pl.when(
-                            p_lens.sig_param_count.eq(p_lens.min_params_per_fn_cat_desc)
-                        )
-                        .then(
-                            pl.when(
-                                p_lens.min_params_per_fn_cat_desc.eq(
-                                    p_lens.min_params_per_fn
-                                )
-                            )
-                            .then(dk.parameters)
-                            .otherwise(
-                                dk.parameters.list.slice(
-                                    p_lens.min_params_per_fn,
-                                    p_lens.sig_param_count.sub(
-                                        p_lens.min_params_per_fn
-                                    ),
-                                )
-                            )
-                        )
-                        .otherwise(pl.lit([], dtype=pl.List(pl.String)))
-                        .list.join("_")
-                        .max()
-                        .over(dk.function_name, dk.categories, dk.description),
-                    )
-                )
-                .otherwise(base)
             )
+            .list.join("_")
+            .alias("py_suffixes"),
         )
-        .str.to_lowercase()
-        .alias("py_name")
+        .unique()
     )
 
 

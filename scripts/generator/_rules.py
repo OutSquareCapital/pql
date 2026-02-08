@@ -95,14 +95,14 @@ def _duckdb_type_to_py(enum_type: DuckDbTypes) -> str:
 CONVERTER = pc.Iter(DuckDbTypes).map(lambda t: (t, _duckdb_type_to_py(t))).collect(dict)
 """DuckDB type -> Python type hint mapping."""
 
-KWORDS = pc.Set(keyword.kwlist).union(
+SHADOWERS = pc.Set(keyword.kwlist).union(
     pc.Iter(PyTypes)
     .filter(lambda t: t != PyTypes.SELF)
     .map(lambda t: t.value)
     .collect(pc.Set)
+    .union(pc.Set(dir(builtins)))
+    .union(pc.Set("l"))
 )
-"""Python reserved keywords that need renaming when generating function names."""
-SHADOWERS = KWORDS.union(pc.Set(dir(builtins))).union(pc.Set("l"))
 """Names that should be renamed to avoid shadowing."""
 OPERATOR_MAP = pc.Set(
     {

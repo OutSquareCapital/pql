@@ -202,6 +202,7 @@ class PyCols:
     name: pl.Expr = field(default=pl.col("py_name"))
     types: pl.Expr = field(default=pl.col("py_types"))
     self_type: pl.Expr = field(default=pl.col("self_type"))
+    suffixes: pl.Expr = field(default=pl.col("py_suffixes"))
 
 
 @dataclass(slots=True)
