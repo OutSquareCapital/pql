@@ -168,7 +168,7 @@ NAMESPACE_SPECS = pc.Seq(
             doc="Mixin providing auto-generated DuckDB list functions as methods.",
             prefixes=pc.Seq(("list_",)),
             categories=pc.Seq((Categories.LIST,)),
-            strip_prefixes=pc.Seq(("list_",)),
+            strip_prefixes=pc.Seq(("list_", "array_")),
         ),
         NamespaceSpec(
             name="StructFns",

@@ -227,6 +227,8 @@ class SqlExpr(Fns):  # noqa: PLW1641
     def implode(self) -> Self:
         """Returns a LIST containing all the values of a column.
 
+        **SQL name**: *list*
+
         See Also:
             array_agg
 
