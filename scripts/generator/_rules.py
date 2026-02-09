@@ -138,6 +138,9 @@ SPECIAL_CASES = pc.Set(
         "alias",  # conflicts with duckdb alias method
         "log",  # Need to swap argument order to take self._expr as value and not as base
         "list",  # conflict with namespace, renamed to implode
+        "add",  # conflict with __add__ and add method. and is surely redundant
+        "mod",  # conflict with __mod__ and mod method. and is surely redundant
+        "pow",  # conflict with __pow__ and pow method. and is surely redundant
     }
 )
 """Function to exclude."""

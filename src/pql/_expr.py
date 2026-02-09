@@ -252,7 +252,7 @@ class Expr(ExprHandler[SqlExpr]):
 
     def log1p(self) -> Self:
         """Compute the natural logarithm of 1+x."""
-        return self.__class__(self._expr.__add__(sql.lit(1)).ln())
+        return self.__class__(self._expr.add(sql.lit(1)).ln())
 
     def exp(self) -> Self:
         """Compute the exponential."""
@@ -286,7 +286,7 @@ class Expr(ExprHandler[SqlExpr]):
         """Compute the hyperbolic tangent."""
         exp_x = self._expr.exp()
         exp_neg_x = (-self._expr).exp()
-        return self.__class__(exp_x.sub(exp_neg_x)).truediv(exp_x.__add__(exp_neg_x))
+        return self.__class__(exp_x.sub(exp_neg_x)).truediv(exp_x.add(exp_neg_x))
 
     def degrees(self) -> Self:
         """Convert radians to degrees."""
@@ -570,7 +570,7 @@ class ExprStringNameSpace:
                         sql.when(
                             self._expr.str.starts_with(prefix_expr),
                             self._expr.str.substring(
-                                prefix_expr.str.length().__add__(sql.lit(1))
+                                prefix_expr.str.length().add(sql.lit(1))
                             ),
                         ).otherwise(self._expr)
                     )

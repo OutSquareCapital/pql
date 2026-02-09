@@ -243,6 +243,9 @@ class SqlExpr(Fns):  # noqa: PLW1641
     def __add__(self, other: Self) -> Self:
         return self._new(self._expr.__add__(other._expr))
 
+    def add(self, other: Self) -> Self:
+        return self.__add__(other)
+
     def __and__(self, other: Self) -> Self:
         return self._new(self._expr.__and__(other._expr))
 
@@ -300,6 +303,9 @@ class SqlExpr(Fns):  # noqa: PLW1641
     def __mod__(self, other: Self) -> Self:
         return self._new(self._expr.__mod__(other._expr))
 
+    def mod(self, other: Self) -> Self:
+        return self.__mod__(other)
+
     def __mul__(self, other: Self) -> Self:
         return self._new(self._expr.__mul__(other._expr))
 
@@ -326,6 +332,9 @@ class SqlExpr(Fns):  # noqa: PLW1641
 
     def __pow__(self, other: Self) -> Self:
         return self._new(self._expr.__pow__(other._expr))
+
+    def pow(self, other: Self) -> Self:
+        return self.__pow__(other)
 
     def __radd__(self, other: Self) -> Self:
         return self._new(self._expr.__radd__(other._expr))

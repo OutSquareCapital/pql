@@ -51,24 +51,6 @@ class Fns(ExprHandler[Expression]):
         """
         return self._new(func("acosh", self.inner()))
 
-    def add(
-        self,
-        col1: Self | Decimal | date | datetime | float | time | timedelta | None = None,
-        *args: Self,
-    ) -> Self:
-        """SQL add function.
-
-        **SQL name**: *add*
-
-        Args:
-            col1 (Self | Decimal | date | datetime | float | int | time | timedelta | None): `BIGINT | BIGNUM | DATE | DECIMAL | DOUBLE | FLOAT | HUGEINT | INTEGER | INTERVAL | SMALLINT | TIME | TIME WITH TIME ZONE | TIMESTAMP | TINYINT | UBIGINT | UHUGEINT | UINTEGER | USMALLINT | UTINYINT` expression
-            *args (Self): `ANY[]` expression
-
-        Returns:
-            Self
-        """
-        return self._new(func("add", self.inner(), col1, *args))
-
     def age(self, timestamp_3: Self | datetime | None = None) -> Self:
         """Subtract arguments, resulting in the time difference between the two timestamps.
 
@@ -2049,19 +2031,6 @@ class Fns(ExprHandler[Expression]):
         """
         return self._new(func("minute", self.inner()))
 
-    def mod(self, col1: Self | Decimal | float) -> Self:
-        """SQL mod function.
-
-        **SQL name**: *mod*
-
-        Args:
-            col1 (Self | Decimal | float | int): `BIGINT | DECIMAL | DOUBLE | FLOAT | HUGEINT | INTEGER | SMALLINT | TINYINT | UBIGINT | UHUGEINT | UINTEGER | USMALLINT | UTINYINT` expression
-
-        Returns:
-            Self
-        """
-        return self._new(func("mod", self.inner(), col1))
-
     def mode(self) -> Self:
         """Returns the most frequent value for the values within x.
 
@@ -2199,29 +2168,10 @@ class Fns(ExprHandler[Expression]):
         """
         return self._new(func("parse_duckdb_log_message", self.inner(), message))
 
-    def pow(self, y: Self | float) -> Self:
-        """Computes x to the power of y.
-
-        **SQL name**: *pow*
-
-        See Also:
-            power
-
-        Args:
-            y (Self | float): `DOUBLE` expression
-
-        Returns:
-            Self
-        """
-        return self._new(func("pow", self.inner(), y))
-
     def power(self, y: Self | float) -> Self:
         """Computes x to the power of y.
 
         **SQL name**: *power*
-
-        See Also:
-            pow
 
         Args:
             y (Self | float): `DOUBLE` expression
