@@ -184,7 +184,7 @@ NAMESPACE_SPECS = pc.Seq(
             categories=pc.Seq(
                 (Categories.STRING, Categories.REGEX, Categories.TEXT_SIMILARITY)
             ),
-            strip_prefixes=pc.Seq(()),
+            strip_prefixes=pc.Seq(("string_", "regexp_", "str_")),
         ),
         NamespaceSpec(
             name="DateTimeFns",

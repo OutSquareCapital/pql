@@ -4336,6 +4336,20 @@ class StructFns[T: Fns](NameSpaceHandler[T]):
 class StringFns[T: Fns](NameSpaceHandler[T]):
     """Mixin providing auto-generated DuckDB string functions as methods."""
 
+    def agg(self, arg: T | str | None = None) -> T:
+        """Concatenates the column string values with an optional separator.
+
+        See Also:
+            group_concat, listagg
+
+        Args:
+            arg (T | str | None): `VARCHAR` expression
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(func("string_agg", self._parent.inner(), arg))
+
     def array_extract(self, index: T | int) -> T:
         """Extracts a single character from a `string` using a (1-based) `index`.
 
@@ -4514,6 +4528,84 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
             func("ends_with", self._parent.inner(), search_string)
         )
 
+    def escape(self) -> T:
+        """Escapes special patterns to turn `string` into a regular expression similarly to Python's `re.escape` function.
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(func("regexp_escape", self._parent.inner()))
+
+    def extract(
+        self,
+        regex: T | str,
+        group: T | int | None = None,
+        options: T | str | None = None,
+    ) -> T:
+        """If `string` contains the `regex` pattern, returns the capturing group specified by optional parameter `group`; otherwise, returns the empty string.
+
+        The `group` must be a constant value.
+
+        If no `group` is given, it defaults to 0.
+
+        A set of optional regex `options` can be set.
+
+        Args:
+            regex (T | str): `VARCHAR` expression
+            group (T | int | None): `INTEGER` expression
+            options (T | str | None): `VARCHAR` expression
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(
+            func("regexp_extract", self._parent.inner(), regex, group, options)
+        )
+
+    def extract_all(
+        self,
+        regex: T | str,
+        group: T | int | None = None,
+        options: T | str | None = None,
+    ) -> T:
+        """Finds non-overlapping occurrences of the `regex` in the `string` and returns the corresponding values of the capturing `group`.
+
+        A set of optional regex `options` can be set.
+
+        Args:
+            regex (T | str): `VARCHAR` expression
+            group (T | int | None): `INTEGER` expression
+            options (T | str | None): `VARCHAR` expression
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(
+            func("regexp_extract_all", self._parent.inner(), regex, group, options)
+        )
+
+    def extract_name_list(
+        self,
+        regex: T | str,
+        name_list: T | list[str] | None = None,
+        options: T | str | None = None,
+    ) -> T:
+        """If `string` contains the `regex` pattern, returns the capturing groups as a struct with corresponding names from `name_list`; otherwise, returns a struct with the same keys and empty strings as values.
+
+        A set of optional regex `options` can be set.
+
+        Args:
+            regex (T | str): `VARCHAR` expression
+            name_list (T | list[str] | None): `VARCHAR[]` expression
+            options (T | str | None): `VARCHAR` expression
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(
+            func("regexp_extract", self._parent.inner(), regex, name_list, options)
+        )
+
     def format(self, *args: T) -> T:
         """Formats a string using the fmt syntax.
 
@@ -4586,6 +4678,22 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
             T
         """
         return self._parent.__class__(func("from_hex", self._parent.inner()))
+
+    def full_match(self, regex: T | str, col2: T | str | None = None) -> T:
+        """Returns `true` if the entire `string` matches the `regex`.
+
+        A set of optional regex `options` can be set.
+
+        Args:
+            regex (T | str): `VARCHAR` expression
+            col2 (T | str | None): `VARCHAR` expression
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(
+            func("regexp_full_match", self._parent.inner(), regex, col2)
+        )
 
     def greatest(self, *args: T) -> T:
         """Returns the largest value.
@@ -4891,6 +4999,22 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._parent.__class__(func("ltrim", self._parent.inner(), characters))
 
+    def matches(self, regex: T | str, options: T | str | None = None) -> T:
+        """Returns `true` if `string` contains the `regex`, `false` otherwise.
+
+        A set of optional regex `options` can be set.
+
+        Args:
+            regex (T | str): `VARCHAR` expression
+            options (T | str | None): `VARCHAR` expression
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(
+            func("regexp_matches", self._parent.inner(), regex, options)
+        )
+
     def md5(self) -> T:
         """Returns the MD5 hash of the `string` as a `VARCHAR`.
 
@@ -5097,117 +5221,18 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._parent.__class__(func("printf", self._parent.inner(), *args))
 
-    def regexp_escape(self) -> T:
-        """Escapes special patterns to turn `string` into a regular expression similarly to Python's `re.escape` function.
-
-        Returns:
-            T
-        """
-        return self._parent.__class__(func("regexp_escape", self._parent.inner()))
-
-    def regexp_extract(
-        self,
-        regex: T | str,
-        group: T | int | None = None,
-        options: T | str | None = None,
-    ) -> T:
-        """If `string` contains the `regex` pattern, returns the capturing group specified by optional parameter `group`; otherwise, returns the empty string.
-
-        The `group` must be a constant value.
-
-        If no `group` is given, it defaults to 0.
-
-        A set of optional regex `options` can be set.
+    def repeat(self, count: T | int) -> T:
+        """Repeats the `string` `count` number of times.
 
         Args:
-            regex (T | str): `VARCHAR` expression
-            group (T | int | None): `INTEGER` expression
-            options (T | str | None): `VARCHAR` expression
+            count (T | int): `BIGINT` expression
 
         Returns:
             T
         """
-        return self._parent.__class__(
-            func("regexp_extract", self._parent.inner(), regex, group, options)
-        )
+        return self._parent.__class__(func("repeat", self._parent.inner(), count))
 
-    def regexp_extract_all(
-        self,
-        regex: T | str,
-        group: T | int | None = None,
-        options: T | str | None = None,
-    ) -> T:
-        """Finds non-overlapping occurrences of the `regex` in the `string` and returns the corresponding values of the capturing `group`.
-
-        A set of optional regex `options` can be set.
-
-        Args:
-            regex (T | str): `VARCHAR` expression
-            group (T | int | None): `INTEGER` expression
-            options (T | str | None): `VARCHAR` expression
-
-        Returns:
-            T
-        """
-        return self._parent.__class__(
-            func("regexp_extract_all", self._parent.inner(), regex, group, options)
-        )
-
-    def regexp_extract_name_list(
-        self,
-        regex: T | str,
-        name_list: T | list[str] | None = None,
-        options: T | str | None = None,
-    ) -> T:
-        """If `string` contains the `regex` pattern, returns the capturing groups as a struct with corresponding names from `name_list`; otherwise, returns a struct with the same keys and empty strings as values.
-
-        A set of optional regex `options` can be set.
-
-        Args:
-            regex (T | str): `VARCHAR` expression
-            name_list (T | list[str] | None): `VARCHAR[]` expression
-            options (T | str | None): `VARCHAR` expression
-
-        Returns:
-            T
-        """
-        return self._parent.__class__(
-            func("regexp_extract", self._parent.inner(), regex, name_list, options)
-        )
-
-    def regexp_full_match(self, regex: T | str, col2: T | str | None = None) -> T:
-        """Returns `true` if the entire `string` matches the `regex`.
-
-        A set of optional regex `options` can be set.
-
-        Args:
-            regex (T | str): `VARCHAR` expression
-            col2 (T | str | None): `VARCHAR` expression
-
-        Returns:
-            T
-        """
-        return self._parent.__class__(
-            func("regexp_full_match", self._parent.inner(), regex, col2)
-        )
-
-    def regexp_matches(self, regex: T | str, options: T | str | None = None) -> T:
-        """Returns `true` if `string` contains the `regex`, `false` otherwise.
-
-        A set of optional regex `options` can be set.
-
-        Args:
-            regex (T | str): `VARCHAR` expression
-            options (T | str | None): `VARCHAR` expression
-
-        Returns:
-            T
-        """
-        return self._parent.__class__(
-            func("regexp_matches", self._parent.inner(), regex, options)
-        )
-
-    def regexp_replace(
+    def replace(
         self, regex: T | str, replacement: T | str, options: T | str | None = None
     ) -> T:
         """If `string` contains the `regex`, replaces the matching part with `replacement`.
@@ -5224,65 +5249,6 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._parent.__class__(
             func("regexp_replace", self._parent.inner(), regex, replacement, options)
-        )
-
-    def regexp_split_to_array(
-        self, regex: T | str, options: T | str | None = None
-    ) -> T:
-        """Splits the `string` along the `regex`.
-
-        A set of optional regex `options` can be set.
-
-        See Also:
-            str_split_regex, string_split_regex
-
-        Args:
-            regex (T | str): `VARCHAR` expression
-            options (T | str | None): `VARCHAR` expression
-
-        Returns:
-            T
-        """
-        return self._parent.__class__(
-            func("regexp_split_to_array", self._parent.inner(), regex, options)
-        )
-
-    def regexp_split_to_table(self, pattern: T) -> T:
-        """SQL regexp_split_to_table function.
-
-        Args:
-            pattern (T): `ANY` expression
-
-        Returns:
-            T
-        """
-        return self._parent.__class__(
-            func("regexp_split_to_table", self._parent.inner(), pattern)
-        )
-
-    def repeat(self, count: T | int) -> T:
-        """Repeats the `string` `count` number of times.
-
-        Args:
-            count (T | int): `BIGINT` expression
-
-        Returns:
-            T
-        """
-        return self._parent.__class__(func("repeat", self._parent.inner(), count))
-
-    def replace(self, source: T | str, target: T | str) -> T:
-        """Replaces any occurrences of the `source` with `target` in `string`.
-
-        Args:
-            source (T | str): `VARCHAR` expression
-            target (T | str): `VARCHAR` expression
-
-        Returns:
-            T
-        """
-        return self._parent.__class__(
-            func("replace", self._parent.inner(), source, target)
         )
 
     def reverse(self) -> T:
@@ -5376,98 +5342,7 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._parent.__class__(func("split", self._parent.inner(), separator))
 
-    def starts_with(self, search_string: T | str) -> T:
-        """Returns `true` if `string` begins with `search_string`.
-
-        Args:
-            search_string (T | str): `VARCHAR` expression
-
-        Returns:
-            T
-        """
-        return self._parent.__class__(
-            func("starts_with", self._parent.inner(), search_string)
-        )
-
-    def str_split(self, separator: T | str) -> T:
-        """Splits the `string` along the `separator`.
-
-        See Also:
-            split, string_split, string_to_array
-
-        Args:
-            separator (T | str): `VARCHAR` expression
-
-        Returns:
-            T
-        """
-        return self._parent.__class__(
-            func("str_split", self._parent.inner(), separator)
-        )
-
-    def str_split_regex(self, regex: T | str, options: T | str | None = None) -> T:
-        """Splits the `string` along the `regex`.
-
-        A set of optional regex `options` can be set.
-
-        See Also:
-            regexp_split_to_array, string_split_regex
-
-        Args:
-            regex (T | str): `VARCHAR` expression
-            options (T | str | None): `VARCHAR` expression
-
-        Returns:
-            T
-        """
-        return self._parent.__class__(
-            func("str_split_regex", self._parent.inner(), regex, options)
-        )
-
-    def strftime(self, format_arg: T | date | datetime | str) -> T:
-        """Converts a `date` to a string according to the format string.
-
-        Args:
-            format_arg (T | date | datetime | str): `DATE | TIMESTAMP | TIMESTAMP_NS | VARCHAR` expression
-
-        Returns:
-            T
-        """
-        return self._parent.__class__(
-            func("strftime", self._parent.inner(), format_arg)
-        )
-
-    def string_agg(self, arg: T | str | None = None) -> T:
-        """Concatenates the column string values with an optional separator.
-
-        See Also:
-            group_concat, listagg
-
-        Args:
-            arg (T | str | None): `VARCHAR` expression
-
-        Returns:
-            T
-        """
-        return self._parent.__class__(func("string_agg", self._parent.inner(), arg))
-
-    def string_split(self, separator: T | str) -> T:
-        """Splits the `string` along the `separator`.
-
-        See Also:
-            split, str_split, string_to_array
-
-        Args:
-            separator (T | str): `VARCHAR` expression
-
-        Returns:
-            T
-        """
-        return self._parent.__class__(
-            func("string_split", self._parent.inner(), separator)
-        )
-
-    def string_split_regex(self, regex: T | str, options: T | str | None = None) -> T:
+    def split_regex(self, regex: T | str, options: T | str | None = None) -> T:
         """Splits the `string` along the `regex`.
 
         A set of optional regex `options` can be set.
@@ -5486,20 +5361,62 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
             func("string_split_regex", self._parent.inner(), regex, options)
         )
 
-    def string_to_array(self, separator: T | str) -> T:
-        """Splits the `string` along the `separator`.
+    def split_to_array(self, regex: T | str, options: T | str | None = None) -> T:
+        """Splits the `string` along the `regex`.
+
+        A set of optional regex `options` can be set.
 
         See Also:
-            split, str_split, string_split
+            str_split_regex, string_split_regex
 
         Args:
-            separator (T | str): `VARCHAR` expression
+            regex (T | str): `VARCHAR` expression
+            options (T | str | None): `VARCHAR` expression
 
         Returns:
             T
         """
         return self._parent.__class__(
-            func("string_to_array", self._parent.inner(), separator)
+            func("regexp_split_to_array", self._parent.inner(), regex, options)
+        )
+
+    def split_to_table(self, pattern: T) -> T:
+        """SQL regexp_split_to_table function.
+
+        Args:
+            pattern (T): `ANY` expression
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(
+            func("regexp_split_to_table", self._parent.inner(), pattern)
+        )
+
+    def starts_with(self, search_string: T | str) -> T:
+        """Returns `true` if `string` begins with `search_string`.
+
+        Args:
+            search_string (T | str): `VARCHAR` expression
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(
+            func("starts_with", self._parent.inner(), search_string)
+        )
+
+    def strftime(self, format_arg: T | date | datetime | str) -> T:
+        """Converts a `date` to a string according to the format string.
+
+        Args:
+            format_arg (T | date | datetime | str): `DATE | TIMESTAMP | TIMESTAMP_NS | VARCHAR` expression
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(
+            func("strftime", self._parent.inner(), format_arg)
         )
 
     def strip_accents(self) -> T:
@@ -5627,6 +5544,22 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._parent.__class__(
             func("suffix", self._parent.inner(), search_string)
+        )
+
+    def to_array(self, separator: T | str) -> T:
+        """Splits the `string` along the `separator`.
+
+        See Also:
+            split, str_split, string_split
+
+        Args:
+            separator (T | str): `VARCHAR` expression
+
+        Returns:
+            T
+        """
+        return self._parent.__class__(
+            func("string_to_array", self._parent.inner(), separator)
         )
 
     def to_base(self, radix: T | int, min_length: T | int | None = None) -> T:
