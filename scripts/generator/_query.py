@@ -74,14 +74,7 @@ def run_qry(lf: pl.LazyFrame) -> pl.LazyFrame:
         .group_by(py.namespace, py.name, maintain_order=True)
         .agg(
             pl.all().exclude("param_names").first(),
-            *params.names.pipe(
-                lambda expr: expr.pipe(
-                    _joined_parts,
-                    params.idx.ge(params.lens.min_params_per_fn),
-                    py.types,
-                    dk.parameter_types,
-                )
-            ),
+            _joined_parts(params, py.types, dk.parameter_types),
         )
         .select(
             py.namespace,
@@ -157,32 +150,27 @@ def _into_union(expr: pl.Expr) -> pl.Expr:
 
 
 def _joined_parts(
-    expr: pl.Expr, cond: pl.Expr, py_union: pl.Expr, params_union: pl.Expr
+    params: Params, py_union: pl.Expr, params_union: pl.Expr
 ) -> Iterable[pl.Expr]:
-    def _param_sig_list() -> pl.Expr:
+    cond = params.idx.ge(params.lens.min_params_per_fn)
 
-        return format_kwords(
+    return (
+        params.names.alias("param_names_list"),
+        format_kwords(
             "{param_name}: {py_type}{union}",
-            param_name=expr,
+            param_name=params.names,
             py_type=py_union,
             union=pl.when(cond).then(pl.lit(" | None = None")),
             ignore_nulls=True,
-        )
-
-    def _param_doc_list() -> pl.Expr:
-        return format_kwords(
+        ).alias("param_sig_list"),
+        format_kwords(
             "            {param_name} ({py_type}{union}): `{dk_type}` expression",
-            param_name=expr,
+            param_name=params.names,
             py_type=py_union,
             union=pl.when(cond).then(pl.lit(" | None")),
             dk_type=params_union,
             ignore_nulls=True,
-        )
-
-    return (
-        expr.alias("param_names_list"),
-        _param_sig_list().alias("param_sig_list"),
-        _param_doc_list().alias("param_doc_list"),
+        ).alias("param_doc_list"),
     )
 
 
