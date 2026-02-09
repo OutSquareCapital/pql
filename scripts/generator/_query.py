@@ -331,27 +331,20 @@ def _to_func(
                 posargs=p_lists.docs.list.slice(1).list.join("\n"),
                 varargs=pl.when(dk.varargs.is_not_null()).then(
                     format_kwords(
-                        "\n            *args ({pytypes}): `{ducktypes}` expression",
+                        "\n            *args ({pytypes}): `{dk_types}` expression",
                         pytypes=varargs_type,
-                        ducktypes=dk.varargs,
+                        dk_types=dk.varargs,
                     )
                 ),
                 ignore_nulls=True,
             )
         ),
         sql_name=dk.function_name,
-        duckdb_name=dk.function_name,
-        duckdb_args=format_kwords(
-            ", self.{expr}{args}",
-            expr=pl.when(py.namespace.is_not_null())
-            .then(pl.lit("_parent.inner()"))
-            .otherwise(pl.lit("_expr")),
-            args=pl.when(has_params.gt(1)).then(
-                pl.concat_str(pl.lit(", "), p_lists.names.list.slice(1).list.join(", "))
-            ),
-            ignore_nulls=True,
+        dk_name=dk.function_name,
+        dk_args=pl.when(has_params.gt(1)).then(
+            format_kwords(", {args}", args=p_lists.names.list.slice(1).list.join(", "))
         ),
-        duckdb_varargs=pl.when(dk.varargs.is_not_null()).then(pl.lit(", *args")),
+        dk_varargs=pl.when(dk.varargs.is_not_null()).then(pl.lit(", *args")),
         ignore_nulls=True,
     )
 
@@ -366,5 +359,5 @@ def _txt() -> str:
         Returns:
             {self_type}
         """
-        return self._new(func("{duckdb_name}"{duckdb_args}{duckdb_varargs}))
+        return self._new(func("{dk_name}", self.inner(){dk_args}{dk_varargs}))
         '''
