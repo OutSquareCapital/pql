@@ -27,8 +27,7 @@ def run_qry(lf: pl.LazyFrame) -> pl.LazyFrame:
     params = Params()
     dk = DuckCols()
     return (
-        lf.select(dk.to_dict().keys())
-        .filter(_filters(dk))
+        lf.pipe(_filters, dk)
         .with_columns(
             dk.parameter_types.list.eval(pl.element().fill_null(DuckDbTypes.ANY)),
             *dk.parameters.list.len().pipe(
@@ -51,16 +50,7 @@ def run_qry(lf: pl.LazyFrame) -> pl.LazyFrame:
         )
         .with_columns(dk.categories.pipe(_namespace_specs, dk.function_name))
         .with_columns(
-            pl.concat_str(
-                dk.function_name,
-                pl.when(py.suffixes.is_not_null()).then(
-                    pl.concat_str(pl.lit("_"), py.suffixes)
-                ),
-                ignore_nulls=True,
-            )
-            .str.to_lowercase()
-            .pipe(_strip_namespace_prefixes, py.namespace)
-            .alias("py_name"),
+            _py_name(dk, py),
             pl.when(py.namespace.is_not_null())
             .then(pl.lit("T"))
             .otherwise(pl.lit("Self"))
@@ -102,8 +92,9 @@ def run_qry(lf: pl.LazyFrame) -> pl.LazyFrame:
     )
 
 
-def _filters(dk: DuckCols) -> Iterable[pl.Expr]:
-    return (
+def _filters(lf: pl.LazyFrame, dk: DuckCols) -> pl.LazyFrame:
+    """First-step filter to remove unwanted functions."""
+    return lf.select(dk.to_dict().keys()).filter(
         dk.function_type.is_in(
             {FuncTypes.TABLE, FuncTypes.TABLE_MACRO, FuncTypes.PRAGMA}
         ).not_(),
@@ -115,7 +106,27 @@ def _filters(dk: DuckCols) -> Iterable[pl.Expr]:
     )
 
 
+def _py_name(dk: DuckCols, py: PyCols) -> pl.Expr:
+    return (
+        pl.concat_str(
+            dk.function_name,
+            pl.when(py.suffixes.is_not_null()).then(
+                pl.concat_str(pl.lit("_"), py.suffixes)
+            ),
+            ignore_nulls=True,
+        )
+        .str.to_lowercase()
+        .pipe(_strip_namespace_prefixes, py.namespace)
+        .alias("py_name")
+    )
+
+
 def _alias_map(lf: pl.LazyFrame, dk: DuckCols) -> pl.LazyFrame:
+    """Map of `function_name` to list of aliases.
+
+    Alias root is determined by taking the first value between `function_name` and `alias_of` that is not null.
+    Then all other `function_name`s that share the same `alias_root` are considered aliases of each other.
+    """
     return (
         lf.select(
             dk.function_name,
