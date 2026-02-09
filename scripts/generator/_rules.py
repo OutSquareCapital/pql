@@ -193,7 +193,7 @@ NAMESPACE_SPECS = pc.Seq(
         NamespaceSpec(
             name="RegexFns",
             doc="Mixin providing auto-generated DuckDB regex functions as methods.",
-            prefixes=pc.Seq((" regexp_",)),
+            prefixes=pc.Seq(("regexp_",)),
             categories=pc.Seq((Categories.REGEX,)),
             strip_prefixes=pc.Seq(("regexp_", "str_", "string_")),
         ),
