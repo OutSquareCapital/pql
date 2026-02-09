@@ -74,7 +74,7 @@ def run_qry(lf: pl.LazyFrame) -> pl.LazyFrame:
         .group_by(py.namespace, py.name, maintain_order=True)
         .agg(
             pl.all().exclude("param_names").first(),
-            _joined_parts(params, py.types, dk.parameter_types),
+            *_joined_parts(params, py.types, dk.parameter_types),
         )
         .select(
             py.namespace,
