@@ -145,9 +145,9 @@ class SqlExpr(Fns):  # noqa: PLW1641
         return SqlExprJsonNameSpace(self)
 
     @property
-    def re(self) -> RegexFns[Self]:
+    def re(self) -> SqlExprRegexNameSpace:
         """Access regex functions."""
-        return RegexFns(self)
+        return SqlExprRegexNameSpace(self)
 
     @classmethod
     def from_expr(cls, value: IntoExpr) -> SqlExpr:
@@ -244,16 +244,6 @@ class SqlExpr(Fns):  # noqa: PLW1641
             Self
         """
         return self._new(func("list", self._expr))
-
-    def parse(self) -> Self:
-        """Parse and minify json.
-
-        **SQL name**: *json*
-
-        Returns:
-            Self
-        """
-        return self._new(func("json", self.inner()))
 
     def __str__(self) -> str:
         return str(self._expr)
@@ -660,3 +650,18 @@ class SqlExprArrayNameSpace(ArrayFns[SqlExpr]):
 @dataclass(slots=True)
 class SqlExprJsonNameSpace(JsonFns[SqlExpr]):
     """JSON function namespace for SQL expressions."""
+
+    def parse(self) -> SqlExpr:
+        """Parse and minify json.
+
+        **SQL name**: *json*
+
+        Returns:
+            Self
+        """
+        return self._new(func("json", self.inner()))
+
+
+@dataclass(slots=True)
+class SqlExprRegexNameSpace(RegexFns[SqlExpr]):
+    """Regex function namespace for SQL expressions."""
