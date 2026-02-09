@@ -16,6 +16,7 @@ from .fns import (
     Fns,
     JsonFns,
     ListFns,
+    RegexFns,
     StringFns,
     StructFns,
 )
@@ -139,9 +140,14 @@ class SqlExpr(Fns):  # noqa: PLW1641
         return SqlExprDateTimeNameSpace(self)
 
     @property
-    def js(self) -> SqlExprJsonNameSpace:
+    def json(self) -> SqlExprJsonNameSpace:
         """Access JSON functions."""
         return SqlExprJsonNameSpace(self)
+
+    @property
+    def re(self) -> RegexFns[Self]:
+        """Access regex functions."""
+        return RegexFns(self)
 
     @classmethod
     def from_expr(cls, value: IntoExpr) -> SqlExpr:
@@ -216,6 +222,8 @@ class SqlExpr(Fns):  # noqa: PLW1641
 
         b may be omitted, in which case the default 10.
 
+        **SQL name**: *log*
+
         Args:
             x (Self | float | None): `DOUBLE` expression
 
@@ -236,6 +244,16 @@ class SqlExpr(Fns):  # noqa: PLW1641
             Self
         """
         return self._new(func("list", self._expr))
+
+    def parse(self) -> Self:
+        """Parse and minify json.
+
+        **SQL name**: *json*
+
+        Returns:
+            Self
+        """
+        return self._new(func("json", self.inner()))
 
     def __str__(self) -> str:
         return str(self._expr)

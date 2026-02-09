@@ -412,7 +412,7 @@ class ExprStringNameSpace:
             case True:
                 return Expr(self._expr.str.contains(sql.lit(pattern)))
             case False:
-                return Expr(self._expr.str.matches(sql.lit(pattern)))
+                return Expr(self._expr.re.matches(sql.lit(pattern)))
 
     def starts_with(self, prefix: str) -> Expr:
         """Check if string starts with prefix."""
@@ -437,7 +437,7 @@ class ExprStringNameSpace:
                 return Expr(self._expr)
             case n_val if n_val < 0:
                 return Expr(
-                    self._expr.str.replace(pattern_expr, value_expr, sql.lit("g"))
+                    self._expr.re.replace(pattern_expr, value_expr, sql.lit("g"))
                 )
             case _:
                 return Expr(
@@ -500,7 +500,7 @@ class ExprStringNameSpace:
 
     def extract_all(self, pattern: str | Expr) -> Expr:
         """Extract all regex matches."""
-        return Expr(self._expr.str.extract_all(SqlExpr.from_value(pattern)))
+        return Expr(self._expr.re.extract_all(SqlExpr.from_value(pattern)))
 
     def count_matches(self, pattern: str | Expr, *, literal: bool = False) -> Expr:
         """Count pattern matches."""
@@ -508,7 +508,7 @@ class ExprStringNameSpace:
         match literal:
             case False:
                 return Expr(
-                    self._expr.str.extract_all(pattern_expr).list.len(),
+                    self._expr.re.extract_all(pattern_expr).list.len(),
                 )
             case True:
                 return Expr(
@@ -559,7 +559,7 @@ class ExprStringNameSpace:
         match prefix:
             case str() as prefix_str:
                 return Expr(
-                    self._expr.str.replace(
+                    self._expr.re.replace(
                         sql.lit(f"^{re.escape(prefix_str)}"), sql.lit("")
                     )
                 )
@@ -581,7 +581,7 @@ class ExprStringNameSpace:
         match suffix:
             case str() as suffix_str:
                 return Expr(
-                    self._expr.str.replace(
+                    self._expr.re.replace(
                         sql.lit(f"{re.escape(suffix_str)}$"), sql.lit("")
                     )
                 )
@@ -621,7 +621,7 @@ class ExprStringNameSpace:
                 return Expr(self._expr.str.replace(sql.lit(pattern), value_expr))
             case False:
                 return Expr(
-                    self._expr.str.replace(sql.lit(pattern), value_expr, sql.lit("g"))
+                    self._expr.re.replace(sql.lit(pattern), value_expr, sql.lit("g"))
                 )
 
     def to_titlecase(self) -> Expr:
@@ -635,7 +635,7 @@ class ExprStringNameSpace:
         )
         return Expr(
             self._expr.str.lower()
-            .str.extract_all(sql.lit(r"[a-z]*[^a-z]*"))
+            .re.extract_all(sql.lit(r"[a-z]*[^a-z]*"))
             .list.transform(lambda_expr)
             .list.aggregate(sql.lit("string_agg"), sql.lit(""))
         )

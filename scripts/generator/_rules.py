@@ -106,6 +106,7 @@ SHADOWERS = pc.Set(keyword.kwlist).union(
 """Names that should be renamed to avoid shadowing."""
 SPECIAL_CASES = pc.Set(
     {
+        # "raw" operators
         "+",
         "-",
         "/",
@@ -135,12 +136,21 @@ SPECIAL_CASES = pc.Set(
         "~~~",
         "!__postfix",
         "!",
+        "…",
+        # Aliased operators
+        "mod",
+        "pow",
+        "power",
+        "add",
+        "substract",
+        "multiply",
+        "divide",
+        # Conflicting names
         "alias",  # conflicts with duckdb alias method
-        "log",  # Need to swap argument order to take self._expr as value and not as base
         "list",  # conflict with namespace, renamed to implode
-        "add",  # conflict with __add__ and add method. and is surely redundant
-        "mod",  # conflict with __mod__ and mod method. and is surely redundant
-        "pow",  # conflict with __pow__ and pow method. and is surely redundant
+        "json",  # conflict with namespace, renamed to parse
+        # Misc
+        "log",  # Need to swap argument order to take self._expr as value and not as base
     }
 )
 """Function to exclude."""
@@ -181,19 +191,24 @@ NAMESPACE_SPECS = pc.Seq(
             strip_prefixes=pc.Seq(("struct_",)),
         ),
         NamespaceSpec(
+            name="RegexFns",
+            doc="Mixin providing auto-generated DuckDB regex functions as methods.",
+            prefixes=pc.Seq((" regexp_",)),
+            categories=pc.Seq((Categories.REGEX,)),
+            strip_prefixes=pc.Seq(("regexp_", "str_", "string_")),
+        ),
+        NamespaceSpec(
             name="StringFns",
             doc="Mixin providing auto-generated DuckDB string functions as methods.",
-            prefixes=pc.Seq(("string_", "regexp_", "str")),
-            categories=pc.Seq(
-                (Categories.STRING, Categories.REGEX, Categories.TEXT_SIMILARITY)
-            ),
-            strip_prefixes=pc.Seq(("string_", "regexp_", "str_")),
+            prefixes=pc.Seq(("string_", "str")),
+            categories=pc.Seq((Categories.STRING, Categories.TEXT_SIMILARITY)),
+            strip_prefixes=pc.Seq(("string_", "str_")),
         ),
         NamespaceSpec(
             name="DateTimeFns",
             doc="Mixin providing auto-generated DuckDB datetime functions as methods.",
             prefixes=pc.Seq(("date", "day")),
-            categories=pc.Seq((Categories.TIMESTAMP,)),
+            categories=pc.Seq((Categories.TIMESTAMP, Categories.DATE)),
             strip_prefixes=pc.Seq(()),
         ),
         NamespaceSpec(
