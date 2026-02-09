@@ -142,7 +142,7 @@ SPECIAL_CASES = pc.Set(
         "pow",
         "power",
         "add",
-        "substract",
+        "subtract",
         "multiply",
         "divide",
         # Conflicting names
@@ -151,18 +151,21 @@ SPECIAL_CASES = pc.Set(
         "json",  # conflict with namespace, renamed to parse
         # Misc
         "log",  # Need to swap argument order to take self._expr as value and not as base
+        "strftime",  # Need custom "str" prefix rule, but this rule will also take "struct" funcs in string namespace, so better to just special case it
+        "strptime",  # Same as strftime
     }
 )
-"""Function to exclude."""
+"""Function to exclude by name, either because they require special handling or because they conflict with existing names."""
 PREFIXES = pc.Set(
     (
-        "__",
+        "__",  # Internal functions
         "current_",  # Utility fns
         "has_",  # Utility fns
         "pg_",  # Postgres fns
         "icu_",  # timestamp extension
     )
 )
+"""Functions to exclude by prefixes."""
 
 
 @dataclass(slots=True)
@@ -200,7 +203,7 @@ NAMESPACE_SPECS = pc.Seq(
         NamespaceSpec(
             name="StringFns",
             doc="Mixin providing auto-generated DuckDB string functions as methods.",
-            prefixes=pc.Seq(("string_", "str")),
+            prefixes=pc.Seq(("string_", "str_")),
             categories=pc.Seq((Categories.STRING, Categories.TEXT_SIMILARITY)),
             strip_prefixes=pc.Seq(("string_", "str_")),
         ),

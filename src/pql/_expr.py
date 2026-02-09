@@ -631,7 +631,7 @@ class ExprStringNameSpace:
             "_",
             elem.list.extract(sql.lit(1))
             .str.upper()
-            .list.concat(elem.str.substring(sql.lit(2))),
+            .str.concat(elem.str.substring(sql.lit(2))),
         )
         return Expr(
             self._expr.str.lower()
