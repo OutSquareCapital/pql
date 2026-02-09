@@ -339,7 +339,7 @@ def _to_func(
                 ignore_nulls=True,
             )
         ),
-        parent=pl.when(py.namespace.is_not_null()).then(pl.lit("_parent.")),
+        sql_name=dk.function_name,
         duckdb_name=dk.function_name,
         duckdb_args=format_kwords(
             ", self.{expr}{args}",
@@ -359,10 +359,12 @@ def _to_func(
 def _txt() -> str:
     return '''
     def {func_name}(self{args}{varargs}) -> {self_type}:
-        """{description}.{see_also_section}{args_section}
+        """{description}.
+
+        **SQL name**: *{sql_name}*{see_also_section}{args_section}
 
         Returns:
             {self_type}
         """
-        return self.{parent}__class__(func("{duckdb_name}"{duckdb_args}{duckdb_varargs}))
+        return self._new(func("{duckdb_name}"{duckdb_args}{duckdb_varargs}))
         '''

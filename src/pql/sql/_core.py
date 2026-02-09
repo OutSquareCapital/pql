@@ -48,12 +48,18 @@ class ExprHandler[T]:
         """Unwrap the underlying expression."""
         return self._expr
 
+    def _new(self, expr: T) -> Self:
+        return self.__class__(expr)
+
 
 @dataclass(slots=True)
 class NameSpaceHandler[T: ExprHandler[duckdb.Expression]]:
     """A wrapper for expression namespaces that return the parent type."""
 
     _parent: T
+
+    def _new(self, expr: duckdb.Expression) -> T:
+        return self._parent.__class__(expr)
 
 
 def func(name: str, *args: Any) -> duckdb.Expression:  # noqa: ANN401

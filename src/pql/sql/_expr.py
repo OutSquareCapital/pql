@@ -222,7 +222,7 @@ class SqlExpr(Fns):  # noqa: PLW1641
         Returns:
             Self
         """
-        return self.__class__(func("log", x, self._expr))
+        return self._new(func("log", x, self._expr))
 
     def implode(self) -> Self:
         """Returns a LIST containing all the values of a column.
@@ -233,217 +233,217 @@ class SqlExpr(Fns):  # noqa: PLW1641
         Returns:
             Self
         """
-        return self.__class__(func("list", self._expr))
+        return self._new(func("list", self._expr))
 
     def __str__(self) -> str:
         return str(self._expr)
 
     def __add__(self, other: Self) -> Self:
-        return self.__class__(self._expr.__add__(other._expr))
+        return self._new(self._expr.__add__(other._expr))
 
     def __and__(self, other: Self) -> Self:
-        return self.__class__(self._expr.__and__(other._expr))
+        return self._new(self._expr.__and__(other._expr))
 
     def and_(self, other: Self) -> Self:
         return self.__and__(other)
 
     def __div__(self, other: Self) -> Self:
-        return self.__class__(self._expr.__truediv__(other._expr))
+        return self._new(self._expr.__truediv__(other._expr))
 
     def div(self, other: Self) -> Self:
         return self.__div__(other)
 
     def __eq__(self, other: Self) -> Self:  # type: ignore[override]
-        return self.__class__(self._expr.__eq__(other._expr))
+        return self._new(self._expr.__eq__(other._expr))
 
     def eq(self, other: Self) -> Self:
         return self.__eq__(other)
 
     def __floordiv__(self, other: Self) -> Self:
-        return self.__class__(self._expr.__floordiv__(other._expr))
+        return self._new(self._expr.__floordiv__(other._expr))
 
     def floordiv(self, other: Self) -> Self:
         return self.__floordiv__(other)
 
     def __ge__(self, other: Self) -> Self:
-        return self.__class__(self._expr.__ge__(other._expr))
+        return self._new(self._expr.__ge__(other._expr))
 
     def ge(self, other: Self) -> Self:
         return self.__ge__(other)
 
     def __gt__(self, other: Self) -> Self:
-        return self.__class__(self._expr.__gt__(other._expr))
+        return self._new(self._expr.__gt__(other._expr))
 
     def gt(self, other: Self) -> Self:
         return self.__gt__(other)
 
     def __invert__(self) -> Self:
-        return self.__class__(self._expr.__invert__())
+        return self._new(self._expr.__invert__())
 
     def invert(self) -> Self:
         return self.__invert__()
 
     def __le__(self, other: Self) -> Self:
-        return self.__class__(self._expr.__le__(other._expr))
+        return self._new(self._expr.__le__(other._expr))
 
     def le(self, other: Self) -> Self:
         return self.__le__(other)
 
     def __lt__(self, other: Self) -> Self:
-        return self.__class__(self._expr.__lt__(other._expr))
+        return self._new(self._expr.__lt__(other._expr))
 
     def lt(self, other: Self) -> Self:
         return self.__lt__(other)
 
     def __mod__(self, other: Self) -> Self:
-        return self.__class__(self._expr.__mod__(other._expr))
+        return self._new(self._expr.__mod__(other._expr))
 
     def __mul__(self, other: Self) -> Self:
-        return self.__class__(self._expr.__mul__(other._expr))
+        return self._new(self._expr.__mul__(other._expr))
 
     def mul(self, other: Self) -> Self:
         return self.__mul__(other)
 
     def __ne__(self, other: Self) -> Self:  # type: ignore[override]
-        return self.__class__(self._expr.__ne__(other._expr))
+        return self._new(self._expr.__ne__(other._expr))
 
     def ne(self, other: Self) -> Self:
         return self.__ne__(other)
 
     def __neg__(self) -> Self:
-        return self.__class__(self._expr.__neg__())
+        return self._new(self._expr.__neg__())
 
     def neg(self) -> Self:
         return self.__neg__()
 
     def __or__(self, other: Self) -> Self:
-        return self.__class__(self._expr.__or__(other._expr))
+        return self._new(self._expr.__or__(other._expr))
 
     def or_(self, other: Self) -> Self:
         return self.__or__(other)
 
     def __pow__(self, other: Self) -> Self:
-        return self.__class__(self._expr.__pow__(other._expr))
+        return self._new(self._expr.__pow__(other._expr))
 
     def __radd__(self, other: Self) -> Self:
-        return self.__class__(self._expr.__radd__(other._expr))
+        return self._new(self._expr.__radd__(other._expr))
 
     def radd(self, other: Self) -> Self:
         return self.__radd__(other)
 
     def __rand__(self, other: Self) -> Self:
-        return self.__class__(self._expr.__rand__(other._expr))
+        return self._new(self._expr.__rand__(other._expr))
 
     def rand(self, other: Self) -> Self:
         return self.__rand__(other)
 
     def __rdiv__(self, other: Self) -> Self:
-        return self.__class__(self._expr.__rtruediv__(other._expr))
+        return self._new(self._expr.__rtruediv__(other._expr))
 
     def rdiv(self, other: Self) -> Self:
         return self.__rdiv__(other)
 
     def __rfloordiv__(self, other: Self) -> Self:
-        return self.__class__(self._expr.__rfloordiv__(other._expr))
+        return self._new(self._expr.__rfloordiv__(other._expr))
 
     def rfloordiv(self, other: Self) -> Self:
         return self.__rfloordiv__(other)
 
     def __rmod__(self, other: Self) -> Self:
-        return self.__class__(self._expr.__rmod__(other._expr))
+        return self._new(self._expr.__rmod__(other._expr))
 
     def rmod(self, other: Self) -> Self:
         return self.__rmod__(other)
 
     def __rmul__(self, other: Self) -> Self:
-        return self.__class__(self._expr.__rmul__(other._expr))
+        return self._new(self._expr.__rmul__(other._expr))
 
     def rmul(self, other: Self) -> Self:
         return self.__rmul__(other)
 
     def __ror__(self, other: Self) -> Self:
-        return self.__class__(self._expr.__ror__(other._expr))
+        return self._new(self._expr.__ror__(other._expr))
 
     def ror(self, other: Self) -> Self:
         return self.__ror__(other)
 
     def __rpow__(self, other: Self) -> Self:
-        return self.__class__(self._expr.__rpow__(other._expr))
+        return self._new(self._expr.__rpow__(other._expr))
 
     def rpow(self, other: Self) -> Self:
         return self.__rpow__(other)
 
     def __rsub__(self, other: Self) -> Self:
-        return self.__class__(self._expr.__rsub__(other._expr))
+        return self._new(self._expr.__rsub__(other._expr))
 
     def rsub(self, other: Self) -> Self:
         return self.__rsub__(other)
 
     def __rtruediv__(self, other: Self) -> Self:
-        return self.__class__(self._expr.__rtruediv__(other._expr))
+        return self._new(self._expr.__rtruediv__(other._expr))
 
     def rtruediv(self, other: Self) -> Self:
         return self.__rtruediv__(other)
 
     def __sub__(self, other: Self) -> Self:
-        return self.__class__(self._expr.__sub__(other._expr))
+        return self._new(self._expr.__sub__(other._expr))
 
     def sub(self, other: Self) -> Self:
         return self.__sub__(other)
 
     def __truediv__(self, other: Self) -> Self:
-        return self.__class__(self._expr.__truediv__(other._expr))
+        return self._new(self._expr.__truediv__(other._expr))
 
     def truediv(self, other: Self) -> Self:
         return self.__truediv__(other)
 
     def alias(self, name: str) -> Self:
-        return self.__class__(self._expr.alias(name))
+        return self._new(self._expr.alias(name))
 
     def asc(self) -> Self:
-        return self.__class__(self._expr.asc())
+        return self._new(self._expr.asc())
 
     def between(self, lower: Self, upper: Self) -> Self:
-        return self.__class__(self._expr.between(lower._expr, upper._expr))
+        return self._new(self._expr.between(lower._expr, upper._expr))
 
     def cast(self, dtype: DataType) -> Self:
-        return self.__class__(self._expr.cast(dtype))
+        return self._new(self._expr.cast(dtype))
 
     def collate(self, collation: str) -> Self:
-        return self.__class__(self._expr.collate(collation))
+        return self._new(self._expr.collate(collation))
 
     def desc(self) -> Self:
-        return self.__class__(self._expr.desc())
+        return self._new(self._expr.desc())
 
     def get_name(self) -> str:
         return self._expr.get_name()
 
     def is_in(self, *args: Self) -> Self:
-        return self.__class__(self._expr.isin(*(arg._expr for arg in args)))
+        return self._new(self._expr.isin(*(arg._expr for arg in args)))
 
     def is_not_in(self, *args: Self) -> Self:
-        return self.__class__(self._expr.isnotin(*(arg._expr for arg in args)))
+        return self._new(self._expr.isnotin(*(arg._expr for arg in args)))
 
     def is_not_null(self) -> Self:
-        return self.__class__(self._expr.isnotnull())
+        return self._new(self._expr.isnotnull())
 
     def is_null(self) -> Self:
-        return self.__class__(self._expr.isnull())
+        return self._new(self._expr.isnull())
 
     def nulls_first(self) -> Self:
-        return self.__class__(self._expr.nulls_first())
+        return self._new(self._expr.nulls_first())
 
     def nulls_last(self) -> Self:
-        return self.__class__(self._expr.nulls_last())
+        return self._new(self._expr.nulls_last())
 
     def otherwise(self, value: Self) -> Self:
-        return self.__class__(self._expr.otherwise(value._expr))
+        return self._new(self._expr.otherwise(value._expr))
 
     def show(self) -> None:
         self._expr.show()
 
     def when(self, condition: Self, value: Self) -> Self:
-        return self.__class__(self._expr.when(condition._expr, value._expr))
+        return self._new(self._expr.when(condition._expr, value._expr))
 
     def over(  # noqa: PLR0913
         self,
@@ -456,7 +456,7 @@ class SqlExpr(Fns):  # noqa: PLW1641
         nulls_last: pc.Seq[bool] | bool = False,
         ignore_nulls: bool = False,
     ) -> Self:
-        return self.__class__(
+        return self._new(
             over(
                 self,
                 partition_by,
@@ -477,7 +477,7 @@ class SqlExpr(Fns):  # noqa: PLW1641
         Returns:
             Self
         """
-        return self.__class__(func("cume_dist"))
+        return self._new(func("cume_dist"))
 
     def dense_rank(self) -> Self:
         """The rank of the current row without gaps; this function counts peer groups.
@@ -485,7 +485,7 @@ class SqlExpr(Fns):  # noqa: PLW1641
         Returns:
             Self
         """
-        return self.__class__(func("dense_rank"))
+        return self._new(func("dense_rank"))
 
     def fill(self) -> Self:
         """Replaces NULL values of expr with a linear interpolation based on the closest non-NULL values and the sort values.
@@ -495,7 +495,7 @@ class SqlExpr(Fns):  # noqa: PLW1641
         Returns:
             Self
         """
-        return self.__class__(func("fill", self._expr))
+        return self._new(func("fill", self._expr))
 
     def first_value(self) -> Self:
         """Returns expr evaluated at the row that is the first row (with a non-null value of expr if IGNORE NULLS is set) of the window frame.
@@ -505,7 +505,7 @@ class SqlExpr(Fns):  # noqa: PLW1641
         Returns:
             Self
         """
-        return self.__class__(func("first_value", self._expr))
+        return self._new(func("first_value", self._expr))
 
     def lag(self, offset: SqlExpr | int = 1, default: SqlExpr | None = None) -> Self:
         """Returns expr evaluated at the row that is offset rows (among rows with a non-null value of expr if IGNORE NULLS is set) before the current row within the window frame; if there is no such row, instead return default (which must be of the Same type as expr).
@@ -519,7 +519,7 @@ class SqlExpr(Fns):  # noqa: PLW1641
         Returns:
             Self
         """
-        return self.__class__(func("lag", self._expr, offset, default))
+        return self._new(func("lag", self._expr, offset, default))
 
     def last_value(self) -> Self:
         """Returns expr evaluated at the row that is the last row (among rows with a non-null value of expr if IGNORE NULLS is set) of the window frame.
@@ -530,7 +530,7 @@ class SqlExpr(Fns):  # noqa: PLW1641
         Returns:
             Self
         """
-        return self.__class__(func("last_value", self._expr))
+        return self._new(func("last_value", self._expr))
 
     def lead(self, offset: SqlExpr | int = 1, default: SqlExpr | None = None) -> Self:
         """Returns expr evaluated at the row that is offset rows after the current row (among rows with a non-null value of expr if IGNORE NULLS is set) within the window frame; if there is no such row, instead return default (which must be of the Same type as expr).
@@ -544,7 +544,7 @@ class SqlExpr(Fns):  # noqa: PLW1641
         Returns:
             Self
         """
-        return self.__class__(func("lead", self._expr, offset, default))
+        return self._new(func("lead", self._expr, offset, default))
 
     def nth_value(self, nth: SqlExpr | int) -> Self:
         """Returns expr evaluated at the nth row (among rows with a non-null value of expr if IGNORE NULLS is set) of the window frame (counting from 1); NULL if no such row.
@@ -557,7 +557,7 @@ class SqlExpr(Fns):  # noqa: PLW1641
         Returns:
             Self
         """
-        return self.__class__(func("nth_value", self._expr, nth))
+        return self._new(func("nth_value", self._expr, nth))
 
     def ntile(self) -> Self:
         """An integer ranging from 1 to num_buckets, dividing the partition as equally as possible.
@@ -570,7 +570,7 @@ class SqlExpr(Fns):  # noqa: PLW1641
         Returns:
             Self
         """
-        return self.__class__(func("ntile", self._expr))
+        return self._new(func("ntile", self._expr))
 
     def percent_rank(self) -> Self:
         """The relative rank of the current row: (rank() - 1) / (total partition rows - 1).
@@ -580,7 +580,7 @@ class SqlExpr(Fns):  # noqa: PLW1641
         Returns:
             Self
         """
-        return self.__class__(func("percent_rank"))
+        return self._new(func("percent_rank"))
 
     def rank(self) -> Self:
         """The rank of the current row with gaps; same as row_number of its first peer.
@@ -590,7 +590,7 @@ class SqlExpr(Fns):  # noqa: PLW1641
         Returns:
             Self
         """
-        return self.__class__(func("rank"))
+        return self._new(func("rank"))
 
     def row_number(self) -> Self:
         """The number of the current row within the partition, counting from 1.
@@ -600,7 +600,7 @@ class SqlExpr(Fns):  # noqa: PLW1641
         Returns:
             Self
         """
-        return self.__class__(func("row_number"))
+        return self._new(func("row_number"))
 
 
 @dataclass(slots=True)
