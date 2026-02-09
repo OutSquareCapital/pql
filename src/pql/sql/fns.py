@@ -24,26 +24,32 @@ class Fns(ExprHandler[Expression]):
     def abs(self) -> Self:
         """Absolute value.
 
+        **SQL name**: *abs*
+
         Returns:
             Self
         """
-        return self.__class__(func("abs", self._expr))
+        return self._new(func("abs", self.inner()))
 
     def acos(self) -> Self:
         """Computes the arccosine of x.
 
+        **SQL name**: *acos*
+
         Returns:
             Self
         """
-        return self.__class__(func("acos", self._expr))
+        return self._new(func("acos", self.inner()))
 
     def acosh(self) -> Self:
         """Computes the inverse hyperbolic cos of x.
 
+        **SQL name**: *acosh*
+
         Returns:
             Self
         """
-        return self.__class__(func("acosh", self._expr))
+        return self._new(func("acosh", self.inner()))
 
     def add(
         self,
@@ -52,6 +58,8 @@ class Fns(ExprHandler[Expression]):
     ) -> Self:
         """SQL add function.
 
+        **SQL name**: *add*
+
         Args:
             col1 (Self | Decimal | date | datetime | float | int | time | timedelta | None): `BIGINT | BIGNUM | DATE | DECIMAL | DOUBLE | FLOAT | HUGEINT | INTEGER | INTERVAL | SMALLINT | TIME | TIME WITH TIME ZONE | TIMESTAMP | TINYINT | UBIGINT | UHUGEINT | UINTEGER | USMALLINT | UTINYINT` expression
             *args (Self): `ANY[]` expression
@@ -59,10 +67,12 @@ class Fns(ExprHandler[Expression]):
         Returns:
             Self
         """
-        return self.__class__(func("add", self._expr, col1, *args))
+        return self._new(func("add", self.inner(), col1, *args))
 
     def age(self, timestamp_3: Self | datetime | None = None) -> Self:
         """Subtract arguments, resulting in the time difference between the two timestamps.
+
+        **SQL name**: *age*
 
         Args:
             timestamp_3 (Self | datetime | None): `TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
@@ -70,28 +80,34 @@ class Fns(ExprHandler[Expression]):
         Returns:
             Self
         """
-        return self.__class__(func("age", self._expr, timestamp_3))
+        return self._new(func("age", self.inner(), timestamp_3))
 
     def any_value(self) -> Self:
         """Returns the first non-NULL value from arg.
 
         This function is affected by ordering.
 
+        **SQL name**: *any_value*
+
         Returns:
             Self
         """
-        return self.__class__(func("any_value", self._expr))
+        return self._new(func("any_value", self.inner()))
 
     def approx_count_distinct(self) -> Self:
         """Computes the approximate count of distinct elements using HyperLogLog.
 
+        **SQL name**: *approx_count_distinct*
+
         Returns:
             Self
         """
-        return self.__class__(func("approx_count_distinct", self._expr))
+        return self._new(func("approx_count_distinct", self.inner()))
 
     def approx_quantile(self, pos: Self | float | list[float]) -> Self:
         """Computes the approximate quantile using T-Digest.
+
+        **SQL name**: *approx_quantile*
 
         Args:
             pos (Self | float | list[float]): `FLOAT | FLOAT[]` expression
@@ -99,10 +115,12 @@ class Fns(ExprHandler[Expression]):
         Returns:
             Self
         """
-        return self.__class__(func("approx_quantile", self._expr, pos))
+        return self._new(func("approx_quantile", self.inner(), pos))
 
     def approx_top_k(self, k: Self | int) -> Self:
         """Finds the k approximately most occurring values in the data set.
+
+        **SQL name**: *approx_top_k*
 
         Args:
             k (Self | int): `BIGINT` expression
@@ -110,12 +128,14 @@ class Fns(ExprHandler[Expression]):
         Returns:
             Self
         """
-        return self.__class__(func("approx_top_k", self._expr, k))
+        return self._new(func("approx_top_k", self.inner(), k))
 
     def arbitrary(self) -> Self:
         """Returns the first value (NULL or non-NULL) from arg.
 
         This function is affected by ordering.
+
+        **SQL name**: *arbitrary*
 
         See Also:
             first
@@ -123,7 +143,7 @@ class Fns(ExprHandler[Expression]):
         Returns:
             Self
         """
-        return self.__class__(func("arbitrary", self._expr))
+        return self._new(func("arbitrary", self.inner()))
 
     def arg_max(
         self,
@@ -133,6 +153,8 @@ class Fns(ExprHandler[Expression]):
         """Finds the row with the maximum val.
 
         Calculates the non-NULL arg expression at that row.
+
+        **SQL name**: *arg_max*
 
         See Also:
             argmax, max_by
@@ -144,7 +166,7 @@ class Fns(ExprHandler[Expression]):
         Returns:
             Self
         """
-        return self.__class__(func("arg_max", self._expr, val, col2))
+        return self._new(func("arg_max", self.inner(), val, col2))
 
     def arg_max_null(
         self, val: Self | bytes | bytearray | memoryview | date | datetime | float | str
@@ -153,13 +175,15 @@ class Fns(ExprHandler[Expression]):
 
         Calculates the arg expression at that row.
 
+        **SQL name**: *arg_max_null*
+
         Args:
             val (Self | bytes | bytearray | memoryview | date | datetime | float | int | str): `ANY | BIGINT | BLOB | DATE | DOUBLE | HUGEINT | INTEGER | TIMESTAMP | TIMESTAMP WITH TIME ZONE | VARCHAR` expression
 
         Returns:
             Self
         """
-        return self.__class__(func("arg_max_null", self._expr, val))
+        return self._new(func("arg_max_null", self.inner(), val))
 
     def arg_min(
         self,
@@ -169,6 +193,8 @@ class Fns(ExprHandler[Expression]):
         """Finds the row with the minimum val.
 
         Calculates the non-NULL arg expression at that row.
+
+        **SQL name**: *arg_min*
 
         See Also:
             argmin, min_by
@@ -180,7 +206,7 @@ class Fns(ExprHandler[Expression]):
         Returns:
             Self
         """
-        return self.__class__(func("arg_min", self._expr, val, col2))
+        return self._new(func("arg_min", self.inner(), val, col2))
 
     def arg_min_null(
         self, val: Self | bytes | bytearray | memoryview | date | datetime | float | str
@@ -189,13 +215,15 @@ class Fns(ExprHandler[Expression]):
 
         Calculates the arg expression at that row.
 
+        **SQL name**: *arg_min_null*
+
         Args:
             val (Self | bytes | bytearray | memoryview | date | datetime | float | int | str): `ANY | BIGINT | BLOB | DATE | DOUBLE | HUGEINT | INTEGER | TIMESTAMP | TIMESTAMP WITH TIME ZONE | VARCHAR` expression
 
         Returns:
             Self
         """
-        return self.__class__(func("arg_min_null", self._expr, val))
+        return self._new(func("arg_min_null", self.inner(), val))
 
     def argmax(
         self,
@@ -205,6 +233,8 @@ class Fns(ExprHandler[Expression]):
         """Finds the row with the maximum val.
 
         Calculates the non-NULL arg expression at that row.
+
+        **SQL name**: *argmax*
 
         See Also:
             arg_max, max_by
@@ -216,7 +246,7 @@ class Fns(ExprHandler[Expression]):
         Returns:
             Self
         """
-        return self.__class__(func("argmax", self._expr, val, col2))
+        return self._new(func("argmax", self.inner(), val, col2))
 
     def argmin(
         self,
@@ -226,6 +256,8 @@ class Fns(ExprHandler[Expression]):
         """Finds the row with the minimum val.
 
         Calculates the non-NULL arg expression at that row.
+
+        **SQL name**: *argmin*
 
         See Also:
             arg_min, min_by
@@ -237,34 +269,42 @@ class Fns(ExprHandler[Expression]):
         Returns:
             Self
         """
-        return self.__class__(func("argmin", self._expr, val, col2))
+        return self._new(func("argmin", self.inner(), val, col2))
 
     def asin(self) -> Self:
         """Computes the arcsine of x.
 
+        **SQL name**: *asin*
+
         Returns:
             Self
         """
-        return self.__class__(func("asin", self._expr))
+        return self._new(func("asin", self.inner()))
 
     def asinh(self) -> Self:
         """Computes the inverse hyperbolic sin of x.
 
+        **SQL name**: *asinh*
+
         Returns:
             Self
         """
-        return self.__class__(func("asinh", self._expr))
+        return self._new(func("asinh", self.inner()))
 
     def atan(self) -> Self:
         """Computes the arctangent of x.
 
+        **SQL name**: *atan*
+
         Returns:
             Self
         """
-        return self.__class__(func("atan", self._expr))
+        return self._new(func("atan", self.inner()))
 
     def atan2(self, x: Self | float) -> Self:
         """Computes the arctangent (y, x).
+
+        **SQL name**: *atan2*
 
         Args:
             x (Self | float): `DOUBLE` expression
@@ -272,18 +312,22 @@ class Fns(ExprHandler[Expression]):
         Returns:
             Self
         """
-        return self.__class__(func("atan2", self._expr, x))
+        return self._new(func("atan2", self.inner(), x))
 
     def atanh(self) -> Self:
         """Computes the inverse hyperbolic tan of x.
 
+        **SQL name**: *atanh*
+
         Returns:
             Self
         """
-        return self.__class__(func("atanh", self._expr))
+        return self._new(func("atanh", self.inner()))
 
     def avg(self) -> Self:
         """Calculates the average value for all tuples in x.
+
+        **SQL name**: *avg*
 
         See Also:
             mean
@@ -291,10 +335,12 @@ class Fns(ExprHandler[Expression]):
         Returns:
             Self
         """
-        return self.__class__(func("avg", self._expr))
+        return self._new(func("avg", self.inner()))
 
     def bin(self) -> Self:
         """Converts the `value` to binary representation.
+
+        **SQL name**: *bin*
 
         See Also:
             to_binary
@@ -302,44 +348,54 @@ class Fns(ExprHandler[Expression]):
         Returns:
             Self
         """
-        return self.__class__(func("bin", self._expr))
+        return self._new(func("bin", self.inner()))
 
     def bit_and(self) -> Self:
         """Returns the bitwise AND of all bits in a given expression.
 
+        **SQL name**: *bit_and*
+
         Returns:
             Self
         """
-        return self.__class__(func("bit_and", self._expr))
+        return self._new(func("bit_and", self.inner()))
 
     def bit_count(self) -> Self:
         """Returns the number of bits that are set.
 
+        **SQL name**: *bit_count*
+
         Returns:
             Self
         """
-        return self.__class__(func("bit_count", self._expr))
+        return self._new(func("bit_count", self.inner()))
 
     def bit_length(self) -> Self:
         """Returns the bit-length of the `bit` argument.
 
+        **SQL name**: *bit_length*
+
         Returns:
             Self
         """
-        return self.__class__(func("bit_length", self._expr))
+        return self._new(func("bit_length", self.inner()))
 
     def bit_or(self) -> Self:
         """Returns the bitwise OR of all bits in a given expression.
 
+        **SQL name**: *bit_or*
+
         Returns:
             Self
         """
-        return self.__class__(func("bit_or", self._expr))
+        return self._new(func("bit_or", self.inner()))
 
     def bit_position(self, bitstring: Self | bytes | bytearray | memoryview) -> Self:
         """Returns first starting index of the specified substring within bits, or zero if it is not present.
 
         The first (leftmost) bit is indexed 1.
+
+        **SQL name**: *bit_position*
 
         Args:
             bitstring (Self | bytes | bytearray | memoryview): `BIT` expression
@@ -347,18 +403,22 @@ class Fns(ExprHandler[Expression]):
         Returns:
             Self
         """
-        return self.__class__(func("bit_position", self._expr, bitstring))
+        return self._new(func("bit_position", self.inner(), bitstring))
 
     def bit_xor(self) -> Self:
         """Returns the bitwise XOR of all bits in a given expression.
 
+        **SQL name**: *bit_xor*
+
         Returns:
             Self
         """
-        return self.__class__(func("bit_xor", self._expr))
+        return self._new(func("bit_xor", self.inner()))
 
     def bitstring(self, length: Self | int) -> Self:
         """Pads the bitstring until the specified length.
+
+        **SQL name**: *bitstring*
 
         Args:
             length (Self | int): `INTEGER` expression
@@ -366,12 +426,14 @@ class Fns(ExprHandler[Expression]):
         Returns:
             Self
         """
-        return self.__class__(func("bitstring", self._expr, length))
+        return self._new(func("bitstring", self.inner(), length))
 
     def bitstring_agg(
         self, col1: Self | int | None = None, col2: Self | int | None = None
     ) -> Self:
         """Returns a bitstring with bits set for each distinct value.
+
+        **SQL name**: *bitstring_agg*
 
         Args:
             col1 (Self | int | None): `BIGINT | HUGEINT | INTEGER | SMALLINT | TINYINT | UBIGINT | UHUGEINT | UINTEGER | USMALLINT | UTINYINT` expression
@@ -380,26 +442,32 @@ class Fns(ExprHandler[Expression]):
         Returns:
             Self
         """
-        return self.__class__(func("bitstring_agg", self._expr, col1, col2))
+        return self._new(func("bitstring_agg", self.inner(), col1, col2))
 
     def bool_and(self) -> Self:
         """Returns TRUE if every input value is TRUE, otherwise FALSE.
 
+        **SQL name**: *bool_and*
+
         Returns:
             Self
         """
-        return self.__class__(func("bool_and", self._expr))
+        return self._new(func("bool_and", self.inner()))
 
     def bool_or(self) -> Self:
         """Returns TRUE if any input value is TRUE, otherwise FALSE.
 
+        **SQL name**: *bool_or*
+
         Returns:
             Self
         """
-        return self.__class__(func("bool_or", self._expr))
+        return self._new(func("bool_or", self.inner()))
 
     def can_cast_implicitly(self, target_type: Self) -> Self:
         """Whether or not we can implicitly cast from the source type to the other type.
+
+        **SQL name**: *can_cast_implicitly*
 
         Args:
             target_type (Self): `ANY` expression
@@ -407,10 +475,12 @@ class Fns(ExprHandler[Expression]):
         Returns:
             Self
         """
-        return self.__class__(func("can_cast_implicitly", self._expr, target_type))
+        return self._new(func("can_cast_implicitly", self.inner(), target_type))
 
     def cardinality(self, *args: Self) -> Self:
         """Returns the size of the map (or the number of entries in the map).
+
+        **SQL name**: *cardinality*
 
         Args:
             *args (Self): `ANY` expression
@@ -418,10 +488,12 @@ class Fns(ExprHandler[Expression]):
         Returns:
             Self
         """
-        return self.__class__(func("cardinality", self._expr, *args))
+        return self._new(func("cardinality", self.inner(), *args))
 
     def cast_to_type(self, type_arg: Self) -> Self:
         """Casts the first argument to the type of the second argument.
+
+        **SQL name**: *cast_to_type*
 
         Args:
             type_arg (Self): `ANY` expression
@@ -429,18 +501,22 @@ class Fns(ExprHandler[Expression]):
         Returns:
             Self
         """
-        return self.__class__(func("cast_to_type", self._expr, type_arg))
+        return self._new(func("cast_to_type", self.inner(), type_arg))
 
     def cbrt(self) -> Self:
         """Returns the cube root of x.
 
+        **SQL name**: *cbrt*
+
         Returns:
             Self
         """
-        return self.__class__(func("cbrt", self._expr))
+        return self._new(func("cbrt", self.inner()))
 
     def ceil(self) -> Self:
         """Rounds the number up.
+
+        **SQL name**: *ceil*
 
         See Also:
             ceiling
@@ -448,10 +524,12 @@ class Fns(ExprHandler[Expression]):
         Returns:
             Self
         """
-        return self.__class__(func("ceil", self._expr))
+        return self._new(func("ceil", self.inner()))
 
     def ceiling(self) -> Self:
         """Rounds the number up.
+
+        **SQL name**: *ceiling*
 
         See Also:
             ceil
@@ -459,18 +537,22 @@ class Fns(ExprHandler[Expression]):
         Returns:
             Self
         """
-        return self.__class__(func("ceiling", self._expr))
+        return self._new(func("ceiling", self.inner()))
 
     def century(self) -> Self:
         """Extract the century component from a date or timestamp.
 
+        **SQL name**: *century*
+
         Returns:
             Self
         """
-        return self.__class__(func("century", self._expr))
+        return self._new(func("century", self.inner()))
 
     def char_length(self) -> Self:
         """Returns the bit-length of the `bit` argument.
+
+        **SQL name**: *char_length*
 
         See Also:
             character_length, len, length
@@ -478,10 +560,12 @@ class Fns(ExprHandler[Expression]):
         Returns:
             Self
         """
-        return self.__class__(func("char_length", self._expr))
+        return self._new(func("char_length", self.inner()))
 
     def character_length(self) -> Self:
         """Returns the bit-length of the `bit` argument.
+
+        **SQL name**: *character_length*
 
         See Also:
             char_length, len, length
@@ -489,10 +573,12 @@ class Fns(ExprHandler[Expression]):
         Returns:
             Self
         """
-        return self.__class__(func("character_length", self._expr))
+        return self._new(func("character_length", self.inner()))
 
     def col_description(self, column_number: Self) -> Self:
         """SQL col_description function.
+
+        **SQL name**: *col_description*
 
         Args:
             column_number (Self): `ANY` expression
@@ -500,10 +586,12 @@ class Fns(ExprHandler[Expression]):
         Returns:
             Self
         """
-        return self.__class__(func("col_description", self._expr, column_number))
+        return self._new(func("col_description", self.inner(), column_number))
 
     def combine(self, col1: Self) -> Self:
         """SQL combine function.
+
+        **SQL name**: *combine*
 
         Args:
             col1 (Self): `ANY` expression
@@ -511,12 +599,14 @@ class Fns(ExprHandler[Expression]):
         Returns:
             Self
         """
-        return self.__class__(func("combine", self._expr, col1))
+        return self._new(func("combine", self.inner(), col1))
 
     def constant_or_null(self, arg2: Self, *args: Self) -> Self:
         """If arg2 is NULL, return NULL.
 
         Otherwise, return arg1.
+
+        **SQL name**: *constant_or_null*
 
         Args:
             arg2 (Self): `ANY` expression
@@ -525,10 +615,12 @@ class Fns(ExprHandler[Expression]):
         Returns:
             Self
         """
-        return self.__class__(func("constant_or_null", self._expr, arg2, *args))
+        return self._new(func("constant_or_null", self.inner(), arg2, *args))
 
     def contains(self, col1: Self) -> Self:
         """SQL contains function.
+
+        **SQL name**: *contains*
 
         Args:
             col1 (Self): `ANY | K | T` expression
@@ -536,10 +628,12 @@ class Fns(ExprHandler[Expression]):
         Returns:
             Self
         """
-        return self.__class__(func("contains", self._expr, col1))
+        return self._new(func("contains", self.inner(), col1))
 
     def corr(self, x: Self | float) -> Self:
         """Returns the correlation coefficient for non-NULL pairs in a group.
+
+        **SQL name**: *corr*
 
         Args:
             x (Self | float): `DOUBLE` expression
@@ -547,42 +641,52 @@ class Fns(ExprHandler[Expression]):
         Returns:
             Self
         """
-        return self.__class__(func("corr", self._expr, x))
+        return self._new(func("corr", self.inner(), x))
 
     def cos(self) -> Self:
         """Computes the cos of x.
 
+        **SQL name**: *cos*
+
         Returns:
             Self
         """
-        return self.__class__(func("cos", self._expr))
+        return self._new(func("cos", self.inner()))
 
     def cosh(self) -> Self:
         """Computes the hyperbolic cos of x.
 
+        **SQL name**: *cosh*
+
         Returns:
             Self
         """
-        return self.__class__(func("cosh", self._expr))
+        return self._new(func("cosh", self.inner()))
 
     def cot(self) -> Self:
         """Computes the cotangent of x.
 
+        **SQL name**: *cot*
+
         Returns:
             Self
         """
-        return self.__class__(func("cot", self._expr))
+        return self._new(func("cot", self.inner()))
 
     def count(self) -> Self:
         """Returns the number of non-NULL values in arg.
 
+        **SQL name**: *count*
+
         Returns:
             Self
         """
-        return self.__class__(func("count", self._expr))
+        return self._new(func("count", self.inner()))
 
     def count_if(self) -> Self:
         """Counts the total number of TRUE values for a boolean column.
+
+        **SQL name**: *count_if*
 
         See Also:
             countif
@@ -590,10 +694,12 @@ class Fns(ExprHandler[Expression]):
         Returns:
             Self
         """
-        return self.__class__(func("count_if", self._expr))
+        return self._new(func("count_if", self.inner()))
 
     def countif(self) -> Self:
         """Counts the total number of TRUE values for a boolean column.
+
+        **SQL name**: *countif*
 
         See Also:
             count_if
@@ -601,32 +707,38 @@ class Fns(ExprHandler[Expression]):
         Returns:
             Self
         """
-        return self.__class__(func("countif", self._expr))
+        return self._new(func("countif", self.inner()))
 
     def covar_pop(self, x: Self | float) -> Self:
         """Returns the population covariance of input values.
 
+        **SQL name**: *covar_pop*
+
         Args:
             x (Self | float): `DOUBLE` expression
 
         Returns:
             Self
         """
-        return self.__class__(func("covar_pop", self._expr, x))
+        return self._new(func("covar_pop", self.inner(), x))
 
     def covar_samp(self, x: Self | float) -> Self:
         """Returns the sample covariance for non-NULL pairs in a group.
 
+        **SQL name**: *covar_samp*
+
         Args:
             x (Self | float): `DOUBLE` expression
 
         Returns:
             Self
         """
-        return self.__class__(func("covar_samp", self._expr, x))
+        return self._new(func("covar_samp", self.inner(), x))
 
     def create_sort_key(self, *args: Self) -> Self:
         """Constructs a binary-comparable sort key based on a set of input parameters and sort qualifiers.
+
+        **SQL name**: *create_sort_key*
 
         Args:
             *args (Self): `ANY` expression
@@ -634,46 +746,56 @@ class Fns(ExprHandler[Expression]):
         Returns:
             Self
         """
-        return self.__class__(func("create_sort_key", self._expr, *args))
+        return self._new(func("create_sort_key", self.inner(), *args))
 
     def currval(self) -> Self:
         """Return the current value of the sequence.
 
         Note that nextval must be called at least once prior to calling currval.
 
+        **SQL name**: *currval*
+
         Returns:
             Self
         """
-        return self.__class__(func("currval", self._expr))
+        return self._new(func("currval", self.inner()))
 
     def decade(self) -> Self:
         """Extract the decade component from a date or timestamp.
 
+        **SQL name**: *decade*
+
         Returns:
             Self
         """
-        return self.__class__(func("decade", self._expr))
+        return self._new(func("decade", self.inner()))
 
     def decode(self) -> Self:
         """Converts `blob` to `VARCHAR`.
 
         Fails if `blob` is not valid UTF-8.
 
+        **SQL name**: *decode*
+
         Returns:
             Self
         """
-        return self.__class__(func("decode", self._expr))
+        return self._new(func("decode", self.inner()))
 
     def degrees(self) -> Self:
         """Converts radians to degrees.
 
+        **SQL name**: *degrees*
+
         Returns:
             Self
         """
-        return self.__class__(func("degrees", self._expr))
+        return self._new(func("degrees", self.inner()))
 
     def divide(self, col1: Self | float) -> Self:
         """SQL divide function.
+
+        **SQL name**: *divide*
 
         Args:
             col1 (Self | float | int): `BIGINT | DOUBLE | FLOAT | HUGEINT | INTEGER | SMALLINT | TINYINT | UBIGINT | UHUGEINT | UINTEGER | USMALLINT | UTINYINT` expression
@@ -681,12 +803,14 @@ class Fns(ExprHandler[Expression]):
         Returns:
             Self
         """
-        return self.__class__(func("divide", self._expr, col1))
+        return self._new(func("divide", self.inner(), col1))
 
     def element_at(self, key: Self) -> Self:
         """Returns a list containing the value for a given key or an empty list if the key is not contained in the map.
 
         The type of the key provided in the second parameter must match the type of the map's keys else an error is returned.
+
+        **SQL name**: *element_at*
 
         See Also:
             map_extract
@@ -697,57 +821,69 @@ class Fns(ExprHandler[Expression]):
         Returns:
             Self
         """
-        return self.__class__(func("element_at", self._expr, key))
+        return self._new(func("element_at", self.inner(), key))
 
     def encode(self) -> Self:
         """Converts the `string` to `BLOB`.
 
         Converts UTF-8 characters into literal encoding.
 
+        **SQL name**: *encode*
+
         Returns:
             Self
         """
-        return self.__class__(func("encode", self._expr))
+        return self._new(func("encode", self.inner()))
 
     def entropy(self) -> Self:
         """Returns the log-2 entropy of count input-values.
 
+        **SQL name**: *entropy*
+
         Returns:
             Self
         """
-        return self.__class__(func("entropy", self._expr))
+        return self._new(func("entropy", self.inner()))
 
     def enum_code(self) -> Self:
         """Returns the numeric value backing the given enum value.
 
+        **SQL name**: *enum_code*
+
         Returns:
             Self
         """
-        return self.__class__(func("enum_code", self._expr))
+        return self._new(func("enum_code", self.inner()))
 
     def enum_first(self) -> Self:
         """Returns the first value of the input enum type.
 
+        **SQL name**: *enum_first*
+
         Returns:
             Self
         """
-        return self.__class__(func("enum_first", self._expr))
+        return self._new(func("enum_first", self.inner()))
 
     def enum_last(self) -> Self:
         """Returns the last value of the input enum type.
 
+        **SQL name**: *enum_last*
+
         Returns:
             Self
         """
-        return self.__class__(func("enum_last", self._expr))
+        return self._new(func("enum_last", self.inner()))
 
     def enum_range(self) -> Self:
         """Returns all values of the input enum type as an array.
 
+        **SQL name**: *enum_range*
+
         Returns:
             Self
         """
-        return self.__class__(func("enum_range", self._expr))
+        return self._new(func("enum_range", self.inner()))
 
     def enum_range_boundary(self, end: Self) -> Self:
         """Returns the range between the two given enum values as an array.
@@ -758,45 +894,55 @@ class Fns(ExprHandler[Expression]):
 
         When the second parameter is NULL, the result ends with the last value of the enum type.
 
+        **SQL name**: *enum_range_boundary*
+
         Args:
             end (Self): `ANY` expression
 
         Returns:
             Self
         """
-        return self.__class__(func("enum_range_boundary", self._expr, end))
+        return self._new(func("enum_range_boundary", self.inner(), end))
 
     def epoch(self) -> Self:
         """Extract the epoch component from a temporal type.
 
+        **SQL name**: *epoch*
+
         Returns:
             Self
         """
-        return self.__class__(func("epoch", self._expr))
+        return self._new(func("epoch", self.inner()))
 
     def epoch_ms(self) -> Self:
         """Extract the epoch component in milliseconds from a temporal type.
 
+        **SQL name**: *epoch_ms*
+
         Returns:
             Self
         """
-        return self.__class__(func("epoch_ms", self._expr))
+        return self._new(func("epoch_ms", self.inner()))
 
     def epoch_ns(self) -> Self:
         """Extract the epoch component in nanoseconds from a temporal type.
 
+        **SQL name**: *epoch_ns*
+
         Returns:
             Self
         """
-        return self.__class__(func("epoch_ns", self._expr))
+        return self._new(func("epoch_ns", self.inner()))
 
     def epoch_us(self) -> Self:
         """Extract the epoch component in microseconds from a temporal type.
 
+        **SQL name**: *epoch_us*
+
         Returns:
             Self
         """
-        return self.__class__(func("epoch_us", self._expr))
+        return self._new(func("epoch_us", self.inner()))
 
     def equi_width_bins(
         self,
@@ -808,6 +954,8 @@ class Fns(ExprHandler[Expression]):
 
         If enabled nice_rounding makes the numbers more readable/less jagged.
 
+        **SQL name**: *equi_width_bins*
+
         Args:
             max_arg (Self | datetime | float | int): `ANY | BIGINT | DOUBLE | TIMESTAMP` expression
             bin_count (Self | int): `BIGINT` expression
@@ -816,62 +964,76 @@ class Fns(ExprHandler[Expression]):
         Returns:
             Self
         """
-        return self.__class__(
-            func("equi_width_bins", self._expr, max_arg, bin_count, nice_rounding)
+        return self._new(
+            func("equi_width_bins", self.inner(), max_arg, bin_count, nice_rounding)
         )
 
     def era(self) -> Self:
         """Extract the era component from a date or timestamp.
 
+        **SQL name**: *era*
+
         Returns:
             Self
         """
-        return self.__class__(func("era", self._expr))
+        return self._new(func("era", self.inner()))
 
     def error(self) -> Self:
         """Throws the given error message.
 
+        **SQL name**: *error*
+
         Returns:
             Self
         """
-        return self.__class__(func("error", self._expr))
+        return self._new(func("error", self.inner()))
 
     def even(self) -> Self:
         """Rounds x to next even number by rounding away from zero.
 
+        **SQL name**: *even*
+
         Returns:
             Self
         """
-        return self.__class__(func("even", self._expr))
+        return self._new(func("even", self.inner()))
 
     def exp(self) -> Self:
         """Computes e to the power of x.
 
+        **SQL name**: *exp*
+
         Returns:
             Self
         """
-        return self.__class__(func("exp", self._expr))
+        return self._new(func("exp", self.inner()))
 
     def factorial(self) -> Self:
         """Factorial of x.
 
         Computes the product of the current integer and all integers below it.
 
+        **SQL name**: *factorial*
+
         Returns:
             Self
         """
-        return self.__class__(func("factorial", self._expr))
+        return self._new(func("factorial", self.inner()))
 
     def favg(self) -> Self:
         """Calculates the average using a more accurate floating point summation (Kahan Sum).
 
+        **SQL name**: *favg*
+
         Returns:
             Self
         """
-        return self.__class__(func("favg", self._expr))
+        return self._new(func("favg", self.inner()))
 
     def fdiv(self, y: Self) -> Self:
         """SQL fdiv function.
+
+        **SQL name**: *fdiv*
 
         Args:
             y (Self): `ANY` expression
@@ -879,20 +1041,24 @@ class Fns(ExprHandler[Expression]):
         Returns:
             Self
         """
-        return self.__class__(func("fdiv", self._expr, y))
+        return self._new(func("fdiv", self.inner(), y))
 
     def finalize(self) -> Self:
         """SQL finalize function.
 
+        **SQL name**: *finalize*
+
         Returns:
             Self
         """
-        return self.__class__(func("finalize", self._expr))
+        return self._new(func("finalize", self.inner()))
 
     def first(self) -> Self:
         """Returns the first value (NULL or non-NULL) from arg.
 
         This function is affected by ordering.
+
+        **SQL name**: *first*
 
         See Also:
             arbitrary
@@ -900,18 +1066,22 @@ class Fns(ExprHandler[Expression]):
         Returns:
             Self
         """
-        return self.__class__(func("first", self._expr))
+        return self._new(func("first", self.inner()))
 
     def floor(self) -> Self:
         """Rounds the number down.
 
+        **SQL name**: *floor*
+
         Returns:
             Self
         """
-        return self.__class__(func("floor", self._expr))
+        return self._new(func("floor", self.inner()))
 
     def fmod(self, y: Self) -> Self:
         """SQL fmod function.
+
+        **SQL name**: *fmod*
 
         Args:
             y (Self): `ANY` expression
@@ -919,10 +1089,12 @@ class Fns(ExprHandler[Expression]):
         Returns:
             Self
         """
-        return self.__class__(func("fmod", self._expr, y))
+        return self._new(func("fmod", self.inner(), y))
 
     def format_pg_type(self, type_name: Self) -> Self:
         """SQL format_pg_type function.
+
+        **SQL name**: *format_pg_type*
 
         Args:
             type_name (Self): `ANY` expression
@@ -930,10 +1102,12 @@ class Fns(ExprHandler[Expression]):
         Returns:
             Self
         """
-        return self.__class__(func("format_pg_type", self._expr, type_name))
+        return self._new(func("format_pg_type", self.inner(), type_name))
 
     def format_type(self, typemod: Self) -> Self:
         """SQL format_type function.
+
+        **SQL name**: *format_type*
 
         Args:
             typemod (Self): `ANY` expression
@@ -941,32 +1115,38 @@ class Fns(ExprHandler[Expression]):
         Returns:
             Self
         """
-        return self.__class__(func("format_type", self._expr, typemod))
+        return self._new(func("format_type", self.inner(), typemod))
 
     def from_json(self, col1: Self | str) -> Self:
         """SQL from_json function.
 
+        **SQL name**: *from_json*
+
         Args:
             col1 (Self | str): `VARCHAR` expression
 
         Returns:
             Self
         """
-        return self.__class__(func("from_json", self._expr, col1))
+        return self._new(func("from_json", self.inner(), col1))
 
     def from_json_strict(self, col1: Self | str) -> Self:
         """SQL from_json_strict function.
 
+        **SQL name**: *from_json_strict*
+
         Args:
             col1 (Self | str): `VARCHAR` expression
 
         Returns:
             Self
         """
-        return self.__class__(func("from_json_strict", self._expr, col1))
+        return self._new(func("from_json_strict", self.inner(), col1))
 
     def fsum(self) -> Self:
         """Calculates the sum using a more accurate floating point summation (Kahan Sum).
+
+        **SQL name**: *fsum*
 
         See Also:
             kahan_sum, sumkahan
@@ -974,18 +1154,22 @@ class Fns(ExprHandler[Expression]):
         Returns:
             Self
         """
-        return self.__class__(func("fsum", self._expr))
+        return self._new(func("fsum", self.inner()))
 
     def gamma(self) -> Self:
         """Interpolation of (x-1) factorial (so decimal inputs are allowed).
 
+        **SQL name**: *gamma*
+
         Returns:
             Self
         """
-        return self.__class__(func("gamma", self._expr))
+        return self._new(func("gamma", self.inner()))
 
     def gcd(self, y: Self | int) -> Self:
         """Computes the greatest common divisor of x and y.
+
+        **SQL name**: *gcd*
 
         See Also:
             greatest_common_divisor
@@ -996,10 +1180,12 @@ class Fns(ExprHandler[Expression]):
         Returns:
             Self
         """
-        return self.__class__(func("gcd", self._expr, y))
+        return self._new(func("gcd", self.inner(), y))
 
     def generate_subscripts(self, dim: Self) -> Self:
         """SQL generate_subscripts function.
+
+        **SQL name**: *generate_subscripts*
 
         Args:
             dim (Self): `ANY` expression
@@ -1007,26 +1193,32 @@ class Fns(ExprHandler[Expression]):
         Returns:
             Self
         """
-        return self.__class__(func("generate_subscripts", self._expr, dim))
+        return self._new(func("generate_subscripts", self.inner(), dim))
 
     def geomean(self) -> Self:
         """SQL geomean function.
 
+        **SQL name**: *geomean*
+
         Returns:
             Self
         """
-        return self.__class__(func("geomean", self._expr))
+        return self._new(func("geomean", self.inner()))
 
     def geometric_mean(self) -> Self:
         """SQL geometric_mean function.
 
+        **SQL name**: *geometric_mean*
+
         Returns:
             Self
         """
-        return self.__class__(func("geometric_mean", self._expr))
+        return self._new(func("geometric_mean", self.inner()))
 
     def get_bit(self, index: Self | int) -> Self:
         """Extracts the nth bit from bitstring; the first (leftmost) bit is indexed 0.
+
+        **SQL name**: *get_bit*
 
         Args:
             index (Self | int): `INTEGER` expression
@@ -1034,26 +1226,32 @@ class Fns(ExprHandler[Expression]):
         Returns:
             Self
         """
-        return self.__class__(func("get_bit", self._expr, index))
+        return self._new(func("get_bit", self.inner(), index))
 
     def get_block_size(self) -> Self:
         """SQL get_block_size function.
 
+        **SQL name**: *get_block_size*
+
         Returns:
             Self
         """
-        return self.__class__(func("get_block_size", self._expr))
+        return self._new(func("get_block_size", self.inner()))
 
     def getvariable(self) -> Self:
         """SQL getvariable function.
 
+        **SQL name**: *getvariable*
+
         Returns:
             Self
         """
-        return self.__class__(func("getvariable", self._expr))
+        return self._new(func("getvariable", self.inner()))
 
     def greatest_common_divisor(self, y: Self | int) -> Self:
         """Computes the greatest common divisor of x and y.
+
+        **SQL name**: *greatest_common_divisor*
 
         See Also:
             gcd
@@ -1064,10 +1262,12 @@ class Fns(ExprHandler[Expression]):
         Returns:
             Self
         """
-        return self.__class__(func("greatest_common_divisor", self._expr, y))
+        return self._new(func("greatest_common_divisor", self.inner(), y))
 
     def group_concat(self, arg: Self | str | None = None) -> Self:
         """Concatenates the column string values with an optional separator.
+
+        **SQL name**: *group_concat*
 
         See Also:
             listagg, string_agg
@@ -1078,10 +1278,12 @@ class Fns(ExprHandler[Expression]):
         Returns:
             Self
         """
-        return self.__class__(func("group_concat", self._expr, arg))
+        return self._new(func("group_concat", self.inner(), arg))
 
     def hex(self) -> Self:
         """Converts the `value` to `VARCHAR` using hexadecimal representation.
+
+        **SQL name**: *hex*
 
         See Also:
             to_hex
@@ -1089,10 +1291,12 @@ class Fns(ExprHandler[Expression]):
         Returns:
             Self
         """
-        return self.__class__(func("hex", self._expr))
+        return self._new(func("hex", self.inner()))
 
     def histogram(self, col1: Self | None = None) -> Self:
         """Returns a LIST of STRUCTs with the fields bucket and count.
+
+        **SQL name**: *histogram*
 
         Args:
             col1 (Self | None): `ANY[]` expression
@@ -1100,10 +1304,12 @@ class Fns(ExprHandler[Expression]):
         Returns:
             Self
         """
-        return self.__class__(func("histogram", self._expr, col1))
+        return self._new(func("histogram", self.inner(), col1))
 
     def histogram_exact(self, bins: Self) -> Self:
         """Returns a LIST of STRUCTs with the fields bucket and count matching the buckets exactly.
+
+        **SQL name**: *histogram_exact*
 
         Args:
             bins (Self): `ANY[]` expression
@@ -1111,18 +1317,22 @@ class Fns(ExprHandler[Expression]):
         Returns:
             Self
         """
-        return self.__class__(func("histogram_exact", self._expr, bins))
+        return self._new(func("histogram_exact", self.inner(), bins))
 
     def hour(self) -> Self:
         """Extract the hour component from a date or timestamp.
 
+        **SQL name**: *hour*
+
         Returns:
             Self
         """
-        return self.__class__(func("hour", self._expr))
+        return self._new(func("hour", self.inner()))
 
     def in_search_path(self, schema_name: Self | str) -> Self:
         """Returns whether or not the database/schema are in the search path.
+
+        **SQL name**: *in_search_path*
 
         Args:
             schema_name (Self | str): `VARCHAR` expression
@@ -1130,74 +1340,92 @@ class Fns(ExprHandler[Expression]):
         Returns:
             Self
         """
-        return self.__class__(func("in_search_path", self._expr, schema_name))
+        return self._new(func("in_search_path", self.inner(), schema_name))
 
     def is_histogram_other_bin(self) -> Self:
         """Whether or not the provided value is the histogram "other" bin (used for values not belonging to any provided bin).
 
+        **SQL name**: *is_histogram_other_bin*
+
         Returns:
             Self
         """
-        return self.__class__(func("is_histogram_other_bin", self._expr))
+        return self._new(func("is_histogram_other_bin", self.inner()))
 
     def isfinite(self) -> Self:
         """Returns true if the floating point value is finite, false otherwise.
 
+        **SQL name**: *isfinite*
+
         Returns:
             Self
         """
-        return self.__class__(func("isfinite", self._expr))
+        return self._new(func("isfinite", self.inner()))
 
     def isinf(self) -> Self:
         """Returns true if the floating point value is infinite, false otherwise.
 
+        **SQL name**: *isinf*
+
         Returns:
             Self
         """
-        return self.__class__(func("isinf", self._expr))
+        return self._new(func("isinf", self.inner()))
 
     def isnan(self) -> Self:
         """Returns true if the floating point value is not a number, false otherwise.
 
+        **SQL name**: *isnan*
+
         Returns:
             Self
         """
-        return self.__class__(func("isnan", self._expr))
+        return self._new(func("isnan", self.inner()))
 
     def isodow(self) -> Self:
         """Extract the isodow component from a date or timestamp.
 
+        **SQL name**: *isodow*
+
         Returns:
             Self
         """
-        return self.__class__(func("isodow", self._expr))
+        return self._new(func("isodow", self.inner()))
 
     def isoyear(self) -> Self:
         """Extract the isoyear component from a date or timestamp.
 
+        **SQL name**: *isoyear*
+
         Returns:
             Self
         """
-        return self.__class__(func("isoyear", self._expr))
+        return self._new(func("isoyear", self.inner()))
 
     def json(self) -> Self:
         """SQL json function.
 
+        **SQL name**: *json*
+
         Returns:
             Self
         """
-        return self.__class__(func("json", self._expr))
+        return self._new(func("json", self.inner()))
 
     def julian(self) -> Self:
         """Extract the Julian Day number from a date or timestamp.
 
+        **SQL name**: *julian*
+
         Returns:
             Self
         """
-        return self.__class__(func("julian", self._expr))
+        return self._new(func("julian", self.inner()))
 
     def kahan_sum(self) -> Self:
         """Calculates the sum using a more accurate floating point summation (Kahan Sum).
+
+        **SQL name**: *kahan_sum*
 
         See Also:
             fsum, sumkahan
@@ -1205,44 +1433,54 @@ class Fns(ExprHandler[Expression]):
         Returns:
             Self
         """
-        return self.__class__(func("kahan_sum", self._expr))
+        return self._new(func("kahan_sum", self.inner()))
 
     def kurtosis(self) -> Self:
         """Returns the excess kurtosis (Fisher's definition) of all input values, with a bias correction according to the sample size.
 
+        **SQL name**: *kurtosis*
+
         Returns:
             Self
         """
-        return self.__class__(func("kurtosis", self._expr))
+        return self._new(func("kurtosis", self.inner()))
 
     def kurtosis_pop(self) -> Self:
         """Returns the excess kurtosis (Fisher's definition) of all input values, without bias correction.
 
+        **SQL name**: *kurtosis_pop*
+
         Returns:
             Self
         """
-        return self.__class__(func("kurtosis_pop", self._expr))
+        return self._new(func("kurtosis_pop", self.inner()))
 
     def last(self) -> Self:
         """Returns the last value of a column.
 
         This function is affected by ordering.
 
+        **SQL name**: *last*
+
         Returns:
             Self
         """
-        return self.__class__(func("last", self._expr))
+        return self._new(func("last", self.inner()))
 
     def last_day(self) -> Self:
         """Returns the last day of the month.
 
+        **SQL name**: *last_day*
+
         Returns:
             Self
         """
-        return self.__class__(func("last_day", self._expr))
+        return self._new(func("last_day", self.inner()))
 
     def lcm(self, y: Self | int) -> Self:
         """Computes the least common multiple of x and y.
+
+        **SQL name**: *lcm*
 
         See Also:
             least_common_multiple
@@ -1253,10 +1491,12 @@ class Fns(ExprHandler[Expression]):
         Returns:
             Self
         """
-        return self.__class__(func("lcm", self._expr, y))
+        return self._new(func("lcm", self.inner(), y))
 
     def least_common_multiple(self, y: Self | int) -> Self:
         """Computes the least common multiple of x and y.
+
+        **SQL name**: *least_common_multiple*
 
         See Also:
             lcm
@@ -1267,10 +1507,12 @@ class Fns(ExprHandler[Expression]):
         Returns:
             Self
         """
-        return self.__class__(func("least_common_multiple", self._expr, y))
+        return self._new(func("least_common_multiple", self.inner(), y))
 
     def len(self) -> Self:
         """Returns the bit-length of the `bit` argument.
+
+        **SQL name**: *len*
 
         See Also:
             char_length, character_length, length
@@ -1278,10 +1520,12 @@ class Fns(ExprHandler[Expression]):
         Returns:
             Self
         """
-        return self.__class__(func("len", self._expr))
+        return self._new(func("len", self.inner()))
 
     def length(self) -> Self:
         """Returns the bit-length of the `bit` argument.
+
+        **SQL name**: *length*
 
         See Also:
             char_length, character_length, len
@@ -1289,18 +1533,22 @@ class Fns(ExprHandler[Expression]):
         Returns:
             Self
         """
-        return self.__class__(func("length", self._expr))
+        return self._new(func("length", self.inner()))
 
     def lgamma(self) -> Self:
         """Computes the log of the gamma function.
 
+        **SQL name**: *lgamma*
+
         Returns:
             Self
         """
-        return self.__class__(func("lgamma", self._expr))
+        return self._new(func("lgamma", self.inner()))
 
     def listagg(self, arg: Self | str | None = None) -> Self:
         """Concatenates the column string values with an optional separator.
+
+        **SQL name**: *listagg*
 
         See Also:
             group_concat, string_agg
@@ -1311,31 +1559,37 @@ class Fns(ExprHandler[Expression]):
         Returns:
             Self
         """
-        return self.__class__(func("listagg", self._expr, arg))
+        return self._new(func("listagg", self.inner(), arg))
 
     def ln(self) -> Self:
         """Computes the natural logarithm of x.
 
+        **SQL name**: *ln*
+
         Returns:
             Self
         """
-        return self.__class__(func("ln", self._expr))
+        return self._new(func("ln", self.inner()))
 
     def log10(self) -> Self:
         """Computes the 10-log of x.
 
+        **SQL name**: *log10*
+
         Returns:
             Self
         """
-        return self.__class__(func("log10", self._expr))
+        return self._new(func("log10", self.inner()))
 
     def log2(self) -> Self:
         """Computes the 2-log of x.
 
+        **SQL name**: *log2*
+
         Returns:
             Self
         """
-        return self.__class__(func("log2", self._expr))
+        return self._new(func("log2", self.inner()))
 
     def mad(self) -> Self:
         """Returns the median absolute deviation for the values within x.
@@ -1344,23 +1598,29 @@ class Fns(ExprHandler[Expression]):
 
         Temporal types return a positive INTERVAL.
 
+        **SQL name**: *mad*
+
         Returns:
             Self
         """
-        return self.__class__(func("mad", self._expr))
+        return self._new(func("mad", self.inner()))
 
     def make_date(self) -> Self:
         """The date for the given struct.
 
+        **SQL name**: *make_date*
+
         Returns:
             Self
         """
-        return self.__class__(func("make_date", self._expr))
+        return self._new(func("make_date", self.inner()))
 
     def make_date_month_day(
         self, month: Self | int | None = None, day: Self | int | None = None
     ) -> Self:
         """The date for the given parts.
+
+        **SQL name**: *make_date*
 
         Args:
             month (Self | int | None): `BIGINT` expression
@@ -1369,10 +1629,12 @@ class Fns(ExprHandler[Expression]):
         Returns:
             Self
         """
-        return self.__class__(func("make_date", self._expr, month, day))
+        return self._new(func("make_date", self.inner(), month, day))
 
     def make_time(self, minute: Self | int, seconds: Self | float) -> Self:
         """The time for the given parts.
+
+        **SQL name**: *make_time*
 
         Args:
             minute (Self | int): `BIGINT` expression
@@ -1381,7 +1643,7 @@ class Fns(ExprHandler[Expression]):
         Returns:
             Self
         """
-        return self.__class__(func("make_time", self._expr, minute, seconds))
+        return self._new(func("make_time", self.inner(), minute, seconds))
 
     def make_timestamp(
         self,
@@ -1393,6 +1655,8 @@ class Fns(ExprHandler[Expression]):
     ) -> Self:
         """The timestamp for the given parts.
 
+        **SQL name**: *make_timestamp*
+
         Args:
             month (Self | int | None): `BIGINT` expression
             day (Self | int | None): `BIGINT` expression
@@ -1403,25 +1667,29 @@ class Fns(ExprHandler[Expression]):
         Returns:
             Self
         """
-        return self.__class__(
-            func("make_timestamp", self._expr, month, day, hour, minute, seconds)
+        return self._new(
+            func("make_timestamp", self.inner(), month, day, hour, minute, seconds)
         )
 
     def make_timestamp_ms(self) -> Self:
         """The timestamp for the given microseconds since the epoch.
 
+        **SQL name**: *make_timestamp_ms*
+
         Returns:
             Self
         """
-        return self.__class__(func("make_timestamp_ms", self._expr))
+        return self._new(func("make_timestamp_ms", self.inner()))
 
     def make_timestamp_ns(self) -> Self:
         """The timestamp for the given nanoseconds since epoch.
 
+        **SQL name**: *make_timestamp_ns*
+
         Returns:
             Self
         """
-        return self.__class__(func("make_timestamp_ns", self._expr))
+        return self._new(func("make_timestamp_ns", self.inner()))
 
     def make_timestamptz(
         self,
@@ -1434,6 +1702,8 @@ class Fns(ExprHandler[Expression]):
     ) -> Self:
         """SQL make_timestamptz function.
 
+        **SQL name**: *make_timestamptz*
+
         Args:
             col1 (Self | int | None): `BIGINT` expression
             col2 (Self | int | None): `BIGINT` expression
@@ -1445,12 +1715,14 @@ class Fns(ExprHandler[Expression]):
         Returns:
             Self
         """
-        return self.__class__(
-            func("make_timestamptz", self._expr, col1, col2, col3, col4, col5, col6)
+        return self._new(
+            func("make_timestamptz", self.inner(), col1, col2, col3, col4, col5, col6)
         )
 
     def map(self, values: Self) -> Self:
         """Creates a map from a set of keys and values.
+
+        **SQL name**: *map*
 
         Args:
             values (Self): `V[]` expression
@@ -1458,10 +1730,12 @@ class Fns(ExprHandler[Expression]):
         Returns:
             Self
         """
-        return self.__class__(func("map", self._expr, values))
+        return self._new(func("map", self.inner(), values))
 
     def map_concat(self, *args: Self) -> Self:
         """Returns a map created from merging the input maps, on key collision the value is taken from the last map with that key.
+
+        **SQL name**: *map_concat*
 
         Args:
             *args (Self): `ANY` expression
@@ -1469,10 +1743,12 @@ class Fns(ExprHandler[Expression]):
         Returns:
             Self
         """
-        return self.__class__(func("map_concat", self._expr, *args))
+        return self._new(func("map_concat", self.inner(), *args))
 
     def map_contains(self, key: Self) -> Self:
         """Checks if a map contains a given key.
+
+        **SQL name**: *map_contains*
 
         Args:
             key (Self): `K` expression
@@ -1480,10 +1756,12 @@ class Fns(ExprHandler[Expression]):
         Returns:
             Self
         """
-        return self.__class__(func("map_contains", self._expr, key))
+        return self._new(func("map_contains", self.inner(), key))
 
     def map_contains_entry(self, key: Self, value: Self) -> Self:
         """SQL map_contains_entry function.
+
+        **SQL name**: *map_contains_entry*
 
         Args:
             key (Self): `ANY` expression
@@ -1492,10 +1770,12 @@ class Fns(ExprHandler[Expression]):
         Returns:
             Self
         """
-        return self.__class__(func("map_contains_entry", self._expr, key, value))
+        return self._new(func("map_contains_entry", self.inner(), key, value))
 
     def map_contains_value(self, value: Self) -> Self:
         """SQL map_contains_value function.
+
+        **SQL name**: *map_contains_value*
 
         Args:
             value (Self): `ANY` expression
@@ -1503,20 +1783,24 @@ class Fns(ExprHandler[Expression]):
         Returns:
             Self
         """
-        return self.__class__(func("map_contains_value", self._expr, value))
+        return self._new(func("map_contains_value", self.inner(), value))
 
     def map_entries(self) -> Self:
         """Returns the map entries as a list of keys/values.
 
+        **SQL name**: *map_entries*
+
         Returns:
             Self
         """
-        return self.__class__(func("map_entries", self._expr))
+        return self._new(func("map_entries", self.inner()))
 
     def map_extract(self, key: Self) -> Self:
         """Returns a list containing the value for a given key or an empty list if the key is not contained in the map.
 
         The type of the key provided in the second parameter must match the type of the map's keys else an error is returned.
+
+        **SQL name**: *map_extract*
 
         See Also:
             element_at
@@ -1527,12 +1811,14 @@ class Fns(ExprHandler[Expression]):
         Returns:
             Self
         """
-        return self.__class__(func("map_extract", self._expr, key))
+        return self._new(func("map_extract", self.inner(), key))
 
     def map_extract_value(self, key: Self) -> Self:
         """Returns the value for a given key or NULL if the key is not contained in the map.
 
         The type of the key provided in the second parameter must match the type of the map's keys else an error is returned.
+
+        **SQL name**: *map_extract_value*
 
         Args:
             key (Self): `K` expression
@@ -1540,42 +1826,52 @@ class Fns(ExprHandler[Expression]):
         Returns:
             Self
         """
-        return self.__class__(func("map_extract_value", self._expr, key))
+        return self._new(func("map_extract_value", self.inner(), key))
 
     def map_from_entries(self) -> Self:
         """Returns a map created from the entries of the array.
 
+        **SQL name**: *map_from_entries*
+
         Returns:
             Self
         """
-        return self.__class__(func("map_from_entries", self._expr))
+        return self._new(func("map_from_entries", self.inner()))
 
     def map_keys(self) -> Self:
         """Returns the keys of a map as a list.
 
+        **SQL name**: *map_keys*
+
         Returns:
             Self
         """
-        return self.__class__(func("map_keys", self._expr))
+        return self._new(func("map_keys", self.inner()))
 
     def map_to_pg_oid(self) -> Self:
         """SQL map_to_pg_oid function.
 
+        **SQL name**: *map_to_pg_oid*
+
         Returns:
             Self
         """
-        return self.__class__(func("map_to_pg_oid", self._expr))
+        return self._new(func("map_to_pg_oid", self.inner()))
 
     def map_values(self) -> Self:
         """Returns the values of a map as a list.
 
+        **SQL name**: *map_values*
+
         Returns:
             Self
         """
-        return self.__class__(func("map_values", self._expr))
+        return self._new(func("map_values", self.inner()))
 
     def max(self, col1: Self | int | None = None) -> Self:
         """Returns the maximum value present in arg.
+
+        **SQL name**: *max*
 
         Args:
             col1 (Self | int | None): `BIGINT` expression
@@ -1583,7 +1879,7 @@ class Fns(ExprHandler[Expression]):
         Returns:
             Self
         """
-        return self.__class__(func("max", self._expr, col1))
+        return self._new(func("max", self.inner(), col1))
 
     def max_by(
         self,
@@ -1593,6 +1889,8 @@ class Fns(ExprHandler[Expression]):
         """Finds the row with the maximum val.
 
         Calculates the non-NULL arg expression at that row.
+
+        **SQL name**: *max_by*
 
         See Also:
             arg_max, argmax
@@ -1604,42 +1902,52 @@ class Fns(ExprHandler[Expression]):
         Returns:
             Self
         """
-        return self.__class__(func("max_by", self._expr, val, col2))
+        return self._new(func("max_by", self.inner(), val, col2))
 
     def md5(self) -> Self:
         """Returns the MD5 hash of the `blob` as a `VARCHAR`.
 
+        **SQL name**: *md5*
+
         Returns:
             Self
         """
-        return self.__class__(func("md5", self._expr))
+        return self._new(func("md5", self.inner()))
 
     def md5_number(self) -> Self:
         """Returns the MD5 hash of the `blob` as a `HUGEINT`.
 
+        **SQL name**: *md5_number*
+
         Returns:
             Self
         """
-        return self.__class__(func("md5_number", self._expr))
+        return self._new(func("md5_number", self.inner()))
 
     def md5_number_lower(self) -> Self:
         """SQL md5_number_lower function.
 
+        **SQL name**: *md5_number_lower*
+
         Returns:
             Self
         """
-        return self.__class__(func("md5_number_lower", self._expr))
+        return self._new(func("md5_number_lower", self.inner()))
 
     def md5_number_upper(self) -> Self:
         """SQL md5_number_upper function.
 
+        **SQL name**: *md5_number_upper*
+
         Returns:
             Self
         """
-        return self.__class__(func("md5_number_upper", self._expr))
+        return self._new(func("md5_number_upper", self.inner()))
 
     def mean(self) -> Self:
         """Calculates the average value for all tuples in x.
+
+        **SQL name**: *mean*
 
         See Also:
             avg
@@ -1647,7 +1955,7 @@ class Fns(ExprHandler[Expression]):
         Returns:
             Self
         """
-        return self.__class__(func("mean", self._expr))
+        return self._new(func("mean", self.inner()))
 
     def median(self) -> Self:
         """Returns the middle value of the set.
@@ -1658,37 +1966,47 @@ class Fns(ExprHandler[Expression]):
 
         Non-interpolate-able types (everything else) return the lower of the two middle values.
 
+        **SQL name**: *median*
+
         Returns:
             Self
         """
-        return self.__class__(func("median", self._expr))
+        return self._new(func("median", self.inner()))
 
     def microsecond(self) -> Self:
         """Extract the microsecond component from a date or timestamp.
 
+        **SQL name**: *microsecond*
+
         Returns:
             Self
         """
-        return self.__class__(func("microsecond", self._expr))
+        return self._new(func("microsecond", self.inner()))
 
     def millennium(self) -> Self:
         """Extract the millennium component from a date or timestamp.
 
+        **SQL name**: *millennium*
+
         Returns:
             Self
         """
-        return self.__class__(func("millennium", self._expr))
+        return self._new(func("millennium", self.inner()))
 
     def millisecond(self) -> Self:
         """Extract the millisecond component from a date or timestamp.
 
+        **SQL name**: *millisecond*
+
         Returns:
             Self
         """
-        return self.__class__(func("millisecond", self._expr))
+        return self._new(func("millisecond", self.inner()))
 
     def min(self, col1: Self | int | None = None) -> Self:
         """Returns the minimum value present in arg.
+
+        **SQL name**: *min*
 
         Args:
             col1 (Self | int | None): `BIGINT` expression
@@ -1696,7 +2014,7 @@ class Fns(ExprHandler[Expression]):
         Returns:
             Self
         """
-        return self.__class__(func("min", self._expr, col1))
+        return self._new(func("min", self.inner(), col1))
 
     def min_by(
         self,
@@ -1706,6 +2024,8 @@ class Fns(ExprHandler[Expression]):
         """Finds the row with the minimum val.
 
         Calculates the non-NULL arg expression at that row.
+
+        **SQL name**: *min_by*
 
         See Also:
             arg_min, argmin
@@ -1717,18 +2037,22 @@ class Fns(ExprHandler[Expression]):
         Returns:
             Self
         """
-        return self.__class__(func("min_by", self._expr, val, col2))
+        return self._new(func("min_by", self.inner(), val, col2))
 
     def minute(self) -> Self:
         """Extract the minute component from a date or timestamp.
 
+        **SQL name**: *minute*
+
         Returns:
             Self
         """
-        return self.__class__(func("minute", self._expr))
+        return self._new(func("minute", self.inner()))
 
     def mod(self, col1: Self | Decimal | float) -> Self:
         """SQL mod function.
+
+        **SQL name**: *mod*
 
         Args:
             col1 (Self | Decimal | float | int): `BIGINT | DECIMAL | DOUBLE | FLOAT | HUGEINT | INTEGER | SMALLINT | TINYINT | UBIGINT | UHUGEINT | UINTEGER | USMALLINT | UTINYINT` expression
@@ -1736,36 +2060,44 @@ class Fns(ExprHandler[Expression]):
         Returns:
             Self
         """
-        return self.__class__(func("mod", self._expr, col1))
+        return self._new(func("mod", self.inner(), col1))
 
     def mode(self) -> Self:
         """Returns the most frequent value for the values within x.
 
         NULL values are ignored.
 
+        **SQL name**: *mode*
+
         Returns:
             Self
         """
-        return self.__class__(func("mode", self._expr))
+        return self._new(func("mode", self.inner()))
 
     def month(self) -> Self:
         """Extract the month component from a date or timestamp.
 
+        **SQL name**: *month*
+
         Returns:
             Self
         """
-        return self.__class__(func("month", self._expr))
+        return self._new(func("month", self.inner()))
 
     def monthname(self) -> Self:
         """The (English) name of the month.
 
+        **SQL name**: *monthname*
+
         Returns:
             Self
         """
-        return self.__class__(func("monthname", self._expr))
+        return self._new(func("monthname", self.inner()))
 
     def multiply(self, col1: Self | Decimal | float | timedelta) -> Self:
         """SQL multiply function.
+
+        **SQL name**: *multiply*
 
         Args:
             col1 (Self | Decimal | float | int | timedelta): `BIGINT | DECIMAL | DOUBLE | FLOAT | HUGEINT | INTEGER | INTERVAL | SMALLINT | TINYINT | UBIGINT | UHUGEINT | UINTEGER | USMALLINT | UTINYINT` expression
@@ -1773,18 +2105,22 @@ class Fns(ExprHandler[Expression]):
         Returns:
             Self
         """
-        return self.__class__(func("multiply", self._expr, col1))
+        return self._new(func("multiply", self.inner(), col1))
 
     def nanosecond(self) -> Self:
         """Extract the nanosecond component from a date or timestamp.
 
+        **SQL name**: *nanosecond*
+
         Returns:
             Self
         """
-        return self.__class__(func("nanosecond", self._expr))
+        return self._new(func("nanosecond", self.inner()))
 
     def nextafter(self, y: Self | float) -> Self:
         """Returns the next floating point value after x in the direction of y.
+
+        **SQL name**: *nextafter*
 
         Args:
             y (Self | float): `DOUBLE | FLOAT` expression
@@ -1792,26 +2128,32 @@ class Fns(ExprHandler[Expression]):
         Returns:
             Self
         """
-        return self.__class__(func("nextafter", self._expr, y))
+        return self._new(func("nextafter", self.inner(), y))
 
     def nextval(self) -> Self:
         """Return the following value of the sequence.
 
+        **SQL name**: *nextval*
+
         Returns:
             Self
         """
-        return self.__class__(func("nextval", self._expr))
+        return self._new(func("nextval", self.inner()))
 
     def normalized_interval(self) -> Self:
         """Normalizes an INTERVAL to an equivalent interval.
 
+        **SQL name**: *normalized_interval*
+
         Returns:
             Self
         """
-        return self.__class__(func("normalized_interval", self._expr))
+        return self._new(func("normalized_interval", self.inner()))
 
     def nullif(self, b: Self) -> Self:
         """SQL nullif function.
+
+        **SQL name**: *nullif*
 
         Args:
             b (Self): `ANY` expression
@@ -1819,10 +2161,12 @@ class Fns(ExprHandler[Expression]):
         Returns:
             Self
         """
-        return self.__class__(func("nullif", self._expr, b))
+        return self._new(func("nullif", self.inner(), b))
 
     def obj_description(self, catalog_name: Self) -> Self:
         """SQL obj_description function.
+
+        **SQL name**: *obj_description*
 
         Args:
             catalog_name (Self): `ANY` expression
@@ -1830,18 +2174,22 @@ class Fns(ExprHandler[Expression]):
         Returns:
             Self
         """
-        return self.__class__(func("obj_description", self._expr, catalog_name))
+        return self._new(func("obj_description", self.inner(), catalog_name))
 
     def octet_length(self) -> Self:
         """Number of bytes in `blob`.
 
+        **SQL name**: *octet_length*
+
         Returns:
             Self
         """
-        return self.__class__(func("octet_length", self._expr))
+        return self._new(func("octet_length", self.inner()))
 
     def parse_duckdb_log_message(self, message: Self | str) -> Self:
         """Parse the message into the expected logical type.
+
+        **SQL name**: *parse_duckdb_log_message*
 
         Args:
             message (Self | str): `VARCHAR` expression
@@ -1849,10 +2197,12 @@ class Fns(ExprHandler[Expression]):
         Returns:
             Self
         """
-        return self.__class__(func("parse_duckdb_log_message", self._expr, message))
+        return self._new(func("parse_duckdb_log_message", self.inner(), message))
 
     def pow(self, y: Self | float) -> Self:
         """Computes x to the power of y.
+
+        **SQL name**: *pow*
 
         See Also:
             power
@@ -1863,10 +2213,12 @@ class Fns(ExprHandler[Expression]):
         Returns:
             Self
         """
-        return self.__class__(func("pow", self._expr, y))
+        return self._new(func("pow", self.inner(), y))
 
     def power(self, y: Self | float) -> Self:
         """Computes x to the power of y.
+
+        **SQL name**: *power*
 
         See Also:
             pow
@@ -1877,20 +2229,24 @@ class Fns(ExprHandler[Expression]):
         Returns:
             Self
         """
-        return self.__class__(func("power", self._expr, y))
+        return self._new(func("power", self.inner(), y))
 
     def product(self) -> Self:
         """Calculates the product of all tuples in arg.
 
+        **SQL name**: *product*
+
         Returns:
             Self
         """
-        return self.__class__(func("product", self._expr))
+        return self._new(func("product", self.inner()))
 
     def quantile(self, pos: Self | float | list[float] | None = None) -> Self:
         """Returns the exact quantile number between 0 and 1 .
 
         If pos is a LIST of FLOATs, then the result is a LIST of the corresponding exact quantiles.
+
+        **SQL name**: *quantile*
 
         See Also:
             quantile_disc
@@ -1901,12 +2257,14 @@ class Fns(ExprHandler[Expression]):
         Returns:
             Self
         """
-        return self.__class__(func("quantile", self._expr, pos))
+        return self._new(func("quantile", self.inner(), pos))
 
     def quantile_cont(self, pos: Self | float | list[float]) -> Self:
         """Returns the interpolated quantile number between 0 and 1 .
 
         If pos is a LIST of FLOATs, then the result is a LIST of the corresponding interpolated quantiles.
+
+        **SQL name**: *quantile_cont*
 
         Args:
             pos (Self | float | list[float]): `DOUBLE | DOUBLE[]` expression
@@ -1914,12 +2272,14 @@ class Fns(ExprHandler[Expression]):
         Returns:
             Self
         """
-        return self.__class__(func("quantile_cont", self._expr, pos))
+        return self._new(func("quantile_cont", self.inner(), pos))
 
     def quantile_disc(self, pos: Self | float | list[float] | None = None) -> Self:
         """Returns the exact quantile number between 0 and 1 .
 
         If pos is a LIST of FLOATs, then the result is a LIST of the corresponding exact quantiles.
+
+        **SQL name**: *quantile_disc*
 
         See Also:
             quantile
@@ -1930,125 +2290,149 @@ class Fns(ExprHandler[Expression]):
         Returns:
             Self
         """
-        return self.__class__(func("quantile_disc", self._expr, pos))
+        return self._new(func("quantile_disc", self.inner(), pos))
 
     def quarter(self) -> Self:
         """Extract the quarter component from a date or timestamp.
 
+        **SQL name**: *quarter*
+
         Returns:
             Self
         """
-        return self.__class__(func("quarter", self._expr))
+        return self._new(func("quarter", self.inner()))
 
     def radians(self) -> Self:
         """Converts degrees to radians.
 
+        **SQL name**: *radians*
+
         Returns:
             Self
         """
-        return self.__class__(func("radians", self._expr))
+        return self._new(func("radians", self.inner()))
 
     def regr_avgx(self, x: Self | float) -> Self:
         """Returns the average of the independent variable for non-NULL pairs in a group, where x is the independent variable and y is the dependent variable.
 
+        **SQL name**: *regr_avgx*
+
         Args:
             x (Self | float): `DOUBLE` expression
 
         Returns:
             Self
         """
-        return self.__class__(func("regr_avgx", self._expr, x))
+        return self._new(func("regr_avgx", self.inner(), x))
 
     def regr_avgy(self, x: Self | float) -> Self:
         """Returns the average of the dependent variable for non-NULL pairs in a group, where x is the independent variable and y is the dependent variable.
 
+        **SQL name**: *regr_avgy*
+
         Args:
             x (Self | float): `DOUBLE` expression
 
         Returns:
             Self
         """
-        return self.__class__(func("regr_avgy", self._expr, x))
+        return self._new(func("regr_avgy", self.inner(), x))
 
     def regr_count(self, x: Self | float) -> Self:
         """Returns the number of non-NULL number pairs in a group.
 
+        **SQL name**: *regr_count*
+
         Args:
             x (Self | float): `DOUBLE` expression
 
         Returns:
             Self
         """
-        return self.__class__(func("regr_count", self._expr, x))
+        return self._new(func("regr_count", self.inner(), x))
 
     def regr_intercept(self, x: Self | float) -> Self:
         """Returns the intercept of the univariate linear regression line for non-NULL pairs in a group.
 
+        **SQL name**: *regr_intercept*
+
         Args:
             x (Self | float): `DOUBLE` expression
 
         Returns:
             Self
         """
-        return self.__class__(func("regr_intercept", self._expr, x))
+        return self._new(func("regr_intercept", self.inner(), x))
 
     def regr_r2(self, x: Self | float) -> Self:
         """Returns the coefficient of determination for non-NULL pairs in a group.
 
+        **SQL name**: *regr_r2*
+
         Args:
             x (Self | float): `DOUBLE` expression
 
         Returns:
             Self
         """
-        return self.__class__(func("regr_r2", self._expr, x))
+        return self._new(func("regr_r2", self.inner(), x))
 
     def regr_slope(self, x: Self | float) -> Self:
         """Returns the slope of the linear regression line for non-NULL pairs in a group.
 
+        **SQL name**: *regr_slope*
+
         Args:
             x (Self | float): `DOUBLE` expression
 
         Returns:
             Self
         """
-        return self.__class__(func("regr_slope", self._expr, x))
+        return self._new(func("regr_slope", self.inner(), x))
 
     def regr_sxx(self, x: Self | float) -> Self:
         """SQL regr_sxx function.
 
+        **SQL name**: *regr_sxx*
+
         Args:
             x (Self | float): `DOUBLE` expression
 
         Returns:
             Self
         """
-        return self.__class__(func("regr_sxx", self._expr, x))
+        return self._new(func("regr_sxx", self.inner(), x))
 
     def regr_sxy(self, x: Self | float) -> Self:
         """Returns the population covariance of input values.
 
+        **SQL name**: *regr_sxy*
+
         Args:
             x (Self | float): `DOUBLE` expression
 
         Returns:
             Self
         """
-        return self.__class__(func("regr_sxy", self._expr, x))
+        return self._new(func("regr_sxy", self.inner(), x))
 
     def regr_syy(self, x: Self | float) -> Self:
         """SQL regr_syy function.
 
+        **SQL name**: *regr_syy*
+
         Args:
             x (Self | float): `DOUBLE` expression
 
         Returns:
             Self
         """
-        return self.__class__(func("regr_syy", self._expr, x))
+        return self._new(func("regr_syy", self.inner(), x))
 
     def remap_struct(self, target_type: Self, mapping: Self, defaults: Self) -> Self:
         """Map a struct to another struct type, potentially re-ordering, renaming and casting members and filling in defaults for missing values.
+
+        **SQL name**: *remap_struct*
 
         Args:
             target_type (Self): `ANY` expression
@@ -2058,12 +2442,14 @@ class Fns(ExprHandler[Expression]):
         Returns:
             Self
         """
-        return self.__class__(
-            func("remap_struct", self._expr, target_type, mapping, defaults)
+        return self._new(
+            func("remap_struct", self.inner(), target_type, mapping, defaults)
         )
 
     def repeat(self, count_2: Self | int) -> Self:
         """Repeats the `blob` `count` number of times.
+
+        **SQL name**: *repeat*
 
         Args:
             count_2 (Self | int): `BIGINT` expression
@@ -2071,10 +2457,12 @@ class Fns(ExprHandler[Expression]):
         Returns:
             Self
         """
-        return self.__class__(func("repeat", self._expr, count_2))
+        return self._new(func("repeat", self.inner(), count_2))
 
     def replace_type(self, type1: Self, type2: Self) -> Self:
         """Casts all fields of type1 to type2.
+
+        **SQL name**: *replace_type*
 
         Args:
             type1 (Self): `ANY` expression
@@ -2083,7 +2471,7 @@ class Fns(ExprHandler[Expression]):
         Returns:
             Self
         """
-        return self.__class__(func("replace_type", self._expr, type1, type2))
+        return self._new(func("replace_type", self.inner(), type1, type2))
 
     def reservoir_quantile(
         self,
@@ -2092,6 +2480,8 @@ class Fns(ExprHandler[Expression]):
     ) -> Self:
         """Gives the approximate quantile using reservoir sampling, the sample size is optional and uses 8192 as a default size.
 
+        **SQL name**: *reservoir_quantile*
+
         Args:
             quantile (Self | float | list[float]): `DOUBLE | DOUBLE[]` expression
             sample_size (Self | int | None): `INTEGER` expression
@@ -2099,12 +2489,14 @@ class Fns(ExprHandler[Expression]):
         Returns:
             Self
         """
-        return self.__class__(
-            func("reservoir_quantile", self._expr, quantile, sample_size)
+        return self._new(
+            func("reservoir_quantile", self.inner(), quantile, sample_size)
         )
 
     def round(self, precision: Self | int | None = None) -> Self:
         """Rounds x to s decimal places.
+
+        **SQL name**: *round*
 
         Args:
             precision (Self | int | None): `INTEGER` expression
@@ -2112,72 +2504,86 @@ class Fns(ExprHandler[Expression]):
         Returns:
             Self
         """
-        return self.__class__(func("round", self._expr, precision))
+        return self._new(func("round", self.inner(), precision))
 
     def round_even(self, n: Self) -> Self:
         """SQL round_even function.
 
+        **SQL name**: *round_even*
+
         Args:
             n (Self): `ANY` expression
 
         Returns:
             Self
         """
-        return self.__class__(func("round_even", self._expr, n))
+        return self._new(func("round_even", self.inner(), n))
 
     def roundbankers(self, n: Self) -> Self:
         """SQL roundbankers function.
 
+        **SQL name**: *roundbankers*
+
         Args:
             n (Self): `ANY` expression
 
         Returns:
             Self
         """
-        return self.__class__(func("roundbankers", self._expr, n))
+        return self._new(func("roundbankers", self.inner(), n))
 
     def row(self, *args: Self) -> Self:
         """Create an unnamed STRUCT (tuple) containing the argument values.
 
+        **SQL name**: *row*
+
         Args:
             *args (Self): `ANY` expression
 
         Returns:
             Self
         """
-        return self.__class__(func("row", self._expr, *args))
+        return self._new(func("row", self.inner(), *args))
 
     def row_to_json(self, *args: Self) -> Self:
         """SQL row_to_json function.
 
+        **SQL name**: *row_to_json*
+
         Args:
             *args (Self): `ANY` expression
 
         Returns:
             Self
         """
-        return self.__class__(func("row_to_json", self._expr, *args))
+        return self._new(func("row_to_json", self.inner(), *args))
 
     def second(self) -> Self:
         """Extract the second component from a date or timestamp.
 
+        **SQL name**: *second*
+
         Returns:
             Self
         """
-        return self.__class__(func("second", self._expr))
+        return self._new(func("second", self.inner()))
 
     def sem(self) -> Self:
         """Returns the standard error of the mean.
 
+        **SQL name**: *sem*
+
         Returns:
             Self
         """
-        return self.__class__(func("sem", self._expr))
+        return self._new(func("sem", self.inner()))
 
     def set_bit(self, index: Self | int, new_value: Self | int) -> Self:
         """Sets the nth bit in bitstring to newvalue; the first (leftmost) bit is indexed 0.
 
         Returns a new bitstring.
+
+        **SQL name**: *set_bit*
 
         Args:
             index (Self | int): `INTEGER` expression
@@ -2186,34 +2592,42 @@ class Fns(ExprHandler[Expression]):
         Returns:
             Self
         """
-        return self.__class__(func("set_bit", self._expr, index, new_value))
+        return self._new(func("set_bit", self.inner(), index, new_value))
 
     def setseed(self) -> Self:
         """Sets the seed to be used for the random function.
 
+        **SQL name**: *setseed*
+
         Returns:
             Self
         """
-        return self.__class__(func("setseed", self._expr))
+        return self._new(func("setseed", self.inner()))
 
     def sha1(self) -> Self:
         """Returns a `VARCHAR` with the SHA-1 hash of the `blob`.
 
+        **SQL name**: *sha1*
+
         Returns:
             Self
         """
-        return self.__class__(func("sha1", self._expr))
+        return self._new(func("sha1", self.inner()))
 
     def sha256(self) -> Self:
         """Returns a `VARCHAR` with the SHA-256 hash of the `blob`.
 
+        **SQL name**: *sha256*
+
         Returns:
             Self
         """
-        return self.__class__(func("sha256", self._expr))
+        return self._new(func("sha256", self.inner()))
 
     def shobj_description(self, catalog_name: Self) -> Self:
         """SQL shobj_description function.
+
+        **SQL name**: *shobj_description*
 
         Args:
             catalog_name (Self): `ANY` expression
@@ -2221,50 +2635,62 @@ class Fns(ExprHandler[Expression]):
         Returns:
             Self
         """
-        return self.__class__(func("shobj_description", self._expr, catalog_name))
+        return self._new(func("shobj_description", self.inner(), catalog_name))
 
     def sign(self) -> Self:
         """Returns the sign of x as -1, 0 or 1.
 
+        **SQL name**: *sign*
+
         Returns:
             Self
         """
-        return self.__class__(func("sign", self._expr))
+        return self._new(func("sign", self.inner()))
 
     def signbit(self) -> Self:
         """Returns whether the signbit is set or not.
 
+        **SQL name**: *signbit*
+
         Returns:
             Self
         """
-        return self.__class__(func("signbit", self._expr))
+        return self._new(func("signbit", self.inner()))
 
     def sin(self) -> Self:
         """Computes the sin of x.
 
+        **SQL name**: *sin*
+
         Returns:
             Self
         """
-        return self.__class__(func("sin", self._expr))
+        return self._new(func("sin", self.inner()))
 
     def sinh(self) -> Self:
         """Computes the hyperbolic sin of x.
 
+        **SQL name**: *sinh*
+
         Returns:
             Self
         """
-        return self.__class__(func("sinh", self._expr))
+        return self._new(func("sinh", self.inner()))
 
     def skewness(self) -> Self:
         """Returns the skewness of all input values.
 
+        **SQL name**: *skewness*
+
         Returns:
             Self
         """
-        return self.__class__(func("skewness", self._expr))
+        return self._new(func("skewness", self.inner()))
 
     def split_part(self, delimiter: Self, position: Self) -> Self:
         """SQL split_part function.
+
+        **SQL name**: *split_part*
 
         Args:
             delimiter (Self): `ANY` expression
@@ -2273,28 +2699,34 @@ class Fns(ExprHandler[Expression]):
         Returns:
             Self
         """
-        return self.__class__(func("split_part", self._expr, delimiter, position))
+        return self._new(func("split_part", self.inner(), delimiter, position))
 
     def sqrt(self) -> Self:
         """Returns the square root of x.
 
+        **SQL name**: *sqrt*
+
         Returns:
             Self
         """
-        return self.__class__(func("sqrt", self._expr))
+        return self._new(func("sqrt", self.inner()))
 
     def stats(self) -> Self:
         """Returns a string with statistics about the expression.
 
         Expression can be a column, constant, or SQL expression.
 
+        **SQL name**: *stats*
+
         Returns:
             Self
         """
-        return self.__class__(func("stats", self._expr))
+        return self._new(func("stats", self.inner()))
 
     def stddev(self) -> Self:
         """Returns the sample standard deviation.
+
+        **SQL name**: *stddev*
 
         See Also:
             stddev_samp
@@ -2302,18 +2734,22 @@ class Fns(ExprHandler[Expression]):
         Returns:
             Self
         """
-        return self.__class__(func("stddev", self._expr))
+        return self._new(func("stddev", self.inner()))
 
     def stddev_pop(self) -> Self:
         """Returns the population standard deviation.
 
+        **SQL name**: *stddev_pop*
+
         Returns:
             Self
         """
-        return self.__class__(func("stddev_pop", self._expr))
+        return self._new(func("stddev_pop", self.inner()))
 
     def stddev_samp(self) -> Self:
         """Returns the sample standard deviation.
+
+        **SQL name**: *stddev_samp*
 
         See Also:
             stddev
@@ -2321,12 +2757,14 @@ class Fns(ExprHandler[Expression]):
         Returns:
             Self
         """
-        return self.__class__(func("stddev_samp", self._expr))
+        return self._new(func("stddev_samp", self.inner()))
 
     def subtract(
         self, col1: Self | Decimal | date | datetime | float | timedelta | None = None
     ) -> Self:
         """SQL subtract function.
+
+        **SQL name**: *subtract*
 
         Args:
             col1 (Self | Decimal | date | datetime | float | int | timedelta | None): `BIGINT | BIGNUM | DATE | DECIMAL | DOUBLE | FLOAT | HUGEINT | INTEGER | INTERVAL | SMALLINT | TIMESTAMP | TINYINT | UBIGINT | UHUGEINT | UINTEGER | USMALLINT | UTINYINT` expression
@@ -2334,28 +2772,34 @@ class Fns(ExprHandler[Expression]):
         Returns:
             Self
         """
-        return self.__class__(func("subtract", self._expr, col1))
+        return self._new(func("subtract", self.inner(), col1))
 
     def sum(self) -> Self:
         """Calculates the sum value for all tuples in arg.
 
+        **SQL name**: *sum*
+
         Returns:
             Self
         """
-        return self.__class__(func("sum", self._expr))
+        return self._new(func("sum", self.inner()))
 
     def sum_no_overflow(self) -> Self:
         """Internal only.
 
         Calculates the sum value for all tuples in arg without overflow checks.
 
+        **SQL name**: *sum_no_overflow*
+
         Returns:
             Self
         """
-        return self.__class__(func("sum_no_overflow", self._expr))
+        return self._new(func("sum_no_overflow", self.inner()))
 
     def sumkahan(self) -> Self:
         """Calculates the sum using a more accurate floating point summation (Kahan Sum).
+
+        **SQL name**: *sumkahan*
 
         See Also:
             fsum, kahan_sum
@@ -2363,23 +2807,27 @@ class Fns(ExprHandler[Expression]):
         Returns:
             Self
         """
-        return self.__class__(func("sumkahan", self._expr))
+        return self._new(func("sumkahan", self.inner()))
 
     def tan(self) -> Self:
         """Computes the tan of x.
 
+        **SQL name**: *tan*
+
         Returns:
             Self
         """
-        return self.__class__(func("tan", self._expr))
+        return self._new(func("tan", self.inner()))
 
     def tanh(self) -> Self:
         """Computes the hyperbolic tan of x.
 
+        **SQL name**: *tanh*
+
         Returns:
             Self
         """
-        return self.__class__(func("tanh", self._expr))
+        return self._new(func("tanh", self.inner()))
 
     def time_bucket(
         self,
@@ -2392,6 +2840,8 @@ class Fns(ExprHandler[Expression]):
 
         The origin defaults to 2000-01-03 00:00:00+00 for buckets that do not include a month or year interval, and to 2000-01-01 00:00:00+00 for month and year buckets.
 
+        **SQL name**: *time_bucket*
+
         Args:
             timestamp (Self | date | datetime): `DATE | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
             origin (Self | date | datetime | str | timedelta | None): `DATE | INTERVAL | TIMESTAMP | TIMESTAMP WITH TIME ZONE | VARCHAR` expression
@@ -2399,18 +2849,22 @@ class Fns(ExprHandler[Expression]):
         Returns:
             Self
         """
-        return self.__class__(func("time_bucket", self._expr, timestamp, origin))
+        return self._new(func("time_bucket", self.inner(), timestamp, origin))
 
     def timetz_byte_comparable(self) -> Self:
         """Converts a TIME WITH TIME ZONE to an integer sort key.
 
+        **SQL name**: *timetz_byte_comparable*
+
         Returns:
             Self
         """
-        return self.__class__(func("timetz_byte_comparable", self._expr))
+        return self._new(func("timetz_byte_comparable", self.inner()))
 
     def timezone(self, col1: Self | datetime | None = None) -> Self:
         """Extract the timezone component from a date or timestamp.
+
+        **SQL name**: *timezone*
 
         Args:
             col1 (Self | datetime | None): `TIME WITH TIME ZONE | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
@@ -2418,26 +2872,32 @@ class Fns(ExprHandler[Expression]):
         Returns:
             Self
         """
-        return self.__class__(func("timezone", self._expr, col1))
+        return self._new(func("timezone", self.inner(), col1))
 
     def timezone_hour(self) -> Self:
         """Extract the timezone_hour component from a date or timestamp.
 
+        **SQL name**: *timezone_hour*
+
         Returns:
             Self
         """
-        return self.__class__(func("timezone_hour", self._expr))
+        return self._new(func("timezone_hour", self.inner()))
 
     def timezone_minute(self) -> Self:
         """Extract the timezone_minute component from a date or timestamp.
 
+        **SQL name**: *timezone_minute*
+
         Returns:
             Self
         """
-        return self.__class__(func("timezone_minute", self._expr))
+        return self._new(func("timezone_minute", self.inner()))
 
     def to_binary(self) -> Self:
         """Converts the `value` to binary representation.
+
+        **SQL name**: *to_binary*
 
         See Also:
             bin
@@ -2445,34 +2905,42 @@ class Fns(ExprHandler[Expression]):
         Returns:
             Self
         """
-        return self.__class__(func("to_binary", self._expr))
+        return self._new(func("to_binary", self.inner()))
 
     def to_centuries(self) -> Self:
         """Construct a century interval.
 
+        **SQL name**: *to_centuries*
+
         Returns:
             Self
         """
-        return self.__class__(func("to_centuries", self._expr))
+        return self._new(func("to_centuries", self.inner()))
 
     def to_days(self) -> Self:
         """Construct a day interval.
 
+        **SQL name**: *to_days*
+
         Returns:
             Self
         """
-        return self.__class__(func("to_days", self._expr))
+        return self._new(func("to_days", self.inner()))
 
     def to_decades(self) -> Self:
         """Construct a decade interval.
 
+        **SQL name**: *to_decades*
+
         Returns:
             Self
         """
-        return self.__class__(func("to_decades", self._expr))
+        return self._new(func("to_decades", self.inner()))
 
     def to_hex(self) -> Self:
         """Converts the `value` to `VARCHAR` using hexadecimal representation.
+
+        **SQL name**: *to_hex*
 
         See Also:
             hex
@@ -2480,18 +2948,22 @@ class Fns(ExprHandler[Expression]):
         Returns:
             Self
         """
-        return self.__class__(func("to_hex", self._expr))
+        return self._new(func("to_hex", self.inner()))
 
     def to_hours(self) -> Self:
         """Construct a hour interval.
 
+        **SQL name**: *to_hours*
+
         Returns:
             Self
         """
-        return self.__class__(func("to_hours", self._expr))
+        return self._new(func("to_hours", self.inner()))
 
     def to_json(self, *args: Self) -> Self:
         """SQL to_json function.
+
+        **SQL name**: *to_json*
 
         Args:
             *args (Self): `ANY` expression
@@ -2499,90 +2971,112 @@ class Fns(ExprHandler[Expression]):
         Returns:
             Self
         """
-        return self.__class__(func("to_json", self._expr, *args))
+        return self._new(func("to_json", self.inner(), *args))
 
     def to_microseconds(self) -> Self:
         """Construct a microsecond interval.
 
+        **SQL name**: *to_microseconds*
+
         Returns:
             Self
         """
-        return self.__class__(func("to_microseconds", self._expr))
+        return self._new(func("to_microseconds", self.inner()))
 
     def to_millennia(self) -> Self:
         """Construct a millenium interval.
 
+        **SQL name**: *to_millennia*
+
         Returns:
             Self
         """
-        return self.__class__(func("to_millennia", self._expr))
+        return self._new(func("to_millennia", self.inner()))
 
     def to_milliseconds(self) -> Self:
         """Construct a millisecond interval.
 
+        **SQL name**: *to_milliseconds*
+
         Returns:
             Self
         """
-        return self.__class__(func("to_milliseconds", self._expr))
+        return self._new(func("to_milliseconds", self.inner()))
 
     def to_minutes(self) -> Self:
         """Construct a minute interval.
 
+        **SQL name**: *to_minutes*
+
         Returns:
             Self
         """
-        return self.__class__(func("to_minutes", self._expr))
+        return self._new(func("to_minutes", self.inner()))
 
     def to_months(self) -> Self:
         """Construct a month interval.
 
+        **SQL name**: *to_months*
+
         Returns:
             Self
         """
-        return self.__class__(func("to_months", self._expr))
+        return self._new(func("to_months", self.inner()))
 
     def to_quarters(self) -> Self:
         """Construct a quarter interval.
 
+        **SQL name**: *to_quarters*
+
         Returns:
             Self
         """
-        return self.__class__(func("to_quarters", self._expr))
+        return self._new(func("to_quarters", self.inner()))
 
     def to_seconds(self) -> Self:
         """Construct a second interval.
 
+        **SQL name**: *to_seconds*
+
         Returns:
             Self
         """
-        return self.__class__(func("to_seconds", self._expr))
+        return self._new(func("to_seconds", self.inner()))
 
     def to_timestamp(self) -> Self:
         """Converts secs since epoch to a timestamp with time zone.
 
+        **SQL name**: *to_timestamp*
+
         Returns:
             Self
         """
-        return self.__class__(func("to_timestamp", self._expr))
+        return self._new(func("to_timestamp", self.inner()))
 
     def to_weeks(self) -> Self:
         """Construct a week interval.
 
+        **SQL name**: *to_weeks*
+
         Returns:
             Self
         """
-        return self.__class__(func("to_weeks", self._expr))
+        return self._new(func("to_weeks", self.inner()))
 
     def to_years(self) -> Self:
         """Construct a year interval.
 
+        **SQL name**: *to_years*
+
         Returns:
             Self
         """
-        return self.__class__(func("to_years", self._expr))
+        return self._new(func("to_years", self.inner()))
 
     def trunc(self, col1: Self | int | None = None) -> Self:
         """Truncates the number.
+
+        **SQL name**: *trunc*
 
         Args:
             col1 (Self | int | None): `INTEGER` expression
@@ -2590,12 +3084,14 @@ class Fns(ExprHandler[Expression]):
         Returns:
             Self
         """
-        return self.__class__(func("trunc", self._expr, col1))
+        return self._new(func("trunc", self.inner(), col1))
 
     def try_strptime(self, format_arg: Self | list[str] | str) -> Self:
         """Converts the `string` text to timestamp according to the format string.
 
         Returns `NULL` on failure.
+
+        **SQL name**: *try_strptime*
 
         Args:
             format_arg (Self | list[str] | str): `VARCHAR | VARCHAR[]` expression
@@ -2603,20 +3099,24 @@ class Fns(ExprHandler[Expression]):
         Returns:
             Self
         """
-        return self.__class__(func("try_strptime", self._expr, format_arg))
+        return self._new(func("try_strptime", self.inner(), format_arg))
 
     def typeof(self) -> Self:
         """Returns the name of the data type of the result of the expression.
 
+        **SQL name**: *typeof*
+
         Returns:
             Self
         """
-        return self.__class__(func("typeof", self._expr))
+        return self._new(func("typeof", self.inner()))
 
     def union_extract(self, tag: Self | str) -> Self:
         """Extract the value with the named tags from the union.
 
         NULL if the tag is not currently selected.
+
+        **SQL name**: *union_extract*
 
         Args:
             tag (Self | str): `VARCHAR` expression
@@ -2624,20 +3124,24 @@ class Fns(ExprHandler[Expression]):
         Returns:
             Self
         """
-        return self.__class__(func("union_extract", self._expr, tag))
+        return self._new(func("union_extract", self.inner(), tag))
 
     def union_tag(self) -> Self:
         """Retrieve the currently selected tag of the union as an ENUM.
 
+        **SQL name**: *union_tag*
+
         Returns:
             Self
         """
-        return self.__class__(func("union_tag", self._expr))
+        return self._new(func("union_tag", self.inner()))
 
     def union_value(self, *args: Self) -> Self:
         """Create a single member UNION containing the argument value.
 
         The tag of the value will be the bound variable name.
+
+        **SQL name**: *union_value*
 
         Args:
             *args (Self): `ANY` expression
@@ -2645,34 +3149,42 @@ class Fns(ExprHandler[Expression]):
         Returns:
             Self
         """
-        return self.__class__(func("union_value", self._expr, *args))
+        return self._new(func("union_value", self.inner(), *args))
 
     def uuid_extract_timestamp(self) -> Self:
         """Extract the timestamp for the given UUID v7.
 
+        **SQL name**: *uuid_extract_timestamp*
+
         Returns:
             Self
         """
-        return self.__class__(func("uuid_extract_timestamp", self._expr))
+        return self._new(func("uuid_extract_timestamp", self.inner()))
 
     def uuid_extract_version(self) -> Self:
         """Extract a version for the given UUID.
 
+        **SQL name**: *uuid_extract_version*
+
         Returns:
             Self
         """
-        return self.__class__(func("uuid_extract_version", self._expr))
+        return self._new(func("uuid_extract_version", self.inner()))
 
     def var_pop(self) -> Self:
         """Returns the population variance.
 
+        **SQL name**: *var_pop*
+
         Returns:
             Self
         """
-        return self.__class__(func("var_pop", self._expr))
+        return self._new(func("var_pop", self.inner()))
 
     def var_samp(self) -> Self:
         """Returns the sample variance of all input values.
+
+        **SQL name**: *var_samp*
 
         See Also:
             variance
@@ -2680,10 +3192,12 @@ class Fns(ExprHandler[Expression]):
         Returns:
             Self
         """
-        return self.__class__(func("var_samp", self._expr))
+        return self._new(func("var_samp", self.inner()))
 
     def variance(self) -> Self:
         """Returns the sample variance of all input values.
+
+        **SQL name**: *variance*
 
         See Also:
             var_samp
@@ -2691,10 +3205,12 @@ class Fns(ExprHandler[Expression]):
         Returns:
             Self
         """
-        return self.__class__(func("variance", self._expr))
+        return self._new(func("variance", self.inner()))
 
     def variant_extract(self, col1: Self | int | str) -> Self:
         """SQL variant_extract function.
+
+        **SQL name**: *variant_extract*
 
         Args:
             col1 (Self | int | str): `UINTEGER | VARCHAR` expression
@@ -2702,61 +3218,75 @@ class Fns(ExprHandler[Expression]):
         Returns:
             Self
         """
-        return self.__class__(func("variant_extract", self._expr, col1))
+        return self._new(func("variant_extract", self.inner(), col1))
 
     def variant_typeof(self) -> Self:
         """Returns the internal type of the `input_variant`.
 
+        **SQL name**: *variant_typeof*
+
         Returns:
             Self
         """
-        return self.__class__(func("variant_typeof", self._expr))
+        return self._new(func("variant_typeof", self.inner()))
 
     def vector_type(self) -> Self:
         """Returns the VectorType of a given column.
 
+        **SQL name**: *vector_type*
+
         Returns:
             Self
         """
-        return self.__class__(func("vector_type", self._expr))
+        return self._new(func("vector_type", self.inner()))
 
     def wavg(self, weight: Self) -> Self:
         """SQL wavg function.
 
+        **SQL name**: *wavg*
+
         Args:
             weight (Self): `ANY` expression
 
         Returns:
             Self
         """
-        return self.__class__(func("wavg", self._expr, weight))
+        return self._new(func("wavg", self.inner(), weight))
 
     def week(self) -> Self:
         """Extract the week component from a date or timestamp.
 
+        **SQL name**: *week*
+
         Returns:
             Self
         """
-        return self.__class__(func("week", self._expr))
+        return self._new(func("week", self.inner()))
 
     def weekday(self) -> Self:
         """Extract the weekday component from a date or timestamp.
 
+        **SQL name**: *weekday*
+
         Returns:
             Self
         """
-        return self.__class__(func("weekday", self._expr))
+        return self._new(func("weekday", self.inner()))
 
     def weekofyear(self) -> Self:
         """Extract the weekofyear component from a date or timestamp.
 
+        **SQL name**: *weekofyear*
+
         Returns:
             Self
         """
-        return self.__class__(func("weekofyear", self._expr))
+        return self._new(func("weekofyear", self.inner()))
 
     def weighted_avg(self, weight: Self) -> Self:
         """SQL weighted_avg function.
+
+        **SQL name**: *weighted_avg*
 
         Args:
             weight (Self): `ANY` expression
@@ -2764,10 +3294,12 @@ class Fns(ExprHandler[Expression]):
         Returns:
             Self
         """
-        return self.__class__(func("weighted_avg", self._expr, weight))
+        return self._new(func("weighted_avg", self.inner(), weight))
 
     def write_log(self, *args: Self) -> Self:
         """Writes to the logger.
+
+        **SQL name**: *write_log*
 
         Args:
             *args (Self): `ANY` expression
@@ -2775,10 +3307,12 @@ class Fns(ExprHandler[Expression]):
         Returns:
             Self
         """
-        return self.__class__(func("write_log", self._expr, *args))
+        return self._new(func("write_log", self.inner(), *args))
 
     def xor(self, right: Self | bytes | bytearray | memoryview | int) -> Self:
         """Bitwise XOR.
+
+        **SQL name**: *xor*
 
         Args:
             right (Self | bytes | bytearray | memoryview | int): `BIGINT | BIT | HUGEINT | INTEGER | SMALLINT | TINYINT | UBIGINT | UHUGEINT | UINTEGER | USMALLINT | UTINYINT` expression
@@ -2786,23 +3320,27 @@ class Fns(ExprHandler[Expression]):
         Returns:
             Self
         """
-        return self.__class__(func("xor", self._expr, right))
+        return self._new(func("xor", self.inner(), right))
 
     def year(self) -> Self:
         """Extract the year component from a date or timestamp.
 
+        **SQL name**: *year*
+
         Returns:
             Self
         """
-        return self.__class__(func("year", self._expr))
+        return self._new(func("year", self.inner()))
 
     def yearweek(self) -> Self:
         """Extract the yearweek component from a date or timestamp.
 
+        **SQL name**: *yearweek*
+
         Returns:
             Self
         """
-        return self.__class__(func("yearweek", self._expr))
+        return self._new(func("yearweek", self.inner()))
 
 
 class ListFns[T: Fns](NameSpaceHandler[T]):
@@ -2810,6 +3348,8 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
 
     def aggr(self, function_name: T | str, *args: T) -> T:
         """Executes the aggregate function `function_name` on the elements of `list`.
+
+        **SQL name**: *list_aggr*
 
         See Also:
             aggregate, array_aggr, array_aggregate, list_aggregate
@@ -2821,12 +3361,12 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(
-            func("list_aggr", self._parent.inner(), function_name, *args)
-        )
+        return self._new(func("list_aggr", self.inner(), function_name, *args))
 
     def aggregate(self, function_name: T | str, *args: T) -> T:
         """Executes the aggregate function `function_name` on the elements of `list`.
+
+        **SQL name**: *aggregate*
 
         See Also:
             array_aggr, array_aggregate, list_aggr, list_aggregate
@@ -2838,20 +3378,22 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(
-            func("aggregate", self._parent.inner(), function_name, *args)
-        )
+        return self._new(func("aggregate", self.inner(), function_name, *args))
 
     def any_value(self) -> T:
         """SQL list_any_value function.
 
+        **SQL name**: *list_any_value*
+
         Returns:
             T
         """
-        return self._parent.__class__(func("list_any_value", self._parent.inner()))
+        return self._new(func("list_any_value", self.inner()))
 
     def append(self, e: T) -> T:
         """SQL list_append function.
+
+        **SQL name**: *list_append*
 
         Args:
             e (T): `ANY` expression
@@ -2859,12 +3401,14 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(func("list_append", self._parent.inner(), e))
+        return self._new(func("list_append", self.inner(), e))
 
     def apply(self, lambda_arg: T) -> T:
         """Returns a list that is the result of applying the `lambda` function to each element of the input `list`.
 
         The return type is defined by the return type of the `lambda` function.
+
+        **SQL name**: *apply*
 
         See Also:
             array_apply, array_transform, list_apply, list_transform
@@ -2875,20 +3419,22 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(func("apply", self._parent.inner(), lambda_arg))
+        return self._new(func("apply", self.inner(), lambda_arg))
 
     def approx_count_distinct(self) -> T:
         """SQL list_approx_count_distinct function.
 
+        **SQL name**: *list_approx_count_distinct*
+
         Returns:
             T
         """
-        return self._parent.__class__(
-            func("list_approx_count_distinct", self._parent.inner())
-        )
+        return self._new(func("list_approx_count_distinct", self.inner()))
 
     def array_aggr(self, function_name: T | str, *args: T) -> T:
         """Executes the aggregate function `function_name` on the elements of `list`.
+
+        **SQL name**: *array_aggr*
 
         See Also:
             aggregate, array_aggregate, list_aggr, list_aggregate
@@ -2900,12 +3446,12 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(
-            func("array_aggr", self._parent.inner(), function_name, *args)
-        )
+        return self._new(func("array_aggr", self.inner(), function_name, *args))
 
     def array_aggregate(self, function_name: T | str, *args: T) -> T:
         """Executes the aggregate function `function_name` on the elements of `list`.
+
+        **SQL name**: *array_aggregate*
 
         See Also:
             aggregate, array_aggr, list_aggr, list_aggregate
@@ -2917,14 +3463,14 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(
-            func("array_aggregate", self._parent.inner(), function_name, *args)
-        )
+        return self._new(func("array_aggregate", self.inner(), function_name, *args))
 
     def array_apply(self, lambda_arg: T) -> T:
         """Returns a list that is the result of applying the `lambda` function to each element of the input `list`.
 
         The return type is defined by the return type of the `lambda` function.
+
+        **SQL name**: *array_apply*
 
         See Also:
             apply, array_transform, list_apply, list_transform
@@ -2935,9 +3481,7 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(
-            func("array_apply", self._parent.inner(), lambda_arg)
-        )
+        return self._new(func("array_apply", self.inner(), lambda_arg))
 
     def array_cat(self, *args: T) -> T:
         """Concatenates lists.
@@ -2945,6 +3489,8 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         `NULL` inputs are skipped.
 
         See also operator `||`.
+
+        **SQL name**: *array_cat*
 
         See Also:
             array_concat, list_cat, list_concat
@@ -2955,7 +3501,7 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(func("array_cat", self._parent.inner(), *args))
+        return self._new(func("array_cat", self.inner(), *args))
 
     def array_concat(self, *args: T) -> T:
         """Concatenates lists.
@@ -2963,6 +3509,8 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         `NULL` inputs are skipped.
 
         See also operator `||`.
+
+        **SQL name**: *array_concat*
 
         See Also:
             array_cat, list_cat, list_concat
@@ -2973,10 +3521,12 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(func("array_concat", self._parent.inner(), *args))
+        return self._new(func("array_concat", self.inner(), *args))
 
     def array_contains(self, element: T) -> T:
         """Returns true if the list contains the element.
+
+        **SQL name**: *array_contains*
 
         See Also:
             array_has, list_contains, list_has
@@ -2987,14 +3537,14 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(
-            func("array_contains", self._parent.inner(), element)
-        )
+        return self._new(func("array_contains", self.inner(), element))
 
     def array_distinct(self) -> T:
         """Removes all duplicates and `NULL` values from a list.
 
         Does not preserve the original order.
+
+        **SQL name**: *array_distinct*
 
         See Also:
             list_distinct
@@ -3002,7 +3552,7 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(func("array_distinct", self._parent.inner()))
+        return self._new(func("array_distinct", self.inner()))
 
     def array_filter(self, lambda_arg: T) -> T:
         """Constructs a list from those elements of the input `list` for which the `lambda` function returns `true`.
@@ -3010,6 +3560,8 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         DuckDB must be able to cast the `lambda` function's return type to `BOOL`.
 
         The return type of `list_filter` is the same as the input list's.
+
+        **SQL name**: *array_filter*
 
         See Also:
             filter, list_filter
@@ -3020,14 +3572,14 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(
-            func("array_filter", self._parent.inner(), lambda_arg)
-        )
+        return self._new(func("array_filter", self.inner(), lambda_arg))
 
     def array_grade_up(
         self, col1: T | str | None = None, col2: T | str | None = None
     ) -> T:
         """Works like list_sort, but the results are the indexes that correspond to the position in the original list instead of the actual values.
+
+        **SQL name**: *array_grade_up*
 
         See Also:
             grade_up, list_grade_up
@@ -3039,12 +3591,12 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(
-            func("array_grade_up", self._parent.inner(), col1, col2)
-        )
+        return self._new(func("array_grade_up", self.inner(), col1, col2))
 
     def array_has(self, element: T) -> T:
         """Returns true if the list contains the element.
+
+        **SQL name**: *array_has*
 
         See Also:
             array_contains, list_contains, list_has
@@ -3055,12 +3607,14 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(func("array_has", self._parent.inner(), element))
+        return self._new(func("array_has", self.inner(), element))
 
     def array_has_all(self, list2: T) -> T:
         """Returns true if all elements of list2 are in list1.
 
         NULLs are ignored.
+
+        **SQL name**: *array_has_all*
 
         See Also:
             list_has_all
@@ -3071,14 +3625,14 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(
-            func("array_has_all", self._parent.inner(), list2)
-        )
+        return self._new(func("array_has_all", self.inner(), list2))
 
     def array_has_any(self, list2: T) -> T:
         """Returns true if the lists have any element in common.
 
         NULLs are ignored.
+
+        **SQL name**: *array_has_any*
 
         See Also:
             list_has_any
@@ -3089,14 +3643,14 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(
-            func("array_has_any", self._parent.inner(), list2)
-        )
+        return self._new(func("array_has_any", self.inner(), list2))
 
     def array_indexof(self, element: T) -> T:
         """Returns the index of the `element` if the `list` contains the `element`.
 
         If the `element` is not found, it returns `NULL`.
+
+        **SQL name**: *array_indexof*
 
         See Also:
             array_position, list_indexof, list_position
@@ -3107,20 +3661,22 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(
-            func("array_indexof", self._parent.inner(), element)
-        )
+        return self._new(func("array_indexof", self.inner(), element))
 
     def array_length(self) -> T:
         """Returns the length of the `list`.
 
+        **SQL name**: *array_length*
+
         Returns:
             T
         """
-        return self._parent.__class__(func("array_length", self._parent.inner()))
+        return self._new(func("array_length", self.inner()))
 
     def array_length_dimension(self, dimension: T | int | None = None) -> T:
         """`array_length` for lists with dimensions other than 1 not implemented.
+
+        **SQL name**: *array_length*
 
         Args:
             dimension (T | int | None): `BIGINT` expression
@@ -3128,14 +3684,14 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(
-            func("array_length", self._parent.inner(), dimension)
-        )
+        return self._new(func("array_length", self.inner(), dimension))
 
     def array_position(self, element: T) -> T:
         """Returns the index of the `element` if the `list` contains the `element`.
 
         If the `element` is not found, it returns `NULL`.
+
+        **SQL name**: *array_position*
 
         See Also:
             array_indexof, list_indexof, list_position
@@ -3146,14 +3702,14 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(
-            func("array_position", self._parent.inner(), element)
-        )
+        return self._new(func("array_position", self.inner(), element))
 
     def array_reduce(self, lambda_arg: T, initial_value: T | None = None) -> T:
         """Reduces all elements of the input `list` into a single scalar value by executing the `lambda` function on a running result and the next list element.
 
         The `lambda` function has an optional `initial_value` argument.
+
+        **SQL name**: *array_reduce*
 
         See Also:
             list_reduce, reduce
@@ -3165,14 +3721,14 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(
-            func("array_reduce", self._parent.inner(), lambda_arg, initial_value)
-        )
+        return self._new(func("array_reduce", self.inner(), lambda_arg, initial_value))
 
     def array_resize(self, size: T, value: T | None = None) -> T:
         """Resizes the `list` to contain `size` elements.
 
         Initializes new elements with `value` or `NULL` if `value` is not set.
+
+        **SQL name**: *array_resize*
 
         See Also:
             list_resize
@@ -3184,12 +3740,12 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(
-            func("array_resize", self._parent.inner(), size, value)
-        )
+        return self._new(func("array_resize", self.inner(), size, value))
 
     def array_reverse_sort(self, col1: T | str | None = None) -> T:
         """Sorts the elements of the list in reverse order.
+
+        **SQL name**: *array_reverse_sort*
 
         See Also:
             list_reverse_sort
@@ -3200,12 +3756,12 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(
-            func("array_reverse_sort", self._parent.inner(), col1)
-        )
+        return self._new(func("array_reverse_sort", self.inner(), col1))
 
     def array_select(self, index_list: T | list[int]) -> T:
         """Returns a list based on the elements selected by the `index_list`.
+
+        **SQL name**: *array_select*
 
         See Also:
             list_select
@@ -3216,14 +3772,14 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(
-            func("array_select", self._parent.inner(), index_list)
-        )
+        return self._new(func("array_select", self.inner(), index_list))
 
     def array_slice(self, begin: T, end: T, step: T | int | None = None) -> T:
         """Extracts a sublist or substring using slice conventions.
 
         Negative values are accepted.
+
+        **SQL name**: *array_slice*
 
         See Also:
             list_slice
@@ -3236,12 +3792,12 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(
-            func("array_slice", self._parent.inner(), begin, end, step)
-        )
+        return self._new(func("array_slice", self.inner(), begin, end, step))
 
     def array_sort(self, col1: T | str | None = None, col2: T | str | None = None) -> T:
         """Sorts the elements of the list.
+
+        **SQL name**: *array_sort*
 
         See Also:
             list_sort
@@ -3253,14 +3809,14 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(
-            func("array_sort", self._parent.inner(), col1, col2)
-        )
+        return self._new(func("array_sort", self.inner(), col1, col2))
 
     def array_transform(self, lambda_arg: T) -> T:
         """Returns a list that is the result of applying the `lambda` function to each element of the input `list`.
 
         The return type is defined by the return type of the `lambda` function.
+
+        **SQL name**: *array_transform*
 
         See Also:
             apply, array_apply, list_apply, list_transform
@@ -3271,12 +3827,12 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(
-            func("array_transform", self._parent.inner(), lambda_arg)
-        )
+        return self._new(func("array_transform", self.inner(), lambda_arg))
 
     def array_unique(self) -> T:
         """Counts the unique elements of a `list`.
+
+        **SQL name**: *array_unique*
 
         See Also:
             list_unique
@@ -3284,10 +3840,12 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(func("array_unique", self._parent.inner()))
+        return self._new(func("array_unique", self.inner()))
 
     def array_where(self, mask_list: T | list[bool]) -> T:
         """Returns a list with the `BOOLEAN`s in `mask_list` applied as a mask to the `value_list`.
+
+        **SQL name**: *array_where*
 
         See Also:
             list_where
@@ -3298,9 +3856,7 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(
-            func("array_where", self._parent.inner(), mask_list)
-        )
+        return self._new(func("array_where", self.inner(), mask_list))
 
     def array_zip(self, *args: T) -> T:
         """Zips n `LIST`s to a new `LIST` whose length will be that of the longest list.
@@ -3308,6 +3864,8 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         Its elements are structs of n elements from each list `list_1`, …, `list_n`, missing elements are replaced with `NULL`.
 
         If `truncate` is set, all lists are truncated to the smallest list length.
+
+        **SQL name**: *array_zip*
 
         See Also:
             list_zip
@@ -3318,55 +3876,67 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(func("array_zip", self._parent.inner(), *args))
+        return self._new(func("array_zip", self.inner(), *args))
 
     def avg(self) -> T:
         """SQL list_avg function.
 
+        **SQL name**: *list_avg*
+
         Returns:
             T
         """
-        return self._parent.__class__(func("list_avg", self._parent.inner()))
+        return self._new(func("list_avg", self.inner()))
 
     def bit_and(self) -> T:
         """SQL list_bit_and function.
 
+        **SQL name**: *list_bit_and*
+
         Returns:
             T
         """
-        return self._parent.__class__(func("list_bit_and", self._parent.inner()))
+        return self._new(func("list_bit_and", self.inner()))
 
     def bit_or(self) -> T:
         """SQL list_bit_or function.
 
+        **SQL name**: *list_bit_or*
+
         Returns:
             T
         """
-        return self._parent.__class__(func("list_bit_or", self._parent.inner()))
+        return self._new(func("list_bit_or", self.inner()))
 
     def bit_xor(self) -> T:
         """SQL list_bit_xor function.
 
+        **SQL name**: *list_bit_xor*
+
         Returns:
             T
         """
-        return self._parent.__class__(func("list_bit_xor", self._parent.inner()))
+        return self._new(func("list_bit_xor", self.inner()))
 
     def bool_and(self) -> T:
         """SQL list_bool_and function.
 
+        **SQL name**: *list_bool_and*
+
         Returns:
             T
         """
-        return self._parent.__class__(func("list_bool_and", self._parent.inner()))
+        return self._new(func("list_bool_and", self.inner()))
 
     def bool_or(self) -> T:
         """SQL list_bool_or function.
 
+        **SQL name**: *list_bool_or*
+
         Returns:
             T
         """
-        return self._parent.__class__(func("list_bool_or", self._parent.inner()))
+        return self._new(func("list_bool_or", self.inner()))
 
     def cat(self, *args: T) -> T:
         """Concatenates lists.
@@ -3374,6 +3944,8 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         `NULL` inputs are skipped.
 
         See also operator `||`.
+
+        **SQL name**: *list_cat*
 
         See Also:
             array_cat, array_concat, list_concat
@@ -3384,10 +3956,12 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(func("list_cat", self._parent.inner(), *args))
+        return self._new(func("list_cat", self.inner(), *args))
 
     def char_length(self) -> T:
         """Returns the length of the `list`.
+
+        **SQL name**: *char_length*
 
         See Also:
             character_length, len, length
@@ -3395,10 +3969,12 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(func("char_length", self._parent.inner()))
+        return self._new(func("char_length", self.inner()))
 
     def character_length(self) -> T:
         """Returns the length of the `list`.
+
+        **SQL name**: *character_length*
 
         See Also:
             char_length, len, length
@@ -3406,7 +3982,7 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(func("character_length", self._parent.inner()))
+        return self._new(func("character_length", self.inner()))
 
     def concat(self, *args: T) -> T:
         """Concatenates multiple strings or lists.
@@ -3415,16 +3991,20 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
 
         See also operator `||`.
 
+        **SQL name**: *concat*
+
         Args:
             *args (T): `ANY` expression
 
         Returns:
             T
         """
-        return self._parent.__class__(func("concat", self._parent.inner(), *args))
+        return self._new(func("concat", self.inner(), *args))
 
     def contains(self, element: T) -> T:
         """Returns true if the list contains the element.
+
+        **SQL name**: *list_contains*
 
         See Also:
             array_contains, array_has, list_has
@@ -3435,46 +4015,48 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(
-            func("list_contains", self._parent.inner(), element)
-        )
+        return self._new(func("list_contains", self.inner(), element))
 
     def cosine_distance(self, list2: T | list[float]) -> T:
         """Computes the cosine distance between two same-sized lists.
 
+        **SQL name**: *list_cosine_distance*
+
         Args:
             list2 (T | list[float]): `DOUBLE[] | FLOAT[]` expression
 
         Returns:
             T
         """
-        return self._parent.__class__(
-            func("list_cosine_distance", self._parent.inner(), list2)
-        )
+        return self._new(func("list_cosine_distance", self.inner(), list2))
 
     def cosine_similarity(self, list2: T | list[float]) -> T:
         """Computes the cosine similarity between two same-sized lists.
 
+        **SQL name**: *list_cosine_similarity*
+
         Args:
             list2 (T | list[float]): `DOUBLE[] | FLOAT[]` expression
 
         Returns:
             T
         """
-        return self._parent.__class__(
-            func("list_cosine_similarity", self._parent.inner(), list2)
-        )
+        return self._new(func("list_cosine_similarity", self.inner(), list2))
 
     def count(self) -> T:
         """SQL list_count function.
 
+        **SQL name**: *list_count*
+
         Returns:
             T
         """
-        return self._parent.__class__(func("list_count", self._parent.inner()))
+        return self._new(func("list_count", self.inner()))
 
     def distance(self, list2: T | list[float]) -> T:
         """Calculates the Euclidean distance between two points with coordinates given in two inputs lists of equal length.
+
+        **SQL name**: *list_distance*
 
         Args:
             list2 (T | list[float]): `DOUBLE[] | FLOAT[]` expression
@@ -3482,14 +4064,14 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(
-            func("list_distance", self._parent.inner(), list2)
-        )
+        return self._new(func("list_distance", self.inner(), list2))
 
     def distinct(self) -> T:
         """Removes all duplicates and `NULL` values from a list.
 
         Does not preserve the original order.
+
+        **SQL name**: *list_distinct*
 
         See Also:
             array_distinct
@@ -3497,10 +4079,12 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(func("list_distinct", self._parent.inner()))
+        return self._new(func("list_distinct", self.inner()))
 
     def dot_product(self, list2: T | list[float]) -> T:
         """Computes the inner product between two same-sized lists.
+
+        **SQL name**: *list_dot_product*
 
         See Also:
             list_inner_product
@@ -3511,12 +4095,12 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(
-            func("list_dot_product", self._parent.inner(), list2)
-        )
+        return self._new(func("list_dot_product", self.inner(), list2))
 
     def element(self, index: T | int) -> T:
         """Extract the `index`th (1-based) value from the list.
+
+        **SQL name**: *list_element*
 
         See Also:
             list_extract
@@ -3527,18 +4111,22 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(func("list_element", self._parent.inner(), index))
+        return self._new(func("list_element", self.inner(), index))
 
     def entropy(self) -> T:
         """SQL list_entropy function.
 
+        **SQL name**: *list_entropy*
+
         Returns:
             T
         """
-        return self._parent.__class__(func("list_entropy", self._parent.inner()))
+        return self._new(func("list_entropy", self.inner()))
 
     def extract(self, index: T | int) -> T:
         """Extract the `index`th (1-based) value from the list.
+
+        **SQL name**: *list_extract*
 
         See Also:
             list_element
@@ -3549,7 +4137,7 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(func("list_extract", self._parent.inner(), index))
+        return self._new(func("list_extract", self.inner(), index))
 
     def filter(self, lambda_arg: T) -> T:
         """Constructs a list from those elements of the input `list` for which the `lambda` function returns `true`.
@@ -3557,6 +4145,8 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         DuckDB must be able to cast the `lambda` function's return type to `BOOL`.
 
         The return type of `list_filter` is the same as the input list's.
+
+        **SQL name**: *filter*
 
         See Also:
             array_filter, list_filter
@@ -3567,23 +4157,27 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(func("filter", self._parent.inner(), lambda_arg))
+        return self._new(func("filter", self.inner(), lambda_arg))
 
     def first(self) -> T:
         """SQL list_first function.
 
+        **SQL name**: *list_first*
+
         Returns:
             T
         """
-        return self._parent.__class__(func("list_first", self._parent.inner()))
+        return self._new(func("list_first", self.inner()))
 
     def flatten(self) -> T:
         """Flattens a nested list by one level.
 
+        **SQL name**: *flatten*
+
         Returns:
             T
         """
-        return self._parent.__class__(func("flatten", self._parent.inner()))
+        return self._new(func("flatten", self.inner()))
 
     def generate_series(
         self,
@@ -3592,6 +4186,8 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
     ) -> T:
         """Creates a list of values between `start` and `stop` - the stop parameter is inclusive.
 
+        **SQL name**: *generate_series*
+
         Args:
             stop (T | datetime | int | None): `BIGINT | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
             step (T | int | timedelta | None): `BIGINT | INTERVAL` expression
@@ -3599,12 +4195,12 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(
-            func("generate_series", self._parent.inner(), stop, step)
-        )
+        return self._new(func("generate_series", self.inner(), stop, step))
 
     def grade_up(self, col1: T | str | None = None, col2: T | str | None = None) -> T:
         """Works like list_sort, but the results are the indexes that correspond to the position in the original list instead of the actual values.
+
+        **SQL name**: *grade_up*
 
         See Also:
             array_grade_up, list_grade_up
@@ -3616,12 +4212,12 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(
-            func("grade_up", self._parent.inner(), col1, col2)
-        )
+        return self._new(func("grade_up", self.inner(), col1, col2))
 
     def has(self, element: T) -> T:
         """Returns true if the list contains the element.
+
+        **SQL name**: *list_has*
 
         See Also:
             array_contains, array_has, list_contains
@@ -3632,12 +4228,14 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(func("list_has", self._parent.inner(), element))
+        return self._new(func("list_has", self.inner(), element))
 
     def has_all(self, list2: T) -> T:
         """Returns true if all elements of list2 are in list1.
 
         NULLs are ignored.
+
+        **SQL name**: *list_has_all*
 
         See Also:
             array_has_all
@@ -3648,12 +4246,14 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(func("list_has_all", self._parent.inner(), list2))
+        return self._new(func("list_has_all", self.inner(), list2))
 
     def has_any(self, list2: T) -> T:
         """Returns true if the lists have any element in common.
 
         NULLs are ignored.
+
+        **SQL name**: *list_has_any*
 
         See Also:
             array_has_any
@@ -3664,20 +4264,24 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(func("list_has_any", self._parent.inner(), list2))
+        return self._new(func("list_has_any", self.inner(), list2))
 
     def histogram(self) -> T:
         """SQL list_histogram function.
 
+        **SQL name**: *list_histogram*
+
         Returns:
             T
         """
-        return self._parent.__class__(func("list_histogram", self._parent.inner()))
+        return self._new(func("list_histogram", self.inner()))
 
     def indexof(self, element: T) -> T:
         """Returns the index of the `element` if the `list` contains the `element`.
 
         If the `element` is not found, it returns `NULL`.
+
+        **SQL name**: *list_indexof*
 
         See Also:
             array_indexof, array_position, list_position
@@ -3688,12 +4292,12 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(
-            func("list_indexof", self._parent.inner(), element)
-        )
+        return self._new(func("list_indexof", self.inner(), element))
 
     def inner_product(self, list2: T | list[float]) -> T:
         """Computes the inner product between two same-sized lists.
+
+        **SQL name**: *list_inner_product*
 
         See Also:
             list_dot_product
@@ -3704,12 +4308,12 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(
-            func("list_inner_product", self._parent.inner(), list2)
-        )
+        return self._new(func("list_inner_product", self.inner(), list2))
 
     def intersect(self, l2: T) -> T:
         """SQL list_intersect function.
+
+        **SQL name**: *list_intersect*
 
         Args:
             l2 (T): `ANY` expression
@@ -3717,34 +4321,42 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(func("list_intersect", self._parent.inner(), l2))
+        return self._new(func("list_intersect", self.inner(), l2))
 
     def kurtosis(self) -> T:
         """SQL list_kurtosis function.
 
+        **SQL name**: *list_kurtosis*
+
         Returns:
             T
         """
-        return self._parent.__class__(func("list_kurtosis", self._parent.inner()))
+        return self._new(func("list_kurtosis", self.inner()))
 
     def kurtosis_pop(self) -> T:
         """SQL list_kurtosis_pop function.
 
+        **SQL name**: *list_kurtosis_pop*
+
         Returns:
             T
         """
-        return self._parent.__class__(func("list_kurtosis_pop", self._parent.inner()))
+        return self._new(func("list_kurtosis_pop", self.inner()))
 
     def last(self) -> T:
         """SQL list_last function.
 
+        **SQL name**: *list_last*
+
         Returns:
             T
         """
-        return self._parent.__class__(func("list_last", self._parent.inner()))
+        return self._new(func("list_last", self.inner()))
 
     def len(self) -> T:
         """Returns the length of the `list`.
+
+        **SQL name**: *len*
 
         See Also:
             char_length, character_length, length
@@ -3752,10 +4364,12 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(func("len", self._parent.inner()))
+        return self._new(func("len", self.inner()))
 
     def length(self) -> T:
         """Returns the length of the `list`.
+
+        **SQL name**: *length*
 
         See Also:
             char_length, character_length, len
@@ -3763,50 +4377,62 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(func("length", self._parent.inner()))
+        return self._new(func("length", self.inner()))
 
     def mad(self) -> T:
         """SQL list_mad function.
 
+        **SQL name**: *list_mad*
+
         Returns:
             T
         """
-        return self._parent.__class__(func("list_mad", self._parent.inner()))
+        return self._new(func("list_mad", self.inner()))
 
     def max(self) -> T:
         """SQL list_max function.
 
+        **SQL name**: *list_max*
+
         Returns:
             T
         """
-        return self._parent.__class__(func("list_max", self._parent.inner()))
+        return self._new(func("list_max", self.inner()))
 
     def median(self) -> T:
         """SQL list_median function.
 
+        **SQL name**: *list_median*
+
         Returns:
             T
         """
-        return self._parent.__class__(func("list_median", self._parent.inner()))
+        return self._new(func("list_median", self.inner()))
 
     def min(self) -> T:
         """SQL list_min function.
 
+        **SQL name**: *list_min*
+
         Returns:
             T
         """
-        return self._parent.__class__(func("list_min", self._parent.inner()))
+        return self._new(func("list_min", self.inner()))
 
     def mode(self) -> T:
         """SQL list_mode function.
 
+        **SQL name**: *list_mode*
+
         Returns:
             T
         """
-        return self._parent.__class__(func("list_mode", self._parent.inner()))
+        return self._new(func("list_mode", self.inner()))
 
     def negative_dot_product(self, list2: T | list[float]) -> T:
         """Computes the negative inner product between two same-sized lists.
+
+        **SQL name**: *list_negative_dot_product*
 
         See Also:
             list_negative_inner_product
@@ -3817,12 +4443,12 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(
-            func("list_negative_dot_product", self._parent.inner(), list2)
-        )
+        return self._new(func("list_negative_dot_product", self.inner(), list2))
 
     def negative_inner_product(self, list2: T | list[float]) -> T:
         """Computes the negative inner product between two same-sized lists.
+
+        **SQL name**: *list_negative_inner_product*
 
         See Also:
             list_negative_dot_product
@@ -3833,12 +4459,12 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(
-            func("list_negative_inner_product", self._parent.inner(), list2)
-        )
+        return self._new(func("list_negative_inner_product", self.inner(), list2))
 
     def pack(self, *args: T) -> T:
         """Creates a LIST containing the argument values.
+
+        **SQL name**: *list_pack*
 
         See Also:
             list_value
@@ -3849,12 +4475,14 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(func("list_pack", self._parent.inner(), *args))
+        return self._new(func("list_pack", self.inner(), *args))
 
     def position(self, element: T) -> T:
         """Returns the index of the `element` if the `list` contains the `element`.
 
         If the `element` is not found, it returns `NULL`.
+
+        **SQL name**: *list_position*
 
         See Also:
             array_indexof, array_position, list_indexof
@@ -3865,12 +4493,12 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(
-            func("list_position", self._parent.inner(), element)
-        )
+        return self._new(func("list_position", self.inner(), element))
 
     def prepend(self, l_arg: T) -> T:
         """SQL list_prepend function.
+
+        **SQL name**: *list_prepend*
 
         Args:
             l_arg (T): `ANY` expression
@@ -3878,15 +4506,17 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(func("list_prepend", self._parent.inner(), l_arg))
+        return self._new(func("list_prepend", self.inner(), l_arg))
 
     def product(self) -> T:
         """SQL list_product function.
 
+        **SQL name**: *list_product*
+
         Returns:
             T
         """
-        return self._parent.__class__(func("list_product", self._parent.inner()))
+        return self._new(func("list_product", self.inner()))
 
     def range(
         self,
@@ -3895,6 +4525,8 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
     ) -> T:
         """Creates a list of values between `start` and `stop` - the stop parameter is exclusive.
 
+        **SQL name**: *range*
+
         Args:
             stop (T | datetime | int | None): `BIGINT | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
             step (T | int | timedelta | None): `BIGINT | INTERVAL` expression
@@ -3902,12 +4534,14 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(func("range", self._parent.inner(), stop, step))
+        return self._new(func("range", self.inner(), stop, step))
 
     def reduce(self, lambda_arg: T, initial_value: T | None = None) -> T:
         """Reduces all elements of the input `list` into a single scalar value by executing the `lambda` function on a running result and the next list element.
 
         The `lambda` function has an optional `initial_value` argument.
+
+        **SQL name**: *list_reduce*
 
         See Also:
             array_reduce, reduce
@@ -3919,14 +4553,14 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(
-            func("list_reduce", self._parent.inner(), lambda_arg, initial_value)
-        )
+        return self._new(func("list_reduce", self.inner(), lambda_arg, initial_value))
 
     def resize(self, size: T, value: T | None = None) -> T:
         """Resizes the `list` to contain `size` elements.
 
         Initializes new elements with `value` or `NULL` if `value` is not set.
+
+        **SQL name**: *list_resize*
 
         See Also:
             array_resize
@@ -3938,20 +4572,22 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(
-            func("list_resize", self._parent.inner(), size, value)
-        )
+        return self._new(func("list_resize", self.inner(), size, value))
 
     def reverse(self) -> T:
         """SQL list_reverse function.
 
+        **SQL name**: *list_reverse*
+
         Returns:
             T
         """
-        return self._parent.__class__(func("list_reverse", self._parent.inner()))
+        return self._new(func("list_reverse", self.inner()))
 
     def reverse_sort(self, col1: T | str | None = None) -> T:
         """Sorts the elements of the list in reverse order.
+
+        **SQL name**: *list_reverse_sort*
 
         See Also:
             array_reverse_sort
@@ -3962,12 +4598,12 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(
-            func("list_reverse_sort", self._parent.inner(), col1)
-        )
+        return self._new(func("list_reverse_sort", self.inner(), col1))
 
     def select(self, index_list: T | list[int]) -> T:
         """Returns a list based on the elements selected by the `index_list`.
+
+        **SQL name**: *list_select*
 
         See Also:
             array_select
@@ -3978,30 +4614,34 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(
-            func("list_select", self._parent.inner(), index_list)
-        )
+        return self._new(func("list_select", self.inner(), index_list))
 
     def sem(self) -> T:
         """SQL list_sem function.
 
+        **SQL name**: *list_sem*
+
         Returns:
             T
         """
-        return self._parent.__class__(func("list_sem", self._parent.inner()))
+        return self._new(func("list_sem", self.inner()))
 
     def skewness(self) -> T:
         """SQL list_skewness function.
 
+        **SQL name**: *list_skewness*
+
         Returns:
             T
         """
-        return self._parent.__class__(func("list_skewness", self._parent.inner()))
+        return self._new(func("list_skewness", self.inner()))
 
     def slice(self, begin: T, end: T, step: T | int | None = None) -> T:
         """Extracts a sublist or substring using slice conventions.
 
         Negative values are accepted.
+
+        **SQL name**: *list_slice*
 
         See Also:
             array_slice
@@ -4014,12 +4654,12 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(
-            func("list_slice", self._parent.inner(), begin, end, step)
-        )
+        return self._new(func("list_slice", self.inner(), begin, end, step))
 
     def sort(self, col1: T | str | None = None, col2: T | str | None = None) -> T:
         """Sorts the elements of the list.
+
+        **SQL name**: *list_sort*
 
         See Also:
             array_sort
@@ -4031,46 +4671,54 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(
-            func("list_sort", self._parent.inner(), col1, col2)
-        )
+        return self._new(func("list_sort", self.inner(), col1, col2))
 
     def stddev_pop(self) -> T:
         """SQL list_stddev_pop function.
 
+        **SQL name**: *list_stddev_pop*
+
         Returns:
             T
         """
-        return self._parent.__class__(func("list_stddev_pop", self._parent.inner()))
+        return self._new(func("list_stddev_pop", self.inner()))
 
     def stddev_samp(self) -> T:
         """SQL list_stddev_samp function.
 
+        **SQL name**: *list_stddev_samp*
+
         Returns:
             T
         """
-        return self._parent.__class__(func("list_stddev_samp", self._parent.inner()))
+        return self._new(func("list_stddev_samp", self.inner()))
 
     def string_agg(self) -> T:
         """SQL list_string_agg function.
 
+        **SQL name**: *list_string_agg*
+
         Returns:
             T
         """
-        return self._parent.__class__(func("list_string_agg", self._parent.inner()))
+        return self._new(func("list_string_agg", self.inner()))
 
     def sum(self) -> T:
         """SQL list_sum function.
 
+        **SQL name**: *list_sum*
+
         Returns:
             T
         """
-        return self._parent.__class__(func("list_sum", self._parent.inner()))
+        return self._new(func("list_sum", self.inner()))
 
     def transform(self, lambda_arg: T) -> T:
         """Returns a list that is the result of applying the `lambda` function to each element of the input `list`.
 
         The return type is defined by the return type of the `lambda` function.
+
+        **SQL name**: *list_transform*
 
         See Also:
             apply, array_apply, array_transform, list_apply
@@ -4081,12 +4729,12 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(
-            func("list_transform", self._parent.inner(), lambda_arg)
-        )
+        return self._new(func("list_transform", self.inner(), lambda_arg))
 
     def unique(self) -> T:
         """Counts the unique elements of a `list`.
+
+        **SQL name**: *list_unique*
 
         See Also:
             array_unique
@@ -4094,10 +4742,12 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(func("list_unique", self._parent.inner()))
+        return self._new(func("list_unique", self.inner()))
 
     def unpivot_list(self, *args: T) -> T:
         """Identical to list_value, but generated as part of unpivot for better error messages.
+
+        **SQL name**: *unpivot_list*
 
         Args:
             *args (T): `ANY` expression
@@ -4105,10 +4755,12 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(func("unpivot_list", self._parent.inner(), *args))
+        return self._new(func("unpivot_list", self.inner(), *args))
 
     def value(self, *args: T) -> T:
         """Creates a LIST containing the argument values.
+
+        **SQL name**: *list_value*
 
         See Also:
             list_pack
@@ -4119,26 +4771,32 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(func("list_value", self._parent.inner(), *args))
+        return self._new(func("list_value", self.inner(), *args))
 
     def var_pop(self) -> T:
         """SQL list_var_pop function.
 
+        **SQL name**: *list_var_pop*
+
         Returns:
             T
         """
-        return self._parent.__class__(func("list_var_pop", self._parent.inner()))
+        return self._new(func("list_var_pop", self.inner()))
 
     def var_samp(self) -> T:
         """SQL list_var_samp function.
 
+        **SQL name**: *list_var_samp*
+
         Returns:
             T
         """
-        return self._parent.__class__(func("list_var_samp", self._parent.inner()))
+        return self._new(func("list_var_samp", self.inner()))
 
     def where(self, mask_list: T | list[bool]) -> T:
         """Returns a list with the `BOOLEAN`s in `mask_list` applied as a mask to the `value_list`.
+
+        **SQL name**: *list_where*
 
         See Also:
             array_where
@@ -4149,9 +4807,7 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(
-            func("list_where", self._parent.inner(), mask_list)
-        )
+        return self._new(func("list_where", self.inner(), mask_list))
 
     def zip(self, *args: T) -> T:
         """Zips n `LIST`s to a new `LIST` whose length will be that of the longest list.
@@ -4159,6 +4815,8 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         Its elements are structs of n elements from each list `list_1`, …, `list_n`, missing elements are replaced with `NULL`.
 
         If `truncate` is set, all lists are truncated to the smallest list length.
+
+        **SQL name**: *list_zip*
 
         See Also:
             array_zip
@@ -4169,7 +4827,7 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(func("list_zip", self._parent.inner(), *args))
+        return self._new(func("list_zip", self.inner(), *args))
 
 
 class StructFns[T: Fns](NameSpaceHandler[T]):
@@ -4178,18 +4836,20 @@ class StructFns[T: Fns](NameSpaceHandler[T]):
     def array_extract(self, entry: T | int | str) -> T:
         """Extracts the named `entry` from the `STRUCT`.
 
+        **SQL name**: *array_extract*
+
         Args:
             entry (T | int | str): `BIGINT | VARCHAR` expression
 
         Returns:
             T
         """
-        return self._parent.__class__(
-            func("array_extract", self._parent.inner(), entry)
-        )
+        return self._new(func("array_extract", self.inner(), entry))
 
     def concat(self, *args: T) -> T:
         """Merge the multiple STRUCTs into a single STRUCT.
+
+        **SQL name**: *struct_concat*
 
         Args:
             *args (T): `ANY` expression
@@ -4197,12 +4857,12 @@ class StructFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(
-            func("struct_concat", self._parent.inner(), *args)
-        )
+        return self._new(func("struct_concat", self.inner(), *args))
 
     def contains(self, entry: T) -> T:
         """Check if an unnamed STRUCT contains the value.
+
+        **SQL name**: *struct_contains*
 
         See Also:
             struct_has
@@ -4213,12 +4873,12 @@ class StructFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(
-            func("struct_contains", self._parent.inner(), entry)
-        )
+        return self._new(func("struct_contains", self.inner(), entry))
 
     def extract(self, entry: T | int | str) -> T:
         """Extract the named entry from the STRUCT.
+
+        **SQL name**: *struct_extract*
 
         Args:
             entry (T | int | str): `BIGINT | VARCHAR` expression
@@ -4226,12 +4886,12 @@ class StructFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(
-            func("struct_extract", self._parent.inner(), entry)
-        )
+        return self._new(func("struct_extract", self.inner(), entry))
 
     def extract_at(self, entry: T | int) -> T:
         """Extract the entry from the STRUCT by position (starts at 1!).
+
+        **SQL name**: *struct_extract_at*
 
         Args:
             entry (T | int): `BIGINT` expression
@@ -4239,12 +4899,12 @@ class StructFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(
-            func("struct_extract_at", self._parent.inner(), entry)
-        )
+        return self._new(func("struct_extract_at", self.inner(), entry))
 
     def has(self, entry: T) -> T:
         """Check if an unnamed STRUCT contains the value.
+
+        **SQL name**: *struct_has*
 
         See Also:
             struct_contains
@@ -4255,10 +4915,12 @@ class StructFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(func("struct_has", self._parent.inner(), entry))
+        return self._new(func("struct_has", self.inner(), entry))
 
     def indexof(self, entry: T) -> T:
         """Get the position of the entry in an unnamed STRUCT, starting at 1.
+
+        **SQL name**: *struct_indexof*
 
         See Also:
             struct_position
@@ -4269,40 +4931,42 @@ class StructFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(
-            func("struct_indexof", self._parent.inner(), entry)
-        )
+        return self._new(func("struct_indexof", self.inner(), entry))
 
     def insert(self, *args: T) -> T:
         """Adds field(s)/value(s) to an existing STRUCT with the argument values.
 
         The entry name(s) will be the bound variable name(s).
 
+        **SQL name**: *struct_insert*
+
         Args:
             *args (T): `ANY` expression
 
         Returns:
             T
         """
-        return self._parent.__class__(
-            func("struct_insert", self._parent.inner(), *args)
-        )
+        return self._new(func("struct_insert", self.inner(), *args))
 
     def pack(self, *args: T) -> T:
         """Create a STRUCT containing the argument values.
 
         The entry name will be the bound variable name.
 
+        **SQL name**: *struct_pack*
+
         Args:
             *args (T): `ANY` expression
 
         Returns:
             T
         """
-        return self._parent.__class__(func("struct_pack", self._parent.inner(), *args))
+        return self._new(func("struct_pack", self.inner(), *args))
 
     def position(self, entry: T) -> T:
         """Get the position of the entry in an unnamed STRUCT, starting at 1.
+
+        **SQL name**: *struct_position*
 
         See Also:
             struct_indexof
@@ -4313,14 +4977,14 @@ class StructFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(
-            func("struct_position", self._parent.inner(), entry)
-        )
+        return self._new(func("struct_position", self.inner(), entry))
 
     def update(self, *args: T) -> T:
         """Changes field(s)/value(s) to an existing STRUCT with the argument values.
 
         The entry name(s) will be the bound variable name(s).
+
+        **SQL name**: *struct_update*
 
         Args:
             *args (T): `ANY` expression
@@ -4328,9 +4992,7 @@ class StructFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(
-            func("struct_update", self._parent.inner(), *args)
-        )
+        return self._new(func("struct_update", self.inner(), *args))
 
 
 class StringFns[T: Fns](NameSpaceHandler[T]):
@@ -4338,6 +5000,8 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
 
     def agg(self, arg: T | str | None = None) -> T:
         """Concatenates the column string values with an optional separator.
+
+        **SQL name**: *string_agg*
 
         See Also:
             group_concat, listagg
@@ -4348,10 +5012,12 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(func("string_agg", self._parent.inner(), arg))
+        return self._new(func("string_agg", self.inner(), arg))
 
     def array_extract(self, index: T | int) -> T:
         """Extracts a single character from a `string` using a (1-based) `index`.
+
+        **SQL name**: *array_extract*
 
         Args:
             index (T | int): `BIGINT` expression
@@ -4359,17 +5025,17 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(
-            func("array_extract", self._parent.inner(), index)
-        )
+        return self._new(func("array_extract", self.inner(), index))
 
     def ascii(self) -> T:
         """Returns an integer that represents the Unicode code point of the first character of the `string`.
 
+        **SQL name**: *ascii*
+
         Returns:
             T
         """
-        return self._parent.__class__(func("ascii", self._parent.inner()))
+        return self._new(func("ascii", self.inner()))
 
     def bar(
         self, min_arg: T | float, max_arg: T | float, width: T | float | None = None
@@ -4377,6 +5043,8 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         """Draws a band whose width is proportional to (`x - min`) and equal to `width` characters when `x` = `max`.
 
         `width` defaults to 80.
+
+        **SQL name**: *bar*
 
         Args:
             min_arg (T | float): `DOUBLE` expression
@@ -4386,12 +5054,12 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(
-            func("bar", self._parent.inner(), min_arg, max_arg, width)
-        )
+        return self._new(func("bar", self.inner(), min_arg, max_arg, width))
 
     def base64(self) -> T:
         """Converts a `blob` to a base64 encoded string.
+
+        **SQL name**: *base64*
 
         See Also:
             to_base64
@@ -4399,10 +5067,12 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(func("base64", self._parent.inner()))
+        return self._new(func("base64", self.inner()))
 
     def bin(self) -> T:
         """Converts the `string` to binary representation.
+
+        **SQL name**: *bin*
 
         See Also:
             to_binary
@@ -4410,18 +5080,22 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(func("bin", self._parent.inner()))
+        return self._new(func("bin", self.inner()))
 
     def bit_length(self) -> T:
         """Number of bits in a `string`.
 
+        **SQL name**: *bit_length*
+
         Returns:
             T
         """
-        return self._parent.__class__(func("bit_length", self._parent.inner()))
+        return self._new(func("bit_length", self.inner()))
 
     def char_length(self) -> T:
         """Number of characters in `string`.
+
+        **SQL name**: *char_length*
 
         See Also:
             character_length, len, length
@@ -4429,10 +5103,12 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(func("char_length", self._parent.inner()))
+        return self._new(func("char_length", self.inner()))
 
     def character_length(self) -> T:
         """Number of characters in `string`.
+
+        **SQL name**: *character_length*
 
         See Also:
             char_length, len, length
@@ -4440,20 +5116,24 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(func("character_length", self._parent.inner()))
+        return self._new(func("character_length", self.inner()))
 
     def chr(self) -> T:
         """Returns a character which is corresponding the ASCII code value or Unicode code point.
 
+        **SQL name**: *chr*
+
         Returns:
             T
         """
-        return self._parent.__class__(func("chr", self._parent.inner()))
+        return self._new(func("chr", self.inner()))
 
     def concat_ws(self, string: T, *args: T) -> T:
         """Concatenates many strings, separated by `separator`.
 
         `NULL` inputs are skipped.
+
+        **SQL name**: *concat_ws*
 
         Args:
             string (T): `ANY` expression
@@ -4462,12 +5142,12 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(
-            func("concat_ws", self._parent.inner(), string, *args)
-        )
+        return self._new(func("concat_ws", self.inner(), string, *args))
 
     def contains(self, search_string: T | str) -> T:
         """Returns `true` if `search_string` is found within `string`.
+
+        **SQL name**: *contains*
 
         Args:
             search_string (T | str): `VARCHAR` expression
@@ -4475,9 +5155,7 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(
-            func("contains", self._parent.inner(), search_string)
-        )
+        return self._new(func("contains", self.inner(), search_string))
 
     def damerau_levenshtein(self, s2: T | str) -> T:
         """Extension of Levenshtein distance to also include transposition of adjacent characters as an allowed edit operation.
@@ -4486,20 +5164,22 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
 
         Characters of different cases (e.g., `a` and `A`) are considered different.
 
+        **SQL name**: *damerau_levenshtein*
+
         Args:
             s2 (T | str): `VARCHAR` expression
 
         Returns:
             T
         """
-        return self._parent.__class__(
-            func("damerau_levenshtein", self._parent.inner(), s2)
-        )
+        return self._new(func("damerau_levenshtein", self.inner(), s2))
 
     def editdist3(self, s2: T | str) -> T:
         """The minimum number of single-character edits (insertions, deletions or substitutions) required to change one string to the other.
 
         Characters of different cases (e.g., `a` and `A`) are considered different.
+
+        **SQL name**: *editdist3*
 
         See Also:
             levenshtein
@@ -4510,10 +5190,12 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(func("editdist3", self._parent.inner(), s2))
+        return self._new(func("editdist3", self.inner(), s2))
 
     def ends_with(self, search_string: T | str) -> T:
         """Returns `true` if `string` ends with `search_string`.
+
+        **SQL name**: *ends_with*
 
         See Also:
             suffix
@@ -4524,17 +5206,17 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(
-            func("ends_with", self._parent.inner(), search_string)
-        )
+        return self._new(func("ends_with", self.inner(), search_string))
 
     def escape(self) -> T:
         """Escapes special patterns to turn `string` into a regular expression similarly to Python's `re.escape` function.
 
+        **SQL name**: *regexp_escape*
+
         Returns:
             T
         """
-        return self._parent.__class__(func("regexp_escape", self._parent.inner()))
+        return self._new(func("regexp_escape", self.inner()))
 
     def extract(
         self,
@@ -4550,6 +5232,8 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
 
         A set of optional regex `options` can be set.
 
+        **SQL name**: *regexp_extract*
+
         Args:
             regex (T | str): `VARCHAR` expression
             group (T | int | None): `INTEGER` expression
@@ -4558,9 +5242,7 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(
-            func("regexp_extract", self._parent.inner(), regex, group, options)
-        )
+        return self._new(func("regexp_extract", self.inner(), regex, group, options))
 
     def extract_all(
         self,
@@ -4572,6 +5254,8 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
 
         A set of optional regex `options` can be set.
 
+        **SQL name**: *regexp_extract_all*
+
         Args:
             regex (T | str): `VARCHAR` expression
             group (T | int | None): `INTEGER` expression
@@ -4580,8 +5264,8 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(
-            func("regexp_extract_all", self._parent.inner(), regex, group, options)
+        return self._new(
+            func("regexp_extract_all", self.inner(), regex, group, options)
         )
 
     def extract_name_list(
@@ -4594,6 +5278,8 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
 
         A set of optional regex `options` can be set.
 
+        **SQL name**: *regexp_extract*
+
         Args:
             regex (T | str): `VARCHAR` expression
             name_list (T | list[str] | None): `VARCHAR[]` expression
@@ -4602,12 +5288,14 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(
-            func("regexp_extract", self._parent.inner(), regex, name_list, options)
+        return self._new(
+            func("regexp_extract", self.inner(), regex, name_list, options)
         )
 
     def format(self, *args: T) -> T:
         """Formats a string using the fmt syntax.
+
+        **SQL name**: *format*
 
         Args:
             *args (T): `ANY` expression
@@ -4615,10 +5303,12 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(func("format", self._parent.inner(), *args))
+        return self._new(func("format", self.inner(), *args))
 
     def format_bytes(self) -> T:
         """Converts `integer` to a human-readable representation using units based on powers of 2 (KiB, MiB, GiB, etc.).
+
+        **SQL name**: *format_bytes*
 
         See Also:
             formatReadableSize
@@ -4626,20 +5316,22 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(func("format_bytes", self._parent.inner()))
+        return self._new(func("format_bytes", self.inner()))
 
     def formatreadabledecimalsize(self) -> T:
         """Converts `integer` to a human-readable representation using units based on powers of 10 (KB, MB, GB, etc.).
 
+        **SQL name**: *formatReadableDecimalSize*
+
         Returns:
             T
         """
-        return self._parent.__class__(
-            func("formatReadableDecimalSize", self._parent.inner())
-        )
+        return self._new(func("formatReadableDecimalSize", self.inner()))
 
     def formatreadablesize(self) -> T:
         """Converts `integer` to a human-readable representation using units based on powers of 2 (KiB, MiB, GiB, etc.).
+
+        **SQL name**: *formatReadableSize*
 
         See Also:
             format_bytes
@@ -4647,18 +5339,22 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(func("formatReadableSize", self._parent.inner()))
+        return self._new(func("formatReadableSize", self.inner()))
 
     def from_base64(self) -> T:
         """Converts a base64 encoded `string` to a character string (`BLOB`).
 
+        **SQL name**: *from_base64*
+
         Returns:
             T
         """
-        return self._parent.__class__(func("from_base64", self._parent.inner()))
+        return self._new(func("from_base64", self.inner()))
 
     def from_binary(self) -> T:
         """Converts a `value` from binary representation to a blob.
+
+        **SQL name**: *from_binary*
 
         See Also:
             unbin
@@ -4666,10 +5362,12 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(func("from_binary", self._parent.inner()))
+        return self._new(func("from_binary", self.inner()))
 
     def from_hex(self) -> T:
         """Converts a `value` from hexadecimal representation to a blob.
+
+        **SQL name**: *from_hex*
 
         See Also:
             unhex
@@ -4677,12 +5375,14 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(func("from_hex", self._parent.inner()))
+        return self._new(func("from_hex", self.inner()))
 
     def full_match(self, regex: T | str, col2: T | str | None = None) -> T:
         """Returns `true` if the entire `string` matches the `regex`.
 
         A set of optional regex `options` can be set.
+
+        **SQL name**: *regexp_full_match*
 
         Args:
             regex (T | str): `VARCHAR` expression
@@ -4691,9 +5391,7 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(
-            func("regexp_full_match", self._parent.inner(), regex, col2)
-        )
+        return self._new(func("regexp_full_match", self.inner(), regex, col2))
 
     def greatest(self, *args: T) -> T:
         """Returns the largest value.
@@ -4702,13 +5400,15 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
 
         Note that lowercase characters are considered “larger” than uppercase characters and collations are not supported.
 
+        **SQL name**: *greatest*
+
         Args:
             *args (T): `ANY` expression
 
         Returns:
             T
         """
-        return self._parent.__class__(func("greatest", self._parent.inner(), *args))
+        return self._new(func("greatest", self.inner(), *args))
 
     def hamming(self, s2: T | str) -> T:
         """The Hamming distance between to strings, i.e., the number of positions with different characters for two strings of equal length.
@@ -4716,6 +5416,8 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         Strings must be of equal length.
 
         Characters of different cases (e.g., `a` and `A`) are considered different.
+
+        **SQL name**: *hamming*
 
         See Also:
             mismatches
@@ -4726,12 +5428,14 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(func("hamming", self._parent.inner(), s2))
+        return self._new(func("hamming", self.inner(), s2))
 
     def hash(self, *args: T) -> T:
         """Returns a `UBIGINT` with the hash of the `value`.
 
         Note that this is not a cryptographic hash.
+
+        **SQL name**: *hash*
 
         Args:
             *args (T): `ANY` expression
@@ -4739,10 +5443,12 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(func("hash", self._parent.inner(), *args))
+        return self._new(func("hash", self.inner(), *args))
 
     def hex(self) -> T:
         """Converts the `string` to hexadecimal representation.
+
+        **SQL name**: *hex*
 
         See Also:
             to_hex
@@ -4750,12 +5456,14 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(func("hex", self._parent.inner()))
+        return self._new(func("hex", self.inner()))
 
     def ilike_escape(self, like_specifier: T | str, escape_character: T | str) -> T:
         """Returns `true` if the `string` matches the `like_specifier` (see Pattern Matching) using case-insensitive matching.
 
         `escape_character` is used to search for wildcard characters in the `string`.
+
+        **SQL name**: *ilike_escape*
 
         Args:
             like_specifier (T | str): `VARCHAR` expression
@@ -4764,14 +5472,16 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(
-            func("ilike_escape", self._parent.inner(), like_specifier, escape_character)
+        return self._new(
+            func("ilike_escape", self.inner(), like_specifier, escape_character)
         )
 
     def instr(self, search_string: T | str) -> T:
         """Returns location of first occurrence of `search_string` in `string`, counting from 1.
 
         Returns 0 if no match found.
+
+        **SQL name**: *instr*
 
         See Also:
             position, strpos
@@ -4782,9 +5492,7 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(
-            func("instr", self._parent.inner(), search_string)
-        )
+        return self._new(func("instr", self.inner(), search_string))
 
     def jaccard(self, s2: T | str) -> T:
         """The Jaccard similarity between two strings.
@@ -4793,13 +5501,15 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
 
         Returns a number between 0 and 1.
 
+        **SQL name**: *jaccard*
+
         Args:
             s2 (T | str): `VARCHAR` expression
 
         Returns:
             T
         """
-        return self._parent.__class__(func("jaccard", self._parent.inner(), s2))
+        return self._new(func("jaccard", self.inner(), s2))
 
     def jaro_similarity(self, s2: T | str, score_cutoff: T | float | None = None) -> T:
         """The Jaro similarity between two strings.
@@ -4812,6 +5522,8 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
 
         `score_cutoff` defaults to 0.
 
+        **SQL name**: *jaro_similarity*
+
         Args:
             s2 (T | str): `VARCHAR` expression
             score_cutoff (T | float | None): `DOUBLE` expression
@@ -4819,9 +5531,7 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(
-            func("jaro_similarity", self._parent.inner(), s2, score_cutoff)
-        )
+        return self._new(func("jaro_similarity", self.inner(), s2, score_cutoff))
 
     def jaro_winkler_similarity(
         self, s2: T | str, score_cutoff: T | float | None = None
@@ -4836,6 +5546,8 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
 
         `score_cutoff` defaults to 0.
 
+        **SQL name**: *jaro_winkler_similarity*
+
         Args:
             s2 (T | str): `VARCHAR` expression
             score_cutoff (T | float | None): `DOUBLE` expression
@@ -4843,12 +5555,14 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(
-            func("jaro_winkler_similarity", self._parent.inner(), s2, score_cutoff)
+        return self._new(
+            func("jaro_winkler_similarity", self.inner(), s2, score_cutoff)
         )
 
     def lcase(self) -> T:
         """Converts `string` to lower case.
+
+        **SQL name**: *lcase*
 
         See Also:
             lower
@@ -4856,7 +5570,7 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(func("lcase", self._parent.inner()))
+        return self._new(func("lcase", self.inner()))
 
     def least(self, *args: T) -> T:
         """Returns the smallest value.
@@ -4865,40 +5579,46 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
 
         Note that uppercase characters are considered “smaller” than lowercase characters, and collations are not supported.
 
+        **SQL name**: *least*
+
         Args:
             *args (T): `ANY` expression
 
         Returns:
             T
         """
-        return self._parent.__class__(func("least", self._parent.inner(), *args))
+        return self._new(func("least", self.inner(), *args))
 
     def left(self, count: T | int) -> T:
         """Extracts the left-most count characters.
 
+        **SQL name**: *left*
+
         Args:
             count (T | int): `BIGINT` expression
 
         Returns:
             T
         """
-        return self._parent.__class__(func("left", self._parent.inner(), count))
+        return self._new(func("left", self.inner(), count))
 
     def left_grapheme(self, count: T | int) -> T:
         """Extracts the left-most count grapheme clusters.
 
+        **SQL name**: *left_grapheme*
+
         Args:
             count (T | int): `BIGINT` expression
 
         Returns:
             T
         """
-        return self._parent.__class__(
-            func("left_grapheme", self._parent.inner(), count)
-        )
+        return self._new(func("left_grapheme", self.inner(), count))
 
     def len(self) -> T:
         """Number of characters in `string`.
+
+        **SQL name**: *len*
 
         See Also:
             char_length, character_length, length
@@ -4906,10 +5626,12 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(func("len", self._parent.inner()))
+        return self._new(func("len", self.inner()))
 
     def length(self) -> T:
         """Number of characters in `string`.
+
+        **SQL name**: *length*
 
         See Also:
             char_length, character_length, len
@@ -4917,20 +5639,24 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(func("length", self._parent.inner()))
+        return self._new(func("length", self.inner()))
 
     def length_grapheme(self) -> T:
         """Number of grapheme clusters in `string`.
 
+        **SQL name**: *length_grapheme*
+
         Returns:
             T
         """
-        return self._parent.__class__(func("length_grapheme", self._parent.inner()))
+        return self._new(func("length_grapheme", self.inner()))
 
     def levenshtein(self, s2: T | str) -> T:
         """The minimum number of single-character edits (insertions, deletions or substitutions) required to change one string to the other.
 
         Characters of different cases (e.g., `a` and `A`) are considered different.
+
+        **SQL name**: *levenshtein*
 
         See Also:
             editdist3
@@ -4941,12 +5667,14 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(func("levenshtein", self._parent.inner(), s2))
+        return self._new(func("levenshtein", self.inner(), s2))
 
     def like_escape(self, like_specifier: T | str, escape_character: T | str) -> T:
         """Returns `true` if the `string` matches the `like_specifier` (see Pattern Matching) using case-sensitive matching.
 
         `escape_character` is used to search for wildcard characters in the `string`.
+
+        **SQL name**: *like_escape*
 
         Args:
             like_specifier (T | str): `VARCHAR` expression
@@ -4955,12 +5683,14 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(
-            func("like_escape", self._parent.inner(), like_specifier, escape_character)
+        return self._new(
+            func("like_escape", self.inner(), like_specifier, escape_character)
         )
 
     def lower(self) -> T:
         """Converts `string` to lower case.
+
+        **SQL name**: *lower*
 
         See Also:
             lcase
@@ -4968,12 +5698,14 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(func("lower", self._parent.inner()))
+        return self._new(func("lower", self.inner()))
 
     def lpad(self, count: T | int, character: T | str) -> T:
         """Pads the `string` with the `character` on the left until it has `count` characters.
 
         Truncates the `string` on the right if it has more than `count` characters.
+
+        **SQL name**: *lpad*
 
         Args:
             count (T | int): `INTEGER` expression
@@ -4982,14 +5714,14 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(
-            func("lpad", self._parent.inner(), count, character)
-        )
+        return self._new(func("lpad", self.inner(), count, character))
 
     def ltrim(self, characters: T | str | None = None) -> T:
         """Removes any occurrences of any of the `characters` from the left side of the `string`.
 
         `characters` defaults to `space`.
+
+        **SQL name**: *ltrim*
 
         Args:
             characters (T | str | None): `VARCHAR` expression
@@ -4997,12 +5729,14 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(func("ltrim", self._parent.inner(), characters))
+        return self._new(func("ltrim", self.inner(), characters))
 
     def matches(self, regex: T | str, options: T | str | None = None) -> T:
         """Returns `true` if `string` contains the `regex`, `false` otherwise.
 
         A set of optional regex `options` can be set.
+
+        **SQL name**: *regexp_matches*
 
         Args:
             regex (T | str): `VARCHAR` expression
@@ -5011,25 +5745,27 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(
-            func("regexp_matches", self._parent.inner(), regex, options)
-        )
+        return self._new(func("regexp_matches", self.inner(), regex, options))
 
     def md5(self) -> T:
         """Returns the MD5 hash of the `string` as a `VARCHAR`.
 
+        **SQL name**: *md5*
+
         Returns:
             T
         """
-        return self._parent.__class__(func("md5", self._parent.inner()))
+        return self._new(func("md5", self.inner()))
 
     def md5_number(self) -> T:
         """Returns the MD5 hash of the `string` as a `HUGEINT`.
 
+        **SQL name**: *md5_number*
+
         Returns:
             T
         """
-        return self._parent.__class__(func("md5_number", self._parent.inner()))
+        return self._new(func("md5_number", self.inner()))
 
     def mismatches(self, s2: T | str) -> T:
         """The Hamming distance between to strings, i.e., the number of positions with different characters for two strings of equal length.
@@ -5037,6 +5773,8 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         Strings must be of equal length.
 
         Characters of different cases (e.g., `a` and `A`) are considered different.
+
+        **SQL name**: *mismatches*
 
         See Also:
             hamming
@@ -5047,22 +5785,26 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(func("mismatches", self._parent.inner(), s2))
+        return self._new(func("mismatches", self.inner(), s2))
 
     def nfc_normalize(self) -> T:
         """Converts `string` to Unicode NFC normalized string.
 
         Useful for comparisons and ordering if text data is mixed between NFC normalized and not.
 
+        **SQL name**: *nfc_normalize*
+
         Returns:
             T
         """
-        return self._parent.__class__(func("nfc_normalize", self._parent.inner()))
+        return self._new(func("nfc_normalize", self.inner()))
 
     def not_ilike_escape(self, like_specifier: T | str, escape_character: T | str) -> T:
         """Returns `false` if the `string` matches the `like_specifier` (see Pattern Matching) using case-insensitive matching.
 
         `escape_character` is used to search for wildcard characters in the `string`.
+
+        **SQL name**: *not_ilike_escape*
 
         Args:
             like_specifier (T | str): `VARCHAR` expression
@@ -5071,13 +5813,8 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(
-            func(
-                "not_ilike_escape",
-                self._parent.inner(),
-                like_specifier,
-                escape_character,
-            )
+        return self._new(
+            func("not_ilike_escape", self.inner(), like_specifier, escape_character)
         )
 
     def not_like_escape(self, like_specifier: T | str, escape_character: T | str) -> T:
@@ -5085,6 +5822,8 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
 
         `escape_character` is used to search for wildcard characters in the `string`.
 
+        **SQL name**: *not_like_escape*
+
         Args:
             like_specifier (T | str): `VARCHAR` expression
             escape_character (T | str): `VARCHAR` expression
@@ -5092,17 +5831,14 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(
-            func(
-                "not_like_escape",
-                self._parent.inner(),
-                like_specifier,
-                escape_character,
-            )
+        return self._new(
+            func("not_like_escape", self.inner(), like_specifier, escape_character)
         )
 
     def ord(self) -> T:
         """Returns an `INTEGER` representing the `unicode` codepoint of the first character in the `string`.
+
+        **SQL name**: *ord*
 
         See Also:
             unicode
@@ -5110,37 +5846,37 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(func("ord", self._parent.inner()))
+        return self._new(func("ord", self.inner()))
 
     def parse_dirname(self, separator: T | str | None = None) -> T:
         """Returns the top-level directory name from the given `path`.
 
         `separator` options: `system`, `both_slash` (default), `forward_slash`, `backslash`.
 
+        **SQL name**: *parse_dirname*
+
         Args:
             separator (T | str | None): `VARCHAR` expression
 
         Returns:
             T
         """
-        return self._parent.__class__(
-            func("parse_dirname", self._parent.inner(), separator)
-        )
+        return self._new(func("parse_dirname", self.inner(), separator))
 
     def parse_dirpath(self, separator: T | str | None = None) -> T:
         """Returns the head of the `path` (the pathname until the last slash) similarly to Python's `os.path.dirname`.
 
         `separator` options: `system`, `both_slash` (default), `forward_slash`, `backslash`.
 
+        **SQL name**: *parse_dirpath*
+
         Args:
             separator (T | str | None): `VARCHAR` expression
 
         Returns:
             T
         """
-        return self._parent.__class__(
-            func("parse_dirpath", self._parent.inner(), separator)
-        )
+        return self._new(func("parse_dirpath", self.inner(), separator))
 
     def parse_filename(
         self,
@@ -5153,6 +5889,8 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
 
         `separator` options: `system`, `both_slash` (default), `forward_slash`, `backslash`.
 
+        **SQL name**: *parse_filename*
+
         Args:
             trim_extension (T | bool | str | None): `BOOLEAN | VARCHAR` expression
             separator (T | str | None): `VARCHAR` expression
@@ -5160,8 +5898,8 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(
-            func("parse_filename", self._parent.inner(), trim_extension, separator)
+        return self._new(
+            func("parse_filename", self.inner(), trim_extension, separator)
         )
 
     def parse_path(self, separator: T | str | None = None) -> T:
@@ -5169,20 +5907,22 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
 
         `separator` options: `system`, `both_slash` (default), `forward_slash`, `backslash`.
 
+        **SQL name**: *parse_path*
+
         Args:
             separator (T | str | None): `VARCHAR` expression
 
         Returns:
             T
         """
-        return self._parent.__class__(
-            func("parse_path", self._parent.inner(), separator)
-        )
+        return self._new(func("parse_path", self.inner(), separator))
 
     def position(self, search_string: T | str) -> T:
         """Returns location of first occurrence of `search_string` in `string`, counting from 1.
 
         Returns 0 if no match found.
+
+        **SQL name**: *position*
 
         See Also:
             instr, strpos
@@ -5193,12 +5933,12 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(
-            func("position", self._parent.inner(), search_string)
-        )
+        return self._new(func("position", self.inner(), search_string))
 
     def prefix(self, search_string: T | str) -> T:
         """Returns `true` if `string` starts with `search_string`.
+
+        **SQL name**: *prefix*
 
         Args:
             search_string (T | str): `VARCHAR` expression
@@ -5206,12 +5946,12 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(
-            func("prefix", self._parent.inner(), search_string)
-        )
+        return self._new(func("prefix", self.inner(), search_string))
 
     def printf(self, *args: T) -> T:
         """Formats a `string` using printf syntax.
+
+        **SQL name**: *printf*
 
         Args:
             *args (T): `ANY` expression
@@ -5219,10 +5959,12 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(func("printf", self._parent.inner(), *args))
+        return self._new(func("printf", self.inner(), *args))
 
     def repeat(self, count: T | int) -> T:
         """Repeats the `string` `count` number of times.
+
+        **SQL name**: *repeat*
 
         Args:
             count (T | int): `BIGINT` expression
@@ -5230,7 +5972,7 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(func("repeat", self._parent.inner(), count))
+        return self._new(func("repeat", self.inner(), count))
 
     def replace(
         self, regex: T | str, replacement: T | str, options: T | str | None = None
@@ -5238,6 +5980,8 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         """If `string` contains the `regex`, replaces the matching part with `replacement`.
 
         A set of optional regex `options` can be set.
+
+        **SQL name**: *regexp_replace*
 
         Args:
             regex (T | str): `VARCHAR` expression
@@ -5247,46 +5991,52 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(
-            func("regexp_replace", self._parent.inner(), regex, replacement, options)
+        return self._new(
+            func("regexp_replace", self.inner(), regex, replacement, options)
         )
 
     def reverse(self) -> T:
         """Reverses the `string`.
 
+        **SQL name**: *reverse*
+
         Returns:
             T
         """
-        return self._parent.__class__(func("reverse", self._parent.inner()))
+        return self._new(func("reverse", self.inner()))
 
     def right(self, count: T | int) -> T:
         """Extract the right-most `count` characters.
 
+        **SQL name**: *right*
+
         Args:
             count (T | int): `BIGINT` expression
 
         Returns:
             T
         """
-        return self._parent.__class__(func("right", self._parent.inner(), count))
+        return self._new(func("right", self.inner(), count))
 
     def right_grapheme(self, count: T | int) -> T:
         """Extracts the right-most `count` grapheme clusters.
 
+        **SQL name**: *right_grapheme*
+
         Args:
             count (T | int): `BIGINT` expression
 
         Returns:
             T
         """
-        return self._parent.__class__(
-            func("right_grapheme", self._parent.inner(), count)
-        )
+        return self._new(func("right_grapheme", self.inner(), count))
 
     def rpad(self, count: T | int, character: T | str) -> T:
         """Pads the `string` with the `character` on the right until it has `count` characters.
 
         Truncates the `string` on the right if it has more than `count` characters.
+
+        **SQL name**: *rpad*
 
         Args:
             count (T | int): `INTEGER` expression
@@ -5295,14 +6045,14 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(
-            func("rpad", self._parent.inner(), count, character)
-        )
+        return self._new(func("rpad", self.inner(), count, character))
 
     def rtrim(self, characters: T | str | None = None) -> T:
         """Removes any occurrences of any of the `characters` from the right side of the `string`.
 
         `characters` defaults to `space`.
+
+        **SQL name**: *rtrim*
 
         Args:
             characters (T | str | None): `VARCHAR` expression
@@ -5310,26 +6060,32 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(func("rtrim", self._parent.inner(), characters))
+        return self._new(func("rtrim", self.inner(), characters))
 
     def sha1(self) -> T:
         """Returns a `VARCHAR` with the SHA-1 hash of the `value`.
 
+        **SQL name**: *sha1*
+
         Returns:
             T
         """
-        return self._parent.__class__(func("sha1", self._parent.inner()))
+        return self._new(func("sha1", self.inner()))
 
     def sha256(self) -> T:
         """Returns a `VARCHAR` with the SHA-256 hash of the `value`.
 
+        **SQL name**: *sha256*
+
         Returns:
             T
         """
-        return self._parent.__class__(func("sha256", self._parent.inner()))
+        return self._new(func("sha256", self.inner()))
 
     def split(self, separator: T | str) -> T:
         """Splits the `string` along the `separator`.
+
+        **SQL name**: *split*
 
         See Also:
             str_split, string_split, string_to_array
@@ -5340,12 +6096,14 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(func("split", self._parent.inner(), separator))
+        return self._new(func("split", self.inner(), separator))
 
     def split_regex(self, regex: T | str, options: T | str | None = None) -> T:
         """Splits the `string` along the `regex`.
 
         A set of optional regex `options` can be set.
+
+        **SQL name**: *string_split_regex*
 
         See Also:
             regexp_split_to_array, str_split_regex
@@ -5357,14 +6115,14 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(
-            func("string_split_regex", self._parent.inner(), regex, options)
-        )
+        return self._new(func("string_split_regex", self.inner(), regex, options))
 
     def split_to_array(self, regex: T | str, options: T | str | None = None) -> T:
         """Splits the `string` along the `regex`.
 
         A set of optional regex `options` can be set.
+
+        **SQL name**: *regexp_split_to_array*
 
         See Also:
             str_split_regex, string_split_regex
@@ -5376,12 +6134,12 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(
-            func("regexp_split_to_array", self._parent.inner(), regex, options)
-        )
+        return self._new(func("regexp_split_to_array", self.inner(), regex, options))
 
     def split_to_table(self, pattern: T) -> T:
         """SQL regexp_split_to_table function.
+
+        **SQL name**: *regexp_split_to_table*
 
         Args:
             pattern (T): `ANY` expression
@@ -5389,12 +6147,12 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(
-            func("regexp_split_to_table", self._parent.inner(), pattern)
-        )
+        return self._new(func("regexp_split_to_table", self.inner(), pattern))
 
     def starts_with(self, search_string: T | str) -> T:
         """Returns `true` if `string` begins with `search_string`.
+
+        **SQL name**: *starts_with*
 
         Args:
             search_string (T | str): `VARCHAR` expression
@@ -5402,12 +6160,12 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(
-            func("starts_with", self._parent.inner(), search_string)
-        )
+        return self._new(func("starts_with", self.inner(), search_string))
 
     def strftime(self, format_arg: T | date | datetime | str) -> T:
         """Converts a `date` to a string according to the format string.
+
+        **SQL name**: *strftime*
 
         Args:
             format_arg (T | date | datetime | str): `DATE | TIMESTAMP | TIMESTAMP_NS | VARCHAR` expression
@@ -5415,30 +6173,34 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(
-            func("strftime", self._parent.inner(), format_arg)
-        )
+        return self._new(func("strftime", self.inner(), format_arg))
 
     def strip_accents(self) -> T:
         """Strips accents from `string`.
 
+        **SQL name**: *strip_accents*
+
         Returns:
             T
         """
-        return self._parent.__class__(func("strip_accents", self._parent.inner()))
+        return self._new(func("strip_accents", self.inner()))
 
     def strlen(self) -> T:
         """Number of bytes in `string`.
 
+        **SQL name**: *strlen*
+
         Returns:
             T
         """
-        return self._parent.__class__(func("strlen", self._parent.inner()))
+        return self._new(func("strlen", self.inner()))
 
     def strpos(self, search_string: T | str) -> T:
         """Returns location of first occurrence of `search_string` in `string`, counting from 1.
 
         Returns 0 if no match found.
+
+        **SQL name**: *strpos*
 
         See Also:
             instr, position
@@ -5449,9 +6211,7 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(
-            func("strpos", self._parent.inner(), search_string)
-        )
+        return self._new(func("strpos", self.inner(), search_string))
 
     def strptime(self, format_arg: T | list[str] | str) -> T:
         """Converts the `string` text to timestamp according to the format string.
@@ -5460,15 +6220,15 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
 
         To return `NULL` on failure, use try_strptime.
 
+        **SQL name**: *strptime*
+
         Args:
             format_arg (T | list[str] | str): `VARCHAR | VARCHAR[]` expression
 
         Returns:
             T
         """
-        return self._parent.__class__(
-            func("strptime", self._parent.inner(), format_arg)
-        )
+        return self._new(func("strptime", self.inner(), format_arg))
 
     def substr(self, start: T | int, length: T | int | None = None) -> T:
         """Extracts substring starting from character `start` up to the end of the string.
@@ -5476,6 +6236,8 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         If optional argument `length` is set, extracts a substring of `length` characters instead.
 
         Note that a `start` value of `1` refers to the first character of the `string`.
+
+        **SQL name**: *substr*
 
         See Also:
             substring
@@ -5487,9 +6249,7 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(
-            func("substr", self._parent.inner(), start, length)
-        )
+        return self._new(func("substr", self.inner(), start, length))
 
     def substring(self, start: T | int, length: T | int | None = None) -> T:
         """Extracts substring starting from character `start` up to the end of the string.
@@ -5497,6 +6257,8 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         If optional argument `length` is set, extracts a substring of `length` characters instead.
 
         Note that a `start` value of `1` refers to the first character of the `string`.
+
+        **SQL name**: *substring*
 
         See Also:
             substr
@@ -5508,9 +6270,7 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(
-            func("substring", self._parent.inner(), start, length)
-        )
+        return self._new(func("substring", self.inner(), start, length))
 
     def substring_grapheme(self, start: T | int, length: T | int | None = None) -> T:
         """Extracts substring starting from grapheme clusters `start` up to the end of the string.
@@ -5519,6 +6279,8 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
 
         Note that a `start` value of `1` refers to the `first` character of the `string`.
 
+        **SQL name**: *substring_grapheme*
+
         Args:
             start (T | int): `BIGINT` expression
             length (T | int | None): `BIGINT` expression
@@ -5526,12 +6288,12 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(
-            func("substring_grapheme", self._parent.inner(), start, length)
-        )
+        return self._new(func("substring_grapheme", self.inner(), start, length))
 
     def suffix(self, search_string: T | str) -> T:
         """Returns `true` if `string` ends with `search_string`.
+
+        **SQL name**: *suffix*
 
         See Also:
             ends_with
@@ -5542,12 +6304,12 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(
-            func("suffix", self._parent.inner(), search_string)
-        )
+        return self._new(func("suffix", self.inner(), search_string))
 
     def to_array(self, separator: T | str) -> T:
         """Splits the `string` along the `separator`.
+
+        **SQL name**: *string_to_array*
 
         See Also:
             split, str_split, string_split
@@ -5558,12 +6320,12 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(
-            func("string_to_array", self._parent.inner(), separator)
-        )
+        return self._new(func("string_to_array", self.inner(), separator))
 
     def to_base(self, radix: T | int, min_length: T | int | None = None) -> T:
         """Converts `number` to a string in the given base `radix`, optionally padding with leading zeros to `min_length`.
+
+        **SQL name**: *to_base*
 
         Args:
             radix (T | int): `INTEGER` expression
@@ -5572,12 +6334,12 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(
-            func("to_base", self._parent.inner(), radix, min_length)
-        )
+        return self._new(func("to_base", self.inner(), radix, min_length))
 
     def to_base64(self) -> T:
         """Converts a `blob` to a base64 encoded string.
+
+        **SQL name**: *to_base64*
 
         See Also:
             base64
@@ -5585,10 +6347,12 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(func("to_base64", self._parent.inner()))
+        return self._new(func("to_base64", self.inner()))
 
     def to_binary(self) -> T:
         """Converts the `string` to binary representation.
+
+        **SQL name**: *to_binary*
 
         See Also:
             bin
@@ -5596,10 +6360,12 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(func("to_binary", self._parent.inner()))
+        return self._new(func("to_binary", self.inner()))
 
     def to_hex(self) -> T:
         """Converts the `string` to hexadecimal representation.
+
+        **SQL name**: *to_hex*
 
         See Also:
             hex
@@ -5607,12 +6373,14 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(func("to_hex", self._parent.inner()))
+        return self._new(func("to_hex", self.inner()))
 
     def translate(self, from_arg: T | str, to: T | str) -> T:
         """Replaces each character in `string` that matches a character in the `from` set with the corresponding character in the `to` set.
 
         If `from` is longer than `to`, occurrences of the extra characters in `from` are deleted.
+
+        **SQL name**: *translate*
 
         Args:
             from_arg (T | str): `VARCHAR` expression
@@ -5621,14 +6389,14 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(
-            func("translate", self._parent.inner(), from_arg, to)
-        )
+        return self._new(func("translate", self.inner(), from_arg, to))
 
     def trim(self, characters: T | str | None = None) -> T:
         """Removes any occurrences of any of the `characters` from either side of the `string`.
 
         `characters` defaults to `space`.
+
+        **SQL name**: *trim*
 
         Args:
             characters (T | str | None): `VARCHAR` expression
@@ -5636,10 +6404,12 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(func("trim", self._parent.inner(), characters))
+        return self._new(func("trim", self.inner(), characters))
 
     def ucase(self) -> T:
         """Converts `string` to upper case.
+
+        **SQL name**: *ucase*
 
         See Also:
             upper
@@ -5647,10 +6417,12 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(func("ucase", self._parent.inner()))
+        return self._new(func("ucase", self.inner()))
 
     def unbin(self) -> T:
         """Converts a `value` from binary representation to a blob.
+
+        **SQL name**: *unbin*
 
         See Also:
             from_binary
@@ -5658,10 +6430,12 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(func("unbin", self._parent.inner()))
+        return self._new(func("unbin", self.inner()))
 
     def unhex(self) -> T:
         """Converts a `value` from hexadecimal representation to a blob.
+
+        **SQL name**: *unhex*
 
         See Also:
             from_hex
@@ -5669,10 +6443,12 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(func("unhex", self._parent.inner()))
+        return self._new(func("unhex", self.inner()))
 
     def unicode(self) -> T:
         """Returns an `INTEGER` representing the `unicode` codepoint of the first character in the `string`.
+
+        **SQL name**: *unicode*
 
         See Also:
             ord
@@ -5680,10 +6456,12 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(func("unicode", self._parent.inner()))
+        return self._new(func("unicode", self.inner()))
 
     def upper(self) -> T:
         """Converts `string` to upper case.
+
+        **SQL name**: *upper*
 
         See Also:
             ucase
@@ -5691,23 +6469,27 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(func("upper", self._parent.inner()))
+        return self._new(func("upper", self.inner()))
 
     def url_decode(self) -> T:
         """Decodes a URL from a representation using Percent-Encoding.
 
+        **SQL name**: *url_decode*
+
         Returns:
             T
         """
-        return self._parent.__class__(func("url_decode", self._parent.inner()))
+        return self._new(func("url_decode", self.inner()))
 
     def url_encode(self) -> T:
         """Encodes a URL to a representation using Percent-Encoding.
 
+        **SQL name**: *url_encode*
+
         Returns:
             T
         """
-        return self._parent.__class__(func("url_encode", self._parent.inner()))
+        return self._new(func("url_encode", self.inner()))
 
 
 class DateTimeFns[T: Fns](NameSpaceHandler[T]):
@@ -5716,19 +6498,23 @@ class DateTimeFns[T: Fns](NameSpaceHandler[T]):
     def date_add(self, interval: T) -> T:
         """SQL date_add function.
 
+        **SQL name**: *date_add*
+
         Args:
             interval (T): `ANY` expression
 
         Returns:
             T
         """
-        return self._parent.__class__(func("date_add", self._parent.inner(), interval))
+        return self._new(func("date_add", self.inner(), interval))
 
     def date_diff(
         self, startdate: T | date | datetime | time, enddate: T | date | datetime | time
     ) -> T:
         """The number of partition boundaries between the timestamps.
 
+        **SQL name**: *date_diff*
+
         Args:
             startdate (T | date | datetime | time): `DATE | TIME | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
             enddate (T | date | datetime | time): `DATE | TIME | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
@@ -5736,12 +6522,12 @@ class DateTimeFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(
-            func("date_diff", self._parent.inner(), startdate, enddate)
-        )
+        return self._new(func("date_diff", self.inner(), startdate, enddate))
 
     def date_part(self, col1: T | date | datetime | time | timedelta) -> T:
         """Get subfield (equivalent to extract).
+
+        **SQL name**: *date_part*
 
         Args:
             col1 (T | date | datetime | time | timedelta): `DATE | INTERVAL | TIME | TIME_NS | TIME WITH TIME ZONE | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
@@ -5749,13 +6535,15 @@ class DateTimeFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(func("date_part", self._parent.inner(), col1))
+        return self._new(func("date_part", self.inner(), col1))
 
     def date_sub(
         self, startdate: T | date | datetime | time, enddate: T | date | datetime | time
     ) -> T:
         """The number of complete partitions between the timestamps.
 
+        **SQL name**: *date_sub*
+
         Args:
             startdate (T | date | datetime | time): `DATE | TIME | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
             enddate (T | date | datetime | time): `DATE | TIME | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
@@ -5763,12 +6551,12 @@ class DateTimeFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(
-            func("date_sub", self._parent.inner(), startdate, enddate)
-        )
+        return self._new(func("date_sub", self.inner(), startdate, enddate))
 
     def date_trunc(self, timestamp: T | date | datetime | timedelta) -> T:
         """Truncate to specified precision.
+
+        **SQL name**: *date_trunc*
 
         Args:
             timestamp (T | date | datetime | timedelta): `DATE | INTERVAL | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
@@ -5776,14 +6564,14 @@ class DateTimeFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(
-            func("date_trunc", self._parent.inner(), timestamp)
-        )
+        return self._new(func("date_trunc", self.inner(), timestamp))
 
     def datediff(
         self, startdate: T | date | datetime | time, enddate: T | date | datetime | time
     ) -> T:
         """The number of partition boundaries between the timestamps.
+
+        **SQL name**: *datediff*
 
         Args:
             startdate (T | date | datetime | time): `DATE | TIME | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
@@ -5792,12 +6580,12 @@ class DateTimeFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(
-            func("datediff", self._parent.inner(), startdate, enddate)
-        )
+        return self._new(func("datediff", self.inner(), startdate, enddate))
 
     def datepart(self, col1: T | date | datetime | time | timedelta) -> T:
         """Get subfield (equivalent to extract).
+
+        **SQL name**: *datepart*
 
         Args:
             col1 (T | date | datetime | time | timedelta): `DATE | INTERVAL | TIME | TIME_NS | TIME WITH TIME ZONE | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
@@ -5805,12 +6593,14 @@ class DateTimeFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(func("datepart", self._parent.inner(), col1))
+        return self._new(func("datepart", self.inner(), col1))
 
     def datesub(
         self, startdate: T | date | datetime | time, enddate: T | date | datetime | time
     ) -> T:
         """The number of complete partitions between the timestamps.
+
+        **SQL name**: *datesub*
 
         Args:
             startdate (T | date | datetime | time): `DATE | TIME | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
@@ -5819,12 +6609,12 @@ class DateTimeFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(
-            func("datesub", self._parent.inner(), startdate, enddate)
-        )
+        return self._new(func("datesub", self.inner(), startdate, enddate))
 
     def datetrunc(self, timestamp: T | date | datetime | timedelta) -> T:
         """Truncate to specified precision.
+
+        **SQL name**: *datetrunc*
 
         Args:
             timestamp (T | date | datetime | timedelta): `DATE | INTERVAL | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
@@ -5832,49 +6622,57 @@ class DateTimeFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(
-            func("datetrunc", self._parent.inner(), timestamp)
-        )
+        return self._new(func("datetrunc", self.inner(), timestamp))
 
     def day(self) -> T:
         """Extract the day component from a date or timestamp.
 
+        **SQL name**: *day*
+
         Returns:
             T
         """
-        return self._parent.__class__(func("day", self._parent.inner()))
+        return self._new(func("day", self.inner()))
 
     def dayname(self) -> T:
         """The (English) name of the weekday.
 
+        **SQL name**: *dayname*
+
         Returns:
             T
         """
-        return self._parent.__class__(func("dayname", self._parent.inner()))
+        return self._new(func("dayname", self.inner()))
 
     def dayofmonth(self) -> T:
         """Extract the dayofmonth component from a date or timestamp.
 
+        **SQL name**: *dayofmonth*
+
         Returns:
             T
         """
-        return self._parent.__class__(func("dayofmonth", self._parent.inner()))
+        return self._new(func("dayofmonth", self.inner()))
 
     def dayofweek(self) -> T:
         """Extract the dayofweek component from a date or timestamp.
 
+        **SQL name**: *dayofweek*
+
         Returns:
             T
         """
-        return self._parent.__class__(func("dayofweek", self._parent.inner()))
+        return self._new(func("dayofweek", self.inner()))
 
     def dayofyear(self) -> T:
         """Extract the dayofyear component from a date or timestamp.
 
+        **SQL name**: *dayofyear*
+
         Returns:
             T
         """
-        return self._parent.__class__(func("dayofyear", self._parent.inner()))
+        return self._new(func("dayofyear", self.inner()))
 
 
 class ArrayFns[T: Fns](NameSpaceHandler[T]):
@@ -5883,13 +6681,17 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
     def agg(self) -> T:
         """Returns a LIST containing all the values of a column.
 
+        **SQL name**: *array_agg*
+
         Returns:
             T
         """
-        return self._parent.__class__(func("array_agg", self._parent.inner()))
+        return self._new(func("array_agg", self.inner()))
 
     def append(self, el: T) -> T:
         """SQL array_append function.
+
+        **SQL name**: *array_append*
 
         Args:
             el (T): `ANY` expression
@@ -5897,7 +6699,7 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(func("array_append", self._parent.inner(), el))
+        return self._new(func("array_append", self.inner(), el))
 
     def cosine_distance(self, array2: T | float) -> T:
         """Computes the cosine distance between two arrays of the same size.
@@ -5906,15 +6708,15 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
 
         The arrays can have any size as long as the size is the same for both arguments.
 
+        **SQL name**: *array_cosine_distance*
+
         Args:
             array2 (T | float): `DOUBLE[ANY] | FLOAT[ANY]` expression
 
         Returns:
             T
         """
-        return self._parent.__class__(
-            func("array_cosine_distance", self._parent.inner(), array2)
-        )
+        return self._new(func("array_cosine_distance", self.inner(), array2))
 
     def cosine_similarity(self, array2: T | float) -> T:
         """Computes the cosine similarity between two arrays of the same size.
@@ -5923,20 +6725,22 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
 
         The arrays can have any size as long as the size is the same for both arguments.
 
+        **SQL name**: *array_cosine_similarity*
+
         Args:
             array2 (T | float): `DOUBLE[ANY] | FLOAT[ANY]` expression
 
         Returns:
             T
         """
-        return self._parent.__class__(
-            func("array_cosine_similarity", self._parent.inner(), array2)
-        )
+        return self._new(func("array_cosine_similarity", self.inner(), array2))
 
     def cross_product(self, array_2: T | float) -> T:
         """Computes the cross product of two arrays of size 3.
 
         The array elements can not be `NULL`.
+
+        **SQL name**: *array_cross_product*
 
         Args:
             array_2 (T | float): `DOUBLE[3] | FLOAT[3]` expression
@@ -5944,9 +6748,7 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(
-            func("array_cross_product", self._parent.inner(), array_2)
-        )
+        return self._new(func("array_cross_product", self.inner(), array_2))
 
     def distance(self, array2: T | float) -> T:
         """Computes the distance between two arrays of the same size.
@@ -5955,15 +6757,15 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
 
         The arrays can have any size as long as the size is the same for both arguments.
 
+        **SQL name**: *array_distance*
+
         Args:
             array2 (T | float): `DOUBLE[ANY] | FLOAT[ANY]` expression
 
         Returns:
             T
         """
-        return self._parent.__class__(
-            func("array_distance", self._parent.inner(), array2)
-        )
+        return self._new(func("array_distance", self.inner(), array2))
 
     def dot_product(self, array2: T | float) -> T:
         """Computes the inner product between two arrays of the same size.
@@ -5971,6 +6773,8 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
         The array elements can not be `NULL`.
 
         The arrays can have any size as long as the size is the same for both arguments.
+
+        **SQL name**: *array_dot_product*
 
         See Also:
             array_inner_product
@@ -5981,12 +6785,12 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(
-            func("array_dot_product", self._parent.inner(), array2)
-        )
+        return self._new(func("array_dot_product", self.inner(), array2))
 
     def extract(self, col1: T | int) -> T:
         """SQL array_extract function.
+
+        **SQL name**: *array_extract*
 
         Args:
             col1 (T | int): `BIGINT` expression
@@ -5994,7 +6798,7 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(func("array_extract", self._parent.inner(), col1))
+        return self._new(func("array_extract", self.inner(), col1))
 
     def inner_product(self, array2: T | float) -> T:
         """Computes the inner product between two arrays of the same size.
@@ -6002,6 +6806,8 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
         The array elements can not be `NULL`.
 
         The arrays can have any size as long as the size is the same for both arguments.
+
+        **SQL name**: *array_inner_product*
 
         See Also:
             array_dot_product
@@ -6012,12 +6818,12 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(
-            func("array_inner_product", self._parent.inner(), array2)
-        )
+        return self._new(func("array_inner_product", self.inner(), array2))
 
     def intersect(self, l2_2: T) -> T:
         """SQL array_intersect function.
+
+        **SQL name**: *array_intersect*
 
         Args:
             l2_2 (T): `ANY` expression
@@ -6025,9 +6831,7 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(
-            func("array_intersect", self._parent.inner(), l2_2)
-        )
+        return self._new(func("array_intersect", self.inner(), l2_2))
 
     def negative_dot_product(self, array2: T | float) -> T:
         """Computes the negative inner product between two arrays of the same size.
@@ -6035,6 +6839,8 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
         The array elements can not be `NULL`.
 
         The arrays can have any size as long as the size is the same for both arguments.
+
+        **SQL name**: *array_negative_dot_product*
 
         See Also:
             array_negative_inner_product
@@ -6045,9 +6851,7 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(
-            func("array_negative_dot_product", self._parent.inner(), array2)
-        )
+        return self._new(func("array_negative_dot_product", self.inner(), array2))
 
     def negative_inner_product(self, array2: T | float) -> T:
         """Computes the negative inner product between two arrays of the same size.
@@ -6055,6 +6859,8 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
         The array elements can not be `NULL`.
 
         The arrays can have any size as long as the size is the same for both arguments.
+
+        **SQL name**: *array_negative_inner_product*
 
         See Also:
             array_negative_dot_product
@@ -6065,28 +6871,32 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(
-            func("array_negative_inner_product", self._parent.inner(), array2)
-        )
+        return self._new(func("array_negative_inner_product", self.inner(), array2))
 
     def pop_back(self) -> T:
         """SQL array_pop_back function.
 
+        **SQL name**: *array_pop_back*
+
         Returns:
             T
         """
-        return self._parent.__class__(func("array_pop_back", self._parent.inner()))
+        return self._new(func("array_pop_back", self.inner()))
 
     def pop_front(self) -> T:
         """SQL array_pop_front function.
 
+        **SQL name**: *array_pop_front*
+
         Returns:
             T
         """
-        return self._parent.__class__(func("array_pop_front", self._parent.inner()))
+        return self._new(func("array_pop_front", self.inner()))
 
     def prepend(self, arr: T) -> T:
         """SQL array_prepend function.
+
+        **SQL name**: *array_prepend*
 
         Args:
             arr (T): `ANY` expression
@@ -6094,79 +6904,87 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(func("array_prepend", self._parent.inner(), arr))
+        return self._new(func("array_prepend", self.inner(), arr))
 
     def push_back(self, e: T) -> T:
         """SQL array_push_back function.
 
+        **SQL name**: *array_push_back*
+
         Args:
             e (T): `ANY` expression
 
         Returns:
             T
         """
-        return self._parent.__class__(func("array_push_back", self._parent.inner(), e))
+        return self._new(func("array_push_back", self.inner(), e))
 
     def push_front(self, e: T) -> T:
         """SQL array_push_front function.
 
+        **SQL name**: *array_push_front*
+
         Args:
             e (T): `ANY` expression
 
         Returns:
             T
         """
-        return self._parent.__class__(func("array_push_front", self._parent.inner(), e))
+        return self._new(func("array_push_front", self.inner(), e))
 
     def reverse(self) -> T:
         """SQL array_reverse function.
 
+        **SQL name**: *array_reverse*
+
         Returns:
             T
         """
-        return self._parent.__class__(func("array_reverse", self._parent.inner()))
+        return self._new(func("array_reverse", self.inner()))
 
     def to_json(self, *args: T) -> T:
         """SQL array_to_json function.
 
+        **SQL name**: *array_to_json*
+
         Args:
             *args (T): `ANY` expression
 
         Returns:
             T
         """
-        return self._parent.__class__(
-            func("array_to_json", self._parent.inner(), *args)
-        )
+        return self._new(func("array_to_json", self.inner(), *args))
 
     def to_string(self, sep: T) -> T:
         """SQL array_to_string function.
 
+        **SQL name**: *array_to_string*
+
         Args:
             sep (T): `ANY` expression
 
         Returns:
             T
         """
-        return self._parent.__class__(
-            func("array_to_string", self._parent.inner(), sep)
-        )
+        return self._new(func("array_to_string", self.inner(), sep))
 
     def to_string_comma_default(self, sep: T) -> T:
         """SQL array_to_string_comma_default function.
 
+        **SQL name**: *array_to_string_comma_default*
+
         Args:
             sep (T): `ANY` expression
 
         Returns:
             T
         """
-        return self._parent.__class__(
-            func("array_to_string_comma_default", self._parent.inner(), sep)
-        )
+        return self._new(func("array_to_string_comma_default", self.inner(), sep))
 
     def value(self, *args: T) -> T:
         """Creates an `ARRAY` containing the argument values.
+
+        **SQL name**: *array_value*
 
         Args:
             *args (T): `ANY` expression
@@ -6174,7 +6992,7 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(func("array_value", self._parent.inner(), *args))
+        return self._new(func("array_value", self.inner(), *args))
 
 
 class JsonFns[T: Fns](NameSpaceHandler[T]):
@@ -6183,16 +7001,20 @@ class JsonFns[T: Fns](NameSpaceHandler[T]):
     def array(self, *args: T) -> T:
         """SQL json_array function.
 
+        **SQL name**: *json_array*
+
         Args:
             *args (T): `ANY` expression
 
         Returns:
             T
         """
-        return self._parent.__class__(func("json_array", self._parent.inner(), *args))
+        return self._new(func("json_array", self.inner(), *args))
 
     def array_length(self, col1: T | list[str] | str | None = None) -> T:
         """SQL json_array_length function.
+
+        **SQL name**: *json_array_length*
 
         Args:
             col1 (T | list[str] | str | None): `VARCHAR | VARCHAR[]` expression
@@ -6200,12 +7022,12 @@ class JsonFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(
-            func("json_array_length", self._parent.inner(), col1)
-        )
+        return self._new(func("json_array_length", self.inner(), col1))
 
     def contains(self, col1_4: T | str) -> T:
         """SQL json_contains function.
+
+        **SQL name**: *json_contains*
 
         Args:
             col1_4 (T | str): `JSON | VARCHAR` expression
@@ -6213,22 +7035,22 @@ class JsonFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(
-            func("json_contains", self._parent.inner(), col1_4)
-        )
+        return self._new(func("json_contains", self.inner(), col1_4))
 
     def deserialize_sql(self) -> T:
         """SQL json_deserialize_sql function.
 
+        **SQL name**: *json_deserialize_sql*
+
         Returns:
             T
         """
-        return self._parent.__class__(
-            func("json_deserialize_sql", self._parent.inner())
-        )
+        return self._new(func("json_deserialize_sql", self.inner()))
 
     def exists(self, col1: T | list[str] | str) -> T:
         """SQL json_exists function.
+
+        **SQL name**: *json_exists*
 
         Args:
             col1 (T | list[str] | str): `VARCHAR | VARCHAR[]` expression
@@ -6236,10 +7058,12 @@ class JsonFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(func("json_exists", self._parent.inner(), col1))
+        return self._new(func("json_exists", self.inner(), col1))
 
     def extract(self, col1_2: T | int | list[str] | str) -> T:
         """SQL json_extract function.
+
+        **SQL name**: *json_extract*
 
         Args:
             col1_2 (T | int | list[str] | str): `BIGINT | VARCHAR | VARCHAR[]` expression
@@ -6247,59 +7071,61 @@ class JsonFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(
-            func("json_extract", self._parent.inner(), col1_2)
-        )
+        return self._new(func("json_extract", self.inner(), col1_2))
 
     def extract_path(self, col1: T | int | list[str] | str) -> T:
         """SQL json_extract_path function.
 
+        **SQL name**: *json_extract_path*
+
         Args:
             col1 (T | int | list[str] | str): `BIGINT | VARCHAR | VARCHAR[]` expression
 
         Returns:
             T
         """
-        return self._parent.__class__(
-            func("json_extract_path", self._parent.inner(), col1)
-        )
+        return self._new(func("json_extract_path", self.inner(), col1))
 
     def extract_path_text(self, col1: T | int | list[str] | str) -> T:
         """SQL json_extract_path_text function.
 
+        **SQL name**: *json_extract_path_text*
+
         Args:
             col1 (T | int | list[str] | str): `BIGINT | VARCHAR | VARCHAR[]` expression
 
         Returns:
             T
         """
-        return self._parent.__class__(
-            func("json_extract_path_text", self._parent.inner(), col1)
-        )
+        return self._new(func("json_extract_path_text", self.inner(), col1))
 
     def extract_string(self, col1: T | int | list[str] | str) -> T:
         """SQL json_extract_string function.
 
+        **SQL name**: *json_extract_string*
+
         Args:
             col1 (T | int | list[str] | str): `BIGINT | VARCHAR | VARCHAR[]` expression
 
         Returns:
             T
         """
-        return self._parent.__class__(
-            func("json_extract_string", self._parent.inner(), col1)
-        )
+        return self._new(func("json_extract_string", self.inner(), col1))
 
     def group_array(self) -> T:
         """SQL json_group_array function.
 
+        **SQL name**: *json_group_array*
+
         Returns:
             T
         """
-        return self._parent.__class__(func("json_group_array", self._parent.inner()))
+        return self._new(func("json_group_array", self.inner()))
 
     def group_object(self, v: T) -> T:
         """SQL json_group_object function.
+
+        **SQL name**: *json_group_object*
 
         Args:
             v (T): `ANY` expression
@@ -6307,22 +7133,22 @@ class JsonFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(
-            func("json_group_object", self._parent.inner(), v)
-        )
+        return self._new(func("json_group_object", self.inner(), v))
 
     def group_structure(self) -> T:
         """SQL json_group_structure function.
 
+        **SQL name**: *json_group_structure*
+
         Returns:
             T
         """
-        return self._parent.__class__(
-            func("json_group_structure", self._parent.inner())
-        )
+        return self._new(func("json_group_structure", self.inner()))
 
     def keys(self, col1: T | list[str] | str | None = None) -> T:
         """SQL json_keys function.
+
+        **SQL name**: *json_keys*
 
         Args:
             col1 (T | list[str] | str | None): `VARCHAR | VARCHAR[]` expression
@@ -6330,10 +7156,12 @@ class JsonFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(func("json_keys", self._parent.inner(), col1))
+        return self._new(func("json_keys", self.inner(), col1))
 
     def merge_patch(self, col1: T | str, *args: T | str) -> T:
         """SQL json_merge_patch function.
+
+        **SQL name**: *json_merge_patch*
 
         Args:
             col1 (T | str): `JSON` expression
@@ -6342,31 +7170,35 @@ class JsonFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(
-            func("json_merge_patch", self._parent.inner(), col1, *args)
-        )
+        return self._new(func("json_merge_patch", self.inner(), col1, *args))
 
     def object(self, *args: T) -> T:
         """SQL json_object function.
 
+        **SQL name**: *json_object*
+
         Args:
             *args (T): `ANY` expression
 
         Returns:
             T
         """
-        return self._parent.__class__(func("json_object", self._parent.inner(), *args))
+        return self._new(func("json_object", self.inner(), *args))
 
     def pretty(self) -> T:
         """SQL json_pretty function.
 
+        **SQL name**: *json_pretty*
+
         Returns:
             T
         """
-        return self._parent.__class__(func("json_pretty", self._parent.inner()))
+        return self._new(func("json_pretty", self.inner()))
 
     def quote(self, *args: T) -> T:
         """SQL json_quote function.
+
+        **SQL name**: *json_quote*
 
         Args:
             *args (T): `ANY` expression
@@ -6374,7 +7206,7 @@ class JsonFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(func("json_quote", self._parent.inner(), *args))
+        return self._new(func("json_quote", self.inner(), *args))
 
     def serialize_plan(
         self,
@@ -6385,6 +7217,8 @@ class JsonFns[T: Fns](NameSpaceHandler[T]):
     ) -> T:
         """SQL json_serialize_plan function.
 
+        **SQL name**: *json_serialize_plan*
+
         Args:
             col1 (T | bool | None): `BOOLEAN` expression
             col2 (T | bool | None): `BOOLEAN` expression
@@ -6394,8 +7228,8 @@ class JsonFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(
-            func("json_serialize_plan", self._parent.inner(), col1, col2, col3, col4)
+        return self._new(
+            func("json_serialize_plan", self.inner(), col1, col2, col3, col4)
         )
 
     def serialize_sql(
@@ -6407,6 +7241,8 @@ class JsonFns[T: Fns](NameSpaceHandler[T]):
     ) -> T:
         """SQL json_serialize_sql function.
 
+        **SQL name**: *json_serialize_sql*
+
         Args:
             col1 (T | bool | None): `BOOLEAN` expression
             col2 (T | bool | None): `BOOLEAN` expression
@@ -6416,46 +7252,50 @@ class JsonFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(
-            func("json_serialize_sql", self._parent.inner(), col1, col2, col3, col4)
+        return self._new(
+            func("json_serialize_sql", self.inner(), col1, col2, col3, col4)
         )
 
     def structure(self) -> T:
         """SQL json_structure function.
 
+        **SQL name**: *json_structure*
+
         Returns:
             T
         """
-        return self._parent.__class__(func("json_structure", self._parent.inner()))
+        return self._new(func("json_structure", self.inner()))
 
     def transform(self, col1: T | str) -> T:
         """SQL json_transform function.
 
+        **SQL name**: *json_transform*
+
         Args:
             col1 (T | str): `VARCHAR` expression
 
         Returns:
             T
         """
-        return self._parent.__class__(
-            func("json_transform", self._parent.inner(), col1)
-        )
+        return self._new(func("json_transform", self.inner(), col1))
 
     def transform_strict(self, col1: T | str) -> T:
         """SQL json_transform_strict function.
 
+        **SQL name**: *json_transform_strict*
+
         Args:
             col1 (T | str): `VARCHAR` expression
 
         Returns:
             T
         """
-        return self._parent.__class__(
-            func("json_transform_strict", self._parent.inner(), col1)
-        )
+        return self._new(func("json_transform_strict", self.inner(), col1))
 
     def type(self, col1: T | list[str] | str | None = None) -> T:
         """SQL json_type function.
+
+        **SQL name**: *json_type*
 
         Args:
             col1 (T | list[str] | str | None): `VARCHAR | VARCHAR[]` expression
@@ -6463,18 +7303,22 @@ class JsonFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(func("json_type", self._parent.inner(), col1))
+        return self._new(func("json_type", self.inner(), col1))
 
     def valid(self) -> T:
         """SQL json_valid function.
 
+        **SQL name**: *json_valid*
+
         Returns:
             T
         """
-        return self._parent.__class__(func("json_valid", self._parent.inner()))
+        return self._new(func("json_valid", self.inner()))
 
     def value(self, col1: T | int | list[str] | str) -> T:
         """SQL json_value function.
+
+        **SQL name**: *json_value*
 
         Args:
             col1 (T | int | list[str] | str): `BIGINT | VARCHAR | VARCHAR[]` expression
@@ -6482,4 +7326,4 @@ class JsonFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._parent.__class__(func("json_value", self._parent.inner(), col1))
+        return self._new(func("json_value", self.inner(), col1))
