@@ -153,12 +153,14 @@ SPECIAL_CASES = pc.Set(
         "log",  # Need to swap argument order to take self._expr as value and not as base
         "strftime",  # Need custom "str" prefix rule, but this rule will also take "struct" funcs in string namespace, so better to just special case it
         "strptime",  # Same as strftime
+        # Generic functions that cause too much conflicts with other names
+        "greatest",  # Has 5 categories, same behavior across thoses, no namespace needed
+        "least",  # Has 5 categories, same behavior across thoses, no namespace needed
         "concat",  # too much conflict with list_concat, array_concat, etc..
     }
 )
 """Function to exclude by name, either because they require special handling or because they conflict with existing names."""
-GENERIC_FUNCTIONS = pc.Set(("greatest", "least"))
-"""Generic functions that work on multiple types and should stay in base Fns class."""
+
 """Function to exclude by name, either because they require special handling or because they conflict with existing names."""
 PREFIXES = pc.Set(
     (

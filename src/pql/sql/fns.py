@@ -1218,23 +1218,6 @@ class Fns(ExprHandler[Expression]):
         """
         return self._new(func("getvariable", self.inner()))
 
-    def greatest(self, *args: Self) -> Self:
-        """Returns the largest value.
-
-        For strings lexicographical ordering is used.
-
-        Note that lowercase characters are considered “larger” than uppercase characters and collations are not supported.
-
-        **SQL name**: *greatest*
-
-        Args:
-            *args (Self): `ANY` expression
-
-        Returns:
-            Self
-        """
-        return self._new(func("greatest", self.inner(), *args))
-
     def greatest_common_divisor(self, y: Self | int) -> Self:
         """Computes the greatest common divisor of x and y.
 
@@ -1469,23 +1452,6 @@ class Fns(ExprHandler[Expression]):
             Self
         """
         return self._new(func("lcm", self.inner(), y))
-
-    def least(self, *args: Self) -> Self:
-        """Returns the smallest value.
-
-        For strings lexicographical ordering is used.
-
-        Note that uppercase characters are considered “smaller” than lowercase characters, and collations are not supported.
-
-        **SQL name**: *least*
-
-        Args:
-            *args (Self): `ANY` expression
-
-        Returns:
-            Self
-        """
-        return self._new(func("least", self.inner(), *args))
 
     def least_common_multiple(self, y: Self | int) -> Self:
         """Computes the least common multiple of x and y.

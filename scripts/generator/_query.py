@@ -5,7 +5,6 @@ import polars as pl
 
 from ._rules import (
     CONVERTER,
-    GENERIC_FUNCTIONS,
     NAMESPACE_SPECS,
     PREFIXES,
     SHADOWERS,
@@ -193,48 +192,45 @@ def _joined_parts(
 
 
 def _make_type_union(py_type: pl.Expr, self_type: pl.Expr) -> pl.Expr:
-    txt = "{self_type} | {py_type}"
-
     return (
         pl.when(py_type.eq(EMPTY_STR))
         .then(self_type)
-        .otherwise(format_kwords(txt, self_type=self_type, py_type=py_type))
+        .otherwise(
+            format_kwords(
+                "{self_type} | {py_type}", self_type=self_type, py_type=py_type
+            )
+        )
     )
 
 
 def _namespace_specs(cats: pl.Expr, fn_name: pl.Expr) -> pl.Expr:
-    empty_lst = pl.lit(None, dtype=pl.List(pl.String))
     return (
-        pl.when(fn_name.is_in(GENERIC_FUNCTIONS))
-        .then(empty_lst)
+        NAMESPACE_SPECS.iter()
+        .map(
+            lambda spec: pl.when(
+                spec.prefixes.iter()
+                .map(fn_name.str.starts_with)
+                .into(pl.any_horizontal)
+            ).then(pl.lit(spec.name))
+        )
+        .into(pl.coalesce)
+        .pipe(
+            lambda prefix_ns: pl.when(prefix_ns.is_not_null()).then(
+                pl.concat_list(prefix_ns)
+            )
+        )
         .otherwise(
             NAMESPACE_SPECS.iter()
             .map(
                 lambda spec: pl.when(
-                    spec.prefixes.iter()
-                    .map(fn_name.str.starts_with)
-                    .into(pl.any_horizontal)
+                    spec.categories.iter()
+                    .map(lambda c: c.value)
+                    .into(lambda x: cats.list.set_intersection(x.collect(tuple)))
+                    .list.len()
+                    .gt(0)
                 ).then(pl.lit(spec.name))
             )
-            .into(pl.coalesce)
-            .pipe(
-                lambda prefix_ns: pl.when(prefix_ns.is_not_null()).then(
-                    pl.concat_list(prefix_ns)
-                )
-            )
-            .otherwise(
-                NAMESPACE_SPECS.iter()
-                .map(
-                    lambda spec: pl.when(
-                        spec.categories.iter()
-                        .map(lambda c: c.value)
-                        .into(lambda x: cats.list.set_intersection(x.collect(tuple)))
-                        .list.len()
-                        .gt(0)
-                    ).then(pl.lit(spec.name))
-                )
-                .into(pl.concat_list)
-            )
+            .into(pl.concat_list)
         )
         .list.drop_nulls()
         .alias("namespace")
