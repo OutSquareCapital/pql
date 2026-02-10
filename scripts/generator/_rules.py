@@ -156,6 +156,9 @@ SPECIAL_CASES = pc.Set(
     }
 )
 """Function to exclude by name, either because they require special handling or because they conflict with existing names."""
+GENERIC_FUNCTIONS = pc.Set(("greatest", "least"))
+"""Generic functions that work on multiple types and should stay in base Fns class."""
+"""Function to exclude by name, either because they require special handling or because they conflict with existing names."""
 PREFIXES = pc.Set(
     (
         "__",  # Internal functions

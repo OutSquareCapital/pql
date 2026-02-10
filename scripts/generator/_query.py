@@ -5,6 +5,7 @@ import pyochain as pc
 
 from ._rules import (
     CONVERTER,
+    GENERIC_FUNCTIONS,
     NAMESPACE_SPECS,
     PREFIXES,
     SHADOWERS,
@@ -49,6 +50,7 @@ def run_qry(lf: pl.LazyFrame) -> pl.LazyFrame:
             )
         )
         .with_columns(dk.categories.pipe(_namespace_specs, dk.function_name))
+        .explode("namespace")
         .with_columns(
             _py_name(dk, py),
             pl.when(py.namespace.is_not_null())
@@ -60,7 +62,7 @@ def run_qry(lf: pl.LazyFrame) -> pl.LazyFrame:
         .explode("parameters", "parameter_types")
         .with_columns(
             pl.int_range(pl.len()).over("sig_id").alias("param_idx"),
-            dk.parameters.pipe(_to_param_names, py.name),
+            dk.parameters.pipe(_to_param_names, py.name, py.namespace),
         )
         .group_by(py.namespace, py.name, params.idx, maintain_order=True)
         .agg(
@@ -100,6 +102,28 @@ def _filters(lf: pl.LazyFrame, dk: DuckCols) -> pl.LazyFrame:
 
 
 def _py_name(dk: DuckCols, py: PyCols) -> pl.Expr:
+    def _strip_namespace_prefixes(py_name: pl.Expr, namespace: pl.Expr) -> pl.Expr:
+        def _strip_prefixes(expr: pl.Expr, prefixes: pc.Seq[str]) -> pl.Expr:
+            return prefixes.iter().fold(
+                expr,
+                lambda acc, prefix: (
+                    pl.when(acc.str.starts_with(prefix))
+                    .then(acc.str.slice(len(prefix)))
+                    .otherwise(acc)
+                ),
+            )
+
+        return pl.coalesce(
+            *NAMESPACE_SPECS.iter()
+            .filter(lambda spec: spec.strip_prefixes.length() > 0)
+            .map(
+                lambda spec: pl.when(namespace.eq(spec.name)).then(
+                    py_name.pipe(_strip_prefixes, spec.strip_prefixes)
+                )
+            ),
+            py_name,
+        )
+
     return (
         pl.concat_str(
             dk.function_name,
@@ -185,47 +209,40 @@ def _make_type_union(py_type: pl.Expr, self_type: pl.Expr) -> pl.Expr:
 
 
 def _namespace_specs(cats: pl.Expr, fn_name: pl.Expr) -> pl.Expr:
-
-    return pl.coalesce(
-        *NAMESPACE_SPECS.iter().map(
-            lambda spec: pl.when(
-                spec.categories.iter()
-                .map(lambda c: c.value)
-                .into(lambda x: cats.list.set_intersection(x.collect(tuple)))
-                .list.len()
-                .gt(0)
-            ).then(pl.lit(spec.name))
-        ),
-        *NAMESPACE_SPECS.iter().map(
-            lambda spec: pl.when(
-                spec.prefixes.iter()
-                .map(fn_name.str.starts_with)
-                .into(pl.any_horizontal)
-            ).then(pl.lit(spec.name))
-        ),
-    ).alias("namespace")
-
-
-def _strip_namespace_prefixes(py_name: pl.Expr, namespace: pl.Expr) -> pl.Expr:
-    def _strip_prefixes(expr: pl.Expr, prefixes: pc.Seq[str]) -> pl.Expr:
-        return prefixes.iter().fold(
-            expr,
-            lambda acc, prefix: (
-                pl.when(acc.str.starts_with(prefix))
-                .then(acc.str.slice(len(prefix)))
-                .otherwise(acc)
-            ),
-        )
-
-    return pl.coalesce(
-        *NAMESPACE_SPECS.iter()
-        .filter(lambda spec: spec.strip_prefixes.length() > 0)
-        .map(
-            lambda spec: pl.when(namespace.eq(spec.name)).then(
-                py_name.pipe(_strip_prefixes, spec.strip_prefixes)
+    empty_lst = pl.lit(None, dtype=pl.List(pl.String))
+    return (
+        pl.when(fn_name.is_in(GENERIC_FUNCTIONS))
+        .then(empty_lst)
+        .otherwise(
+            NAMESPACE_SPECS.iter()
+            .map(
+                lambda spec: pl.when(
+                    spec.categories.iter()
+                    .map(lambda c: c.value)
+                    .into(lambda x: cats.list.set_intersection(x.collect(tuple)))
+                    .list.len()
+                    .gt(0)
+                ).then(pl.lit(spec.name))
             )
-        ),
-        py_name,
+            .chain(
+                NAMESPACE_SPECS.iter().map(
+                    lambda spec: pl.when(
+                        spec.prefixes.iter()
+                        .map(fn_name.str.starts_with)
+                        .into(pl.any_horizontal)
+                    ).then(pl.lit(spec.name))
+                )
+            )
+            .into(pl.concat_list)
+            .list.drop_nulls()
+            .list.unique()
+            .pipe(
+                lambda expr: (
+                    pl.when(expr.list.len().gt(0)).then(expr).otherwise(empty_lst)
+                )
+            )
+        )
+        .alias("namespace")
     )
 
 
@@ -233,7 +250,7 @@ def _convert_duckdb_type_to_python(param_type: pl.Expr) -> pl.Expr:
     return param_type.replace_strict(CONVERTER, return_dtype=pl.String)
 
 
-def _to_param_names(params: pl.Expr, py_name: pl.Expr) -> pl.Expr:
+def _to_param_names(params: pl.Expr, py_name: pl.Expr, namespace: pl.Expr) -> pl.Expr:
     return (
         params.str.strip_chars_start("'\"[")
         .str.strip_chars_end("'\"[]")
@@ -248,12 +265,14 @@ def _to_param_names(params: pl.Expr, py_name: pl.Expr) -> pl.Expr:
         )
         .pipe(
             lambda expr: (
-                pl.when(expr.cum_count().over(py_name, expr).gt(1))
+                pl.when(expr.cum_count().over(py_name, namespace, expr).gt(1))
                 .then(
-                    pl.concat_str(
-                        expr,
-                        pl.lit("_"),
-                        expr.cum_count().over(py_name, expr).cast(pl.String),
+                    format_kwords(
+                        "{name}_{count}",
+                        name=expr,
+                        count=expr.cum_count()
+                        .over(py_name, namespace, expr)
+                        .cast(pl.String),
                     )
                 )
                 .otherwise(expr)
