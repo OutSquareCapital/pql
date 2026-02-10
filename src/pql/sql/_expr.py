@@ -656,6 +656,23 @@ class SqlExprStringNameSpace(StringFns[SqlExpr]):
         """
         return self._new(func("strptime", self.inner(), format_arg))
 
+    def concat(self, *args: SqlExpr) -> SqlExpr:
+        """Concatenates multiple strings or lists.
+
+        `NULL` inputs are skipped.
+
+        See also operator `||`.
+
+        **SQL name**: *concat*
+
+        Args:
+            *args (SqlExpr): `ANY` expression
+
+        Returns:
+            SqlExpr
+        """
+        return self._new(func("concat", self.inner(), *args))
+
 
 @dataclass(slots=True)
 class SqlExprListNameSpace(ListFns[SqlExpr]):
