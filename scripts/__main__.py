@@ -13,6 +13,7 @@ import typer
 from rich.console import Console
 from rich.text import Text
 
+from ._func_table_analysis import analyze
 from .generator import get_data, run_pipeline
 
 DEFAULT_OUTPUT = Path("src", "pql", "sql", "fns.py")
@@ -75,6 +76,12 @@ def generate(
     console.print(Text("Generated file at ").append(output.as_posix(), style="cyan"))
     _run_ruff()
     console.print("Done!", style="bold green")
+
+
+@app.command()
+def analyze_funcs(path: PathArg = DATA_PATH) -> None:
+    """Run analysis of the functions metadata and print results in console."""
+    analyze(path)
 
 
 if __name__ == "__main__":
