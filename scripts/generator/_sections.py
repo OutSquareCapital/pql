@@ -70,7 +70,6 @@ def _header() -> str:
         from __future__ import annotations
 
         from datetime import date, datetime, time, timedelta
-        from decimal import Decimal
         from typing import Self
 
         from duckdb import Expression

@@ -25,7 +25,13 @@ def get_data(path: Path) -> None:
 
 
 def run_pipeline(path: Path) -> str:
-    df = pl.scan_parquet(path).pipe(run_qry).collect()
-
-    typer.echo(f"Found {df.height} function signatures")
-    return pc.Iter(df.iter_rows()).map_star(FunctionInfo).collect().into(build_file)
+    return (
+        pl.scan_parquet(path)
+        .pipe(run_qry)
+        .collect()
+        .map_rows(lambda x: FunctionInfo(*x), return_dtype=pl.Object)
+        .pipe(lambda df: pc.Iter[FunctionInfo](df.to_series()))
+        .collect()
+        .inspect(lambda funcs: typer.echo(f"Generated {funcs.length()} functions"))
+        .into(build_file)
+    )
