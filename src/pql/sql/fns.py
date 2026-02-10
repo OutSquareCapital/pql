@@ -3270,10 +3270,10 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
     def aggr(self, function_name: T | str, *args: T) -> T:
         """Executes the aggregate function `function_name` on the elements of `list`.
 
-        **SQL name**: *array_aggr*
+        **SQL name**: *list_aggr*
 
         See Also:
-            aggregate, array_aggregate, list_aggr, list_aggregate
+            aggregate, array_aggr, array_aggregate, list_aggregate
 
         Args:
             function_name (T | str): `VARCHAR` expression
@@ -3282,7 +3282,7 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._new(func("array_aggr", self.inner(), function_name, *args))
+        return self._new(func("list_aggr", self.inner(), function_name, *args))
 
     def aggregate(self, function_name: T | str, *args: T) -> T:
         """Executes the aggregate function `function_name` on the elements of `list`.
@@ -3419,10 +3419,10 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
 
         See also operator `||`.
 
-        **SQL name**: *array_cat*
+        **SQL name**: *list_cat*
 
         See Also:
-            array_concat, list_cat, list_concat
+            array_cat, array_concat, list_concat
 
         Args:
             *args (T): `ANY[]` expression
@@ -3430,7 +3430,7 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._new(func("array_cat", self.inner(), *args))
+        return self._new(func("list_cat", self.inner(), *args))
 
     def char_length(self) -> T:
         """Returns the length of the `list`.
@@ -3465,10 +3465,10 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
 
         See also operator `||`.
 
-        **SQL name**: *array_concat*
+        **SQL name**: *list_concat*
 
         See Also:
-            array_cat, list_cat, list_concat
+            array_cat, array_concat, list_cat
 
         Args:
             *args (T): `ANY[]` expression
@@ -3476,15 +3476,15 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._new(func("array_concat", self.inner(), *args))
+        return self._new(func("list_concat", self.inner(), *args))
 
     def contains(self, element: T) -> T:
         """Returns true if the list contains the element.
 
-        **SQL name**: *array_contains*
+        **SQL name**: *list_contains*
 
         See Also:
-            array_has, list_contains, list_has
+            array_contains, array_has, list_has
 
         Args:
             element (T): `T` expression
@@ -3492,7 +3492,7 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._new(func("array_contains", self.inner(), element))
+        return self._new(func("list_contains", self.inner(), element))
 
     def cosine_distance(self, list2: T | list[float]) -> T:
         """Computes the cosine distance between two same-sized lists.
@@ -3548,15 +3548,15 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
 
         Does not preserve the original order.
 
-        **SQL name**: *array_distinct*
+        **SQL name**: *list_distinct*
 
         See Also:
-            list_distinct
+            array_distinct
 
         Returns:
             T
         """
-        return self._new(func("array_distinct", self.inner()))
+        return self._new(func("list_distinct", self.inner()))
 
     def dot_product(self, list2: T | list[float]) -> T:
         """Computes the inner product between two same-sized lists.
@@ -3623,10 +3623,10 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
 
         The return type of `list_filter` is the same as the input list's.
 
-        **SQL name**: *array_filter*
+        **SQL name**: *filter*
 
         See Also:
-            filter, list_filter
+            array_filter, list_filter
 
         Args:
             lambda_arg (T): `LAMBDA` expression
@@ -3634,7 +3634,7 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._new(func("array_filter", self.inner(), lambda_arg))
+        return self._new(func("filter", self.inner(), lambda_arg))
 
     def first(self) -> T:
         """SQL list_first function.
@@ -3677,10 +3677,10 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
     def grade_up(self, col1: T | str | None = None, col2: T | str | None = None) -> T:
         """Works like list_sort, but the results are the indexes that correspond to the position in the original list instead of the actual values.
 
-        **SQL name**: *array_grade_up*
+        **SQL name**: *grade_up*
 
         See Also:
-            grade_up, list_grade_up
+            array_grade_up, list_grade_up
 
         Args:
             col1 (T | str | None): `VARCHAR` expression
@@ -3689,15 +3689,15 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._new(func("array_grade_up", self.inner(), col1, col2))
+        return self._new(func("grade_up", self.inner(), col1, col2))
 
     def has(self, element: T) -> T:
         """Returns true if the list contains the element.
 
-        **SQL name**: *array_has*
+        **SQL name**: *list_has*
 
         See Also:
-            array_contains, list_contains, list_has
+            array_contains, array_has, list_contains
 
         Args:
             element (T): `T` expression
@@ -3705,17 +3705,17 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._new(func("array_has", self.inner(), element))
+        return self._new(func("list_has", self.inner(), element))
 
     def has_all(self, list2: T) -> T:
         """Returns true if all elements of list2 are in list1.
 
         NULLs are ignored.
 
-        **SQL name**: *array_has_all*
+        **SQL name**: *list_has_all*
 
         See Also:
-            list_has_all
+            array_has_all
 
         Args:
             list2 (T): `T[]` expression
@@ -3723,17 +3723,17 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._new(func("array_has_all", self.inner(), list2))
+        return self._new(func("list_has_all", self.inner(), list2))
 
     def has_any(self, list2: T) -> T:
         """Returns true if the lists have any element in common.
 
         NULLs are ignored.
 
-        **SQL name**: *array_has_any*
+        **SQL name**: *list_has_any*
 
         See Also:
-            list_has_any
+            array_has_any
 
         Args:
             list2 (T): `T[]` expression
@@ -3741,7 +3741,7 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._new(func("array_has_any", self.inner(), list2))
+        return self._new(func("list_has_any", self.inner(), list2))
 
     def histogram(self) -> T:
         """SQL list_histogram function.
@@ -3758,10 +3758,10 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
 
         If the `element` is not found, it returns `NULL`.
 
-        **SQL name**: *array_indexof*
+        **SQL name**: *list_indexof*
 
         See Also:
-            array_position, list_indexof, list_position
+            array_indexof, array_position, list_position
 
         Args:
             element (T): `T` expression
@@ -3769,7 +3769,7 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._new(func("array_indexof", self.inner(), element))
+        return self._new(func("list_indexof", self.inner(), element))
 
     def inner_product(self, list2: T | list[float]) -> T:
         """Computes the inner product between two same-sized lists.
@@ -3846,25 +3846,15 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
     def length(self) -> T:
         """Returns the length of the `list`.
 
-        **SQL name**: *array_length*
+        **SQL name**: *length*
+
+        See Also:
+            char_length, character_length, len
 
         Returns:
             T
         """
-        return self._new(func("array_length", self.inner()))
-
-    def length_dimension(self, dimension: T | int | None = None) -> T:
-        """`array_length` for lists with dimensions other than 1 not implemented.
-
-        **SQL name**: *array_length*
-
-        Args:
-            dimension (T | int | None): `BIGINT` expression
-
-        Returns:
-            T
-        """
-        return self._new(func("array_length", self.inner(), dimension))
+        return self._new(func("length", self.inner()))
 
     def mad(self) -> T:
         """SQL list_mad function.
@@ -3969,10 +3959,10 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
 
         If the `element` is not found, it returns `NULL`.
 
-        **SQL name**: *array_position*
+        **SQL name**: *list_position*
 
         See Also:
-            array_indexof, list_indexof, list_position
+            array_indexof, array_position, list_indexof
 
         Args:
             element (T): `T` expression
@@ -3980,7 +3970,7 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._new(func("array_position", self.inner(), element))
+        return self._new(func("list_position", self.inner(), element))
 
     def prepend(self, l_arg: T) -> T:
         """SQL list_prepend function.
@@ -4028,10 +4018,10 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
 
         The `lambda` function has an optional `initial_value` argument.
 
-        **SQL name**: *array_reduce*
+        **SQL name**: *list_reduce*
 
         See Also:
-            list_reduce, reduce
+            array_reduce, reduce
 
         Args:
             lambda_arg (T): `LAMBDA` expression
@@ -4040,17 +4030,17 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._new(func("array_reduce", self.inner(), lambda_arg, initial_value))
+        return self._new(func("list_reduce", self.inner(), lambda_arg, initial_value))
 
     def resize(self, size: T, value: T | None = None) -> T:
         """Resizes the `list` to contain `size` elements.
 
         Initializes new elements with `value` or `NULL` if `value` is not set.
 
-        **SQL name**: *array_resize*
+        **SQL name**: *list_resize*
 
         See Also:
-            list_resize
+            array_resize
 
         Args:
             size (T): `ANY` expression
@@ -4059,7 +4049,7 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._new(func("array_resize", self.inner(), size, value))
+        return self._new(func("list_resize", self.inner(), size, value))
 
     def reverse(self) -> T:
         """SQL list_reverse function.
@@ -4074,10 +4064,10 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
     def reverse_sort(self, col1: T | str | None = None) -> T:
         """Sorts the elements of the list in reverse order.
 
-        **SQL name**: *array_reverse_sort*
+        **SQL name**: *list_reverse_sort*
 
         See Also:
-            list_reverse_sort
+            array_reverse_sort
 
         Args:
             col1 (T | str | None): `VARCHAR` expression
@@ -4085,15 +4075,15 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._new(func("array_reverse_sort", self.inner(), col1))
+        return self._new(func("list_reverse_sort", self.inner(), col1))
 
     def select(self, index_list: T | list[int]) -> T:
         """Returns a list based on the elements selected by the `index_list`.
 
-        **SQL name**: *array_select*
+        **SQL name**: *list_select*
 
         See Also:
-            list_select
+            array_select
 
         Args:
             index_list (T | list[int]): `BIGINT[]` expression
@@ -4101,7 +4091,7 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._new(func("array_select", self.inner(), index_list))
+        return self._new(func("list_select", self.inner(), index_list))
 
     def sem(self) -> T:
         """SQL list_sem function.
@@ -4128,10 +4118,10 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
 
         Negative values are accepted.
 
-        **SQL name**: *array_slice*
+        **SQL name**: *list_slice*
 
         See Also:
-            list_slice
+            array_slice
 
         Args:
             begin (T): `ANY` expression
@@ -4141,15 +4131,15 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._new(func("array_slice", self.inner(), begin, end, step))
+        return self._new(func("list_slice", self.inner(), begin, end, step))
 
     def sort(self, col1: T | str | None = None, col2: T | str | None = None) -> T:
         """Sorts the elements of the list.
 
-        **SQL name**: *array_sort*
+        **SQL name**: *list_sort*
 
         See Also:
-            list_sort
+            array_sort
 
         Args:
             col1 (T | str | None): `VARCHAR` expression
@@ -4158,7 +4148,7 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._new(func("array_sort", self.inner(), col1, col2))
+        return self._new(func("list_sort", self.inner(), col1, col2))
 
     def stddev_pop(self) -> T:
         """SQL list_stddev_pop function.
@@ -4205,10 +4195,10 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
 
         The return type is defined by the return type of the `lambda` function.
 
-        **SQL name**: *array_transform*
+        **SQL name**: *list_transform*
 
         See Also:
-            apply, array_apply, list_apply, list_transform
+            apply, array_apply, array_transform, list_apply
 
         Args:
             lambda_arg (T): `LAMBDA` expression
@@ -4216,20 +4206,20 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._new(func("array_transform", self.inner(), lambda_arg))
+        return self._new(func("list_transform", self.inner(), lambda_arg))
 
     def unique(self) -> T:
         """Counts the unique elements of a `list`.
 
-        **SQL name**: *array_unique*
+        **SQL name**: *list_unique*
 
         See Also:
-            list_unique
+            array_unique
 
         Returns:
             T
         """
-        return self._new(func("array_unique", self.inner()))
+        return self._new(func("list_unique", self.inner()))
 
     def unpivot_list(self, *args: T) -> T:
         """Identical to list_value, but generated as part of unpivot for better error messages.
@@ -4283,10 +4273,10 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
     def where(self, mask_list: T | list[bool]) -> T:
         """Returns a list with the `BOOLEAN`s in `mask_list` applied as a mask to the `value_list`.
 
-        **SQL name**: *array_where*
+        **SQL name**: *list_where*
 
         See Also:
-            list_where
+            array_where
 
         Args:
             mask_list (T | list[bool]): `BOOLEAN[]` expression
@@ -4294,7 +4284,7 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._new(func("array_where", self.inner(), mask_list))
+        return self._new(func("list_where", self.inner(), mask_list))
 
     def zip(self, *args: T) -> T:
         """Zips n `LIST`s to a new `LIST` whose length will be that of the longest list.
@@ -4303,10 +4293,10 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
 
         If `truncate` is set, all lists are truncated to the smallest list length.
 
-        **SQL name**: *array_zip*
+        **SQL name**: *list_zip*
 
         See Also:
-            list_zip
+            array_zip
 
         Args:
             *args (T): `ANY` expression
@@ -4314,24 +4304,11 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         Returns:
             T
         """
-        return self._new(func("array_zip", self.inner(), *args))
+        return self._new(func("list_zip", self.inner(), *args))
 
 
 class StructFns[T: Fns](NameSpaceHandler[T]):
     """Mixin providing auto-generated DuckDB struct functions as methods."""
-
-    def array_extract(self, entry: T | int | str) -> T:
-        """Extracts the named `entry` from the `STRUCT`.
-
-        **SQL name**: *array_extract*
-
-        Args:
-            entry (T | int | str): `BIGINT | VARCHAR` expression
-
-        Returns:
-            T
-        """
-        return self._new(func("array_extract", self.inner(), entry))
 
     def concat(self, *args: T) -> T:
         """Merge the multiple STRUCTs into a single STRUCT.
@@ -4622,25 +4599,6 @@ class RegexFns[T: Fns](NameSpaceHandler[T]):
             func("regexp_replace", self.inner(), regex, replacement, options)
         )
 
-    def split_regex(self, regex: T | str, options: T | str | None = None) -> T:
-        """Splits the `string` along the `regex`.
-
-        A set of optional regex `options` can be set.
-
-        **SQL name**: *string_split_regex*
-
-        See Also:
-            regexp_split_to_array, str_split_regex
-
-        Args:
-            regex (T | str): `VARCHAR` expression
-            options (T | str | None): `VARCHAR` expression
-
-        Returns:
-            T
-        """
-        return self._new(func("string_split_regex", self.inner(), regex, options))
-
     def split_to_array(self, regex: T | str, options: T | str | None = None) -> T:
         """Splits the `string` along the `regex`.
 
@@ -4692,38 +4650,6 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
             T
         """
         return self._new(func("string_agg", self.inner(), arg))
-
-    def array_extract(self, index: T | int) -> T:
-        """Extracts a single character from a `string` using a (1-based) `index`.
-
-        **SQL name**: *array_extract*
-
-        Args:
-            index (T | int): `BIGINT` expression
-
-        Returns:
-            T
-        """
-        return self._new(func("array_extract", self.inner(), index))
-
-    def array_slice(self, begin: T, end: T) -> T:
-        """Extracts a sublist or substring using slice conventions.
-
-        Negative values are accepted.
-
-        **SQL name**: *array_slice*
-
-        See Also:
-            list_slice
-
-        Args:
-            begin (T): `ANY` expression
-            end (T): `ANY` expression
-
-        Returns:
-            T
-        """
-        return self._new(func("array_slice", self.inner(), begin, end))
 
     def ascii(self) -> T:
         """Returns an integer that represents the Unicode code point of the first character of the `string`.
@@ -4825,23 +4751,6 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
             T
         """
         return self._new(func("chr", self.inner()))
-
-    def concat(self, *args: T) -> T:
-        """Concatenates multiple strings or lists.
-
-        `NULL` inputs are skipped.
-
-        See also operator `||`.
-
-        **SQL name**: *concat*
-
-        Args:
-            *args (T): `ANY` expression
-
-        Returns:
-            T
-        """
-        return self._new(func("concat", self.inner(), *args))
 
     def concat_ws(self, string: T, *args: T) -> T:
         """Concatenates many strings, separated by `separator`.
@@ -5267,25 +5176,6 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         return self._new(
             func("like_escape", self.inner(), like_specifier, escape_character)
         )
-
-    def list_slice(self, begin: T, end: T) -> T:
-        """Extracts a sublist or substring using slice conventions.
-
-        Negative values are accepted.
-
-        **SQL name**: *list_slice*
-
-        See Also:
-            array_slice
-
-        Args:
-            begin (T): `ANY` expression
-            end (T): `ANY` expression
-
-        Returns:
-            T
-        """
-        return self._new(func("list_slice", self.inner(), begin, end))
 
     def lower(self) -> T:
         """Converts `string` to lower case.

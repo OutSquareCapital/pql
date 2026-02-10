@@ -1,7 +1,7 @@
+import re
 from collections.abc import Iterable
 
 import polars as pl
-import pyochain as pc
 
 from ._rules import (
     CONVERTER,
@@ -107,28 +107,6 @@ def _return_type(namespace: pl.Expr) -> pl.Expr:
 
 
 def _py_name(dk: DuckCols, py: PyCols) -> pl.Expr:
-    def _strip_namespace_prefixes(py_name: pl.Expr) -> pl.Expr:
-        def _strip_prefixes(expr: pl.Expr, prefixes: pc.Seq[str]) -> pl.Expr:
-            return prefixes.iter().fold(
-                expr,
-                lambda acc, prefix: (
-                    pl.when(acc.str.starts_with(prefix))
-                    .then(acc.str.slice(len(prefix)))
-                    .otherwise(acc)
-                ),
-            )
-
-        return pl.coalesce(
-            *NAMESPACE_SPECS.iter()
-            .filter(lambda spec: spec.strip_prefixes.length() > 0)
-            .map(
-                lambda spec: pl.when(py.namespace.eq(spec.name)).then(
-                    py_name.pipe(_strip_prefixes, spec.strip_prefixes)
-                )
-            ),
-            py_name,
-        )
-
     return (
         pl.concat_str(
             dk.function_name,
@@ -138,7 +116,15 @@ def _py_name(dk: DuckCols, py: PyCols) -> pl.Expr:
             ignore_nulls=True,
         )
         .str.to_lowercase()
-        .pipe(_strip_namespace_prefixes)
+        .str.replace(
+            (
+                NAMESPACE_SPECS.iter()
+                .flat_map(lambda spec: spec.strip_prefixes.iter().map(re.escape))
+                .into(lambda p: f"^(?:{p.join('|')})")
+            ),
+            EMPTY_STR,
+            literal=False,
+        )
         .alias("py_name")
     )
 
@@ -222,30 +208,32 @@ def _namespace_specs(cats: pl.Expr, fn_name: pl.Expr) -> pl.Expr:
             NAMESPACE_SPECS.iter()
             .map(
                 lambda spec: pl.when(
-                    spec.categories.iter()
-                    .map(lambda c: c.value)
-                    .into(lambda x: cats.list.set_intersection(x.collect(tuple)))
-                    .list.len()
-                    .gt(0)
+                    spec.prefixes.iter()
+                    .map(fn_name.str.starts_with)
+                    .into(pl.any_horizontal)
                 ).then(pl.lit(spec.name))
             )
-            .chain(
-                NAMESPACE_SPECS.iter().map(
+            .into(pl.coalesce)
+            .pipe(
+                lambda prefix_ns: pl.when(prefix_ns.is_not_null()).then(
+                    pl.concat_list(prefix_ns)
+                )
+            )
+            .otherwise(
+                NAMESPACE_SPECS.iter()
+                .map(
                     lambda spec: pl.when(
-                        spec.prefixes.iter()
-                        .map(fn_name.str.starts_with)
-                        .into(pl.any_horizontal)
+                        spec.categories.iter()
+                        .map(lambda c: c.value)
+                        .into(lambda x: cats.list.set_intersection(x.collect(tuple)))
+                        .list.len()
+                        .gt(0)
                     ).then(pl.lit(spec.name))
                 )
-            )
-            .into(pl.concat_list)
-            .list.drop_nulls()
-            .pipe(
-                lambda expr: (
-                    pl.when(expr.list.len().gt(0)).then(expr).otherwise(empty_lst)
-                )
+                .into(pl.concat_list)
             )
         )
+        .list.drop_nulls()
         .alias("namespace")
     )
 
