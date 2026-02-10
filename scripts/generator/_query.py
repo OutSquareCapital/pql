@@ -58,7 +58,7 @@ def run_qry(lf: pl.LazyFrame) -> pl.LazyFrame:
         .explode("parameters", "parameter_types")
         .with_columns(
             pl.int_range(pl.len()).over("sig_id").alias("param_idx"),
-            dk.parameters.pipe(_to_param_names, py.name, py.namespace),
+            dk.parameters.pipe(_to_param_names),
         )
         .group_by(py.namespace, py.name, params.idx, maintain_order=True)
         .agg(
@@ -242,31 +242,15 @@ def _convert_duckdb_type_to_python(param_type: pl.Expr) -> pl.Expr:
     return param_type.replace_strict(CONVERTER, return_dtype=pl.String)
 
 
-def _to_param_names(params: pl.Expr, py_name: pl.Expr, namespace: pl.Expr) -> pl.Expr:
+def _to_param_names(params: pl.Expr) -> pl.Expr:
     return (
-        params.str.strip_chars_start("'\"[")
-        .str.strip_chars_end("'\"[]")
+        params.str.strip_chars("'\"[]")
         .str.replace(r"\(.*$", EMPTY_STR)
         .str.replace_all(r"\.\.\.", EMPTY_STR)
         .pipe(
             lambda expr: (
                 pl.when(expr.is_in(SHADOWERS))
                 .then(pl.concat_str(expr, pl.lit("_arg")))
-                .otherwise(expr)
-            )
-        )
-        .pipe(
-            lambda expr: (
-                pl.when(expr.cum_count().over(py_name, namespace, expr).gt(1))
-                .then(
-                    format_kwords(
-                        "{name}_{count}",
-                        name=expr,
-                        count=expr.cum_count()
-                        .over(py_name, namespace, expr)
-                        .cast(pl.String),
-                    )
-                )
                 .otherwise(expr)
             )
         )

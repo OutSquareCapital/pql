@@ -50,18 +50,18 @@ class Fns(ExprHandler[Expression]):
         """
         return self._new(func("acosh", self.inner()))
 
-    def age(self, timestamp_6: Self | datetime | None = None) -> Self:
+    def age(self, timestamp: Self | datetime | None = None) -> Self:
         """Subtract arguments, resulting in the time difference between the two timestamps.
 
         **SQL name**: *age*
 
         Args:
-            timestamp_6 (Self | datetime | None): `TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
+            timestamp (Self | datetime | None): `TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
 
         Returns:
             Self
         """
-        return self._new(func("age", self.inner(), timestamp_6))
+        return self._new(func("age", self.inner(), timestamp))
 
     def any_value(self) -> Self:
         """Returns the first non-NULL value from arg.
@@ -6248,7 +6248,7 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("array_cosine_similarity", self.inner(), array2))
 
-    def cross_product(self, array_2: T | float) -> T:
+    def cross_product(self, array: T | float) -> T:
         """Computes the cross product of two arrays of size 3.
 
         The array elements can not be `NULL`.
@@ -6256,12 +6256,12 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
         **SQL name**: *array_cross_product*
 
         Args:
-            array_2 (T | float): `DOUBLE[3] | FLOAT[3]` expression
+            array (T | float): `DOUBLE[3] | FLOAT[3]` expression
 
         Returns:
             T
         """
-        return self._new(func("array_cross_product", self.inner(), array_2))
+        return self._new(func("array_cross_product", self.inner(), array))
 
     def distance(self, array2: T | float) -> T:
         """Computes the distance between two arrays of the same size.
