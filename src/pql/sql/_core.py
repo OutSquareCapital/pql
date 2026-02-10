@@ -2,16 +2,14 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Any, Concatenate, Self
+from typing import TYPE_CHECKING, Any, Concatenate, Self
 
 import duckdb
 import polars as pl
 import pyochain as pc
-from polars._typing import FrameInitTypes
 
-type FrameInit = (
-    duckdb.DuckDBPyRelation | pl.DataFrame | pl.LazyFrame | None | FrameInitTypes
-)
+if TYPE_CHECKING:
+    from ._typing import FrameInit
 
 
 @dataclass(slots=True)

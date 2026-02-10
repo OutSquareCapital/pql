@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from collections.abc import Iterable
 from dataclasses import dataclass
-from datetime import date, datetime, time, timedelta
+from datetime import date, datetime
 from typing import TYPE_CHECKING, Any, Self
 
 import duckdb
@@ -22,28 +22,8 @@ from .fns import (
 )
 
 if TYPE_CHECKING:
-    from .._expr import Expr
+    from ._typing import IntoExpr, IntoExprColumn
     from .datatypes import DataType
-
-
-type PyLiteral = (
-    str
-    | int
-    | float
-    | bool
-    | date
-    | datetime
-    | time
-    | timedelta
-    | bytes
-    | bytearray
-    | memoryview
-    | list[PyLiteral]
-    | dict[Any, PyLiteral]
-    | None
-)
-type IntoExpr = PyLiteral | SqlExpr | duckdb.Expression | Expr
-type IntoExprColumn = Iterable[SqlExpr] | SqlExpr | str | duckdb.Expression | Expr
 
 
 def row_number() -> SqlExpr:
@@ -107,6 +87,9 @@ def from_cols(exprs: IntoExprColumn) -> pc.Iter[duckdb.Expression | str]:
             return pc.Iter.once(exprs)
         case Iterable():
             return pc.Iter(exprs).map(from_cols).flatten()
+        case _:
+            txt = f"Unreachable. Got {type(exprs)} with value {exprs!r}."
+            raise ValueError(txt)
 
 
 class SqlExpr(Fns):  # noqa: PLW1641

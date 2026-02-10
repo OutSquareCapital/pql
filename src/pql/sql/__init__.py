@@ -1,10 +1,8 @@
 """SQL expression functions and converters."""
 
 from . import datatypes
-from ._core import ExprHandler, FrameInit, rel_from_data
+from ._core import ExprHandler, rel_from_data
 from ._expr import (
-    IntoExpr,
-    IntoExprColumn,
     SqlExpr,
     all,
     coalesce,
@@ -18,6 +16,7 @@ from ._expr import (
     to_duckdb,
     when,
 )
+from ._typing import FrameInit, IntoExpr, IntoExprColumn
 
 __all__ = [
     "ExprHandler",
