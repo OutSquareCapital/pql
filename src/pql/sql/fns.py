@@ -6010,7 +6010,7 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
 class DateTimeFns[T: Fns](NameSpaceHandler[T]):
     """Mixin providing auto-generated DuckDB datetime functions as methods."""
 
-    def date_add(self, interval: T) -> T:
+    def add(self, interval: T) -> T:
         """SQL date_add function.
 
         **SQL name**: *date_add*
@@ -6022,64 +6022,6 @@ class DateTimeFns[T: Fns](NameSpaceHandler[T]):
             T
         """
         return self._new(func("date_add", self.inner(), interval))
-
-    def date_diff(
-        self, startdate: T | date | datetime | time, enddate: T | date | datetime | time
-    ) -> T:
-        """The number of partition boundaries between the timestamps.
-
-        **SQL name**: *date_diff*
-
-        Args:
-            startdate (T | date | datetime | time): `DATE | TIME | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
-            enddate (T | date | datetime | time): `DATE | TIME | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
-
-        Returns:
-            T
-        """
-        return self._new(func("date_diff", self.inner(), startdate, enddate))
-
-    def date_part(self, col1: T | date | datetime | time | timedelta) -> T:
-        """Get subfield (equivalent to extract).
-
-        **SQL name**: *date_part*
-
-        Args:
-            col1 (T | date | datetime | time | timedelta): `DATE | INTERVAL | TIME | TIME_NS | TIME WITH TIME ZONE | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
-
-        Returns:
-            T
-        """
-        return self._new(func("date_part", self.inner(), col1))
-
-    def date_sub(
-        self, startdate: T | date | datetime | time, enddate: T | date | datetime | time
-    ) -> T:
-        """The number of complete partitions between the timestamps.
-
-        **SQL name**: *date_sub*
-
-        Args:
-            startdate (T | date | datetime | time): `DATE | TIME | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
-            enddate (T | date | datetime | time): `DATE | TIME | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
-
-        Returns:
-            T
-        """
-        return self._new(func("date_sub", self.inner(), startdate, enddate))
-
-    def date_trunc(self, timestamp: T | date | datetime | timedelta) -> T:
-        """Truncate to specified precision.
-
-        **SQL name**: *date_trunc*
-
-        Args:
-            timestamp (T | date | datetime | timedelta): `DATE | INTERVAL | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
-
-        Returns:
-            T
-        """
-        return self._new(func("date_trunc", self.inner(), timestamp))
 
     def datediff(
         self, startdate: T | date | datetime | time, enddate: T | date | datetime | time
@@ -6188,6 +6130,64 @@ class DateTimeFns[T: Fns](NameSpaceHandler[T]):
             T
         """
         return self._new(func("dayofyear", self.inner()))
+
+    def diff(
+        self, startdate: T | date | datetime | time, enddate: T | date | datetime | time
+    ) -> T:
+        """The number of partition boundaries between the timestamps.
+
+        **SQL name**: *date_diff*
+
+        Args:
+            startdate (T | date | datetime | time): `DATE | TIME | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
+            enddate (T | date | datetime | time): `DATE | TIME | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
+
+        Returns:
+            T
+        """
+        return self._new(func("date_diff", self.inner(), startdate, enddate))
+
+    def part(self, col1: T | date | datetime | time | timedelta) -> T:
+        """Get subfield (equivalent to extract).
+
+        **SQL name**: *date_part*
+
+        Args:
+            col1 (T | date | datetime | time | timedelta): `DATE | INTERVAL | TIME | TIME_NS | TIME WITH TIME ZONE | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
+
+        Returns:
+            T
+        """
+        return self._new(func("date_part", self.inner(), col1))
+
+    def sub(
+        self, startdate: T | date | datetime | time, enddate: T | date | datetime | time
+    ) -> T:
+        """The number of complete partitions between the timestamps.
+
+        **SQL name**: *date_sub*
+
+        Args:
+            startdate (T | date | datetime | time): `DATE | TIME | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
+            enddate (T | date | datetime | time): `DATE | TIME | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
+
+        Returns:
+            T
+        """
+        return self._new(func("date_sub", self.inner(), startdate, enddate))
+
+    def trunc(self, timestamp: T | date | datetime | timedelta) -> T:
+        """Truncate to specified precision.
+
+        **SQL name**: *date_trunc*
+
+        Args:
+            timestamp (T | date | datetime | timedelta): `DATE | INTERVAL | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
+
+        Returns:
+            T
+        """
+        return self._new(func("date_trunc", self.inner(), timestamp))
 
 
 class ArrayFns[T: Fns](NameSpaceHandler[T]):

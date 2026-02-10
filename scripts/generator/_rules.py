@@ -215,7 +215,7 @@ NAMESPACE_SPECS = pc.Seq(
             doc="Mixin providing auto-generated DuckDB datetime functions as methods.",
             prefixes=pc.Seq(("date", "day")),
             categories=pc.Seq((Categories.TIMESTAMP, Categories.DATE)),
-            strip_prefixes=pc.Seq(()),
+            strip_prefixes=pc.Seq(("date_",)),
         ),
         NamespaceSpec(
             name="ArrayFns",
