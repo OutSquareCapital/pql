@@ -10,7 +10,6 @@ Functions are extracted from DuckDB's duckdb_functions() introspection.
 from __future__ import annotations
 
 from datetime import date, datetime, time, timedelta
-from decimal import Decimal
 from typing import Self
 
 from duckdb import Expression
@@ -151,7 +150,8 @@ class Fns(ExprHandler[Expression]):
         return self._new(func("arg_max", self.inner(), val, col2))
 
     def arg_max_null(
-        self, val: Self | bytes | bytearray | memoryview | date | datetime | float | str
+        self,
+        val: Self | bytes | bytearray | memoryview | date | datetime | float | str,
     ) -> Self:
         """Finds the row with the maximum val.
 
@@ -191,7 +191,8 @@ class Fns(ExprHandler[Expression]):
         return self._new(func("arg_min", self.inner(), val, col2))
 
     def arg_min_null(
-        self, val: Self | bytes | bytearray | memoryview | date | datetime | float | str
+        self,
+        val: Self | bytes | bytearray | memoryview | date | datetime | float | str,
     ) -> Self:
         """Finds the row with the minimum val.
 
@@ -774,19 +775,6 @@ class Fns(ExprHandler[Expression]):
         """
         return self._new(func("degrees", self.inner()))
 
-    def divide(self, col1: Self | float) -> Self:
-        """SQL divide function.
-
-        **SQL name**: *divide*
-
-        Args:
-            col1 (Self | float | int): `BIGINT | DOUBLE | FLOAT | HUGEINT | INTEGER | SMALLINT | TINYINT | UBIGINT | UHUGEINT | UINTEGER | USMALLINT | UTINYINT` expression
-
-        Returns:
-            Self
-        """
-        return self._new(func("divide", self.inner(), col1))
-
     def element_at(self, key: Self) -> Self:
         """Returns a list containing the value for a given key or an empty list if the key is not contained in the map.
 
@@ -1230,6 +1218,23 @@ class Fns(ExprHandler[Expression]):
         """
         return self._new(func("getvariable", self.inner()))
 
+    def greatest(self, *args: Self) -> Self:
+        """Returns the largest value.
+
+        For strings lexicographical ordering is used.
+
+        Note that lowercase characters are considered “larger” than uppercase characters and collations are not supported.
+
+        **SQL name**: *greatest*
+
+        Args:
+            *args (Self): `ANY` expression
+
+        Returns:
+            Self
+        """
+        return self._new(func("greatest", self.inner(), *args))
+
     def greatest_common_divisor(self, y: Self | int) -> Self:
         """Computes the greatest common divisor of x and y.
 
@@ -1384,16 +1389,6 @@ class Fns(ExprHandler[Expression]):
         """
         return self._new(func("isoyear", self.inner()))
 
-    def json(self) -> Self:
-        """SQL json function.
-
-        **SQL name**: *json*
-
-        Returns:
-            Self
-        """
-        return self._new(func("json", self.inner()))
-
     def julian(self) -> Self:
         """Extract the Julian Day number from a date or timestamp.
 
@@ -1474,6 +1469,23 @@ class Fns(ExprHandler[Expression]):
             Self
         """
         return self._new(func("lcm", self.inner(), y))
+
+    def least(self, *args: Self) -> Self:
+        """Returns the smallest value.
+
+        For strings lexicographical ordering is used.
+
+        Note that uppercase characters are considered “smaller” than lowercase characters, and collations are not supported.
+
+        **SQL name**: *least*
+
+        Args:
+            *args (Self): `ANY` expression
+
+        Returns:
+            Self
+        """
+        return self._new(func("least", self.inner(), *args))
 
     def least_common_multiple(self, y: Self | int) -> Self:
         """Computes the least common multiple of x and y.
@@ -2063,19 +2075,6 @@ class Fns(ExprHandler[Expression]):
         """
         return self._new(func("monthname", self.inner()))
 
-    def multiply(self, col1: Self | Decimal | float | timedelta) -> Self:
-        """SQL multiply function.
-
-        **SQL name**: *multiply*
-
-        Args:
-            col1 (Self | Decimal | float | int | timedelta): `BIGINT | DECIMAL | DOUBLE | FLOAT | HUGEINT | INTEGER | INTERVAL | SMALLINT | TINYINT | UBIGINT | UHUGEINT | UINTEGER | USMALLINT | UTINYINT` expression
-
-        Returns:
-            Self
-        """
-        return self._new(func("multiply", self.inner(), col1))
-
     def nanosecond(self) -> Self:
         """Extract the nanosecond component from a date or timestamp.
 
@@ -2167,19 +2166,6 @@ class Fns(ExprHandler[Expression]):
             Self
         """
         return self._new(func("parse_duckdb_log_message", self.inner(), message))
-
-    def power(self, y: Self | float) -> Self:
-        """Computes x to the power of y.
-
-        **SQL name**: *power*
-
-        Args:
-            y (Self | float): `DOUBLE` expression
-
-        Returns:
-            Self
-        """
-        return self._new(func("power", self.inner(), y))
 
     def product(self) -> Self:
         """Calculates the product of all tuples in arg.
@@ -2396,18 +2382,18 @@ class Fns(ExprHandler[Expression]):
             func("remap_struct", self.inner(), target_type, mapping, defaults)
         )
 
-    def repeat(self, count_2: Self | int) -> Self:
+    def repeat(self, count: Self | int) -> Self:
         """Repeats the `blob` `count` number of times.
 
         **SQL name**: *repeat*
 
         Args:
-            count_2 (Self | int): `BIGINT` expression
+            count (Self | int): `BIGINT` expression
 
         Returns:
             Self
         """
-        return self._new(func("repeat", self.inner(), count_2))
+        return self._new(func("repeat", self.inner(), count))
 
     def replace_type(self, type1: Self, type2: Self) -> Self:
         """Casts all fields of type1 to type2.
@@ -2708,21 +2694,6 @@ class Fns(ExprHandler[Expression]):
             Self
         """
         return self._new(func("stddev_samp", self.inner()))
-
-    def subtract(
-        self, col1: Self | Decimal | date | datetime | float | timedelta | None = None
-    ) -> Self:
-        """SQL subtract function.
-
-        **SQL name**: *subtract*
-
-        Args:
-            col1 (Self | Decimal | date | datetime | float | int | timedelta | None): `BIGINT | BIGNUM | DATE | DECIMAL | DOUBLE | FLOAT | HUGEINT | INTEGER | INTERVAL | SMALLINT | TIMESTAMP | TINYINT | UBIGINT | UHUGEINT | UINTEGER | USMALLINT | UTINYINT` expression
-
-        Returns:
-            Self
-        """
-        return self._new(func("subtract", self.inner(), col1))
 
     def sum(self) -> Self:
         """Calculates the sum value for all tuples in arg.
@@ -4511,6 +4482,198 @@ class StructFns[T: Fns](NameSpaceHandler[T]):
         return self._new(func("struct_update", self.inner(), *args))
 
 
+class RegexFns[T: Fns](NameSpaceHandler[T]):
+    """Mixin providing auto-generated DuckDB regex functions as methods."""
+
+    def escape(self) -> T:
+        """Escapes special patterns to turn `string` into a regular expression similarly to Python's `re.escape` function.
+
+        **SQL name**: *regexp_escape*
+
+        Returns:
+            T
+        """
+        return self._new(func("regexp_escape", self.inner()))
+
+    def extract(
+        self,
+        regex: T | str,
+        group: T | int | None = None,
+        options: T | str | None = None,
+    ) -> T:
+        """If `string` contains the `regex` pattern, returns the capturing group specified by optional parameter `group`; otherwise, returns the empty string.
+
+        The `group` must be a constant value.
+
+        If no `group` is given, it defaults to 0.
+
+        A set of optional regex `options` can be set.
+
+        **SQL name**: *regexp_extract*
+
+        Args:
+            regex (T | str): `VARCHAR` expression
+            group (T | int | None): `INTEGER` expression
+            options (T | str | None): `VARCHAR` expression
+
+        Returns:
+            T
+        """
+        return self._new(func("regexp_extract", self.inner(), regex, group, options))
+
+    def extract_all(
+        self,
+        regex: T | str,
+        group: T | int | None = None,
+        options: T | str | None = None,
+    ) -> T:
+        """Finds non-overlapping occurrences of the `regex` in the `string` and returns the corresponding values of the capturing `group`.
+
+        A set of optional regex `options` can be set.
+
+        **SQL name**: *regexp_extract_all*
+
+        Args:
+            regex (T | str): `VARCHAR` expression
+            group (T | int | None): `INTEGER` expression
+            options (T | str | None): `VARCHAR` expression
+
+        Returns:
+            T
+        """
+        return self._new(
+            func("regexp_extract_all", self.inner(), regex, group, options)
+        )
+
+    def extract_name_list(
+        self,
+        regex: T | str,
+        name_list: T | list[str] | None = None,
+        options: T | str | None = None,
+    ) -> T:
+        """If `string` contains the `regex` pattern, returns the capturing groups as a struct with corresponding names from `name_list`; otherwise, returns a struct with the same keys and empty strings as values.
+
+        A set of optional regex `options` can be set.
+
+        **SQL name**: *regexp_extract*
+
+        Args:
+            regex (T | str): `VARCHAR` expression
+            name_list (T | list[str] | None): `VARCHAR[]` expression
+            options (T | str | None): `VARCHAR` expression
+
+        Returns:
+            T
+        """
+        return self._new(
+            func("regexp_extract", self.inner(), regex, name_list, options)
+        )
+
+    def full_match(self, regex: T | str, col2: T | str | None = None) -> T:
+        """Returns `true` if the entire `string` matches the `regex`.
+
+        A set of optional regex `options` can be set.
+
+        **SQL name**: *regexp_full_match*
+
+        Args:
+            regex (T | str): `VARCHAR` expression
+            col2 (T | str | None): `VARCHAR` expression
+
+        Returns:
+            T
+        """
+        return self._new(func("regexp_full_match", self.inner(), regex, col2))
+
+    def matches(self, regex: T | str, options: T | str | None = None) -> T:
+        """Returns `true` if `string` contains the `regex`, `false` otherwise.
+
+        A set of optional regex `options` can be set.
+
+        **SQL name**: *regexp_matches*
+
+        Args:
+            regex (T | str): `VARCHAR` expression
+            options (T | str | None): `VARCHAR` expression
+
+        Returns:
+            T
+        """
+        return self._new(func("regexp_matches", self.inner(), regex, options))
+
+    def replace(
+        self, regex: T | str, replacement: T | str, options: T | str | None = None
+    ) -> T:
+        """If `string` contains the `regex`, replaces the matching part with `replacement`.
+
+        A set of optional regex `options` can be set.
+
+        **SQL name**: *regexp_replace*
+
+        Args:
+            regex (T | str): `VARCHAR` expression
+            replacement (T | str): `VARCHAR` expression
+            options (T | str | None): `VARCHAR` expression
+
+        Returns:
+            T
+        """
+        return self._new(
+            func("regexp_replace", self.inner(), regex, replacement, options)
+        )
+
+    def split_regex(self, regex: T | str, options: T | str | None = None) -> T:
+        """Splits the `string` along the `regex`.
+
+        A set of optional regex `options` can be set.
+
+        **SQL name**: *string_split_regex*
+
+        See Also:
+            regexp_split_to_array, str_split_regex
+
+        Args:
+            regex (T | str): `VARCHAR` expression
+            options (T | str | None): `VARCHAR` expression
+
+        Returns:
+            T
+        """
+        return self._new(func("string_split_regex", self.inner(), regex, options))
+
+    def split_to_array(self, regex: T | str, options: T | str | None = None) -> T:
+        """Splits the `string` along the `regex`.
+
+        A set of optional regex `options` can be set.
+
+        **SQL name**: *regexp_split_to_array*
+
+        See Also:
+            str_split_regex, string_split_regex
+
+        Args:
+            regex (T | str): `VARCHAR` expression
+            options (T | str | None): `VARCHAR` expression
+
+        Returns:
+            T
+        """
+        return self._new(func("regexp_split_to_array", self.inner(), regex, options))
+
+    def split_to_table(self, pattern: T) -> T:
+        """SQL regexp_split_to_table function.
+
+        **SQL name**: *regexp_split_to_table*
+
+        Args:
+            pattern (T): `ANY` expression
+
+        Returns:
+            T
+        """
+        return self._new(func("regexp_split_to_table", self.inner(), pattern))
+
+
 class StringFns[T: Fns](NameSpaceHandler[T]):
     """Mixin providing auto-generated DuckDB string functions as methods."""
 
@@ -4542,6 +4705,25 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
             T
         """
         return self._new(func("array_extract", self.inner(), index))
+
+    def array_slice(self, begin: T, end: T) -> T:
+        """Extracts a sublist or substring using slice conventions.
+
+        Negative values are accepted.
+
+        **SQL name**: *array_slice*
+
+        See Also:
+            list_slice
+
+        Args:
+            begin (T): `ANY` expression
+            end (T): `ANY` expression
+
+        Returns:
+            T
+        """
+        return self._new(func("array_slice", self.inner(), begin, end))
 
     def ascii(self) -> T:
         """Returns an integer that represents the Unicode code point of the first character of the `string`.
@@ -4644,6 +4826,23 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("chr", self.inner()))
 
+    def concat(self, *args: T) -> T:
+        """Concatenates multiple strings or lists.
+
+        `NULL` inputs are skipped.
+
+        See also operator `||`.
+
+        **SQL name**: *concat*
+
+        Args:
+            *args (T): `ANY` expression
+
+        Returns:
+            T
+        """
+        return self._new(func("concat", self.inner(), *args))
+
     def concat_ws(self, string: T, *args: T) -> T:
         """Concatenates many strings, separated by `separator`.
 
@@ -4723,90 +4922,6 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
             T
         """
         return self._new(func("ends_with", self.inner(), search_string))
-
-    def escape(self) -> T:
-        """Escapes special patterns to turn `string` into a regular expression similarly to Python's `re.escape` function.
-
-        **SQL name**: *regexp_escape*
-
-        Returns:
-            T
-        """
-        return self._new(func("regexp_escape", self.inner()))
-
-    def extract(
-        self,
-        regex: T | str,
-        group: T | int | None = None,
-        options: T | str | None = None,
-    ) -> T:
-        """If `string` contains the `regex` pattern, returns the capturing group specified by optional parameter `group`; otherwise, returns the empty string.
-
-        The `group` must be a constant value.
-
-        If no `group` is given, it defaults to 0.
-
-        A set of optional regex `options` can be set.
-
-        **SQL name**: *regexp_extract*
-
-        Args:
-            regex (T | str): `VARCHAR` expression
-            group (T | int | None): `INTEGER` expression
-            options (T | str | None): `VARCHAR` expression
-
-        Returns:
-            T
-        """
-        return self._new(func("regexp_extract", self.inner(), regex, group, options))
-
-    def extract_all(
-        self,
-        regex: T | str,
-        group: T | int | None = None,
-        options: T | str | None = None,
-    ) -> T:
-        """Finds non-overlapping occurrences of the `regex` in the `string` and returns the corresponding values of the capturing `group`.
-
-        A set of optional regex `options` can be set.
-
-        **SQL name**: *regexp_extract_all*
-
-        Args:
-            regex (T | str): `VARCHAR` expression
-            group (T | int | None): `INTEGER` expression
-            options (T | str | None): `VARCHAR` expression
-
-        Returns:
-            T
-        """
-        return self._new(
-            func("regexp_extract_all", self.inner(), regex, group, options)
-        )
-
-    def extract_name_list(
-        self,
-        regex: T | str,
-        name_list: T | list[str] | None = None,
-        options: T | str | None = None,
-    ) -> T:
-        """If `string` contains the `regex` pattern, returns the capturing groups as a struct with corresponding names from `name_list`; otherwise, returns a struct with the same keys and empty strings as values.
-
-        A set of optional regex `options` can be set.
-
-        **SQL name**: *regexp_extract*
-
-        Args:
-            regex (T | str): `VARCHAR` expression
-            name_list (T | list[str] | None): `VARCHAR[]` expression
-            options (T | str | None): `VARCHAR` expression
-
-        Returns:
-            T
-        """
-        return self._new(
-            func("regexp_extract", self.inner(), regex, name_list, options)
-        )
 
     def format(self, *args: T) -> T:
         """Formats a string using the fmt syntax.
@@ -4892,39 +5007,6 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
             T
         """
         return self._new(func("from_hex", self.inner()))
-
-    def full_match(self, regex: T | str, col2: T | str | None = None) -> T:
-        """Returns `true` if the entire `string` matches the `regex`.
-
-        A set of optional regex `options` can be set.
-
-        **SQL name**: *regexp_full_match*
-
-        Args:
-            regex (T | str): `VARCHAR` expression
-            col2 (T | str | None): `VARCHAR` expression
-
-        Returns:
-            T
-        """
-        return self._new(func("regexp_full_match", self.inner(), regex, col2))
-
-    def greatest(self, *args: T) -> T:
-        """Returns the largest value.
-
-        For strings lexicographical ordering is used.
-
-        Note that lowercase characters are considered “larger” than uppercase characters and collations are not supported.
-
-        **SQL name**: *greatest*
-
-        Args:
-            *args (T): `ANY` expression
-
-        Returns:
-            T
-        """
-        return self._new(func("greatest", self.inner(), *args))
 
     def hamming(self, s2: T | str) -> T:
         """The Hamming distance between to strings, i.e., the number of positions with different characters for two strings of equal length.
@@ -5088,23 +5170,6 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("lcase", self.inner()))
 
-    def least(self, *args: T) -> T:
-        """Returns the smallest value.
-
-        For strings lexicographical ordering is used.
-
-        Note that uppercase characters are considered “smaller” than lowercase characters, and collations are not supported.
-
-        **SQL name**: *least*
-
-        Args:
-            *args (T): `ANY` expression
-
-        Returns:
-            T
-        """
-        return self._new(func("least", self.inner(), *args))
-
     def left(self, count: T | int) -> T:
         """Extracts the left-most count characters.
 
@@ -5203,6 +5268,25 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
             func("like_escape", self.inner(), like_specifier, escape_character)
         )
 
+    def list_slice(self, begin: T, end: T) -> T:
+        """Extracts a sublist or substring using slice conventions.
+
+        Negative values are accepted.
+
+        **SQL name**: *list_slice*
+
+        See Also:
+            array_slice
+
+        Args:
+            begin (T): `ANY` expression
+            end (T): `ANY` expression
+
+        Returns:
+            T
+        """
+        return self._new(func("list_slice", self.inner(), begin, end))
+
     def lower(self) -> T:
         """Converts `string` to lower case.
 
@@ -5246,22 +5330,6 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
             T
         """
         return self._new(func("ltrim", self.inner(), characters))
-
-    def matches(self, regex: T | str, options: T | str | None = None) -> T:
-        """Returns `true` if `string` contains the `regex`, `false` otherwise.
-
-        A set of optional regex `options` can be set.
-
-        **SQL name**: *regexp_matches*
-
-        Args:
-            regex (T | str): `VARCHAR` expression
-            options (T | str | None): `VARCHAR` expression
-
-        Returns:
-            T
-        """
-        return self._new(func("regexp_matches", self.inner(), regex, options))
 
     def md5(self) -> T:
         """Returns the MD5 hash of the `string` as a `VARCHAR`.
@@ -5490,26 +5558,19 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("repeat", self.inner(), count))
 
-    def replace(
-        self, regex: T | str, replacement: T | str, options: T | str | None = None
-    ) -> T:
-        """If `string` contains the `regex`, replaces the matching part with `replacement`.
+    def replace(self, source: T | str, target: T | str) -> T:
+        """Replaces any occurrences of the `source` with `target` in `string`.
 
-        A set of optional regex `options` can be set.
-
-        **SQL name**: *regexp_replace*
+        **SQL name**: *replace*
 
         Args:
-            regex (T | str): `VARCHAR` expression
-            replacement (T | str): `VARCHAR` expression
-            options (T | str | None): `VARCHAR` expression
+            source (T | str): `VARCHAR` expression
+            target (T | str): `VARCHAR` expression
 
         Returns:
             T
         """
-        return self._new(
-            func("regexp_replace", self.inner(), regex, replacement, options)
-        )
+        return self._new(func("replace", self.inner(), source, target))
 
     def reverse(self) -> T:
         """Reverses the `string`.
@@ -5633,38 +5694,6 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("string_split_regex", self.inner(), regex, options))
 
-    def split_to_array(self, regex: T | str, options: T | str | None = None) -> T:
-        """Splits the `string` along the `regex`.
-
-        A set of optional regex `options` can be set.
-
-        **SQL name**: *regexp_split_to_array*
-
-        See Also:
-            str_split_regex, string_split_regex
-
-        Args:
-            regex (T | str): `VARCHAR` expression
-            options (T | str | None): `VARCHAR` expression
-
-        Returns:
-            T
-        """
-        return self._new(func("regexp_split_to_array", self.inner(), regex, options))
-
-    def split_to_table(self, pattern: T) -> T:
-        """SQL regexp_split_to_table function.
-
-        **SQL name**: *regexp_split_to_table*
-
-        Args:
-            pattern (T): `ANY` expression
-
-        Returns:
-            T
-        """
-        return self._new(func("regexp_split_to_table", self.inner(), pattern))
-
     def starts_with(self, search_string: T | str) -> T:
         """Returns `true` if `string` begins with `search_string`.
 
@@ -5677,19 +5706,6 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
             T
         """
         return self._new(func("starts_with", self.inner(), search_string))
-
-    def strftime(self, format_arg: T | date | datetime | str) -> T:
-        """Converts a `date` to a string according to the format string.
-
-        **SQL name**: *strftime*
-
-        Args:
-            format_arg (T | date | datetime | str): `DATE | TIMESTAMP | TIMESTAMP_NS | VARCHAR` expression
-
-        Returns:
-            T
-        """
-        return self._new(func("strftime", self.inner(), format_arg))
 
     def strip_accents(self) -> T:
         """Strips accents from `string`.
@@ -5728,23 +5744,6 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
             T
         """
         return self._new(func("strpos", self.inner(), search_string))
-
-    def strptime(self, format_arg: T | list[str] | str) -> T:
-        """Converts the `string` text to timestamp according to the format string.
-
-        Throws an error on failure.
-
-        To return `NULL` on failure, use try_strptime.
-
-        **SQL name**: *strptime*
-
-        Args:
-            format_arg (T | list[str] | str): `VARCHAR | VARCHAR[]` expression
-
-        Returns:
-            T
-        """
-        return self._new(func("strptime", self.inner(), format_arg))
 
     def substr(self, start: T | int, length: T | int | None = None) -> T:
         """Extracts substring starting from character `start` up to the end of the string.
@@ -6204,6 +6203,40 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("array_agg", self.inner()))
 
+    def aggr(self, function_name: T | str, *args: T) -> T:
+        """Executes the aggregate function `function_name` on the elements of `list`.
+
+        **SQL name**: *array_aggr*
+
+        See Also:
+            aggregate, array_aggregate, list_aggr, list_aggregate
+
+        Args:
+            function_name (T | str): `VARCHAR` expression
+            *args (T): `ANY` expression
+
+        Returns:
+            T
+        """
+        return self._new(func("array_aggr", self.inner(), function_name, *args))
+
+    def aggregate(self, function_name: T | str, *args: T) -> T:
+        """Executes the aggregate function `function_name` on the elements of `list`.
+
+        **SQL name**: *array_aggregate*
+
+        See Also:
+            aggregate, array_aggr, list_aggr, list_aggregate
+
+        Args:
+            function_name (T | str): `VARCHAR` expression
+            *args (T): `ANY` expression
+
+        Returns:
+            T
+        """
+        return self._new(func("array_aggregate", self.inner(), function_name, *args))
+
     def append(self, el: T) -> T:
         """SQL array_append function.
 
@@ -6216,6 +6249,80 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
             T
         """
         return self._new(func("array_append", self.inner(), el))
+
+    def apply(self, lambda_arg: T) -> T:
+        """Returns a list that is the result of applying the `lambda` function to each element of the input `list`.
+
+        The return type is defined by the return type of the `lambda` function.
+
+        **SQL name**: *array_apply*
+
+        See Also:
+            apply, array_transform, list_apply, list_transform
+
+        Args:
+            lambda_arg (T): `LAMBDA` expression
+
+        Returns:
+            T
+        """
+        return self._new(func("array_apply", self.inner(), lambda_arg))
+
+    def cat(self, *args: T) -> T:
+        """Concatenates lists.
+
+        `NULL` inputs are skipped.
+
+        See also operator `||`.
+
+        **SQL name**: *array_cat*
+
+        See Also:
+            array_concat, list_cat, list_concat
+
+        Args:
+            *args (T): `ANY[]` expression
+
+        Returns:
+            T
+        """
+        return self._new(func("array_cat", self.inner(), *args))
+
+    def concat(self, *args: T) -> T:
+        """Concatenates lists.
+
+        `NULL` inputs are skipped.
+
+        See also operator `||`.
+
+        **SQL name**: *array_concat*
+
+        See Also:
+            array_cat, list_cat, list_concat
+
+        Args:
+            *args (T): `ANY[]` expression
+
+        Returns:
+            T
+        """
+        return self._new(func("array_concat", self.inner(), *args))
+
+    def contains(self, element: T) -> T:
+        """Returns true if the list contains the element.
+
+        **SQL name**: *array_contains*
+
+        See Also:
+            array_has, list_contains, list_has
+
+        Args:
+            element (T): `T` expression
+
+        Returns:
+            T
+        """
+        return self._new(func("array_contains", self.inner(), element))
 
     def cosine_distance(self, array2: T | float) -> T:
         """Computes the cosine distance between two arrays of the same size.
@@ -6283,6 +6390,21 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("array_distance", self.inner(), array2))
 
+    def distinct(self) -> T:
+        """Removes all duplicates and `NULL` values from a list.
+
+        Does not preserve the original order.
+
+        **SQL name**: *array_distinct*
+
+        See Also:
+            list_distinct
+
+        Returns:
+            T
+        """
+        return self._new(func("array_distinct", self.inner()))
+
     def dot_product(self, array2: T | float) -> T:
         """Computes the inner product between two arrays of the same size.
 
@@ -6303,18 +6425,125 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("array_dot_product", self.inner(), array2))
 
-    def extract(self, col1: T | int) -> T:
-        """SQL array_extract function.
+    def extract(self, col1: T | int | str) -> T:
+        """Extracts a single character from a `string` using a (1-based) `index`.
 
         **SQL name**: *array_extract*
 
         Args:
-            col1 (T | int): `BIGINT` expression
+            col1 (T | int | str): `BIGINT | VARCHAR` expression
 
         Returns:
             T
         """
         return self._new(func("array_extract", self.inner(), col1))
+
+    def filter(self, lambda_arg: T) -> T:
+        """Constructs a list from those elements of the input `list` for which the `lambda` function returns `true`.
+
+        DuckDB must be able to cast the `lambda` function's return type to `BOOL`.
+
+        The return type of `list_filter` is the same as the input list's.
+
+        **SQL name**: *array_filter*
+
+        See Also:
+            filter, list_filter
+
+        Args:
+            lambda_arg (T): `LAMBDA` expression
+
+        Returns:
+            T
+        """
+        return self._new(func("array_filter", self.inner(), lambda_arg))
+
+    def grade_up(self, col1: T | str | None = None, col2: T | str | None = None) -> T:
+        """Works like list_sort, but the results are the indexes that correspond to the position in the original list instead of the actual values.
+
+        **SQL name**: *array_grade_up*
+
+        See Also:
+            grade_up, list_grade_up
+
+        Args:
+            col1 (T | str | None): `VARCHAR` expression
+            col2 (T | str | None): `VARCHAR` expression
+
+        Returns:
+            T
+        """
+        return self._new(func("array_grade_up", self.inner(), col1, col2))
+
+    def has(self, element: T) -> T:
+        """Returns true if the list contains the element.
+
+        **SQL name**: *array_has*
+
+        See Also:
+            array_contains, list_contains, list_has
+
+        Args:
+            element (T): `T` expression
+
+        Returns:
+            T
+        """
+        return self._new(func("array_has", self.inner(), element))
+
+    def has_all(self, list2: T) -> T:
+        """Returns true if all elements of list2 are in list1.
+
+        NULLs are ignored.
+
+        **SQL name**: *array_has_all*
+
+        See Also:
+            list_has_all
+
+        Args:
+            list2 (T): `T[]` expression
+
+        Returns:
+            T
+        """
+        return self._new(func("array_has_all", self.inner(), list2))
+
+    def has_any(self, list2: T) -> T:
+        """Returns true if the lists have any element in common.
+
+        NULLs are ignored.
+
+        **SQL name**: *array_has_any*
+
+        See Also:
+            list_has_any
+
+        Args:
+            list2 (T): `T[]` expression
+
+        Returns:
+            T
+        """
+        return self._new(func("array_has_any", self.inner(), list2))
+
+    def indexof(self, element: T) -> T:
+        """Returns the index of the `element` if the `list` contains the `element`.
+
+        If the `element` is not found, it returns `NULL`.
+
+        **SQL name**: *array_indexof*
+
+        See Also:
+            array_position, list_indexof, list_position
+
+        Args:
+            element (T): `T` expression
+
+        Returns:
+            T
+        """
+        return self._new(func("array_indexof", self.inner(), element))
 
     def inner_product(self, array2: T | float) -> T:
         """Computes the inner product between two arrays of the same size.
@@ -6336,18 +6565,41 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("array_inner_product", self.inner(), array2))
 
-    def intersect(self, l2_2: T) -> T:
+    def intersect(self, l2: T) -> T:
         """SQL array_intersect function.
 
         **SQL name**: *array_intersect*
 
         Args:
-            l2_2 (T): `ANY` expression
+            l2 (T): `ANY` expression
 
         Returns:
             T
         """
-        return self._new(func("array_intersect", self.inner(), l2_2))
+        return self._new(func("array_intersect", self.inner(), l2))
+
+    def length(self) -> T:
+        """Returns the length of the `list`.
+
+        **SQL name**: *array_length*
+
+        Returns:
+            T
+        """
+        return self._new(func("array_length", self.inner()))
+
+    def length_dimension(self, dimension: T | int | None = None) -> T:
+        """`array_length` for lists with dimensions other than 1 not implemented.
+
+        **SQL name**: *array_length*
+
+        Args:
+            dimension (T | int | None): `BIGINT` expression
+
+        Returns:
+            T
+        """
+        return self._new(func("array_length", self.inner(), dimension))
 
     def negative_dot_product(self, array2: T | float) -> T:
         """Computes the negative inner product between two arrays of the same size.
@@ -6409,6 +6661,24 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("array_pop_front", self.inner()))
 
+    def position(self, element: T) -> T:
+        """Returns the index of the `element` if the `list` contains the `element`.
+
+        If the `element` is not found, it returns `NULL`.
+
+        **SQL name**: *array_position*
+
+        See Also:
+            array_indexof, list_indexof, list_position
+
+        Args:
+            element (T): `T` expression
+
+        Returns:
+            T
+        """
+        return self._new(func("array_position", self.inner(), element))
+
     def prepend(self, arr: T) -> T:
         """SQL array_prepend function.
 
@@ -6448,6 +6718,44 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("array_push_front", self.inner(), e))
 
+    def reduce(self, lambda_arg: T, initial_value: T | None = None) -> T:
+        """Reduces all elements of the input `list` into a single scalar value by executing the `lambda` function on a running result and the next list element.
+
+        The `lambda` function has an optional `initial_value` argument.
+
+        **SQL name**: *array_reduce*
+
+        See Also:
+            list_reduce, reduce
+
+        Args:
+            lambda_arg (T): `LAMBDA` expression
+            initial_value (T | None): `ANY` expression
+
+        Returns:
+            T
+        """
+        return self._new(func("array_reduce", self.inner(), lambda_arg, initial_value))
+
+    def resize(self, size: T, value: T | None = None) -> T:
+        """Resizes the `list` to contain `size` elements.
+
+        Initializes new elements with `value` or `NULL` if `value` is not set.
+
+        **SQL name**: *array_resize*
+
+        See Also:
+            list_resize
+
+        Args:
+            size (T): `ANY` expression
+            value (T | None): `ANY` expression
+
+        Returns:
+            T
+        """
+        return self._new(func("array_resize", self.inner(), size, value))
+
     def reverse(self) -> T:
         """SQL array_reverse function.
 
@@ -6457,6 +6765,75 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
             T
         """
         return self._new(func("array_reverse", self.inner()))
+
+    def reverse_sort(self, col1: T | str | None = None) -> T:
+        """Sorts the elements of the list in reverse order.
+
+        **SQL name**: *array_reverse_sort*
+
+        See Also:
+            list_reverse_sort
+
+        Args:
+            col1 (T | str | None): `VARCHAR` expression
+
+        Returns:
+            T
+        """
+        return self._new(func("array_reverse_sort", self.inner(), col1))
+
+    def select(self, index_list: T | list[int]) -> T:
+        """Returns a list based on the elements selected by the `index_list`.
+
+        **SQL name**: *array_select*
+
+        See Also:
+            list_select
+
+        Args:
+            index_list (T | list[int]): `BIGINT[]` expression
+
+        Returns:
+            T
+        """
+        return self._new(func("array_select", self.inner(), index_list))
+
+    def slice(self, begin: T, end: T, step: T | int | None = None) -> T:
+        """Extracts a sublist or substring using slice conventions.
+
+        Negative values are accepted.
+
+        **SQL name**: *array_slice*
+
+        See Also:
+            list_slice
+
+        Args:
+            begin (T): `ANY` expression
+            end (T): `ANY` expression
+            step (T | int | None): `BIGINT` expression
+
+        Returns:
+            T
+        """
+        return self._new(func("array_slice", self.inner(), begin, end, step))
+
+    def sort(self, col1: T | str | None = None, col2: T | str | None = None) -> T:
+        """Sorts the elements of the list.
+
+        **SQL name**: *array_sort*
+
+        See Also:
+            list_sort
+
+        Args:
+            col1 (T | str | None): `VARCHAR` expression
+            col2 (T | str | None): `VARCHAR` expression
+
+        Returns:
+            T
+        """
+        return self._new(func("array_sort", self.inner(), col1, col2))
 
     def to_json(self, *args: T) -> T:
         """SQL array_to_json function.
@@ -6497,6 +6874,37 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("array_to_string_comma_default", self.inner(), sep))
 
+    def transform(self, lambda_arg: T) -> T:
+        """Returns a list that is the result of applying the `lambda` function to each element of the input `list`.
+
+        The return type is defined by the return type of the `lambda` function.
+
+        **SQL name**: *array_transform*
+
+        See Also:
+            apply, array_apply, list_apply, list_transform
+
+        Args:
+            lambda_arg (T): `LAMBDA` expression
+
+        Returns:
+            T
+        """
+        return self._new(func("array_transform", self.inner(), lambda_arg))
+
+    def unique(self) -> T:
+        """Counts the unique elements of a `list`.
+
+        **SQL name**: *array_unique*
+
+        See Also:
+            list_unique
+
+        Returns:
+            T
+        """
+        return self._new(func("array_unique", self.inner()))
+
     def value(self, *args: T) -> T:
         """Creates an `ARRAY` containing the argument values.
 
@@ -6509,6 +6917,42 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
             T
         """
         return self._new(func("array_value", self.inner(), *args))
+
+    def where(self, mask_list: T | list[bool]) -> T:
+        """Returns a list with the `BOOLEAN`s in `mask_list` applied as a mask to the `value_list`.
+
+        **SQL name**: *array_where*
+
+        See Also:
+            list_where
+
+        Args:
+            mask_list (T | list[bool]): `BOOLEAN[]` expression
+
+        Returns:
+            T
+        """
+        return self._new(func("array_where", self.inner(), mask_list))
+
+    def zip(self, *args: T) -> T:
+        """Zips n `LIST`s to a new `LIST` whose length will be that of the longest list.
+
+        Its elements are structs of n elements from each list `list_1`, …, `list_n`, missing elements are replaced with `NULL`.
+
+        If `truncate` is set, all lists are truncated to the smallest list length.
+
+        **SQL name**: *array_zip*
+
+        See Also:
+            list_zip
+
+        Args:
+            *args (T): `ANY` expression
+
+        Returns:
+            T
+        """
+        return self._new(func("array_zip", self.inner(), *args))
 
 
 class JsonFns[T: Fns](NameSpaceHandler[T]):
@@ -6540,18 +6984,18 @@ class JsonFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("json_array_length", self.inner(), col1))
 
-    def contains(self, col1_4: T | str) -> T:
+    def contains(self, col1: T | str) -> T:
         """SQL json_contains function.
 
         **SQL name**: *json_contains*
 
         Args:
-            col1_4 (T | str): `JSON | VARCHAR` expression
+            col1 (T | str): `JSON | VARCHAR` expression
 
         Returns:
             T
         """
-        return self._new(func("json_contains", self.inner(), col1_4))
+        return self._new(func("json_contains", self.inner(), col1))
 
     def deserialize_sql(self) -> T:
         """SQL json_deserialize_sql function.
@@ -6576,18 +7020,18 @@ class JsonFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("json_exists", self.inner(), col1))
 
-    def extract(self, col1_2: T | int | list[str] | str) -> T:
+    def extract(self, col1: T | int | list[str] | str) -> T:
         """SQL json_extract function.
 
         **SQL name**: *json_extract*
 
         Args:
-            col1_2 (T | int | list[str] | str): `BIGINT | VARCHAR | VARCHAR[]` expression
+            col1 (T | int | list[str] | str): `BIGINT | VARCHAR | VARCHAR[]` expression
 
         Returns:
             T
         """
-        return self._new(func("json_extract", self.inner(), col1_2))
+        return self._new(func("json_extract", self.inner(), col1))
 
     def extract_path(self, col1: T | int | list[str] | str) -> T:
         """SQL json_extract_path function.
