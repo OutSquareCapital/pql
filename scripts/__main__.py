@@ -44,8 +44,12 @@ def compare() -> None:
 def generate(
     output: PathArg = DEFAULT_OUTPUT,
     *,
-    check_only: Annotated[bool, typer.Option("--c")] = False,
-    profile: Annotated[bool, typer.Option("--p")] = False,
+    check_only: Annotated[
+        bool, typer.Option("--c", help="Check output without Ruff applying fixes")
+    ] = False,
+    profile: Annotated[
+        bool, typer.Option("--p", help="Enable profiling of the pipeline")
+    ] = False,
 ) -> None:
     """Generate typed DuckDB function wrappers from the database."""
 
