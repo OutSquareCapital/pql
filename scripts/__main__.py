@@ -53,8 +53,9 @@ def generate(
         typer.echo("Running Ruff checks and format...")
         uv_args = ("uv", "run", "ruff")
         run_ruff = partial(subprocess.run, check=False)
-        run_ruff((*uv_args, *_check_args(), str(output)))
+
         run_ruff((*uv_args, "format", str(output)))
+        run_ruff((*uv_args, *_check_args(), str(output)))
 
     typer.echo("Fetching functions from DuckDB...")
     content = run_pipeline(DATA_PATH)
