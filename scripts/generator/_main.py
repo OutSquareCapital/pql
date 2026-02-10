@@ -46,9 +46,7 @@ def run_pipeline(path: Path, *, profile: bool = False) -> str:
         .pipe(lambda df: pc.Iter[FunctionInfo](df.to_series()))
         .collect()
         .inspect(
-            lambda funcs: print(
-                Text(f"Generated {funcs.length()} functions", style="yellow")
-            )
+            lambda x: print(Text(f"Generated {x.length()} functions", style="yellow"))
         )
         .into(build_file)
     )

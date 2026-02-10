@@ -59,6 +59,9 @@ def run_qry(lf: pl.LazyFrame) -> pl.LazyFrame:
         .with_columns(
             pl.int_range(pl.len()).over("sig_id").alias("param_idx"),
             dk.parameters.pipe(_to_param_names),
+            dk.varargs.pipe(_convert_duckdb_type_to_python)
+            .pipe(_make_type_union, py.self_type)
+            .alias("py_varargs_type"),
         )
         .group_by(py.namespace, py.name, params.idx, maintain_order=True)
         .agg(
@@ -286,10 +289,6 @@ def _to_func(
     has_params: pl.Expr, py: PyCols, p_lists: ParamLists, dk: DuckCols
 ) -> pl.Expr:
 
-    varargs_type = dk.varargs.pipe(_convert_duckdb_type_to_python).pipe(
-        _make_type_union, py.self_type
-    )
-
     return format_kwords(
         _txt(),
         func_name=py.name.alias("func_name"),
@@ -297,7 +296,7 @@ def _to_func(
             pl.format(", {}", p_lists.signatures.list.slice(1).list.join(", "))
         ),
         varargs=pl.when(dk.varargs.is_not_null()).then(
-            pl.format(", *args: {}", varargs_type)
+            pl.format(", *args: {}", py.varargs_type)
         ),
         self_type=py.self_type,
         description=pl.when(dk.description.is_not_null())
@@ -322,7 +321,7 @@ def _to_func(
                 varargs=pl.when(dk.varargs.is_not_null()).then(
                     format_kwords(
                         "\n            *args ({pytypes}): `{dk_types}` expression",
-                        pytypes=varargs_type,
+                        pytypes=py.varargs_type,
                         dk_types=dk.varargs,
                     )
                 ),
