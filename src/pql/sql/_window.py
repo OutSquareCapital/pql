@@ -1,36 +1,48 @@
+from __future__ import annotations
+
+from collections.abc import Iterable
 from enum import StrEnum
-from typing import Any
+from typing import TYPE_CHECKING
 
 import duckdb
 import pyochain as pc
 
-from ._core import ExprHandler
+if TYPE_CHECKING:
+    from ._expr import SqlExpr
+
+type TryIter[T] = Iterable[T] | T
 
 
-def over[T: ExprHandler[Any]](  # noqa: PLR0913
-    expr: T,
-    partition_by: pc.Seq[T] | None,
-    order_by: pc.Seq[T] | None,
-    rows_start: int | None = None,
-    rows_end: int | None = None,
+def over_expr(  # noqa: PLR0913
+    expr: SqlExpr,
+    partition_by: pc.Option[TryIter[SqlExpr]],
+    order_by: pc.Option[TryIter[SqlExpr]],
+    rows_start: pc.Option[int],
+    rows_end: pc.Option[int],
     *,
-    descending: pc.Seq[bool] | bool = False,
-    nulls_last: pc.Seq[bool] | bool = False,
+    descending: Iterable[bool] | bool = False,
+    nulls_last: Iterable[bool] | bool = False,
     ignore_nulls: bool = False,
 ) -> duckdb.Expression:
-    return build_over(
+    return _build_over(
         handle_nulls(expr, ignore_nulls=ignore_nulls),
-        get_partition_by(partition_by or pc.Seq.new()),  # pyright: ignore[reportArgumentType]
-        get_order_by(
-            order_by or pc.Seq.new(),  # pyright: ignore[reportArgumentType]
-            descending=descending,
-            nulls_last=nulls_last,
+        partition_by.map(_try_iter).into(get_partition_by),
+        order_by.map(_try_iter).into(
+            get_order_by, descending=descending, nulls_last=nulls_last
         ),
-        Kword.rows_clause(pc.Option(rows_start), pc.Option(rows_end)),
+        Kword.rows_clause(row_start=rows_start, row_end=rows_end),
     )
 
 
-def build_over(
+def _try_iter[T](val: TryIter[T]) -> pc.Seq[T]:
+    match val:
+        case Iterable():
+            return pc.Seq(val)  # pyright: ignore[reportUnknownArgumentType]
+        case _:
+            return pc.Iter[T].once(val).collect()
+
+
+def _build_over(
     expr: str, partition_by: str, order_by: str, row_between: str
 ) -> duckdb.Expression:
     return duckdb.SQLExpression(
@@ -49,9 +61,7 @@ class Kword(StrEnum):
     OVER = "OVER"
 
     @classmethod
-    def sort_strat[T](
-        cls, item: ExprHandler[T], *, desc: bool, nulls_last: bool
-    ) -> str:
+    def sort_strat(cls, item: SqlExpr, *, desc: bool, nulls_last: bool) -> str:
         return f"{item} {cls.DESC if desc else cls.ASC} {cls.NULLS_LAST if nulls_last else cls.NULLS_FIRST}"
 
     @classmethod
@@ -75,16 +85,15 @@ class Kword(StrEnum):
         return f"{cls.ORDER_BY} {by}"
 
 
-def get_partition_by[T](partition_by: pc.Seq[ExprHandler[T]]) -> str:
+def get_partition_by(partition_by: pc.Option[pc.Seq[SqlExpr]]) -> str:
     return (
-        partition_by.then_some()
-        .map(lambda x: x.iter().map(str).join(", "))
+        partition_by.map(lambda x: x.iter().map(str).join(", "))
         .map(Kword.partition_by)
         .unwrap_or("")
     )
 
 
-def handle_nulls[T](expr: ExprHandler[T], *, ignore_nulls: bool) -> str:
+def handle_nulls(expr: SqlExpr, *, ignore_nulls: bool) -> str:
     match ignore_nulls:
         case True:
             return f"{str(expr).removesuffix(')')} ignore nulls)"
@@ -92,22 +101,26 @@ def handle_nulls[T](expr: ExprHandler[T], *, ignore_nulls: bool) -> str:
             return str(expr)
 
 
-def get_order_by[T](
-    order_by: pc.Seq[ExprHandler[T]],
+def get_order_by(
+    order_by: pc.Option[pc.Seq[SqlExpr]],
     *,
-    descending: pc.Seq[bool] | bool,
-    nulls_last: pc.Seq[bool] | bool,
+    descending: Iterable[bool] | bool,
+    nulls_last: Iterable[bool] | bool,
 ) -> str:
-    def _get_clauses(*, clauses: pc.Seq[bool] | bool) -> pc.Seq[bool]:
+    def _get_clauses(*, clauses: Iterable[bool] | bool) -> pc.Seq[bool]:
         match clauses:
             case bool() as val:
-                return pc.Iter.once(val).cycle().take(order_by.length()).collect()
-            case pc.Seq() as seq:
-                return seq
+                return (
+                    pc.Iter.once(val)
+                    .cycle()
+                    .take(order_by.map(lambda x: x.length()).unwrap_or(0))
+                    .collect()
+                )
+            case Iterable() as seq:
+                return pc.Seq(seq)
 
     return (
-        order_by.then_some()
-        .map(
+        order_by.map(
             lambda x: (
                 x.iter()
                 .zip(_get_clauses(clauses=descending), _get_clauses(clauses=nulls_last))

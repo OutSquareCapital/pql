@@ -9,7 +9,7 @@ import duckdb
 import pyochain as pc
 
 from ._core import func
-from ._window import over
+from ._window import over_expr
 from .fns import (
     ArrayFns,
     DateTimeFns,
@@ -483,22 +483,22 @@ class SqlExpr(Fns):  # noqa: PLW1641
 
     def over(  # noqa: PLR0913
         self,
-        partition_by: pc.Seq[SqlExpr] | None = None,
-        order_by: pc.Seq[SqlExpr] | None = None,
+        partition_by: Iterable[SqlExpr] | SqlExpr | None = None,
+        order_by: Iterable[SqlExpr] | SqlExpr | None = None,
         rows_start: int | None = None,
         rows_end: int | None = None,
         *,
-        descending: pc.Seq[bool] | bool = False,
-        nulls_last: pc.Seq[bool] | bool = False,
+        descending: Iterable[bool] | bool = False,
+        nulls_last: Iterable[bool] | bool = False,
         ignore_nulls: bool = False,
     ) -> Self:
         return self._new(
-            over(
+            over_expr(
                 self,
-                partition_by,
-                order_by,
-                rows_start,
-                rows_end,
+                pc.Option(partition_by),
+                pc.Option(order_by),
+                pc.Option(rows_start),
+                pc.Option(rows_end),
                 descending=descending,
                 nulls_last=nulls_last,
                 ignore_nulls=ignore_nulls,

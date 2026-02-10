@@ -356,34 +356,23 @@ class Expr(ExprHandler[SqlExpr]):
 
     def is_duplicated(self) -> Self:
         """Check if value is duplicated."""
-        return self.__class__(
-            sql.all().count().over(partition_by=pc.Seq((self._expr,))).gt(sql.lit(1))
-        )
+        return self.__class__(sql.all().count().over(self._expr).gt(sql.lit(1)))
 
     def is_unique(self) -> Self:
         """Check if value is unique."""
-        return self.__class__(
-            sql.all().count().over(partition_by=pc.Seq((self._expr,))).eq(sql.lit(1))
-        )
+        return self.__class__(sql.all().count().over(self._expr).eq(sql.lit(1)))
 
     def is_first_distinct(self) -> Self:
         """Check if value is first occurrence."""
         return self.__class__(
-            self._expr.row_number()
-            .over(partition_by=pc.Seq((self._expr,)))
-            .eq(sql.lit(value=1))
+            self._expr.row_number().over(self._expr).eq(sql.lit(value=1))
         )
 
     def is_last_distinct(self) -> Self:
         """Check if value is last occurrence."""
         return self.__class__(
             self._expr.row_number()
-            .over(
-                partition_by=pc.Seq((self._expr,)),
-                order_by=pc.Seq((self._expr,)),
-                descending=True,
-                nulls_last=True,
-            )
+            .over(self._expr, self._expr, descending=True, nulls_last=True)
             .eq(sql.lit(1))
         )
 
