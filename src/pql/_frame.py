@@ -26,7 +26,7 @@ class LazyFrame(ExprHandler[duckdb.DuckDBPyRelation]):
 
     __slots__ = ()
 
-    def __init__(self, data: FrameInit = None) -> None:
+    def __init__(self, data: FrameInit) -> None:
         self._expr = sql.rel_from_data(data)
 
     def __repr__(self) -> str:

@@ -20,9 +20,7 @@ class ExprLike[T](Protocol):
     def inner(self) -> T: ...
 
 
-type FrameInit = (
-    duckdb.DuckDBPyRelation | pl.DataFrame | pl.LazyFrame | None | FrameInitTypes
-)
+type FrameInit = duckdb.DuckDBPyRelation | pl.DataFrame | pl.LazyFrame | FrameInitTypes
 type PyLiteral = (
     str
     | int

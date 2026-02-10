@@ -101,8 +101,5 @@ def rel_from_data(data: FrameInit) -> duckdb.DuckDBPyRelation:
             _ = data
             qry = """SELECT * FROM _"""
             return duckdb.from_query(qry)
-
-        case None:
-            return duckdb.from_arrow(pl.DataFrame({"_": ()}))
         case _:
             return duckdb.from_arrow(pl.DataFrame(data))

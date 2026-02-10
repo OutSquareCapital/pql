@@ -49,12 +49,6 @@ def test_lazyframe_from_pl_lazyframe(sample_df: pl.DataFrame) -> None:
     assert_eq(result, expected)
 
 
-def test_lazyframe_from_empty_value() -> None:
-    result = pql.LazyFrame().collect()
-    assert result.height == 0
-    assert result.width == 1
-
-
 def test_lazyframe_from_dict() -> None:
     result = pql.LazyFrame({"a": [1, 2, 3]}).collect()
     expected = pl.DataFrame({"a": [1, 2, 3]})
