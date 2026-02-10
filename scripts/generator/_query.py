@@ -53,13 +53,7 @@ def run_qry(lf: pl.LazyFrame) -> pl.LazyFrame:
         )
         .with_columns(dk.categories.pipe(_namespace_specs, dk.function_name))
         .explode("namespace")
-        .with_columns(
-            _py_name(dk, py),
-            pl.when(py.namespace.is_not_null())
-            .then(pl.lit("T"))
-            .otherwise(pl.lit("Self"))
-            .alias("self_type"),
-        )
+        .with_columns(_py_name(dk, py), py.namespace.pipe(_return_type))
         .with_row_index("sig_id")
         .explode("parameters", "parameter_types")
         .with_columns(
@@ -83,7 +77,7 @@ def run_qry(lf: pl.LazyFrame) -> pl.LazyFrame:
         .select(
             py.namespace,
             py.name,
-            pl.col("param_names_list").list.len().pipe(_to_func, py, ParamLists(), dk),
+            pl.col("has_params").pipe(_to_func, py, ParamLists(), dk),
         )
         .sort(py.namespace, py.name)
     )
@@ -100,6 +94,15 @@ def _filters(lf: pl.LazyFrame, dk: DuckCols) -> pl.LazyFrame:
         *PREFIXES.iter().map(
             lambda prefix: dk.function_name.str.starts_with(prefix).not_()
         ),
+    )
+
+
+def _return_type(namespace: pl.Expr) -> pl.Expr:
+    return (
+        pl.when(namespace.is_not_null())
+        .then(pl.lit("T"))
+        .otherwise(pl.lit("Self"))
+        .alias("self_type")
     )
 
 
@@ -181,6 +184,7 @@ def _joined_parts(
 
     return (
         params.names.alias("param_names_list"),
+        params.names.len().alias("has_params"),
         format_kwords(
             "{param_name}: {py_type}{union}",
             param_name=params.names,
