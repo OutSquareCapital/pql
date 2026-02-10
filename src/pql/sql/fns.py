@@ -50,18 +50,18 @@ class Fns(ExprHandler[Expression]):
         """
         return self._new(func("acosh", self.inner()))
 
-    def age(self, timestamp_3: Self | datetime | None = None) -> Self:
+    def age(self, timestamp_6: Self | datetime | None = None) -> Self:
         """Subtract arguments, resulting in the time difference between the two timestamps.
 
         **SQL name**: *age*
 
         Args:
-            timestamp_3 (Self | datetime | None): `TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
+            timestamp_6 (Self | datetime | None): `TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
 
         Returns:
             Self
         """
-        return self._new(func("age", self.inner(), timestamp_3))
+        return self._new(func("age", self.inner(), timestamp_6))
 
     def any_value(self) -> Self:
         """Returns the first non-NULL value from arg.

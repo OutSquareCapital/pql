@@ -41,10 +41,12 @@ def run_qry(lf: pl.LazyFrame) -> pl.LazyFrame:
                 )
             ),
         )
-        .pipe(lambda lf: lf.join(_alias_map(lf, dk), on=dk.function_name, how="left"))
+        .pipe(
+            lambda lf: lf.join(lf.pipe(_alias_map, dk), on=dk.function_name, how="left")
+        )
         .pipe(
             lambda lf: lf.join(
-                _py_name_map(lf, dk, params.lens),
+                lf.pipe(_py_name_map, dk, params.lens),
                 on=[dk.function_name, dk.categories, dk.description],
                 how="left",
             )
@@ -102,7 +104,7 @@ def _filters(lf: pl.LazyFrame, dk: DuckCols) -> pl.LazyFrame:
 
 
 def _py_name(dk: DuckCols, py: PyCols) -> pl.Expr:
-    def _strip_namespace_prefixes(py_name: pl.Expr, namespace: pl.Expr) -> pl.Expr:
+    def _strip_namespace_prefixes(py_name: pl.Expr) -> pl.Expr:
         def _strip_prefixes(expr: pl.Expr, prefixes: pc.Seq[str]) -> pl.Expr:
             return prefixes.iter().fold(
                 expr,
@@ -117,7 +119,7 @@ def _py_name(dk: DuckCols, py: PyCols) -> pl.Expr:
             *NAMESPACE_SPECS.iter()
             .filter(lambda spec: spec.strip_prefixes.length() > 0)
             .map(
-                lambda spec: pl.when(namespace.eq(spec.name)).then(
+                lambda spec: pl.when(py.namespace.eq(spec.name)).then(
                     py_name.pipe(_strip_prefixes, spec.strip_prefixes)
                 )
             ),
@@ -133,7 +135,7 @@ def _py_name(dk: DuckCols, py: PyCols) -> pl.Expr:
             ignore_nulls=True,
         )
         .str.to_lowercase()
-        .pipe(_strip_namespace_prefixes, py.namespace)
+        .pipe(_strip_namespace_prefixes)
         .alias("py_name")
     )
 
@@ -153,7 +155,7 @@ def _alias_map(lf: pl.LazyFrame, dk: DuckCols) -> pl.LazyFrame:
         .pipe(
             lambda lf: lf.join(
                 lf.group_by("alias_root").agg(
-                    dk.function_name.unique().sort().alias("alias_group")
+                    dk.function_name.sort().alias("alias_group")
                 ),
                 on="alias_root",
                 how="left",
@@ -165,7 +167,6 @@ def _alias_map(lf: pl.LazyFrame, dk: DuckCols) -> pl.LazyFrame:
             .list.set_difference(pl.concat_list(dk.function_name))
             .alias("aliases"),
         )
-        .unique()
     )
 
 
@@ -235,7 +236,6 @@ def _namespace_specs(cats: pl.Expr, fn_name: pl.Expr) -> pl.Expr:
             )
             .into(pl.concat_list)
             .list.drop_nulls()
-            .list.unique()
             .pipe(
                 lambda expr: (
                     pl.when(expr.list.len().gt(0)).then(expr).otherwise(empty_lst)
@@ -283,30 +283,26 @@ def _to_param_names(params: pl.Expr, py_name: pl.Expr, namespace: pl.Expr) -> pl
 
 
 def _py_name_map(lf: pl.LazyFrame, dk: DuckCols, p_lens: ParamLens) -> pl.LazyFrame:
-    return (
-        lf.filter(
-            dk.description.n_unique()
-            .over(dk.function_name, dk.categories)
-            .gt(1)
-            .and_(p_lens.min_params_per_fn_cat_desc.gt(p_lens.min_params_per_fn))
-            .and_(p_lens.sig_param_count.eq(p_lens.min_params_per_fn_cat_desc))
-        )
-        .select(
-            dk.function_name,
-            dk.categories,
-            dk.description,
-            pl.when(p_lens.min_params_per_fn_cat_desc.eq(p_lens.min_params_per_fn))
-            .then(dk.parameters)
-            .otherwise(
-                dk.parameters.list.slice(
-                    p_lens.min_params_per_fn,
-                    p_lens.sig_param_count.sub(p_lens.min_params_per_fn),
-                )
+    return lf.filter(
+        dk.description.n_unique()
+        .over(dk.function_name, dk.categories)
+        .gt(1)
+        .and_(p_lens.min_params_per_fn_cat_desc.gt(p_lens.min_params_per_fn))
+        .and_(p_lens.sig_param_count.eq(p_lens.min_params_per_fn_cat_desc))
+    ).select(
+        dk.function_name,
+        dk.categories,
+        dk.description,
+        pl.when(p_lens.min_params_per_fn_cat_desc.eq(p_lens.min_params_per_fn))
+        .then(dk.parameters)
+        .otherwise(
+            dk.parameters.list.slice(
+                p_lens.min_params_per_fn,
+                p_lens.sig_param_count.sub(p_lens.min_params_per_fn),
             )
-            .list.join("_")
-            .alias("py_suffixes"),
         )
-        .unique()
+        .list.join("_")
+        .alias("py_suffixes"),
     )
 
 
