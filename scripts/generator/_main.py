@@ -6,8 +6,9 @@ from pathlib import Path
 
 import polars as pl
 import pyochain as pc
-import typer
 from polars.exceptions import ComputeError
+from rich import print
+from rich.text import Text
 
 from ._query import run_qry
 from ._schemas import TableSchema
@@ -35,15 +36,19 @@ def _inspect(lf: pl.LazyFrame) -> pl.LazyFrame:
     return lf
 
 
-def run_pipeline(path: Path) -> str:
+def run_pipeline(path: Path, *, profile: bool = False) -> str:
     return (
         pl.scan_parquet(path)
         .pipe(run_qry)
-        .pipe(_inspect)
+        .pipe(_inspect if profile else lambda lf: lf)
         .collect()
         .map_rows(lambda x: FunctionInfo(*x), return_dtype=pl.Object)
         .pipe(lambda df: pc.Iter[FunctionInfo](df.to_series()))
         .collect()
-        .inspect(lambda funcs: typer.echo(f"Generated {funcs.length()} functions"))
+        .inspect(
+            lambda funcs: print(
+                Text(f"Generated {funcs.length()} functions", style="yellow")
+            )
+        )
         .into(build_file)
     )
