@@ -9,7 +9,10 @@ import pyochain as pc
 from rich.console import Console
 from rich.table import Table
 
-from .generator._query import DuckCols, _filters  # pyright: ignore[reportPrivateUsage]
+from .fn_generator._query import (
+    DuckCols,
+    _filters,  # pyright: ignore[reportPrivateUsage]
+)
 
 CONSOLE = Console()
 
