@@ -14,11 +14,14 @@
         "matplotlib>=3.10.8",
         "narwhals>=2.15.0",
         "polars>=1.37.1",
+        "pyarrow-stubs>=20.0.0.20251215",
         "pyarrow>=23.0.0",
         "pytest-cov>=7.0.0",
         "pytest>=9.0.2",
         "ruff>=0.14.14",
+        "torch>=2.10.0",
         "typer>=0.21.1",
+        "types-tensorflow>=2.18.0.20260121",
 ]
 [build-system]
     build-backend = "uv_build"
