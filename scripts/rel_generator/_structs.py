@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from enum import StrEnum
+from enum import StrEnum, auto
+from typing import Self
 
 import pyochain as pc
 
@@ -14,7 +15,9 @@ class PyLit(StrEnum):
     DUCK_EXPR = "Expression"
     NONE = "None"
     ANY = "Any"
-    SELF = "Self"
+    SELF_RET = "Self"
+    SELF = auto()
+    STR = auto()
 
 
 @dataclass(slots=True)
@@ -26,24 +29,18 @@ class ParamInfo:
     default: pc.Option[str] = field(default_factory=lambda: pc.NONE)
     is_kw_only: bool = False
 
-    def _rewrite_annotation(self) -> str:
-        return _rewrite_type(self.annotation)
-
     def format_param(self) -> str:
-        ann = self._rewrite_annotation()
+        ann = _rewrite_type(self.annotation)
         base = f"{self.name}: {ann}" if ann else self.name
         return self.default.map(lambda d: f"{base} = {d}").unwrap_or(base)
 
     def forward_vararg(self) -> str:
         """Generate the forwarded vararg, converting types at boundary."""
         match _rewrite_type(self.annotation):
-            case a if PyLit.SQLEXPR.value in a and "str" not in a:
+            case a if PyLit.SQLEXPR.value in a and PyLit.STR.value not in a:
                 return f"*(arg.inner() for arg in {self.name})"
             case a if PyLit.SQLEXPR.value in a:
-                return (
-                    f"*(arg.inner() if isinstance(arg, SqlExpr) else arg"
-                    f" for arg in {self.name})"
-                )
+                return f"*(_expr_or(arg) for arg in {self.name})"
             case _:
                 return f"*{self.name}"
 
@@ -70,6 +67,10 @@ class MethodInfo:
     is_property: bool
     doc: str
 
+    def as_impl(self) -> Self:
+        self.is_overload = False
+        return self
+
     @property
     def returns_relation(self) -> bool:
         return self.return_type == PyLit.DUCK_REL.value
@@ -80,33 +81,22 @@ class MethodInfo:
 
     def rewritten_return(self) -> str:
         return (
-            PyLit.SELF.value
+            PyLit.SELF_RET.value
             if self.returns_relation
             else _rewrite_type(self.return_type)
         )
 
-    def build_property(self) -> str:
-        """Build a ``@property`` definition."""
-        ret = self.rewritten_return()
-        doc_str = _format_doc(self.doc).map(lambda d: f"\n{d}").unwrap_or("")
-        return (
-            f"    @property\n"
-            f"    def {self.name}(self) -> {ret}:{doc_str}\n"
-            f"        return self.inner().{self.name}"
-        )
-
-    def build_signature(self) -> str:
+    def _build_signature(self) -> str:
         """Build the full ``def`` signature line."""
-        parts: pc.Vec[str] = pc.Vec(["self"])
-
-        has_vararg = self.vararg.is_some()
-        has_kw = self.params.iter().any(lambda p: p.is_kw_only)
-
-        self.params.iter().filter(lambda p: not p.is_kw_only).for_each(
-            lambda p: parts.append(p.format_param())
+        parts: pc.Vec[str] = (
+            self.params.iter()
+            .filter(lambda p: not p.is_kw_only)
+            .map(lambda p: p.format_param())
+            .insert(PyLit.SELF.value)
+            .collect(pc.Vec)
         )
 
-        match (has_vararg, has_kw):
+        match (self.vararg.is_some(), self.params.iter().any(lambda p: p.is_kw_only)):
             case (True, _):
                 self.vararg.inspect(
                     lambda v: parts.append(f"*{v.name}: {_rewrite_type(v.annotation)}")
@@ -129,40 +119,56 @@ class MethodInfo:
     def generate_method(self) -> pc.Option[str]:
         """Generate a single method wrapper."""
         match self.name:
-            case _ if (
-                SKIP_METHODS.contains(self.name)
-                or self.name.startswith("__")
-                or self.is_overload
-            ):
+            case _ if SKIP_METHODS.contains(self.name) or self.name.startswith("__"):
                 return pc.NONE
+            case _ if self.is_overload:
+                return pc.Some(self._to_overload())
             case _ if self.is_property:
-                return pc.Some(self.build_property())
+                return pc.Some(self._to_property())
             case _:
-                sig = self.build_signature()
-                doc_str = _format_doc(self.doc).map(lambda d: f"\n{d}").unwrap_or("")
+                sig = self._build_signature()
+                doc_str = _format_doc(self.doc)
 
-                return pc.Some(f"{sig}{doc_str}\n{self.build_body()}")
+                return pc.Some(f"{sig}{doc_str}\n{self._build_body()}")
 
-    def build_body(self) -> str:
+    def _to_overload(self) -> str:
+        return f"    @overload\n{self._build_signature()}\n        ..."
+
+    def _to_property(self) -> str:
+        ret = self.rewritten_return()
+        doc_str = _format_doc(self.doc)
+        return (
+            f"    @property\n"
+            f"    def {self.name}(self) -> {ret}:{doc_str}\n"
+            f"        return self.inner().{self.name}"
+        )
+
+    def _build_body(self) -> str:
         """Build the method body that delegates to ``self._expr``."""
-        regular = self.params.iter().filter(lambda p: not p.is_kw_only).collect(pc.Vec)
-        kw_only = self.params.iter().filter(lambda p: p.is_kw_only).collect(pc.Vec)
-
-        call_parts = pc.Vec[str].new()
-
-        regular.iter().map(lambda p: p.forward_arg()).collect_into(call_parts)
+        call_parts = (
+            self.params.iter()
+            .filter(lambda p: not p.is_kw_only)
+            .map(lambda p: p.forward_arg())
+            .collect(pc.Vec)
+        )
 
         self.vararg.inspect(
             lambda v: call_parts.append(
-                v.forward_vararg() if "Expression" in v.annotation else f"*{v.name}"
+                v.forward_vararg()
+                if PyLit.DUCK_EXPR.value in v.annotation
+                else f"*{v.name}"
             )
         )
 
-        kw_only.iter().for_each(
-            lambda p: call_parts.append(f"{p.name}={p.forward_arg()}")
+        all_args = (
+            self.params.iter()
+            .filter(lambda p: p.is_kw_only)
+            .map(lambda p: f"{p.name}={p.forward_arg()}")
+            .collect_into(call_parts)
+            .join(", ")
         )
 
-        call = f"self.inner().{self.name}({call_parts.join(', ')})"
+        call = f"self.inner().{self.name}({all_args})"
 
         if self.returns_relation:
             return f"        return self._new({call})"
@@ -178,14 +184,11 @@ def _rewrite_type(annotation: str) -> str:
     return (
         TYPE_SUBS.items()
         .iter()
-        .fold(
-            PYTYPING_REWRITES.items().iter().fold(annotation, _sub_one),
-            _sub_one,
-        )
+        .fold(PYTYPING_REWRITES.items().iter().fold(annotation, _sub_one), _sub_one)
     )
 
 
-def _format_doc(doc: str) -> pc.Option[str]:
+def _format_doc(doc: str) -> str:
     """Format a docstring for the generated wrapper."""
     return (
         pc.Vec.from_ref(doc.strip().splitlines())
@@ -204,4 +207,6 @@ def _format_doc(doc: str) -> pc.Option[str]:
                 )
             )
         )
+        .map(lambda d: f"\n{d}")
+        .unwrap_or("")
     )

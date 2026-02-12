@@ -8,7 +8,7 @@ Do not edit manually.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Literal, Self, SupportsInt
+from typing import TYPE_CHECKING, Any, Literal, Self, SupportsInt, overload
 
 import duckdb
 from duckdb import ExplainType, RenderMode

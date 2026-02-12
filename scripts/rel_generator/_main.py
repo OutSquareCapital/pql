@@ -3,17 +3,19 @@
 from __future__ import annotations
 
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 import pyochain as pc
 
 from ._parse import extract_methods_from_stub
 from ._raw import class_def, header
-from ._structs import MethodInfo
+
+if TYPE_CHECKING:
+    from ._structs import MethodInfo
 
 
-def _resolve_overloads(methods: pc.Seq[MethodInfo]) -> pc.Seq[MethodInfo]:
-    """For methods where ALL definitions are @overload, keep the last (most general) one as non-overload."""
-    # Group by name, find groups that are *only* overloads
+def _resolve_overloads(methods: pc.Seq[MethodInfo]) -> pc.Iter[MethodInfo]:
+    """For methods where ALL definitions are @overload, add a non-overload implementation."""
     overload_only_names: pc.Set[str] = (
         methods.iter()
         .filter(lambda m: m.is_overload)
@@ -27,35 +29,23 @@ def _resolve_overloads(methods: pc.Seq[MethodInfo]) -> pc.Seq[MethodInfo]:
         )
     )
 
-    def _resolve_one(m: MethodInfo) -> pc.Option[MethodInfo]:
-        match (m.is_overload, overload_only_names.contains(m.name)):
-            case (True, True):
-                return pc.NONE
-            case _:
-                return pc.Some(m)
-
-    return (
-        methods.iter()
-        .filter_map(_resolve_one)
-        .chain(
-            overload_only_names.iter().filter_map(
-                lambda name: pc.Option(
-                    methods.iter().filter(lambda m: m.name == name).last()
-                ).map(
-                    lambda m: MethodInfo(
-                        name=m.name,
-                        params=m.params,
-                        vararg=m.vararg,
-                        return_type=m.return_type,
-                        is_overload=False,
-                        is_property=m.is_property,
-                        doc=m.doc,
-                    )
-                )
-            )
+    def _is_last_overload(idx: int, method: MethodInfo) -> bool:
+        return (
+            not methods.iter()
+            .skip(idx + 1)
+            .any(lambda other: other.name == method.name and other.is_overload)
         )
-        .collect()
-    )
+
+    def _expand(idx: int, method: MethodInfo) -> MethodInfo:
+        if (
+            method.is_overload
+            and overload_only_names.contains(method.name)
+            and _is_last_overload(idx, method)
+        ):
+            return method.as_impl()
+        return method
+
+    return methods.iter().enumerate().map_star(_expand)
 
 
 def generate(stub_path: Path) -> str:
@@ -63,7 +53,6 @@ def generate(stub_path: Path) -> str:
     return (
         extract_methods_from_stub(stub_path)
         .into(_resolve_overloads)
-        .iter()
         .filter_map(lambda m: m.generate_method())
         .into(lambda methods: f"{header()}{class_def()}{methods.join(chr(10) * 2)}\n")
     )

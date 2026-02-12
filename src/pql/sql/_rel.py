@@ -6,7 +6,7 @@ Do not edit manually.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Literal, Self, SupportsInt
+from typing import TYPE_CHECKING, Any, Literal, Self, SupportsInt, overload
 
 import duckdb
 from duckdb import ExplainType, RenderMode
@@ -534,6 +534,22 @@ class Relation(RelHandler):
         """Computes the relative rank within the partition."""
         return self._new(self.inner().percent_rank(window_spec, projected_columns))
 
+    @overload
+    def pl(
+        self, batch_size: SupportsInt = 1000000, *, lazy: Literal[False] = ...
+    ) -> pl.DataFrame: ...
+
+    @overload
+    def pl(
+        self, batch_size: SupportsInt = 1000000, *, lazy: Literal[True]
+    ) -> pl.LazyFrame: ...
+
+    def pl(
+        self, batch_size: SupportsInt = 1000000, *, lazy: bool = False
+    ) -> pl.DataFrame | pl.LazyFrame:
+        """Execute and fetch all rows as a Polars DataFrame."""
+        return self.inner().pl(batch_size, lazy=lazy)
+
     def product(
         self,
         column: str,
@@ -549,10 +565,7 @@ class Relation(RelHandler):
     def project(self, *args: str | SqlExpr, groups: str = "") -> Self:
         """Project the relation object by the projection in project_expr."""
         return self._new(
-            self.inner().project(
-                *(arg.inner() if isinstance(arg, SqlExpr) else arg for arg in args),
-                groups=groups,
-            )
+            self.inner().project(*(_expr_or(arg) for arg in args), groups=groups)
         )
 
     def quantile(
@@ -620,10 +633,7 @@ class Relation(RelHandler):
     def select(self, *args: str | SqlExpr, groups: str = "") -> Self:
         """Project the relation object by the projection in project_expr."""
         return self._new(
-            self.inner().select(
-                *(arg.inner() if isinstance(arg, SqlExpr) else arg for arg in args),
-                groups=groups,
-            )
+            self.inner().select(*(_expr_or(arg) for arg in args), groups=groups)
         )
 
     def select_dtypes(self, types: list[sqltypes.DuckDBPyType | str]) -> Self:
@@ -1009,9 +1019,3 @@ class Relation(RelHandler):
     def types(self) -> list[sqltypes.DuckDBPyType]:
         """Return a list containing the types of the columns of the relation."""
         return self.inner().types
-
-    def pl(
-        self, batch_size: SupportsInt = 1000000, *, lazy: bool = False
-    ) -> pl.DataFrame | pl.LazyFrame:
-        """Execute and fetch all rows as a Polars DataFrame."""
-        return self.inner().pl(batch_size, lazy=lazy)
