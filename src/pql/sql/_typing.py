@@ -1,23 +1,16 @@
-from collections.abc import Callable, Iterable
+from collections.abc import Iterable
 from datetime import date, datetime, time, timedelta
-from typing import Any, Concatenate, Protocol, Self
+from typing import TYPE_CHECKING, Any
 
 import duckdb
 import polars as pl
 from polars._typing import FrameInitTypes
 
+if TYPE_CHECKING:
+    from .._expr import Expr
+    from ._expr import SqlExpr
 
-class ExprLike[T](Protocol):
-    def pipe[**P, R](
-        self,
-        function: Callable[Concatenate[Self, P], R],
-        *args: P.args,
-        **kwargs: P.kwargs,
-    ) -> R: ...
-
-    def _new(self, expr: T) -> T: ...
-
-    def inner(self) -> T: ...
+type ExprLike = SqlExpr | Expr | duckdb.Expression
 
 
 type FrameInit = (
@@ -39,5 +32,5 @@ type PyLiteral = (
     | dict[Any, PyLiteral]
     | None
 )
-type IntoExpr = PyLiteral | ExprLike[Any] | duckdb.Expression
-type IntoExprColumn = Iterable[ExprLike[Any]] | ExprLike[Any] | str | duckdb.Expression
+type IntoExpr = PyLiteral | ExprLike
+type IntoExprColumn = str | ExprLike | Iterable[ExprLike]
