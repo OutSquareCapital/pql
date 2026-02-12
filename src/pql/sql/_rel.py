@@ -15,6 +15,7 @@ from ._core import RelHandler
 from ._expr import SqlExpr
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
 
     import numpy as np
     import pandas as pd  # pyright: ignore[reportMissingModuleSource]
@@ -202,6 +203,10 @@ class Relation(RelHandler):
             self.inner().bool_or(column, groups, window_spec, projected_columns)
         )
 
+    def close(self) -> None:
+        """Closes the result."""
+        return self.inner().close()
+
     def count(
         self,
         column: str,
@@ -249,6 +254,10 @@ class Relation(RelHandler):
     def except_(self, other_rel: Self) -> Self:
         """Create the set except of this relation object with another relation object in other_rel."""
         return self._new(self.inner().except_(other_rel.inner()))
+
+    def execute(self) -> Self:
+        """Transform the relation into a result set."""
+        return self._new(self.inner().execute())
 
     def explain(self, type: ExplainType = ExplainType.STANDARD) -> str:
         return self.inner().explain(type)
@@ -442,6 +451,15 @@ class Relation(RelHandler):
         return self._new(
             self.inner().list(column, groups, window_spec, projected_columns)
         )
+
+    def map(
+        self,
+        map_function: Callable[..., Any],
+        *,
+        schema: dict[str, sqltypes.DuckDBPyType] | None = None,
+    ) -> Self:
+        """Calls the passed function on the relation."""
+        return self._new(self.inner().map(map_function, schema=schema))
 
     def max(
         self,

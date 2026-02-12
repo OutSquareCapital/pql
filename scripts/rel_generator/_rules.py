@@ -30,5 +30,3 @@ PYTYPING_REWRITES: pc.Dict[str, str] = pc.Dict.from_ref(
 TYPE_SUBS: pc.Dict[PyLit, PyLit] = pc.Dict.from_ref(
     {PyLit.DUCK_EXPR: PyLit.SQLEXPR, PyLit.DUCK_REL: PyLit.SELF_RET}
 )
-
-SKIP_METHODS: pc.Set[str] = pc.Set({"close", "execute", "map"})

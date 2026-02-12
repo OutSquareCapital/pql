@@ -5,7 +5,7 @@ from typing import Self
 
 import pyochain as pc
 
-from ._rules import PYTYPING_REWRITES, SKIP_METHODS, TYPE_SUBS, PyLit
+from ._rules import PYTYPING_REWRITES, TYPE_SUBS, PyLit
 
 
 @dataclass(slots=True)
@@ -105,7 +105,7 @@ class MethodInfo:
     def generate_method(self) -> pc.Option[str]:
         """Generate a single method wrapper."""
         match self.name:
-            case _ if SKIP_METHODS.contains(self.name) or self.name.startswith("__"):
+            case _ if self.name.startswith("__"):
                 return pc.NONE
             case _ if self.is_overload:
                 return pc.Some(self._to_overload())

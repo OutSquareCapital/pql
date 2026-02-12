@@ -15,6 +15,7 @@ from duckdb import ExplainType, RenderMode
 from ._core import ExprHandler, RelHandler
 from ._expr import SqlExpr
 if TYPE_CHECKING:
+    from collections.abc import Callable
     import numpy as np
     import pandas  # pyright: ignore[reportMissingModuleSource]
     import polars
