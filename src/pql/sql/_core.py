@@ -91,6 +91,46 @@ def func(name: str, *args: Any) -> duckdb.Expression:  # noqa: ANN401
     )
 
 
+class RelHandler(ExprHandler[duckdb.DuckDBPyRelation]):
+    """A wrapper for DuckDB relations."""
+
+    __slots__ = ()
+
+    def __init__(self, data: FrameInit) -> None:
+        match data:
+            case duckdb.DuckDBPyRelation():
+                self._expr = data
+            case pl.DataFrame():
+                self._expr = duckdb.from_arrow(data)
+            case pl.LazyFrame():
+                _ = data
+                qry = """SELECT * FROM _"""
+                self._expr = duckdb.from_query(qry)
+            case str() as tbl:
+                match tbl:
+                    case fn if tbl.endswith("()"):
+                        self._expr = duckdb.table_function(fn)
+                    case _:
+                        self._expr = duckdb.table(data)
+            case _:
+                self._expr = duckdb.from_arrow(pl.DataFrame(data))
+
+    def __arrow_c_stream__(self, requested_schema: object | None = None) -> Any:  # noqa: ANN401
+        return self._expr.__arrow_c_stream__(requested_schema)
+
+    def __contains__(self, name: str) -> bool:
+        return self._expr.__contains__(name)
+
+    def __getattr__(self, name: str) -> Self:
+        return self._new(self._expr.__getattr__(name))
+
+    def __getitem__(self, name: str) -> Self:
+        return self._new(self._expr.__getitem__(name))
+
+    def __len__(self) -> int:
+        return self._expr.__len__()
+
+
 def rel_from_data(data: FrameInit) -> duckdb.DuckDBPyRelation:
     match data:
         case duckdb.DuckDBPyRelation():
