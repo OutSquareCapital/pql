@@ -1,8 +1,22 @@
+from enum import StrEnum, auto
+
 import pyochain as pc
+
+
+class PyLit(StrEnum):
+    SQLEXPR = "SqlExpr"
+    DUCK_REL = "DuckDBPyRelation"
+    DUCK_EXPR = "Expression"
+    NONE = "None"
+    ANY = "Any"
+    SELF_RET = "Self"
+    SELF = auto()
+    STR = auto()
+
 
 PYTYPING_REWRITES: pc.Dict[str, str] = pc.Dict.from_ref(
     {
-        "pytyping.Any": "Any",
+        "pytyping.Any": PyLit.ANY,
         "pytyping.SupportsInt": "SupportsInt",
         "pytyping.List": "list",
         "pytyping.Literal": "Literal",
@@ -13,9 +27,8 @@ PYTYPING_REWRITES: pc.Dict[str, str] = pc.Dict.from_ref(
     }
 )
 
-TYPE_SUBS = pc.Dict.from_kwargs(
-    Expression="SqlExpr",
-    DuckDBPyRelation="Self",
+TYPE_SUBS: pc.Dict[PyLit, PyLit] = pc.Dict.from_ref(
+    {PyLit.DUCK_EXPR: PyLit.SQLEXPR, PyLit.DUCK_REL: PyLit.SELF_RET}
 )
 
 SKIP_METHODS: pc.Set[str] = pc.Set({"close", "execute", "map"})

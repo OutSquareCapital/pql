@@ -1,23 +1,11 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from enum import StrEnum, auto
 from typing import Self
 
 import pyochain as pc
 
-from ._rules import PYTYPING_REWRITES, SKIP_METHODS, TYPE_SUBS
-
-
-class PyLit(StrEnum):
-    SQLEXPR = "SqlExpr"
-    DUCK_REL = "DuckDBPyRelation"
-    DUCK_EXPR = "Expression"
-    NONE = "None"
-    ANY = "Any"
-    SELF_RET = "Self"
-    SELF = auto()
-    STR = auto()
+from ._rules import PYTYPING_REWRITES, SKIP_METHODS, TYPE_SUBS, PyLit
 
 
 @dataclass(slots=True)
@@ -37,9 +25,9 @@ class ParamInfo:
     def forward_vararg(self) -> str:
         """Generate the forwarded vararg, converting types at boundary."""
         match _rewrite_type(self.annotation):
-            case a if PyLit.SQLEXPR.value in a and PyLit.STR.value not in a:
+            case a if PyLit.SQLEXPR in a and PyLit.STR not in a:
                 return f"*(arg.inner() for arg in {self.name})"
-            case a if PyLit.SQLEXPR.value in a:
+            case a if PyLit.SQLEXPR in a:
                 return f"*(_expr_or(arg) for arg in {self.name})"
             case _:
                 return f"*{self.name}"
@@ -47,9 +35,9 @@ class ParamInfo:
     def forward_arg(self) -> str:
         """Generate the forwarded argument, converting types at boundary."""
         match self.annotation:
-            case a if PyLit.DUCK_EXPR.value in a and PyLit.DUCK_REL.value not in a:
+            case a if PyLit.DUCK_EXPR in a and PyLit.DUCK_REL not in a:
                 return f"_expr_or({self.name})"
-            case a if PyLit.DUCK_REL.value in a:
+            case a if PyLit.DUCK_REL in a:
                 return f"{self.name}.inner()"
             case _:
                 return self.name
@@ -73,17 +61,15 @@ class MethodInfo:
 
     @property
     def returns_relation(self) -> bool:
-        return self.return_type == PyLit.DUCK_REL.value
+        return self.return_type == PyLit.DUCK_REL
 
     @property
     def returns_none(self) -> bool:
-        return self.return_type == PyLit.NONE.value
+        return self.return_type == PyLit.NONE
 
     def rewritten_return(self) -> str:
         return (
-            PyLit.SELF_RET.value
-            if self.returns_relation
-            else _rewrite_type(self.return_type)
+            PyLit.SELF_RET if self.returns_relation else _rewrite_type(self.return_type)
         )
 
     def _build_signature(self) -> str:
@@ -92,7 +78,7 @@ class MethodInfo:
             self.params.iter()
             .filter(lambda p: not p.is_kw_only)
             .map(lambda p: p.format_param())
-            .insert(PyLit.SELF.value)
+            .insert(PyLit.SELF)
             .collect(pc.Vec)
         )
 
@@ -154,9 +140,7 @@ class MethodInfo:
 
         self.vararg.inspect(
             lambda v: call_parts.append(
-                v.forward_vararg()
-                if PyLit.DUCK_EXPR.value in v.annotation
-                else f"*{v.name}"
+                v.forward_vararg() if PyLit.DUCK_EXPR in v.annotation else f"*{v.name}"
             )
         )
 

@@ -14,7 +14,7 @@ def extract_methods_from_stub(stub_path: Path) -> pc.Seq[MethodInfo]:
     docs = _get_runtime_docs()
 
     def _is_relation_class(node: ast.AST) -> TypeIs[ast.ClassDef]:
-        return isinstance(node, ast.ClassDef) and node.name == PyLit.DUCK_REL.value
+        return isinstance(node, ast.ClassDef) and node.name == PyLit.DUCK_REL
 
     return (
         pc.Iter(ast.iter_child_nodes(ast.parse(stub_path.read_text(encoding="utf-8"))))
@@ -56,9 +56,7 @@ def _parse_method(node: ast.stmt, docs: pc.Dict[str, str]) -> pc.Option[MethodIn
         .map_star(
             lambda i, arg: ParamInfo(
                 name=arg.arg,
-                annotation=ast.unparse(arg.annotation)
-                if arg.annotation
-                else PyLit.ANY.value,
+                annotation=ast.unparse(arg.annotation) if arg.annotation else PyLit.ANY,
                 default=(
                     pc.NONE
                     if i < num_no_default
@@ -74,7 +72,7 @@ def _parse_method(node: ast.stmt, docs: pc.Dict[str, str]) -> pc.Option[MethodIn
                     name=arg.arg,
                     annotation=ast.unparse(arg.annotation)
                     if arg.annotation
-                    else PyLit.ANY.value,
+                    else PyLit.ANY,
                     default=pc.Option(default).map(ast.unparse),
                     is_kw_only=True,
                 )
@@ -89,10 +87,10 @@ def _parse_method(node: ast.stmt, docs: pc.Dict[str, str]) -> pc.Option[MethodIn
             vararg=pc.Option(node.args.vararg).map(
                 lambda v: ParamInfo(
                     name=v.arg,
-                    annotation=ast.unparse(v.annotation) if v.annotation else "Any",
+                    annotation=ast.unparse(v.annotation) if v.annotation else PyLit.ANY,
                 )
             ),
-            return_type=ast.unparse(node.returns) if node.returns else PyLit.NONE.value,
+            return_type=ast.unparse(node.returns) if node.returns else PyLit.NONE,
             is_overload=pc.Iter(node.decorator_list).any(
                 lambda d: _is_decorator(d, "overload")
             ),
