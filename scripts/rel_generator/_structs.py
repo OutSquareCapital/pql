@@ -102,20 +102,18 @@ class MethodInfo:
         )
         return f"    def {self.name}({joined}) -> {ret}:"
 
-    def generate_method(self) -> pc.Option[str]:
+    def generate_method(self) -> str:
         """Generate a single method wrapper."""
         match self.name:
-            case _ if self.name.startswith("__"):
-                return pc.NONE
             case _ if self.is_overload:
-                return pc.Some(self._to_overload())
+                return self._to_overload()
             case _ if self.is_property:
-                return pc.Some(self._to_property())
+                return self._to_property()
             case _:
                 sig = self._build_signature()
                 doc_str = _format_doc(self.doc)
 
-                return pc.Some(f"{sig}{doc_str}\n{self._build_body()}")
+                return f"{sig}{doc_str}\n{self._build_body()}"
 
     def _to_overload(self) -> str:
         return f"    @overload\n{self._build_signature()}\n        ..."

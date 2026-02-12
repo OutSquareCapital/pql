@@ -42,6 +42,28 @@ class Relation(RelHandler):
 
     __slots__ = ()
 
+    def __arrow_c_stream__(self, requested_schema: object | None = None) -> Any:
+        """Execute and return an ArrowArrayStream through the Arrow PyCapsule Interface.
+
+        https://arrow.apache.org/docs/dev/format/CDataInterface/PyCapsuleInterface.html
+        """
+        return self.inner().__arrow_c_stream__(requested_schema)
+
+    def __contains__(self, name: str) -> bool:
+        return self.inner().__contains__(name)
+
+    def __getattr__(self, name: str) -> Self:
+        """Get a projection relation created from this relation, on the provided column name."""
+        return self._new(self.inner().__getattr__(name))
+
+    def __getitem__(self, name: str) -> Self:
+        """Get a projection relation created from this relation, on the provided column name."""
+        return self._new(self.inner().__getitem__(name))
+
+    def __len__(self) -> int:
+        """Number of rows in relation."""
+        return self.inner().__len__()
+
     def aggregate(
         self, aggr_expr: SqlExpr | str, group_expr: SqlExpr | str = ""
     ) -> Self:

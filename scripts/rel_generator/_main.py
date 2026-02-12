@@ -53,6 +53,6 @@ def generate(stub_path: Path) -> str:
     return (
         extract_methods_from_stub(stub_path)
         .into(_resolve_overloads)
-        .filter_map(lambda m: m.generate_method())
+        .map(lambda m: m.generate_method())
         .into(lambda methods: f"{header()}{class_def()}{methods.join(chr(10) * 2)}\n")
     )
