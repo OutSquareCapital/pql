@@ -13,20 +13,9 @@ PYTYPING_REWRITES: pc.Dict[str, str] = pc.Dict.from_ref(
     }
 )
 
-TYPE_SUBS: pc.Dict[str, str] = pc.Dict.from_kwargs(
+TYPE_SUBS = pc.Dict.from_kwargs(
     Expression="SqlExpr",
     DuckDBPyRelation="Self",
 )
 
-SKIP_METHODS: pc.Set[str] = pc.Set(
-    {
-        "__arrow_c_stream__",
-        "__contains__",
-        "__getattr__",
-        "__getitem__",
-        "__len__",
-        "close",
-        "execute",
-        "map",
-    }
-)
+SKIP_METHODS: pc.Set[str] = pc.Set({"close", "execute", "map"})
