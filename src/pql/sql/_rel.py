@@ -11,7 +11,7 @@ from typing import TYPE_CHECKING, Any, Literal, Self, SupportsInt
 import duckdb
 from duckdb import ExplainType, RenderMode
 
-from ._core import ExprHandler
+from ._core import RelHandler
 from ._expr import SqlExpr
 
 if TYPE_CHECKING:
@@ -27,7 +27,11 @@ if TYPE_CHECKING:
     type ParquetFieldIdsType = dict[str, int | ParquetFieldIdsType]
 
 
-class Relation(ExprHandler[duckdb.DuckDBPyRelation]):
+def _expr_or[T](expr: T | SqlExpr) -> T | duckdb.Expression:
+    return expr.inner() if isinstance(expr, SqlExpr) else expr
+
+
+class Relation(RelHandler):
     """Wrapper around DuckDBPyRelation that uses SqlExpr instead of duckdb.Expression.
 
     This is a composition-based wrapper: it stores a ``_expr: DuckDBPyRelation``
@@ -37,21 +41,12 @@ class Relation(ExprHandler[duckdb.DuckDBPyRelation]):
 
     __slots__ = ()
 
-    def __len__(self) -> int:
-        return len(self._expr)
-
-    def __contains__(self, name: str) -> bool:
-        return name in self._expr
-
     def aggregate(
         self, aggr_expr: SqlExpr | str, group_expr: SqlExpr | str = ""
     ) -> Self:
         """Compute the aggregate aggr_expr by the optional groups group_expr on the relation."""
         return self._new(
-            self.inner().aggregate(
-                aggr_expr.inner() if isinstance(aggr_expr, SqlExpr) else aggr_expr,
-                group_expr.inner() if isinstance(group_expr, SqlExpr) else group_expr,
-            )
+            self.inner().aggregate(_expr_or(aggr_expr), _expr_or(group_expr))
         )
 
     def any_value(
@@ -316,11 +311,7 @@ class Relation(ExprHandler[duckdb.DuckDBPyRelation]):
 
     def filter(self, filter_expr: SqlExpr | str) -> Self:
         """Filter the relation object by the filter in filter_expr."""
-        return self._new(
-            self.inner().filter(
-                filter_expr.inner() if isinstance(filter_expr, SqlExpr) else filter_expr
-            )
-        )
+        return self._new(self.inner().filter(_expr_or(filter_expr)))
 
     def first(self, column: str, groups: str = "", projected_columns: str = "") -> Self:
         """Returns the first value of a given column."""
@@ -380,13 +371,7 @@ class Relation(ExprHandler[duckdb.DuckDBPyRelation]):
         self, other_rel: Self, condition: SqlExpr | str, how: str = "inner"
     ) -> Self:
         """Join the relation object with another relation object in other_rel using the join condition expression in join_condition. Types supported are 'inner', 'left', 'right', 'outer', 'semi' and 'anti'."""
-        return self._new(
-            self.inner().join(
-                other_rel.inner(),
-                condition.inner() if isinstance(condition, SqlExpr) else condition,
-                how,
-            )
-        )
+        return self._new(self.inner().join(other_rel.inner(), _expr_or(condition), how))
 
     def lag(
         self,
@@ -862,12 +847,7 @@ class Relation(ExprHandler[duckdb.DuckDBPyRelation]):
         self, set: SqlExpr | str, *, condition: SqlExpr | str | None = None
     ) -> None:
         """Update the given relation with the provided expressions."""
-        return self.inner().update(
-            set.inner() if isinstance(set, SqlExpr) else set,
-            condition=condition.inner()
-            if isinstance(condition, SqlExpr)
-            else condition,
-        )
+        return self.inner().update(_expr_or(set), condition=_expr_or(condition))
 
     def value_counts(self, column: str, groups: str = "") -> Self:
         """Computes the number of elements present in a given column, also projecting the original column."""

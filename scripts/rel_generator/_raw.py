@@ -25,6 +25,12 @@ if TYPE_CHECKING:
     from typing import Union
 
     type ParquetFieldIdsType = dict[str, int | ParquetFieldIdsType]
+
+
+def _expr_or[T](expr: T | SqlExpr) -> T | duckdb.Expression:
+    return expr.inner() if isinstance(expr, SqlExpr) else expr
+
+
 '''
 
 
