@@ -7,9 +7,9 @@ It is not meant to be used directly by the user, but rather to be used by the pu
 
 ## Current duckdb typing issues
 
-|   #     |Fonction/Propriété                       | Actual                                             | Expected               |
-|---------|-----------------------------------------|----------------------------------------------------|------------------------|
-| **209** | `aggregate()` param `aggr_expr`         | `Expression \| str`                                | + `list[Expression]`   |
-| **210** | `StarExpression()` param `exclude`      | `Expression \| str \| tuple[str]`                  | + `list[str]`          |
-| **260** | `.dtypes` property return               | `List[str]`                                        | `list[DuckDBPyType]`   |
-| **279** | `read_csv()` param `path_or_buffer`     | `str \| bytes \| PathLike[str] \| PathLike[bytes]` | +`IO[str] \| IO[bytes]`|
+|   #     |Fonction/Propriété                       | Actual                                             | Expected                       |
+|---------|-----------------------------------------|----------------------------------------------------|--------------------------------|
+| **209** | `aggregate()` param `aggr_expr`         | `Expression \| str`                                | + `Iterable[Expression \| str]`|
+| **210** | `StarExpression()` param `exclude`      | `Expression \| str \| tuple[str]`                  | `Iterable[Expression \| str]`  |
+| **260** | `.dtypes` property return               | `List[str]`                                        | `list[DuckDBPyType]`           |
+| **279** | `read_csv()` param `path_or_buffer`     | `str \| bytes \| PathLike[str] \| PathLike[bytes]` | +`IO[str] \| IO[bytes]`        |
