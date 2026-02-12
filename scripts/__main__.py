@@ -21,7 +21,7 @@ SQL = Path("src", "pql", "sql")
 
 DEFAULT_OUTPUT = SQL.joinpath("fns.py")
 
-DATA_PATH = Path("scripts", "generator", "functions.parquet")
+DATA_PATH = Path("scripts", "fn_generator", "functions.parquet")
 
 STUB_PATH = Path(".venv", "Lib", "site-packages", "_duckdb-stubs", "__init__.pyi")
 OUTPUT_PATH = SQL.joinpath("_rel.py")
