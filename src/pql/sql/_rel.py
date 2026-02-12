@@ -8,11 +8,10 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Literal, Self, SupportsInt, overload
 
-import duckdb
 from duckdb import ExplainType, RenderMode
 
 from ._core import RelHandler
-from ._expr import SqlExpr
+from ._expr import SqlExpr, into_duckdb
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -26,10 +25,6 @@ if TYPE_CHECKING:
     from duckdb import sqltypes
 
     type ParquetFieldIdsType = dict[str, int | ParquetFieldIdsType]
-
-
-def _expr_or[T](expr: T | SqlExpr) -> T | duckdb.Expression:
-    return expr.inner() if isinstance(expr, SqlExpr) else expr
 
 
 class Relation(RelHandler):
@@ -69,7 +64,7 @@ class Relation(RelHandler):
     ) -> Self:
         """Compute the aggregate aggr_expr by the optional groups group_expr on the relation."""
         return self._new(
-            self.inner().aggregate(_expr_or(aggr_expr), _expr_or(group_expr))
+            self.inner().aggregate(into_duckdb(aggr_expr), into_duckdb(group_expr))
         )
 
     def any_value(
@@ -342,7 +337,7 @@ class Relation(RelHandler):
 
     def filter(self, filter_expr: SqlExpr | str) -> Self:
         """Filter the relation object by the filter in filter_expr."""
-        return self._new(self.inner().filter(_expr_or(filter_expr)))
+        return self._new(self.inner().filter(into_duckdb(filter_expr)))
 
     def first(self, column: str, groups: str = "", projected_columns: str = "") -> Self:
         """Returns the first value of a given column."""
@@ -402,7 +397,9 @@ class Relation(RelHandler):
         self, other_rel: Self, condition: SqlExpr | str, how: str = "inner"
     ) -> Self:
         """Join the relation object with another relation object in other_rel using the join condition expression in join_condition. Types supported are 'inner', 'left', 'right', 'outer', 'semi' and 'anti'."""
-        return self._new(self.inner().join(other_rel.inner(), _expr_or(condition), how))
+        return self._new(
+            self.inner().join(other_rel.inner(), into_duckdb(condition), how)
+        )
 
     def lag(
         self,
@@ -605,7 +602,7 @@ class Relation(RelHandler):
     def project(self, *args: str | SqlExpr, groups: str = "") -> Self:
         """Project the relation object by the projection in project_expr."""
         return self._new(
-            self.inner().project(*(_expr_or(arg) for arg in args), groups=groups)
+            self.inner().project(*(into_duckdb(arg) for arg in args), groups=groups)
         )
 
     def quantile(
@@ -673,7 +670,7 @@ class Relation(RelHandler):
     def select(self, *args: str | SqlExpr, groups: str = "") -> Self:
         """Project the relation object by the projection in project_expr."""
         return self._new(
-            self.inner().select(*(_expr_or(arg) for arg in args), groups=groups)
+            self.inner().select(*(into_duckdb(arg) for arg in args), groups=groups)
         )
 
     def select_dtypes(self, types: list[sqltypes.DuckDBPyType | str]) -> Self:
@@ -897,7 +894,7 @@ class Relation(RelHandler):
         self, set: SqlExpr | str, *, condition: SqlExpr | str | None = None
     ) -> None:
         """Update the given relation with the provided expressions."""
-        return self.inner().update(_expr_or(set), condition=_expr_or(condition))
+        return self.inner().update(into_duckdb(set), condition=into_duckdb(condition))
 
     def value_counts(self, column: str, groups: str = "") -> Self:
         """Computes the number of elements present in a given column, also projecting the original column."""

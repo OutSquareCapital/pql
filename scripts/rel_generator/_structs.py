@@ -28,7 +28,7 @@ class ParamInfo:
             case a if PyLit.SQLEXPR in a and PyLit.STR not in a:
                 return f"*(arg.inner() for arg in {self.name})"
             case a if PyLit.SQLEXPR in a:
-                return f"*(_expr_or(arg) for arg in {self.name})"
+                return f"*({PyLit.INTO_DUCKDB}(arg) for arg in {self.name})"
             case _:
                 return f"*{self.name}"
 
@@ -36,7 +36,7 @@ class ParamInfo:
         """Generate the forwarded argument, converting types at boundary."""
         match self.annotation:
             case a if PyLit.DUCK_EXPR in a and PyLit.DUCK_REL not in a:
-                return f"_expr_or({self.name})"
+                return f"{PyLit.INTO_DUCKDB}({self.name})"
             case a if PyLit.DUCK_REL in a:
                 return f"{self.name}.inner()"
             case _:

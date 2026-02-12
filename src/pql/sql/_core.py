@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from collections.abc import Callable
+from collections.abc import Callable, Iterable
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Concatenate, Self
 
@@ -10,6 +10,14 @@ import pyochain as pc
 
 if TYPE_CHECKING:
     from ._typing import FrameInit
+
+
+def try_iter[T](val: Iterable[T] | T) -> pc.Iter[T]:
+    match val:
+        case Iterable():
+            return pc.Iter(val)  # pyright: ignore[reportUnknownArgumentType]
+        case _:
+            return pc.Iter[T].once(val)
 
 
 @dataclass(slots=True)
@@ -114,21 +122,6 @@ class RelHandler(ExprHandler[duckdb.DuckDBPyRelation]):
                         self._expr = duckdb.table(data)
             case _:
                 self._expr = duckdb.from_arrow(pl.DataFrame(data))
-
-    def __arrow_c_stream__(self, requested_schema: object | None = None) -> Any:  # noqa: ANN401
-        return self._expr.__arrow_c_stream__(requested_schema)
-
-    def __contains__(self, name: str) -> bool:
-        return self._expr.__contains__(name)
-
-    def __getattr__(self, name: str) -> Self:
-        return self._new(self._expr.__getattr__(name))
-
-    def __getitem__(self, name: str) -> Self:
-        return self._new(self._expr.__getitem__(name))
-
-    def __len__(self) -> int:
-        return self._expr.__len__()
 
 
 def rel_from_data(data: FrameInit) -> duckdb.DuckDBPyRelation:

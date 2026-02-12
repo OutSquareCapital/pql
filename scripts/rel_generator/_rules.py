@@ -4,6 +4,7 @@ import pyochain as pc
 
 
 class PyLit(StrEnum):
+    INTO_DUCKDB = auto()
     SQLEXPR = "SqlExpr"
     DUCK_REL = "DuckDBPyRelation"
     DUCK_EXPR = "Expression"

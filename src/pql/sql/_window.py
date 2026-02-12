@@ -7,16 +7,16 @@ from typing import TYPE_CHECKING
 import duckdb
 import pyochain as pc
 
+from ._core import try_iter
+
 if TYPE_CHECKING:
     from ._expr import SqlExpr
-
-type TryIter[T] = Iterable[T] | T
 
 
 def over_expr(  # noqa: PLR0913
     expr: SqlExpr,
-    partition_by: pc.Option[TryIter[SqlExpr]],
-    order_by: pc.Option[TryIter[SqlExpr]],
+    partition_by: pc.Option[SqlExpr | Iterable[SqlExpr]],
+    order_by: pc.Option[SqlExpr | Iterable[SqlExpr]],
     rows_start: pc.Option[int],
     rows_end: pc.Option[int],
     *,
@@ -26,20 +26,12 @@ def over_expr(  # noqa: PLR0913
 ) -> duckdb.Expression:
     return _build_over(
         handle_nulls(expr, ignore_nulls=ignore_nulls),
-        partition_by.map(_try_iter).into(get_partition_by),
-        order_by.map(_try_iter).into(
+        partition_by.map(lambda x: try_iter(x).collect()).into(get_partition_by),
+        order_by.map(lambda x: try_iter(x).collect()).into(
             get_order_by, descending=descending, nulls_last=nulls_last
         ),
         Kword.rows_clause(row_start=rows_start, row_end=rows_end),
     )
-
-
-def _try_iter[T](val: TryIter[T]) -> pc.Seq[T]:
-    match val:
-        case Iterable():
-            return pc.Seq(val)  # pyright: ignore[reportUnknownArgumentType]
-        case _:
-            return pc.Iter[T].once(val).collect()
 
 
 def _build_over(

@@ -13,7 +13,7 @@ from typing import TYPE_CHECKING, Any, Literal, Self, SupportsInt, overload
 import duckdb
 from duckdb import ExplainType, RenderMode
 from ._core import ExprHandler, RelHandler
-from ._expr import SqlExpr
+from ._expr import SqlExpr, into_duckdb
 if TYPE_CHECKING:
     from collections.abc import Callable
     import numpy as np
@@ -26,12 +26,6 @@ if TYPE_CHECKING:
     from typing import Union
 
     type ParquetFieldIdsType = dict[str, int | ParquetFieldIdsType]
-
-
-def _expr_or[T](expr: T | SqlExpr) -> T | duckdb.Expression:
-    return expr.inner() if isinstance(expr, SqlExpr) else expr
-
-
 '''
 
 
