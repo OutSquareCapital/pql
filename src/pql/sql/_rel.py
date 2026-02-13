@@ -10,11 +10,11 @@ from typing import TYPE_CHECKING, Any, Literal, Self, SupportsInt, overload
 
 from duckdb import ExplainType, RenderMode
 
-from ._core import RelHandler
+from ._core import RelHandler, try_iter
 from ._expr import SqlExpr, into_duckdb
 
 if TYPE_CHECKING:
-    from collections.abc import Callable
+    from collections.abc import Callable, Iterable
 
     import numpy as np
     import pandas as pd  # pyright: ignore[reportMissingModuleSource]
@@ -60,11 +60,16 @@ class Relation(RelHandler):
         return self.inner().__len__()
 
     def aggregate(
-        self, aggr_expr: SqlExpr | str, group_expr: SqlExpr | str = ""
+        self,
+        aggr_expr: SqlExpr | str | Iterable[SqlExpr | str],
+        group_expr: SqlExpr | str = "",
     ) -> Self:
         """Compute the aggregate aggr_expr by the optional groups group_expr on the relation."""
         return self._new(
-            self.inner().aggregate(into_duckdb(aggr_expr), into_duckdb(group_expr))
+            self.inner().aggregate(
+                try_iter(aggr_expr).map(into_duckdb),  # pyright: ignore[reportArgumentType]
+                into_duckdb(group_expr),
+            )
         )
 
     def any_value(
@@ -601,9 +606,7 @@ class Relation(RelHandler):
 
     def project(self, *args: str | SqlExpr, groups: str = "") -> Self:
         """Project the relation object by the projection in project_expr."""
-        return self._new(
-            self.inner().project(*(into_duckdb(arg) for arg in args), groups=groups)
-        )
+        return self._new(self.inner().project(*(map(into_duckdb, args)), groups=groups))
 
     def quantile(
         self,
@@ -669,9 +672,7 @@ class Relation(RelHandler):
 
     def select(self, *args: str | SqlExpr, groups: str = "") -> Self:
         """Project the relation object by the projection in project_expr."""
-        return self._new(
-            self.inner().select(*(into_duckdb(arg) for arg in args), groups=groups)
-        )
+        return self._new(self.inner().select(*(map(into_duckdb, args)), groups=groups))
 
     def select_dtypes(self, types: list[sqltypes.DuckDBPyType | str]) -> Self:
         """Select columns from the relation, by filtering based on type(s)."""
@@ -705,7 +706,7 @@ class Relation(RelHandler):
 
     def sort(self, *args: SqlExpr) -> Self:
         """Reorder the relation object by the provided expressions."""
-        return self._new(self.inner().sort(*(arg.inner() for arg in args)))
+        return self._new(self.inner().sort(*(map(lambda arg: arg.inner(), args))))
 
     def sql_query(self) -> str:
         """Get the SQL query that is equivalent to the relation."""
@@ -951,6 +952,7 @@ class Relation(RelHandler):
     def write_csv(
         self,
         file_name: str,
+        *,
         sep: str | None = None,
         na_rep: str | None = None,
         header: bool | None = None,
@@ -970,26 +972,27 @@ class Relation(RelHandler):
         """Write the relation object to a CSV file in 'file_name'."""
         return self.inner().write_csv(
             file_name,
-            sep,
-            na_rep,
-            header,
-            quotechar,
-            escapechar,
-            date_format,
-            timestamp_format,
-            quoting,
-            encoding,
-            compression,
-            overwrite,
-            per_thread_output,
-            use_tmp_file,
-            partition_by,
-            write_partition_columns,
+            sep=sep,
+            na_rep=na_rep,
+            header=header,
+            quotechar=quotechar,
+            escapechar=escapechar,
+            date_format=date_format,
+            timestamp_format=timestamp_format,
+            quoting=quoting,
+            encoding=encoding,
+            compression=compression,
+            overwrite=overwrite,
+            per_thread_output=per_thread_output,
+            use_tmp_file=use_tmp_file,
+            partition_by=partition_by,
+            write_partition_columns=write_partition_columns,
         )
 
     def write_parquet(
         self,
         file_name: str,
+        *,
         compression: str | None = None,
         field_ids: ParquetFieldIdsType | Literal["auto"] | None = None,
         row_group_size_bytes: str | int | None = None,
@@ -1006,18 +1009,18 @@ class Relation(RelHandler):
         """Write the relation object to a Parquet file in 'file_name'."""
         return self.inner().write_parquet(
             file_name,
-            compression,
-            field_ids,
-            row_group_size_bytes,
-            row_group_size,
-            overwrite,
-            per_thread_output,
-            use_tmp_file,
-            partition_by,
-            write_partition_columns,
-            append,
-            filename_pattern,
-            file_size_bytes,
+            compression=compression,
+            field_ids=field_ids,
+            row_group_size_bytes=row_group_size_bytes,
+            row_group_size=row_group_size,
+            overwrite=overwrite,
+            per_thread_output=per_thread_output,
+            use_tmp_file=use_tmp_file,
+            partition_by=partition_by,
+            write_partition_columns=write_partition_columns,
+            append=append,
+            filename_pattern=filename_pattern,
+            file_size_bytes=file_size_bytes,
         )
 
     @property
@@ -1038,9 +1041,9 @@ class Relation(RelHandler):
         return self.inner().description
 
     @property
-    def dtypes(self) -> list[str]:
+    def dtypes(self) -> list[sqltypes.DuckDBPyType]:
         """Return a list containing the types of the columns of the relation."""
-        return self.inner().dtypes
+        return self.inner().dtypes  # pyright: ignore[reportReturnType]
 
     @property
     def shape(self) -> tuple[int, int]:
