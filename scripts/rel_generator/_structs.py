@@ -118,13 +118,13 @@ class MethodInfo:
                 return f"{sig}{doc_str}\n{self._build_body()}"
 
     def _to_overload(self) -> str:
-        return f"    @overload\n{self._build_signature()}\n        ..."
+        return f"    @{PyLit.OVERLOAD}\n{self._build_signature()}\n        ..."
 
     def _to_property(self) -> str:
         ret = self.rewritten_return()
         doc_str = _format_doc(self.doc)
         return (
-            f"    @property\n"
+            f"    @{PyLit.PROPERTY}\n"
             f"    def {self.name}(self) -> {ret}:{doc_str}\n"
             f"        return self.inner().{self.name}"
         )
@@ -174,23 +174,27 @@ def _rewrite_type(annotation: str) -> str:
 
 def _format_doc(doc: str) -> str:
     """Format a docstring for the generated wrapper."""
-    return (
-        pc.Vec.from_ref(doc.strip().splitlines())
-        .then_some()
-        .map(
-            lambda lines: (
-                f'        """{lines.first().rstrip()}"""'
-                if lines.length() == 1
-                else (
-                    f'        """{lines.first().rstrip()}\n'
+
+    def _format_lines(lines: pc.Vec[str]) -> str:
+        match lines.length():
+            case 1:
+                return f'        """{lines.first().rstrip()}"""'
+            case _:
+                first_ln = f'        """{lines.first().rstrip()}\n'
+                last_ln = '\n        """'
+                return (
+                    first_ln
                     + lines.iter()
                     .skip(1)
                     .map(lambda line: f"        {line}")
                     .join("\n")
-                    + '\n        """'
+                    + last_ln
                 )
-            )
-        )
+
+    return (
+        pc.Vec.from_ref(doc.strip().splitlines())
+        .then_some()
+        .map(_format_lines)
         .map(lambda d: f"\n{d}")
         .unwrap_or("")
     )
