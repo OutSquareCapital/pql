@@ -7,9 +7,20 @@ It is not meant to be used directly by the user, but rather to be used by the pu
 <!-- markdownlint-disable MD060 -->
 ## Current duckdb typing issues
 
-|   #     |Fonction/Propriété                       | Actual                                             | Expected                       | Manual Fix|
+Those issues are currently present in duckdb stubs, and hence need special rules handling for code gen.
+"Fixed" means that the issue is fixed by rule in `_rules.py`.
+Note that a `Pyright: ignore` comment is needed to be manually added AFTER code gen to ensure no issue if warnings are emitted for the fix.
+
+Automatizing this add too much complexity for something that takes only a few seconds to do manually, and is only needed for a few lines of code.
+
+Any warning emitted who are NOT in the array below are considered real issues and need to be handled accordingly.
+
+Once an issue is fixed by duckdb itself, all related fix code and doc should be removed.
+
+|   #     |Fonction/Propriété                       | Actual                                             | Expected                       | Fixed|
 |---------|-----------------------------------------|----------------------------------------------------|--------------------------------|-----------|
-| **209** | `Relation.aggregate()` param `aggr_expr`         | `Expression \| str`                                | + `Iterable[Expression \| str]`| **-**     |
+| **209** | `Relation.aggregate()` param `aggr_expr`| `Expression \| str`                                | + `Iterable[Expression \| str]`| **X**     |
 | **210** | `StarExpression()` param `exclude`      | `Expression \| str \| tuple[str]`                  | `Iterable[Expression \| str]`  | **X**     |
-| **260** | `Relation.dtypes` property return               | `List[str]`                                        | `list[DuckDBPyType]`           | **-**     |
+| **260** | `Relation.dtypes` property return       | `List[str]`                                        | `list[DuckDBPyType]`           | **X**     |
 | **279** | `read_csv()` param `path_or_buffer`     | `str \| bytes \| PathLike[str] \| PathLike[bytes]` | +`IO[str] \| IO[bytes]`        | **-**     |
+| **314** | `.write_{csv, parquet}`                 | no kword marker after first arg                    | same as `to_{csv, parquet}`    | **X**     |  
