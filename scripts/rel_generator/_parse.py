@@ -6,6 +6,7 @@ from typing import TypeIs
 import duckdb
 import pyochain as pc
 
+from ._rules import fix_kw_only, fix_rel_param, fix_rel_return
 from ._structs import MethodInfo, ParamInfo, PyLit
 
 
@@ -28,78 +29,113 @@ def extract_methods_from_stub(stub_path: Path) -> pc.Seq[MethodInfo]:
                 .collect()
             )
         )
-        .expect("DuckDBPyRelation class not found in stub")
+        .expect(f"{PyLit.DUCK_REL} class not found in stub")
     )
 
 
 def _parse_method(node: ast.stmt, docs: pc.Dict[str, str]) -> pc.Option[MethodInfo]:
     """Parse a single ``ast.FunctionDef`` into ``MethodInfo``."""
-    if not isinstance(node, ast.FunctionDef):
-        return pc.NONE
+    match node:
+        case ast.FunctionDef():
+            regular_args = pc.Iter(node.args.args).skip(1).collect()
+            defaults = pc.Vec.from_ref(node.args.defaults)
+            num_no_default = regular_args.length() - defaults.length()
 
-    def _is_decorator(d: ast.expr, target: str) -> bool:
-        match d:
-            case ast.Attribute(attr=attr):
-                return attr == target
-            case ast.Name(id=id_):
-                return id_ == target
-            case _:
-                return False
+            def _check_decorator(target: PyLit) -> bool:
+                return pc.Iter(node.decorator_list).any(
+                    lambda d: _is_decorator(d, target)
+                )
 
-    regular_args = pc.Vec.from_ref(node.args.args[1:])
-    defaults = pc.Vec.from_ref(node.args.defaults)
-    num_no_default = regular_args.length() - defaults.length()
+            return pc.Some(
+                MethodInfo(
+                    name=node.name,
+                    params=regular_args.into(
+                        _get_params, defaults, node, num_no_default
+                    ),
+                    vararg=pc.Option(node.args.vararg).map(
+                        lambda v: _to_param(node, v.arg, pc.Option(v.annotation))
+                    ),
+                    return_type=fix_rel_return(
+                        node.name,
+                        pc.Option(node.returns).map(ast.unparse).unwrap_or(PyLit.NONE),
+                    ),
+                    is_overload=_check_decorator(PyLit.OVERLOAD),
+                    is_property=_check_decorator(PyLit.PROPERTY),
+                    doc=docs.get_item(node.name).unwrap_or(""),
+                )
+            )
 
-    params = (
+        case _:
+            return pc.NONE
+
+
+def _get_params(
+    regular_args: pc.Seq[ast.arg],
+    defaults: pc.Vec[ast.expr],
+    node: ast.FunctionDef,
+    num_no_default: int,
+) -> pc.Seq[ParamInfo]:
+    return (
         regular_args.iter()
         .enumerate()
         .map_star(
-            lambda i, arg: ParamInfo(
-                name=arg.arg,
-                annotation=ast.unparse(arg.annotation) if arg.annotation else PyLit.ANY,
-                default=(
+            lambda i, arg: _to_param(
+                node,
+                arg.arg,
+                pc.Option(arg.annotation),
+                (
                     pc.NONE
                     if i < num_no_default
                     else pc.Some(ast.unparse(defaults[i - num_no_default]))
                 ),
+                is_kw_only=fix_kw_only(node.name) and i > 0,
             )
         )
         .chain(
             pc.Iter(node.args.kwonlyargs)
             .zip(node.args.kw_defaults, strict=False)
             .map_star(
-                lambda arg, default: ParamInfo(
-                    name=arg.arg,
-                    annotation=ast.unparse(arg.annotation)
-                    if arg.annotation
-                    else PyLit.ANY,
-                    default=pc.Option(default).map(ast.unparse),
+                lambda arg, default: _to_param(
+                    node,
+                    arg.arg,
+                    pc.Option(arg.annotation),
+                    pc.Option(default).map(ast.unparse),
                     is_kw_only=True,
                 )
             )
         )
+        .collect()
     )
 
-    return pc.Some(
-        MethodInfo(
-            name=node.name,
-            params=params.collect(pc.Vec),
-            vararg=pc.Option(node.args.vararg).map(
-                lambda v: ParamInfo(
-                    name=v.arg,
-                    annotation=ast.unparse(v.annotation) if v.annotation else PyLit.ANY,
-                )
-            ),
-            return_type=ast.unparse(node.returns) if node.returns else PyLit.NONE,
-            is_overload=pc.Iter(node.decorator_list).any(
-                lambda d: _is_decorator(d, "overload")
-            ),
-            is_property=pc.Iter(node.decorator_list).any(
-                lambda d: _is_decorator(d, "property")
-            ),
-            doc=docs.get_item(node.name).unwrap_or(""),
-        )
+
+def _to_param(
+    node: ast.FunctionDef,
+    name: str,
+    annotation: pc.Option[ast.expr],
+    default: pc.Option[str] = pc.NONE,
+    *,
+    is_kw_only: bool = False,
+) -> ParamInfo:
+    return ParamInfo(
+        name,
+        fix_rel_param(
+            node.name,
+            name,
+            annotation.map(ast.unparse).unwrap_or(PyLit.ANY),
+        ),
+        default,
+        is_kw_only,
     )
+
+
+def _is_decorator(d: ast.expr, target: str) -> bool:
+    match d:
+        case ast.Attribute(attr=attr):
+            return attr == target
+        case ast.Name(id=id_):
+            return id_ == target
+        case _:
+            return False
 
 
 def _get_runtime_docs() -> pc.Dict[str, str]:

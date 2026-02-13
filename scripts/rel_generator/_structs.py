@@ -26,15 +26,17 @@ class ParamInfo:
         """Generate the forwarded vararg, converting types at boundary."""
         match _rewrite_type(self.annotation):
             case a if PyLit.SQLEXPR in a and PyLit.STR not in a:
-                return f"*(arg.inner() for arg in {self.name})"
+                return f"*(map(lambda arg: arg.inner(), {self.name}))"
             case a if PyLit.SQLEXPR in a:
-                return f"*({PyLit.INTO_DUCKDB}(arg) for arg in {self.name})"
+                return f"*(map({PyLit.INTO_DUCKDB}, {self.name}))"
             case _:
                 return f"*{self.name}"
 
     def forward_arg(self) -> str:
         """Generate the forwarded argument, converting types at boundary."""
         match self.annotation:
+            case a if PyLit.ITERABLE in a and PyLit.DUCK_EXPR in a:
+                return f"try_iter({self.name}).map({PyLit.INTO_DUCKDB})"
             case a if PyLit.DUCK_EXPR in a and PyLit.DUCK_REL not in a:
                 return f"{PyLit.INTO_DUCKDB}({self.name})"
             case a if PyLit.DUCK_REL in a:
@@ -48,7 +50,7 @@ class MethodInfo:
     """A method extracted from the stub + runtime doc."""
 
     name: str
-    params: pc.Vec[ParamInfo]
+    params: pc.Seq[ParamInfo]
     vararg: pc.Option[ParamInfo]
     return_type: str
     is_overload: bool

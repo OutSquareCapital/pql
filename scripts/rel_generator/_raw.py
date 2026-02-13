@@ -12,10 +12,10 @@ from typing import TYPE_CHECKING, Any, Literal, Self, SupportsInt, overload
 
 import duckdb
 from duckdb import ExplainType, RenderMode
-from ._core import ExprHandler, RelHandler
+from ._core import ExprHandler, RelHandler, try_iter
 from ._expr import SqlExpr, into_duckdb
 if TYPE_CHECKING:
-    from collections.abc import Callable
+    from collections.abc import Callable, Iterable
     import numpy as np
     import pandas  # pyright: ignore[reportMissingModuleSource]
     import polars
