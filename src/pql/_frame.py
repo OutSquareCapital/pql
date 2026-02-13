@@ -6,11 +6,17 @@ from collections.abc import Callable, Iterable, Mapping
 from pathlib import Path
 from typing import TYPE_CHECKING, Self
 
-import duckdb
 import pyochain as pc
 
 from . import sql
-from .sql import ExprHandler, SqlExpr
+from .sql import (
+    ExprHandler,
+    Relation,
+    SqlExpr,
+    args_into_exprs,
+    into_expr,
+    iter_into_exprs,
+)
 
 if TYPE_CHECKING:
     import polars as pl
@@ -21,18 +27,18 @@ TEMP_NAME = "__pql_temp__"
 TEMP_COL = sql.col(TEMP_NAME)
 
 
-class LazyFrame(ExprHandler[duckdb.DuckDBPyRelation]):
+class LazyFrame(ExprHandler[Relation]):
     """LazyFrame providing Polars-like API over DuckDB relations."""
 
     __slots__ = ()
 
     def __init__(self, data: FrameInit) -> None:
-        self._expr = sql.rel_from_data(data)
+        self._expr = Relation(data)
 
     def __repr__(self) -> str:
         return f"LazyFrame\n{self._expr}\n"
 
-    def __from_lf__(self, rel: duckdb.DuckDBPyRelation) -> Self:
+    def __from_lf__(self, rel: Relation) -> Self:
         instance = self.__class__.__new__(self.__class__)
         instance._expr = rel
         return instance
@@ -47,12 +53,7 @@ class LazyFrame(ExprHandler[duckdb.DuckDBPyRelation]):
 
     def _agg(self, exprs: IntoExprColumn, group_expr: SqlExpr | str = "") -> Self:
         """Note: duckdb relation.aggregate has type issues, it does accept iterables of expressions but the type signature is wrong."""
-        return self.__from_lf__(
-            self._expr.aggregate(
-                sql.from_cols(exprs).map(sql.to_duckdb),  # pyright: ignore[reportArgumentType]
-                sql.to_duckdb(group_expr),
-            )
-        )
+        return self.__from_lf__(self._expr.aggregate(sql.from_cols(exprs), group_expr))
 
     def _iter_slct(self, func: Callable[[str], SqlExpr]) -> Self:
         return self.columns.iter().map(func).into(self._select)
@@ -63,7 +64,7 @@ class LazyFrame(ExprHandler[duckdb.DuckDBPyRelation]):
         )
 
     @property
-    def relation(self) -> duckdb.DuckDBPyRelation:
+    def relation(self) -> Relation:
         """Get the underlying DuckDB relation."""
         return self._expr
 
@@ -79,23 +80,20 @@ class LazyFrame(ExprHandler[duckdb.DuckDBPyRelation]):
         self, *exprs: IntoExpr | Iterable[IntoExpr], **named_exprs: IntoExpr
     ) -> Self:
         """Select columns or expressions."""
-        return self._select(SqlExpr.from_args_kwargs(*exprs, **named_exprs))
+        return self._select(args_into_exprs(*exprs, **named_exprs))
 
     def with_columns(
         self, *exprs: IntoExpr | Iterable[IntoExpr], **named_exprs: IntoExpr
     ) -> Self:
         """Add or replace columns."""
         return (
-            SqlExpr.from_args_kwargs(*exprs, **named_exprs)
-            .insert(sql.all())
-            .into(self._select)
+            args_into_exprs(*exprs, **named_exprs).insert(sql.all()).into(self._select)
         )
 
     def filter(self, *predicates: Expr) -> Self:
         """Filter rows based on predicates."""
         return pc.Iter(predicates).fold(
-            self,
-            lambda lf, p: lf.__from_lf__(lf._expr.filter(sql.to_duckdb(p.inner()))),
+            self, lambda lf, p: lf.__from_lf__(lf._expr.filter(p.inner()))
         )
 
     def sort(
@@ -126,10 +124,9 @@ class LazyFrame(ExprHandler[duckdb.DuckDBPyRelation]):
 
         return self.__from_lf__(
             self._expr.sort(
-                *SqlExpr.from_iter(*by)
+                *iter_into_exprs(*by)
                 .zip(_args_iter(arg=descending), _args_iter(arg=nulls_last))
                 .map_star(_make_order)
-                .map(lambda c: c.inner())
             )
         )
 
@@ -233,7 +230,7 @@ class LazyFrame(ExprHandler[duckdb.DuckDBPyRelation]):
         """Fill NaN values."""
         return self._iter_slct(
             lambda c: (
-                sql.when(sql.col(c).isnan(), SqlExpr.from_expr(value))
+                sql.when(sql.col(c).isnan(), into_expr(value, as_col=True))
                 .otherwise(sql.col(c))
                 .alias(c)
             )
@@ -263,9 +260,7 @@ class LazyFrame(ExprHandler[duckdb.DuckDBPyRelation]):
                     return sql.col(c).lag(sql.lit(abs_n)).alias(c)
 
         return self._iter_slct(
-            lambda c: sql.coalesce(
-                _shift_fn(c).over(), SqlExpr.from_value(fill_value)
-            ).alias(c)
+            lambda c: sql.coalesce(_shift_fn(c).over(), into_expr(fill_value)).alias(c)
         )
 
     def clone(self) -> Self:
@@ -278,7 +273,7 @@ class LazyFrame(ExprHandler[duckdb.DuckDBPyRelation]):
         return pc.Vec.from_ref(self._expr.columns)
 
     @property
-    def dtypes(self) -> pc.Vec[str]:
+    def dtypes(self) -> pc.Vec[sql.datatypes.DataType]:
         """Get column data types."""
         return pc.Vec.from_ref(self._expr.dtypes)
 
@@ -288,11 +283,11 @@ class LazyFrame(ExprHandler[duckdb.DuckDBPyRelation]):
         return len(self._expr.columns)
 
     @property
-    def schema(self) -> pc.Dict[str, str]:
+    def schema(self) -> pc.Dict[str, sql.datatypes.DataType]:
         """Get the schema as a dictionary."""
         return self.columns.iter().zip(self._expr.dtypes).collect(pc.Dict)
 
-    def collect_schema(self) -> pc.Dict[str, str]:
+    def collect_schema(self) -> pc.Dict[str, sql.datatypes.DataType]:
         """Collect the schema (same as schema property for lazy)."""
         return self.schema
 

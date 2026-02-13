@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING, Any, Self
 import duckdb
 import pyochain as pc
 
-from ._core import func
+from ._core import func, try_iter
 from ._window import over_expr
 from .fns import (
     ArrayFns,
@@ -35,8 +35,8 @@ def fn_once(lhs: Any, rhs: SqlExpr) -> SqlExpr:  # noqa: ANN401
     return SqlExpr(duckdb.LambdaExpression(lhs, rhs.inner()))
 
 
-def all(*, exclude: Any | None = None) -> SqlExpr:  # noqa: ANN401
-    return SqlExpr(duckdb.StarExpression(exclude=exclude))
+def all(*, exclude: Iterable[SqlExpr | str] | None = None) -> SqlExpr:
+    return SqlExpr(duckdb.StarExpression(exclude=into_duckdb(exclude)))
 
 
 def when(condition: SqlExpr, value: SqlExpr) -> SqlExpr:
@@ -50,7 +50,7 @@ def col(name: str) -> SqlExpr:
 
 def lit(value: IntoExpr) -> SqlExpr:
     """Create a literal expression."""
-    return SqlExpr(duckdb.ConstantExpression(value))
+    return SqlExpr(duckdb.ConstantExpression(into_duckdb(value)))
 
 
 def raw(sql: str) -> SqlExpr:
@@ -60,36 +60,99 @@ def raw(sql: str) -> SqlExpr:
 
 def coalesce(*exprs: SqlExpr) -> SqlExpr:
     """Create a COALESCE expression."""
-    return SqlExpr(duckdb.CoalesceOperator(*(expr.inner() for expr in exprs)))
+    return SqlExpr(duckdb.CoalesceOperator(*pc.Iter(exprs).map(lambda e: e.inner())))
 
 
-def to_duckdb(value: SqlExpr | str | duckdb.Expression) -> duckdb.Expression | str:
-    """Convert a SqlExpr to duckdb.Expression, preserving str and duckdb.Expression."""
+def iter_into_duckdb[T](value: Iterable[T | SqlExpr]) -> pc.Iter[T | duckdb.Expression]:
+    """Convert an iterable of values to an iterable of DuckDB Expressions, converting SqlExpr as needed."""
+    return pc.Iter(value).map(into_duckdb)
+
+
+def into_duckdb[T](value: T | SqlExpr) -> T | duckdb.Expression:
+    """Convert a value to a DuckDB Expression if it's a SqlExpr, otherwise return it as is."""
     match value:
-        case str() | duckdb.Expression():
-            return value
         case SqlExpr():
             return value.inner()
+        case _:
+            return value
 
 
-def from_cols(exprs: IntoExprColumn) -> pc.Iter[duckdb.Expression | str]:
-    """Convert one or more values or iterables of values to an iterable of DuckDB Expressions or strings."""
+def any_into_duckdb(arg: Any) -> duckdb.Expression:  # noqa: ANN401
     from .._expr import Expr
 
-    match exprs:
+    match arg:
         case duckdb.Expression():
-            return pc.Iter.once(exprs)
+            return arg
         case SqlExpr():
-            return pc.Iter.once(exprs.inner())
+            return arg.inner()
         case Expr():
-            return pc.Iter.once(exprs.inner().inner())
+            return arg.inner().inner()
         case str():
-            return pc.Iter.once(exprs)
+            return duckdb.ColumnExpression(arg)
+        case _:
+            return duckdb.ConstantExpression(arg)
+
+
+def from_cols(exprs: IntoExprColumn) -> pc.Iter[SqlExpr]:
+    """Convert one or more values or iterables of values to an iterable of DuckDB Expressions or strings."""
+    match exprs:
+        case str():
+            return pc.Iter.once(col(exprs))
         case Iterable():
             return pc.Iter(exprs).map(from_cols).flatten()
         case _:
-            txt = f"Unreachable. Got {type(exprs)} with value {exprs!r}."
-            raise ValueError(txt)
+            return pc.Iter.once(into_expr(exprs))
+
+
+def iter_into_exprs(*values: IntoExpr | Iterable[IntoExpr]) -> pc.Iter[SqlExpr]:
+    """Convert one or more values or iterables of values to an iterator of DuckDB Expressions.
+
+    Note:
+        We handle this with an external variadic argument, and an internal closure, to
+        distinguish between a single iterable argument and multiple arguments.
+    """
+
+    def _single_to_expr(value: IntoExpr | Iterable[IntoExpr]) -> pc.Iter[SqlExpr]:
+        match value:
+            case str() | bytes() | bytearray():
+                return pc.Iter.once(into_expr(value, as_col=True))
+            case _:
+                return try_iter(value).map(lambda v: into_expr(v, as_col=True))
+
+    match values:
+        case (single,):
+            return _single_to_expr(single)
+        case _:
+            return pc.Iter(values).map(_single_to_expr).flatten()
+
+
+def args_into_exprs(
+    *exprs: IntoExpr | Iterable[IntoExpr], **named_exprs: IntoExpr
+) -> pc.Iter[SqlExpr]:
+    """Convert positional and keyword arguments to an iterator of DuckDB Expressions."""
+    return iter_into_exprs(*exprs).chain(
+        pc.Dict.from_ref(named_exprs)
+        .items()
+        .iter()
+        .map_star(lambda name, expr: into_expr(expr, as_col=True).alias(name))
+    )
+
+
+def into_expr(value: IntoExpr, *, as_col: bool = False) -> SqlExpr:
+    """Convert a value to a DuckDB Expression (strings become columns for select/group_by)."""
+    from .._expr import Expr
+
+    match value:
+        case SqlExpr():
+            return value
+        case duckdb.Expression():
+            return SqlExpr(value)
+        case Expr():
+            return value.inner()
+        case str() if as_col:
+            return col(value)
+        case _:
+            return lit(value)
 
 
 class SqlExpr(Fns):  # noqa: PLW1641
@@ -131,74 +194,6 @@ class SqlExpr(Fns):  # noqa: PLW1641
     def re(self) -> SqlExprRegexNameSpace:
         """Access regex functions."""
         return SqlExprRegexNameSpace(self)
-
-    @classmethod
-    def from_expr(cls, value: IntoExpr) -> SqlExpr:
-        """Convert a value to a DuckDB Expression (strings become columns for select/group_by)."""
-        from .._expr import Expr
-
-        match value:
-            case SqlExpr():
-                return value
-            case duckdb.Expression():
-                return cls(value)
-            case Expr():
-                return value.inner()
-            case str():
-                return col(value)
-            case _:
-                return lit(value)
-
-    @classmethod
-    def from_value(cls, value: IntoExpr) -> SqlExpr:
-        """Convert a value to a DuckDB Expression (strings become constants for comparisons)."""
-        from .._expr import Expr
-
-        match value:
-            case SqlExpr():
-                return value
-            case duckdb.Expression():
-                return SqlExpr(value)
-            case Expr():
-                return value.inner()
-            case _:
-                return lit(value)
-
-    @classmethod
-    def from_iter(cls, *values: IntoExpr | Iterable[IntoExpr]) -> pc.Iter[SqlExpr]:
-        """Convert one or more values or iterables of values to an iterator of DuckDB Expressions.
-
-        Note:
-            We handle this with an external variadic argument, and an internal closure, to
-            distinguish between a single iterable argument and multiple arguments.
-        """
-
-        def _single_to_expr(value: IntoExpr | Iterable[IntoExpr]) -> pc.Iter[SqlExpr]:
-            match value:
-                case str() | bytes() | bytearray():
-                    return pc.Iter.once(cls.from_expr(value))
-                case Iterable():
-                    return pc.Iter(value).map(cls.from_expr)
-                case _:
-                    return pc.Iter.once(cls.from_expr(value))
-
-        match values:
-            case (single,):
-                return _single_to_expr(single)
-            case _:
-                return pc.Iter(values).map(_single_to_expr).flatten()
-
-    @classmethod
-    def from_args_kwargs(
-        cls, *exprs: IntoExpr | Iterable[IntoExpr], **named_exprs: IntoExpr
-    ) -> pc.Iter[SqlExpr]:
-        """Convert positional and keyword arguments to an iterator of DuckDB Expressions."""
-        return cls.from_iter(*exprs).chain(
-            pc.Dict.from_ref(named_exprs)
-            .items()
-            .iter()
-            .map_star(lambda name, expr: cls.from_expr(expr).alias(name))
-        )
 
     def log(self, x: Self | float | None = None) -> Self:
         """Computes the logarithm of x to base b.
@@ -263,7 +258,7 @@ class SqlExpr(Fns):  # noqa: PLW1641
         return self._new(func("least", self.inner(), *args))
 
     def __str__(self) -> str:
-        return str(self._expr)
+        return self._expr.__str__()
 
     def __add__(self, other: Self) -> Self:
         return self._new(self._expr.__add__(other._expr))
@@ -310,7 +305,7 @@ class SqlExpr(Fns):  # noqa: PLW1641
     def __invert__(self) -> Self:
         return self._new(self._expr.__invert__())
 
-    def invert(self) -> Self:
+    def not_(self) -> Self:
         return self.__invert__()
 
     def __le__(self, other: Self) -> Self:

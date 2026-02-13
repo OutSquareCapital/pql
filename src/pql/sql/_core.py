@@ -74,27 +74,12 @@ class NameSpaceHandler[T: ExprHandler[duckdb.Expression]]:
 
 def func(name: str, *args: Any) -> duckdb.Expression:  # noqa: ANN401
     """Create a SQL function expression."""
-
-    def _to_expr(arg: Any) -> duckdb.Expression:  # noqa: ANN401
-        from .._expr import Expr
-        from ._expr import SqlExpr
-
-        match arg:
-            case duckdb.Expression():
-                return arg
-            case SqlExpr():
-                return arg.inner()
-            case Expr():
-                return arg.inner().inner()
-            case str():
-                return duckdb.ColumnExpression(arg)
-            case _:
-                return duckdb.ConstantExpression(arg)
+    from ._expr import any_into_duckdb
 
     return (
         pc.Iter(args)
         .filter(lambda a: a is not None)
-        .map(_to_expr)
+        .map(any_into_duckdb)
         .into(lambda args: duckdb.FunctionExpression(name, *args))
     )
 
@@ -122,17 +107,3 @@ class RelHandler(ExprHandler[duckdb.DuckDBPyRelation]):
                         self._expr = duckdb.table(data)
             case _:
                 self._expr = duckdb.from_arrow(pl.DataFrame(data))
-
-
-def rel_from_data(data: FrameInit) -> duckdb.DuckDBPyRelation:
-    match data:
-        case duckdb.DuckDBPyRelation():
-            return data
-        case pl.DataFrame():
-            return duckdb.from_arrow(data)
-        case pl.LazyFrame():
-            _ = data
-            qry = """SELECT * FROM _"""
-            return duckdb.from_query(qry)
-        case _:
-            return duckdb.from_arrow(pl.DataFrame(data))
