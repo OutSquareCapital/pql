@@ -24,10 +24,11 @@ DEFAULT_OUTPUT = SQL.joinpath("fns.py")
 DATA_PATH = Path("scripts", "fn_generator", "functions.parquet")
 
 STUB_PATH = Path(".venv", "Lib", "site-packages", "_duckdb-stubs", "__init__.pyi")
-OUTPUT_PATH = SQL.joinpath("_rel.py")
+REL_PATH = SQL.joinpath("_rel.py")
 
 
-PathArg = Annotated[Path, typer.Option("--path", "-p")]
+InputPath = Annotated[Path, typer.Option("--input-path", "-ip")]
+OutputPath = Annotated[Path, typer.Option("--output-path", "-op")]
 CheckArg = Annotated[
     bool, typer.Option("--c", help="Check output without Ruff applying fixes")
 ]
@@ -38,8 +39,8 @@ console = Console()
 
 @app.command()
 def generate_rel(
-    stub_path: PathArg = STUB_PATH,
-    output_path: PathArg = OUTPUT_PATH,
+    stub_path: InputPath = STUB_PATH,
+    output_path: OutputPath = REL_PATH,
     *,
     check_only: CheckArg = False,
 ) -> None:
@@ -53,7 +54,7 @@ def generate_rel(
 
 
 @app.command()
-def get_functions(path: PathArg = DATA_PATH) -> None:
+def get_functions(path: InputPath = DATA_PATH) -> None:
     """Fetch function metadata from DuckDB and store as parquet at `scripts/generator/functions.parquet`."""
     get_data(path)
 
@@ -70,7 +71,8 @@ def compare() -> None:
 
 @app.command()
 def generate(
-    output: PathArg = DEFAULT_OUTPUT,
+    data_path: InputPath = DATA_PATH,
+    output: OutputPath = DEFAULT_OUTPUT,
     *,
     check_only: CheckArg = False,
     profile: Annotated[
@@ -79,7 +81,7 @@ def generate(
 ) -> None:
     """Generate typed DuckDB function wrappers from the database."""
     console.print("Fetching functions from DuckDB...")
-    content = run_pipeline(DATA_PATH, profile=profile)
+    content = run_pipeline(data_path, profile=profile)
 
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(content, encoding="utf-8")
@@ -89,7 +91,7 @@ def generate(
 
 
 @app.command()
-def analyze_funcs(path: PathArg = DATA_PATH) -> None:
+def analyze_funcs(path: InputPath = DATA_PATH) -> None:
     """Run analysis of the functions metadata and print results in console."""
     analyze(path)
 
