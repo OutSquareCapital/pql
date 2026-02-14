@@ -110,7 +110,7 @@ class ClassComparison:
             .iter()
             .map(
                 lambda name: ComparisonResult.from_method(
-                    self.narwhals_cls, self.polars_cls, self.pql_cls, name
+                    self.narwhals_cls, self.polars_cls, self.pql_cls, name, self.name
                 )
             )
             .sort(key=lambda r: r.method_name),
