@@ -118,17 +118,26 @@ class LazyFrame(ExprHandler[Relation]):
         self,
         by: IntoExpr | Iterable[IntoExpr],
         *more_by: IntoExpr,
-        descending: bool | Iterable[bool] = False,
-        nulls_last: bool | Iterable[bool] = False,
+        descending: bool | Sequence[bool] = False,
+        nulls_last: bool | Sequence[bool] = False,
     ) -> Self:
         """Sort by columns."""
+        sort_exprs = try_iter(by).chain(more_by).into(iter_into_exprs).collect()
 
-        def _args_iter(*, arg: bool | Iterable[bool]) -> pc.Iter[bool]:
+        def _args_iter(
+            *, arg: bool | Sequence[bool], name: str
+        ) -> pc.Result[pc.Iter[bool], ValueError]:
             match arg:
                 case bool():
-                    return pc.Iter.once(arg).cycle().take(len((by, *more_by)))
-                case Iterable():
-                    return pc.Iter(arg)
+                    return pc.Ok(pc.Iter.once(arg).cycle().take(len(sort_exprs)))
+                case Sequence():
+                    if len(arg) != sort_exprs.length():
+                        msg = (
+                            f"the length of `{name}` ({len(arg)}) does not match "
+                            f"the length of `by` ({sort_exprs.length()})"
+                        )
+                        return pc.Err(ValueError(msg))
+                    return pc.Ok(pc.Iter(arg))
 
         def _make_order(col: SqlExpr, desc: bool, nl: bool) -> SqlExpr:  # noqa: FBT001
             match (desc, nl):
@@ -143,10 +152,11 @@ class LazyFrame(ExprHandler[Relation]):
 
         return self.__from_lf__(
             self._expr.sort(
-                *try_iter(by)
-                .chain(more_by)
-                .into(iter_into_exprs)
-                .zip(_args_iter(arg=descending), _args_iter(arg=nulls_last))
+                *sort_exprs.iter()
+                .zip(
+                    _args_iter(arg=descending, name="descending").unwrap(),
+                    _args_iter(arg=nulls_last, name="nulls_last").unwrap(),
+                )
                 .map_star(_make_order)
             )
         )
@@ -324,7 +334,14 @@ class LazyFrame(ExprHandler[Relation]):
         reverse: bool | Sequence[bool] = False,
     ) -> Self:
         """Return top k rows by column(s)."""
-        return self.sort(by, descending=not reverse).head(k)
+        return self.sort(
+            by,
+            descending=(
+                not reverse
+                if isinstance(reverse, bool)
+                else pc.Iter(reverse).map(lambda x: not x).collect()
+            ),
+        ).head(k)
 
     def bottom_k(
         self,

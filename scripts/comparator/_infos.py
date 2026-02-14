@@ -11,9 +11,9 @@ from ._models import MismatchOn, Status
 from ._parse import extract_last_name, normalize_annotation
 
 type MapInfo = pc.Dict[str, ParamInfo]
-type IgnoreParamsByClassAndMethod = pc.Dict[str, pc.Dict[str, pc.Set[str]]]
+type IgnoredParams = pc.Dict[str, pc.Dict[str, pc.Set[str]]]
 
-IGNORED_PARAMS_BY_CLASS_AND_METHOD: IgnoreParamsByClassAndMethod = pc.Dict.from_kwargs(
+IGNORED_PARAMS_BY_CLASS_AND_METHOD: IgnoredParams = pc.Dict.from_kwargs(
     LazyFrame=pc.Dict.from_kwargs(
         sort=pc.Set(("maintain_order", "multithreaded")),
     )

@@ -160,6 +160,15 @@ def test_sort(sample_df: pl.DataFrame) -> None:
         .collect(),
         sample_df.lazy().sort("age", "department", nulls_last=[True, False]).collect(),
     )
+    with pytest.raises(ValueError, match="length of `descending`"):
+        _ = pql.LazyFrame(sample_df).sort("age", "salary", descending=[True]).collect()
+
+    with pytest.raises(ValueError, match="length of `nulls_last`"):
+        _ = (
+            pql.LazyFrame(sample_df)
+            .sort("age", "salary", nulls_last=[True, False, True])
+            .collect()
+        )
 
 
 def test_limit(sample_df: pl.DataFrame) -> None:
@@ -403,15 +412,26 @@ def test_std_var_ddof() -> None:
 
 
 def test_top_k_with_multiple_cols(sample_df: pl.DataFrame) -> None:
-    result = pql.LazyFrame(sample_df).top_k(3, by=["department", "age"]).collect()
-    expected = sample_df.lazy().top_k(3, by=["department", "age"]).collect()
-    assert_eq(result, expected)
-
-
-def test_top_k_with_reverse(sample_df: pl.DataFrame) -> None:
-    result = pql.LazyFrame(sample_df).top_k(2, by="age", reverse=True).collect()
-    expected = sample_df.lazy().top_k(2, by="age", reverse=True).collect()
-    assert_eq(result, expected)
+    assert_eq(
+        pql.LazyFrame(sample_df).top_k(3, by=["department", "age"]).collect(),
+        sample_df.lazy().top_k(3, by=["department", "age"]).collect(),
+    )
+    assert_eq(
+        pql.LazyFrame(sample_df).top_k(2, by="age", reverse=True).collect(),
+        sample_df.lazy().top_k(2, by="age", reverse=True).collect(),
+    )
+    assert_eq(
+        (
+            pql.LazyFrame(sample_df)
+            .top_k(3, by=["department", "age"], reverse=[False, True])
+            .collect()
+        ),
+        (
+            sample_df.lazy()
+            .top_k(3, by=["department", "age"], reverse=[False, True])
+            .collect()
+        ),
+    )
 
 
 def test_bottom_k_with_multiple_cols(sample_df: pl.DataFrame) -> None:
