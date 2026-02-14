@@ -124,6 +124,7 @@ def render_summary_table(comps: pc.Seq[ComparisonReport]) -> pc.Iter[str]:
     return (
         pc.Iter.once(_summary_header())
         .chain(data_rows)
+        .collect()
         .into(_summary_widths)
         .collect()
         .into(
@@ -139,10 +140,12 @@ def _summary_rows(comps: pc.Seq[ComparisonReport]) -> pc.Seq[pc.Seq[str]]:
     return comps.iter().map(lambda comp: comp.to_row()).collect()
 
 
-def _summary_widths(rows: pc.Iter[pc.Seq[str]]) -> pc.Iter[int]:
+def _summary_widths(rows: pc.Seq[pc.Seq[str]]) -> pc.Iter[int]:
     return pc.Iter(range(_summary_header().length())).map(
-        lambda idx: rows.map(lambda row: len(row[idx])).fold(
-            0, lambda acc, length: max(length, acc)
+        lambda idx: (
+            rows.iter()
+            .map(lambda row: len(row[idx]))
+            .fold(0, lambda acc, length: max(length, acc))
         )
     )
 
