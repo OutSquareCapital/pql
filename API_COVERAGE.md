@@ -6,15 +6,15 @@ This report shows the API coverage of pql compared to Polars.
 
 | Class       | Coverage vs Narwhals | Total | Matched | Missing | Mismatched | Extra | Extra vs Narwhals |
 | ----------- | -------------------- | ----- | ------- | ------- | ---------- | ----- | ----------------- |
-| LazyFrame   | 51.0%                | 51    | 26      | 7       | 18         | 1     | 25                |
-| Expr        | 49.1%                | 106   | 52      | 46      | 8          | 1     | 36                |
+| LazyFrame   | 45.8%                | 48    | 22      | 11      | 15         | 2     | 22                |
+| Expr        | 49.1%                | 106   | 52      | 46      | 8          | 2     | 36                |
 | Expr.str    | 82.8%                | 29    | 24      | 3       | 2          | 0     | 10                |
-| Expr.list   | 100.0%               | 10    | 10      | 0       | 0          | 0     | 0                 |
-| Expr.struct | 100.0%               | 1     | 1       | 0       | 0          | 0     | 0                 |
+| Expr.list   | 100.0%               | 10    | 10      | 0       | 0          | 2     | 0                 |
+| Expr.struct | 100.0%               | 1     | 1       | 0       | 0          | 2     | 0                 |
 
 ## LazyFrame
 
-### [v] Matched Methods (26)
+### [v] Matched Methods (22)
 
 - `clone`
 - `collect_schema`
@@ -22,7 +22,6 @@ This report shows the API coverage of pql compared to Polars.
 - `count`
 - `dtypes`
 - `first`
-- `gather_every`
 - `head`
 - `lazy`
 - `limit`
@@ -32,7 +31,6 @@ This report shows the API coverage of pql compared to Polars.
 - `min`
 - `null_count`
 - `pipe`
-- `reverse`
 - `schema`
 - `select`
 - `std`
@@ -40,20 +38,22 @@ This report shows the API coverage of pql compared to Polars.
 - `var`
 - `width`
 - `with_columns`
-- `with_row_count`
-- `with_row_index`
 
-### [x] Missing Methods (7)
+### [x] Missing Methods (11)
 
+- `drop_nulls` (subset: str | list[str] | None) -> Self
 - `explode` (columns: str | Sequence[str], more_columns: str) -> Self
+- `gather_every` (n: int, offset: int) -> Self
 - `group_by` (keys: IntoExpr | Iterable[IntoExpr], drop_null_keys: bool) -> LazyGroupBy[Self]
 - `join` (other: Self, on: str | list[str] | None, how: JoinStrategy, left_on: str | list[str] | None, right_on: str | list[str] | None, suffix: str) -> Self
 - `join_asof` (other: Self, left_on: str | None, right_on: str | None, on: str | None, by_left: str | list[str] | None, by_right: str | list[str] | None, by: str | list[str] | None, strategy: AsofJoinStrategy, suffix: str) -> Self
 - `tail` (n: int) -> Self
 - `to_native` () -> LazyFrameT
+- `unique` (subset: str | list[str] | None, keep: UniqueKeepStrategy, order_by: str | Sequence[str] | None) -> Self
 - `unpivot` (on: str | list[str] | None, index: str | list[str] | None, variable_name: str, value_name: str) -> Self
+- `with_row_index` (name: str, order_by: str | Sequence[str]) -> Self
 
-### [!] Signature Mismatches (18)
+### [!] Signature Mismatches (15)
 
 - `bottom_k` (pl)
   - Polars: (k: int, by: IntoExpr | Iterable[IntoExpr], **reverse: bool | Sequence[bool]**) -> LazyFrame
@@ -69,13 +69,6 @@ This report shows the API coverage of pql compared to Polars.
   - Narwhals: (**columns: str | Iterable[str]**, **strict: bool**) -> Self
   - Polars: (**columns: ColumnNameOrSelector | Iterable[ColumnNameOrSelector]**, **strict: bool**) -> LazyFrame
   - pql: (**columns: str**) -> Self
-- `drop_nans` (pl)
-  - Polars: (**subset: ColumnNameOrSelector | Collection[ColumnNameOrSelector] | None**) -> LazyFrame
-  - pql: (**subset: str | Iterable[str] | None**) -> Self
-- `drop_nulls` (nw)
-  - Narwhals: (**subset: str | list[str] | None**) -> Self
-  - Polars: (**subset: ColumnNameOrSelector | Collection[ColumnNameOrSelector] | None**) -> LazyFrame
-  - pql: (**subset: str | Iterable[str] | None**) -> Self
 - `explain` (pl)
   - Polars: (**format: ExplainFormat**, **optimized: bool**, **type_coercion: bool**, **predicate_pushdown: bool**, **projection_pushdown: bool**, **simplify_expression: bool**, **slice_pushdown: bool**, **comm_subplan_elim: bool**, **comm_subexpr_elim: bool**, **cluster_with_columns: bool**, **collapse_joins: bool**, **streaming: bool**, **engine: EngineType**, **tree_format: bool | None**, **optimizations: QueryOptFlags**) -> str
   - pql: () -> str
@@ -114,13 +107,10 @@ This report shows the API coverage of pql compared to Polars.
   - Narwhals: (k: int, **by: str | Iterable[str]**, **reverse: bool | Sequence[bool]**) -> Self
   - Polars: (k: int, by: IntoExpr | Iterable[IntoExpr], **reverse: bool | Sequence[bool]**) -> LazyFrame
   - pql: (k: int, **by: IntoExpr | Iterable[IntoExpr]**, **reverse: bool**) -> Self
-- `unique` (nw)
-  - Narwhals: (**subset: str | list[str] | None**, **keep: UniqueKeepStrategy**, **order_by: str | Sequence[str] | None**) -> Self
-  - Polars: (**subset: IntoExpr | Collection[IntoExpr] | None**, **keep: UniqueKeepStrategy**, **maintain_order: bool**) -> LazyFrame
-  - pql: (**subset: str | Iterable[str] | None**) -> Self
 
-### [+] Extra Methods (pql-only) (1)
+### [+] Extra Methods (pql-only) (2)
 
+- `inner`
 - `relation`
 
 ## Expr
@@ -252,15 +242,16 @@ This report shows the API coverage of pql compared to Polars.
   - Polars: (**exponent: IntoExprColumn | int | float**) -> Expr
   - pql: (**other: Any**) -> Self
 - `repeat_by` (pl)
-  - Polars: (**by: Series | Expr | str | int**) -> Expr
+  - Polars: (**by: Series | Expr | str_ | int**) -> Expr
   - pql: (**by: Expr | int**) -> Self
 - `replace` (pl)
   - Polars: (**old: IntoExpr | Sequence[Any] | Mapping[Any, Any]**, **new: IntoExpr | Sequence[Any] | NoDefault**, **default: IntoExpr | NoDefault**, **return_dtype: PolarsDataType | None**) -> Expr
   - pql: (**old: IntoExpr**, **new: IntoExpr**) -> Self
 
-### [+] Extra Methods (pql-only) (1)
+### [+] Extra Methods (pql-only) (2)
 
 - `expr`
+- `inner`
 
 ## Expr.str
 
@@ -322,8 +313,18 @@ This report shows the API coverage of pql compared to Polars.
 - `sum`
 - `unique`
 
+### [+] Extra Methods (pql-only) (2)
+
+- `inner`
+- `pipe`
+
 ## Expr.struct
 
 ### [v] Matched Methods (1)
 
 - `field`
+
+### [+] Extra Methods (pql-only) (2)
+
+- `inner`
+- `pipe`

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import ast
 import inspect
 import re
 from dataclasses import dataclass, field
@@ -13,12 +14,34 @@ from ._models import MismatchOn, Status
 type MapInfo = pc.Dict[str, ParamInfo]
 
 SELF_PATTERN = re.compile(r"\b(Self|Expr|LazyFrame)\b")
+GENERIC_SYMBOL_PATTERN = re.compile(r"^[A-Z][A-Z0-9_]*$")
+
+
+class _GenericCanonicalizer(ast.NodeTransformer):
+    def __init__(self) -> None:
+        self._mapping: dict[str, str] = {}
+
+    def visit_Name(self, node: ast.Name) -> ast.AST:
+        match node.id:
+            case name if name not in {"Self", "Expr", "LazyFrame"} and bool(
+                GENERIC_SYMBOL_PATTERN.match(name)
+            ):
+                canonical_name = self._mapping.setdefault(
+                    name, f"__GENERIC_{len(self._mapping)}__"
+                )
+                return ast.copy_location(
+                    ast.Name(id=canonical_name, ctx=node.ctx), node
+                )
+            case _:
+                return node
 
 
 def annotations_differ(pl_param: ParamInfo, pql_param: ParamInfo) -> bool:
     match (pl_param.annotation, pql_param.annotation):
         case (pc.Some(pl_ann), pc.Some(pql_ann)):
-            return _normalize_self(pl_ann) != _normalize_self(pql_ann)
+            return _normalize_self(
+                _extract_last_name(_normalize_generics(pl_ann))
+            ) != _normalize_self(_extract_last_name(_normalize_generics(pql_ann)))
         case _:
             return False
 
@@ -154,6 +177,17 @@ def _mismatch_against(target: MapInfo, other: MapInfo) -> bool:
         )
     )
     return on_params or on_ann
+
+
+def _normalize_generics(annotation: str) -> str:
+    try:
+        parsed = ast.parse(annotation, mode="eval")
+    except SyntaxError:
+        return annotation
+
+    normalized = _GenericCanonicalizer().visit(parsed)
+    ast.fix_missing_locations(normalized)
+    return ast.unparse(normalized)
 
 
 def _normalize_self(annotation: str) -> str:
