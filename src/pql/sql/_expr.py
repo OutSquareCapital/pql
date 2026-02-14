@@ -8,7 +8,8 @@ from typing import TYPE_CHECKING, Any, Self
 import duckdb
 import pyochain as pc
 
-from ._core import func, try_iter
+from ._core import func, into_duckdb, try_iter
+from ._rel import Expression
 from ._window import over_expr
 from .fns import (
     ArrayFns,
@@ -23,7 +24,6 @@ from .fns import (
 
 if TYPE_CHECKING:
     from ._typing import IntoExpr, IntoExprColumn
-    from .datatypes import DataType
 
 
 def row_number() -> SqlExpr:
@@ -61,36 +61,6 @@ def raw(sql: str) -> SqlExpr:
 def coalesce(*exprs: SqlExpr) -> SqlExpr:
     """Create a COALESCE expression."""
     return SqlExpr(duckdb.CoalesceOperator(*pc.Iter(exprs).map(lambda e: e.inner())))
-
-
-def iter_into_duckdb[T](value: Iterable[T | SqlExpr]) -> pc.Iter[T | duckdb.Expression]:
-    """Convert an iterable of values to an iterable of DuckDB Expressions, converting SqlExpr as needed."""
-    return pc.Iter(value).map(into_duckdb)
-
-
-def into_duckdb[T](value: T | SqlExpr) -> T | duckdb.Expression:
-    """Convert a value to a DuckDB Expression if it's a SqlExpr, otherwise return it as is."""
-    match value:
-        case SqlExpr():
-            return value.inner()
-        case _:
-            return value
-
-
-def any_into_duckdb(arg: Any) -> duckdb.Expression:  # noqa: ANN401
-    from .._expr import Expr
-
-    match arg:
-        case duckdb.Expression():
-            return arg
-        case SqlExpr():
-            return arg.inner()
-        case Expr():
-            return arg.inner().inner()
-        case str():
-            return duckdb.ColumnExpression(arg)
-        case _:
-            return duckdb.ConstantExpression(arg)
 
 
 def from_cols(exprs: IntoExprColumn) -> pc.Iter[SqlExpr]:
@@ -155,7 +125,7 @@ def into_expr(value: IntoExpr, *, as_col: bool = False) -> SqlExpr:
             return lit(value)
 
 
-class SqlExpr(Fns):  # noqa: PLW1641
+class SqlExpr(Expression, Fns):
     """A wrapper around duckdb.Expression that provides operator overloading and SQL function methods."""
 
     __slots__ = ()
@@ -260,221 +230,89 @@ class SqlExpr(Fns):  # noqa: PLW1641
     def __str__(self) -> str:
         return self._expr.__str__()
 
-    def __add__(self, other: Self) -> Self:
-        return self._new(self._expr.__add__(other._expr))
-
     def add(self, other: Self) -> Self:
         return self.__add__(other)
-
-    def __and__(self, other: Self) -> Self:
-        return self._new(self._expr.__and__(other._expr))
 
     def and_(self, other: Self) -> Self:
         return self.__and__(other)
 
-    def __div__(self, other: Self) -> Self:
-        return self._new(self._expr.__truediv__(other._expr))
-
     def div(self, other: Self) -> Self:
         return self.__div__(other)
-
-    def __eq__(self, other: Self) -> Self:  # type: ignore[override]
-        return self._new(self._expr.__eq__(other._expr))
 
     def eq(self, other: Self) -> Self:
         return self.__eq__(other)
 
-    def __floordiv__(self, other: Self) -> Self:
-        return self._new(self._expr.__floordiv__(other._expr))
-
     def floordiv(self, other: Self) -> Self:
         return self.__floordiv__(other)
-
-    def __ge__(self, other: Self) -> Self:
-        return self._new(self._expr.__ge__(other._expr))
 
     def ge(self, other: Self) -> Self:
         return self.__ge__(other)
 
-    def __gt__(self, other: Self) -> Self:
-        return self._new(self._expr.__gt__(other._expr))
-
     def gt(self, other: Self) -> Self:
         return self.__gt__(other)
-
-    def __invert__(self) -> Self:
-        return self._new(self._expr.__invert__())
 
     def not_(self) -> Self:
         return self.__invert__()
 
-    def __le__(self, other: Self) -> Self:
-        return self._new(self._expr.__le__(other._expr))
-
     def le(self, other: Self) -> Self:
         return self.__le__(other)
-
-    def __lt__(self, other: Self) -> Self:
-        return self._new(self._expr.__lt__(other._expr))
 
     def lt(self, other: Self) -> Self:
         return self.__lt__(other)
 
-    def __mod__(self, other: Self) -> Self:
-        return self._new(self._expr.__mod__(other._expr))
-
     def mod(self, other: Self) -> Self:
         return self.__mod__(other)
-
-    def __mul__(self, other: Self) -> Self:
-        return self._new(self._expr.__mul__(other._expr))
 
     def mul(self, other: Self) -> Self:
         return self.__mul__(other)
 
-    def __ne__(self, other: Self) -> Self:  # type: ignore[override]
-        return self._new(self._expr.__ne__(other._expr))
-
     def ne(self, other: Self) -> Self:
         return self.__ne__(other)
-
-    def __neg__(self) -> Self:
-        return self._new(self._expr.__neg__())
 
     def neg(self) -> Self:
         return self.__neg__()
 
-    def __or__(self, other: Self) -> Self:
-        return self._new(self._expr.__or__(other._expr))
-
     def or_(self, other: Self) -> Self:
         return self.__or__(other)
-
-    def __pow__(self, other: Self) -> Self:
-        return self._new(self._expr.__pow__(other._expr))
 
     def pow(self, other: Self) -> Self:
         return self.__pow__(other)
 
-    def __radd__(self, other: Self) -> Self:
-        return self._new(self._expr.__radd__(other._expr))
-
     def radd(self, other: Self) -> Self:
         return self.__radd__(other)
-
-    def __rand__(self, other: Self) -> Self:
-        return self._new(self._expr.__rand__(other._expr))
 
     def rand(self, other: Self) -> Self:
         return self.__rand__(other)
 
-    def __rdiv__(self, other: Self) -> Self:
-        return self._new(self._expr.__rtruediv__(other._expr))
-
     def rdiv(self, other: Self) -> Self:
         return self.__rdiv__(other)
-
-    def __rfloordiv__(self, other: Self) -> Self:
-        return self._new(self._expr.__rfloordiv__(other._expr))
 
     def rfloordiv(self, other: Self) -> Self:
         return self.__rfloordiv__(other)
 
-    def __rmod__(self, other: Self) -> Self:
-        return self._new(self._expr.__rmod__(other._expr))
-
     def rmod(self, other: Self) -> Self:
         return self.__rmod__(other)
-
-    def __rmul__(self, other: Self) -> Self:
-        return self._new(self._expr.__rmul__(other._expr))
 
     def rmul(self, other: Self) -> Self:
         return self.__rmul__(other)
 
-    def __ror__(self, other: Self) -> Self:
-        return self._new(self._expr.__ror__(other._expr))
-
     def ror(self, other: Self) -> Self:
         return self.__ror__(other)
-
-    def __rpow__(self, other: Self) -> Self:
-        return self._new(self._expr.__rpow__(other._expr))
 
     def rpow(self, other: Self) -> Self:
         return self.__rpow__(other)
 
-    def __rsub__(self, other: Self) -> Self:
-        return self._new(self._expr.__rsub__(other._expr))
-
     def rsub(self, other: Self) -> Self:
         return self.__rsub__(other)
-
-    def __rtruediv__(self, other: Self) -> Self:
-        return self._new(self._expr.__rtruediv__(other._expr))
 
     def rtruediv(self, other: Self) -> Self:
         return self.__rtruediv__(other)
 
-    def __sub__(self, other: Self) -> Self:
-        return self._new(self._expr.__sub__(other._expr))
-
     def sub(self, other: Self) -> Self:
         return self.__sub__(other)
 
-    def __truediv__(self, other: Self) -> Self:
-        return self._new(self._expr.__truediv__(other._expr))
-
     def truediv(self, other: Self) -> Self:
         return self.__truediv__(other)
-
-    def alias(self, name: str) -> Self:
-        return self._new(self._expr.alias(name))
-
-    def asc(self) -> Self:
-        return self._new(self._expr.asc())
-
-    def between(self, lower: Self, upper: Self) -> Self:
-        return self._new(self._expr.between(lower._expr, upper._expr))
-
-    def cast(self, dtype: DataType) -> Self:
-        return self._new(self._expr.cast(dtype))
-
-    def collate(self, collation: str) -> Self:
-        return self._new(self._expr.collate(collation))
-
-    def desc(self) -> Self:
-        return self._new(self._expr.desc())
-
-    def get_name(self) -> str:
-        return self._expr.get_name()
-
-    def is_in(self, *args: Self) -> Self:
-        return self._new(self._expr.isin(*(arg._expr for arg in args)))
-
-    def is_not_in(self, *args: Self) -> Self:
-        return self._new(self._expr.isnotin(*(arg._expr for arg in args)))
-
-    def is_not_null(self) -> Self:
-        return self._new(self._expr.isnotnull())
-
-    def is_null(self) -> Self:
-        return self._new(self._expr.isnull())
-
-    def nulls_first(self) -> Self:
-        return self._new(self._expr.nulls_first())
-
-    def nulls_last(self) -> Self:
-        return self._new(self._expr.nulls_last())
-
-    def otherwise(self, value: Self) -> Self:
-        return self._new(self._expr.otherwise(value._expr))
-
-    def show(self) -> None:
-        self._expr.show()
-
-    def when(self, condition: Self, value: Self) -> Self:
-        return self._new(self._expr.when(condition._expr, value._expr))
 
     def over(  # noqa: PLR0913
         self,

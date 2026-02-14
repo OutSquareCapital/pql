@@ -11,8 +11,7 @@ from typing import TYPE_CHECKING, Any, Literal, Self, SupportsInt, overload
 import pyochain as pc
 from duckdb import ExplainType, RenderMode
 
-from ._core import RelHandler, try_iter
-from ._expr import SqlExpr, into_duckdb
+from ._core import DuckHandler, RelHandler, into_duckdb, try_iter
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Iterable
@@ -62,8 +61,8 @@ class Relation(RelHandler):
 
     def aggregate(
         self,
-        aggr_expr: SqlExpr | str | Iterable[SqlExpr | str],
-        group_expr: SqlExpr | str = "",
+        aggr_expr: DuckHandler | str | Iterable[DuckHandler | str],
+        group_expr: DuckHandler | str = "",
     ) -> Self:
         """Compute the aggregate aggr_expr by the optional groups group_expr on the relation."""
         return self._new(
@@ -341,7 +340,7 @@ class Relation(RelHandler):
         """Execute and fetch a single row as a tuple."""
         return self.inner().fetchone()
 
-    def filter(self, filter_expr: SqlExpr | str) -> Self:
+    def filter(self, filter_expr: DuckHandler | str) -> Self:
         """Filter the relation object by the filter in filter_expr."""
         return self._new(self.inner().filter(into_duckdb(filter_expr)))
 
@@ -400,7 +399,7 @@ class Relation(RelHandler):
         return self._new(self.inner().intersect(other_rel.inner()))
 
     def join(
-        self, other_rel: Self, condition: SqlExpr | str, how: str = "inner"
+        self, other_rel: Self, condition: DuckHandler | str, how: str = "inner"
     ) -> Self:
         """Join the relation object with another relation object in other_rel using the join condition expression in join_condition. Types supported are 'inner', 'left', 'right', 'outer', 'semi' and 'anti'."""
         return self._new(
@@ -605,7 +604,7 @@ class Relation(RelHandler):
             self.inner().product(column, groups, window_spec, projected_columns)
         )
 
-    def project(self, *args: str | SqlExpr, groups: str = "") -> Self:
+    def project(self, *args: str | DuckHandler, groups: str = "") -> Self:
         """Project the relation object by the projection in project_expr."""
         return self._new(self.inner().project(*(map(into_duckdb, args)), groups=groups))
 
@@ -671,7 +670,7 @@ class Relation(RelHandler):
         """Computes the row number within the partition."""
         return self._new(self.inner().row_number(window_spec, projected_columns))
 
-    def select(self, *args: str | SqlExpr, groups: str = "") -> Self:
+    def select(self, *args: str | DuckHandler, groups: str = "") -> Self:
         """Project the relation object by the projection in project_expr."""
         return self._new(self.inner().select(*(map(into_duckdb, args)), groups=groups))
 
@@ -705,7 +704,7 @@ class Relation(RelHandler):
             render_mode=render_mode,
         )
 
-    def sort(self, *args: SqlExpr) -> Self:
+    def sort(self, *args: DuckHandler) -> Self:
         """Reorder the relation object by the provided expressions."""
         return self._new(self.inner().sort(*(map(lambda arg: arg.inner(), args))))
 
@@ -893,7 +892,7 @@ class Relation(RelHandler):
         return self._new(self.inner().unique(unique_aggr))
 
     def update(
-        self, set: SqlExpr | str, *, condition: SqlExpr | str | None = None
+        self, set: DuckHandler | str, *, condition: DuckHandler | str | None = None
     ) -> None:
         """Update the given relation with the provided expressions."""
         return self.inner().update(into_duckdb(set), condition=into_duckdb(condition))
@@ -1060,3 +1059,427 @@ class Relation(RelHandler):
     def types(self) -> pc.Vec[sqltypes.DuckDBPyType]:
         """Return a list containing the types of the columns of the relation."""
         return pc.Vec.from_ref(self.inner().types)
+
+
+class Expression(DuckHandler):
+    """Wrapper around Expression that uses SqlExpr instead of duckdb.Expression.
+
+    This is a composition-based wrapper: it stores a ``_expr: Expression``
+    and delegates all method calls, converting SqlExpr <-> duckdb.Expression
+    at the boundary.
+    """
+
+    __slots__ = ()
+
+    def __add__(self, other: Self) -> Self:
+        """Add expr to self.
+
+        Parameters:
+                expr: The expression to add together with
+
+        Returns:
+                FunctionExpression: self '+' expr
+        """
+        return self._new(self.inner().__add__(other.inner()))
+
+    def __and__(self, other: Self) -> Self:
+        """Binary-and self together with expr.
+
+        Parameters:
+                expr: The expression to AND together with self
+
+        Returns:
+                FunctionExpression: self '&' expr
+        """
+        return self._new(self.inner().__and__(other.inner()))
+
+    def __div__(self, other: Self) -> Self:
+        """Divide self by expr.
+
+        Parameters:
+                expr: The expression to divide by
+
+        Returns:
+                FunctionExpression: self '/' expr
+        """
+        return self._new(self.inner().__div__(other.inner()))
+
+    def __eq__(self, other: Self) -> Self:  # pyright: ignore[reportIncompatibleMethodOverride]
+        """Create an equality expression between two expressions.
+
+        Parameters:
+                expr: The expression to check equality with
+
+        Returns:
+                FunctionExpression: self '=' expr
+        """
+        return self._new(self.inner().__eq__(other.inner()))
+
+    def __floordiv__(self, other: Self) -> Self:
+        """(Floor) Divide self by expr.
+
+        Parameters:
+                expr: The expression to (floor) divide by
+
+        Returns:
+                FunctionExpression: self '//' expr
+        """
+        return self._new(self.inner().__floordiv__(other.inner()))
+
+    def __ge__(self, other: Self) -> Self:
+        """Create a greater than or equal expression between two expressions.
+
+        Parameters:
+                expr: The expression to check
+
+        Returns:
+                FunctionExpression: self '>=' expr
+        """
+        return self._new(self.inner().__ge__(other.inner()))
+
+    def __gt__(self, other: Self) -> Self:
+        """Create a greater than expression between two expressions.
+
+        Parameters:
+                expr: The expression to check
+
+        Returns:
+                FunctionExpression: self '>' expr
+        """
+        return self._new(self.inner().__gt__(other.inner()))
+
+    def __invert__(self) -> Self:
+        """Create a binary-not expression from self.
+
+        Returns:
+                FunctionExpression: ~self
+        """
+        return self._new(self.inner().__invert__())
+
+    def __le__(self, other: Self) -> Self:
+        """Create a less than or equal expression between two expressions.
+
+        Parameters:
+                expr: The expression to check
+
+        Returns:
+                FunctionExpression: self '<=' expr
+        """
+        return self._new(self.inner().__le__(other.inner()))
+
+    def __lt__(self, other: Self) -> Self:
+        """Create a less than expression between two expressions.
+
+        Parameters:
+                expr: The expression to check
+
+        Returns:
+                FunctionExpression: self '<' expr
+        """
+        return self._new(self.inner().__lt__(other.inner()))
+
+    def __mod__(self, other: Self) -> Self:
+        """Modulo self by expr.
+
+        Parameters:
+                expr: The expression to modulo by
+
+        Returns:
+                FunctionExpression: self '%' expr
+        """
+        return self._new(self.inner().__mod__(other.inner()))
+
+    def __mul__(self, other: Self) -> Self:
+        """Multiply self by expr.
+
+        Parameters:
+                expr: The expression to multiply by
+
+        Returns:
+                FunctionExpression: self '*' expr
+        """
+        return self._new(self.inner().__mul__(other.inner()))
+
+    def __ne__(self, other: Self) -> Self:  # pyright: ignore[reportIncompatibleMethodOverride]
+        """Create an inequality expression between two expressions.
+
+        Parameters:
+                expr: The expression to check inequality with
+
+        Returns:
+                FunctionExpression: self '!=' expr
+        """
+        return self._new(self.inner().__ne__(other.inner()))
+
+    def __neg__(self) -> Self:
+        """Negate the expression.
+
+        Returns:
+                FunctionExpression: -self
+        """
+        return self._new(self.inner().__neg__())
+
+    def __or__(self, other: Self) -> Self:
+        """Binary-or self together with expr.
+
+        Parameters:
+                expr: The expression to OR together with self
+
+        Returns:
+                FunctionExpression: self '|' expr
+        """
+        return self._new(self.inner().__or__(other.inner()))
+
+    def __pow__(self, other: Self) -> Self:
+        """Power self by expr.
+
+        Parameters:
+                expr: The expression to power by
+
+        Returns:
+                FunctionExpression: self '**' expr
+        """
+        return self._new(self.inner().__pow__(other.inner()))
+
+    def __radd__(self, other: Self) -> Self:
+        """Add expr to self.
+
+        Parameters:
+                expr: The expression to add together with
+
+        Returns:
+                FunctionExpression: self '+' expr
+        """
+        return self._new(self.inner().__radd__(other.inner()))
+
+    def __rand__(self, other: Self) -> Self:
+        """Binary-and self together with expr.
+
+        Parameters:
+                expr: The expression to AND together with self
+
+        Returns:
+                FunctionExpression: expr '&' self
+        """
+        return self._new(self.inner().__rand__(other.inner()))
+
+    def __rdiv__(self, other: Self) -> Self:
+        """Divide self by expr.
+
+        Parameters:
+                expr: The expression to divide by
+
+        Returns:
+                FunctionExpression: self '/' expr
+        """
+        return self._new(self.inner().__rdiv__(other.inner()))
+
+    def __rfloordiv__(self, other: Self) -> Self:
+        """(Floor) Divide self by expr.
+
+        Parameters:
+                expr: The expression to (floor) divide by
+
+        Returns:
+                FunctionExpression: self '//' expr
+        """
+        return self._new(self.inner().__rfloordiv__(other.inner()))
+
+    def __rmod__(self, other: Self) -> Self:
+        """Modulo self by expr.
+
+        Parameters:
+                expr: The expression to modulo by
+
+        Returns:
+                FunctionExpression: self '%' expr
+        """
+        return self._new(self.inner().__rmod__(other.inner()))
+
+    def __rmul__(self, other: Self) -> Self:
+        """Multiply self by expr.
+
+        Parameters:
+                expr: The expression to multiply by
+
+        Returns:
+                FunctionExpression: self '*' expr
+        """
+        return self._new(self.inner().__rmul__(other.inner()))
+
+    def __ror__(self, other: Self) -> Self:
+        """Binary-or self together with expr.
+
+        Parameters:
+                expr: The expression to OR together with self
+
+        Returns:
+                FunctionExpression: expr '|' self
+        """
+        return self._new(self.inner().__ror__(other.inner()))
+
+    def __rpow__(self, other: Self) -> Self:
+        """Power self by expr.
+
+        Parameters:
+                expr: The expression to power by
+
+        Returns:
+                FunctionExpression: self '**' expr
+        """
+        return self._new(self.inner().__rpow__(other.inner()))
+
+    def __rsub__(self, other: Self) -> Self:
+        """Subtract expr from self.
+
+        Parameters:
+                expr: The expression to subtract from
+
+        Returns:
+                FunctionExpression: self '-' expr
+        """
+        return self._new(self.inner().__rsub__(other.inner()))
+
+    def __rtruediv__(self, other: Self) -> Self:
+        """Divide self by expr.
+
+        Parameters:
+                expr: The expression to divide by
+
+        Returns:
+                FunctionExpression: self '/' expr
+        """
+        return self._new(self.inner().__rtruediv__(other.inner()))
+
+    def __sub__(self, other: Self) -> Self:
+        """Subtract expr from self.
+
+        Parameters:
+                expr: The expression to subtract from
+
+        Returns:
+                FunctionExpression: self '-' expr
+        """
+        return self._new(self.inner().__sub__(other.inner()))
+
+    def __truediv__(self, other: Self) -> Self:
+        """Divide self by expr.
+
+        Parameters:
+                expr: The expression to divide by
+
+        Returns:
+                FunctionExpression: self '/' expr
+        """
+        return self._new(self.inner().__truediv__(other.inner()))
+
+    def alias(self, name: str) -> Self:
+        """Create a copy of this expression with the given alias.
+
+        Parameters:
+                name: The alias to use for the expression, this will affect how it can be referenced.
+
+        Returns:
+                Expression: self with an alias.
+        """
+        return self._new(self.inner().alias(name))
+
+    def asc(self) -> Self:
+        """Set the order by modifier to ASCENDING."""
+        return self._new(self.inner().asc())
+
+    def between(self, lower: Self, upper: Self) -> Self:
+        return self._new(self.inner().between(lower.inner(), upper.inner()))
+
+    def cast(self, type: sqltypes.DuckDBPyType) -> Self:
+        """Create a CastExpression to type from self.
+
+        Parameters:
+                type: The type to cast to
+
+        Returns:
+                CastExpression: self::type
+        """
+        return self._new(self.inner().cast(type))
+
+    def collate(self, collation: str) -> Self:
+        return self._new(self.inner().collate(collation))
+
+    def desc(self) -> Self:
+        """Set the order by modifier to DESCENDING."""
+        return self._new(self.inner().desc())
+
+    def get_name(self) -> str:
+        """Return the stringified version of the expression.
+
+        Returns:
+                str: The string representation.
+        """
+        return self.inner().get_name()
+
+    def is_in(self, *args: Self) -> Self:
+        """Return an IN expression comparing self to the input arguments.
+
+        Returns:
+                DuckDBPyExpression: The compare IN expression
+        """
+        return self._new(self.inner().isin(*(map(lambda arg: arg.inner(), args))))
+
+    def is_not_in(self, *args: Self) -> Self:
+        """Return a NOT IN expression comparing self to the input arguments.
+
+        Returns:
+                DuckDBPyExpression: The compare NOT IN expression
+        """
+        return self._new(self.inner().isnotin(*(map(lambda arg: arg.inner(), args))))
+
+    def is_not_null(self) -> Self:
+        """Create a binary IS NOT NULL expression from self.
+
+        Returns:
+                DuckDBPyExpression: self IS NOT NULL
+        """
+        return self._new(self.inner().isnotnull())
+
+    def is_null(self) -> Self:
+        """Create a binary IS NULL expression from self.
+
+        Returns:
+                DuckDBPyExpression: self IS NULL
+        """
+        return self._new(self.inner().isnull())
+
+    def nulls_first(self) -> Self:
+        """Set the NULL order by modifier to NULLS FIRST."""
+        return self._new(self.inner().nulls_first())
+
+    def nulls_last(self) -> Self:
+        """Set the NULL order by modifier to NULLS LAST."""
+        return self._new(self.inner().nulls_last())
+
+    def otherwise(self, value: Self) -> Self:
+        """Add an ELSE <value> clause to the CaseExpression.
+
+        Parameters:
+                value: The value to use if none of the WHEN conditions are met.
+
+        Returns:
+                CaseExpression: self with an ELSE clause.
+        """
+        return self._new(self.inner().otherwise(value.inner()))
+
+    def show(self) -> None:
+        """Print the stringified version of the expression."""
+        return self.inner().show()
+
+    def when(self, condition: Self, value: Self) -> Self:
+        """Add an additional WHEN <condition> THEN <value> clause to the CaseExpression.
+
+        Parameters:
+                condition: The condition that must be met.
+                value: The value to use if the condition is met.
+
+        Returns:
+                CaseExpression: self with an additional WHEN clause.
+        """
+        return self._new(self.inner().when(condition.inner(), value.inner()))

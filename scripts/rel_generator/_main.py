@@ -8,7 +8,8 @@ from typing import TYPE_CHECKING
 import pyochain as pc
 
 from ._parse import extract_methods_from_stub
-from ._raw import class_def, header
+from ._rules import PyLit
+from ._target import EXPR_TARGET, REL_TARGET
 
 if TYPE_CHECKING:
     from ._structs import MethodInfo
@@ -48,11 +49,25 @@ def _resolve_overloads(methods: pc.Seq[MethodInfo]) -> pc.Iter[MethodInfo]:
     return methods.iter().enumerate().map_star(_expand)
 
 
+def _generate_target(stub_path: Path, target_name: str) -> str:
+    target = (
+        pc.Dict.from_kwargs(relation=REL_TARGET, expression=EXPR_TARGET)
+        .get_item(target_name)
+        .expect(f"Unsupported target: {target_name}")
+    )
+
+    return (
+        extract_methods_from_stub(stub_path, target)
+        .into(_resolve_overloads)
+        .map(lambda m: m.generate_method())
+        .into(lambda methods: f"{target.class_def()}{methods.join(chr(10) * 2)}")
+    )
+
+
 def generate(stub_path: Path) -> str:
     """Generate the full ``_rel.py`` file content."""
     return (
-        extract_methods_from_stub(stub_path)
-        .into(_resolve_overloads)
-        .map(lambda m: m.generate_method())
-        .into(lambda methods: f"{header()}{class_def()}{methods.join(chr(10) * 2)}\n")
+        pc.Iter(("relation", "expression"))
+        .map(lambda name: _generate_target(stub_path, name))
+        .into(lambda classes: f"{PyLit.header()}{classes.join(chr(10) * 2)}\n")
     )
