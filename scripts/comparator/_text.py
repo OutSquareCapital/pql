@@ -19,7 +19,6 @@ class ComparisonReport:
         return pc.Seq(
             (
                 f"\n## {self.name}\n",
-                _format(self.results, "[v] Matched Methods", status=Status.MATCH),
                 _format(self.results, "[x] Missing Methods", status=Status.MISSING),
                 _format(
                     self.results,

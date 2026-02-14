@@ -33,6 +33,8 @@ class ParamInfo:
     """Information about a function parameter."""
 
     name: str
+    is_var_positional: bool
+    is_var_keyword: bool
     has_default: bool
     annotation: pc.Option[str]
 
@@ -41,9 +43,20 @@ class ParamInfo:
         """Create ParamInfo from inspect.Parameter."""
         return cls(
             name=param.name,
+            is_var_positional=param.kind == inspect.Parameter.VAR_POSITIONAL,
+            is_var_keyword=param.kind == inspect.Parameter.VAR_KEYWORD,
             has_default=param.default is not inspect.Parameter.empty,
             annotation=_get_annotation_str(param.annotation),
         )
+
+    def param_name(self) -> str:
+        match (self.is_var_positional, self.is_var_keyword):
+            case (True, _):
+                return f"*{self.name}"
+            case (_, True):
+                return f"**{self.name}"
+            case _:
+                return self.name
 
 
 @dataclass(slots=True)
@@ -72,9 +85,9 @@ class MethodInfo:
             self.params.iter()
             .filter(lambda p: p.name != "self")
             .map(
-                lambda p: p.annotation.map(lambda a: f"{p.name}: {a}").unwrap_or(
-                    p.name + ("=..." if p.has_default else "")
-                )
+                lambda p: p.annotation.map(
+                    lambda a: f"{p.param_name()}: {a}"
+                ).unwrap_or(p.param_name() + ("=..." if p.has_default else ""))
             )
             .join(", ")
         )
@@ -265,10 +278,10 @@ def _signature_with_diff(base: MethodInfo, other: MethodInfo) -> str:
     def _format_param(p: ParamInfo) -> str:
         match diff_names.any(lambda name: name == p.name):
             case True:
-                return f"**{p.annotation.map(lambda a: f'{p.name}: {a}').unwrap_or(p.name + ('=...' if p.has_default else ''))}**"
+                return f"`{p.annotation.map(lambda a: f'{p.param_name()}: {a}').unwrap_or(p.param_name() + ('=...' if p.has_default else ''))}`"
             case False:
-                return p.annotation.map(lambda a: f"{p.name}: {a}").unwrap_or(
-                    p.name + ("=..." if p.has_default else "")
+                return p.annotation.map(lambda a: f"{p.param_name()}: {a}").unwrap_or(
+                    p.param_name() + ("=..." if p.has_default else "")
                 )
 
     params_str = (
