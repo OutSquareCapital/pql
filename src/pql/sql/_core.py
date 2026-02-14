@@ -14,6 +14,8 @@ if TYPE_CHECKING:
 
 def try_iter[T](val: Iterable[T] | T) -> pc.Iter[T]:
     match val:
+        case str():
+            return pc.Iter[T].once(val)
         case Iterable():
             return pc.Iter(val)  # pyright: ignore[reportUnknownArgumentType]
         case _:

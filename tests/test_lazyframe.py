@@ -135,9 +135,11 @@ def test_sort(sample_df: pl.DataFrame) -> None:
     )
     assert_eq(
         pql.LazyFrame(sample_df)
-        .sort("department", "age", descending=[False, True])
+        .sort(pql.col("department"), "age", descending=[False, True])
         .collect(),
-        sample_df.lazy().sort("department", "age", descending=[False, True]).collect(),
+        sample_df.lazy()
+        .sort(pl.col("department"), "age", descending=[False, True])
+        .collect(),
     )
     assert_eq(
         pql.LazyFrame(sample_df)

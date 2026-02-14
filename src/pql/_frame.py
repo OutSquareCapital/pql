@@ -16,6 +16,7 @@ from .sql import (
     args_into_exprs,
     into_expr,
     iter_into_exprs,
+    try_iter,
 )
 
 if TYPE_CHECKING:
@@ -115,7 +116,8 @@ class LazyFrame(ExprHandler[Relation]):
 
     def sort(
         self,
-        *by: IntoExpr | Iterable[IntoExpr],
+        by: IntoExpr | Iterable[IntoExpr],
+        *more_by: IntoExpr,
         descending: bool | Iterable[bool] = False,
         nulls_last: bool | Iterable[bool] = False,
     ) -> Self:
@@ -124,7 +126,7 @@ class LazyFrame(ExprHandler[Relation]):
         def _args_iter(*, arg: bool | Iterable[bool]) -> pc.Iter[bool]:
             match arg:
                 case bool():
-                    return pc.Iter.once(arg).cycle().take(len(by))
+                    return pc.Iter.once(arg).cycle().take(len((by, *more_by)))
                 case Iterable():
                     return pc.Iter(arg)
 
@@ -141,7 +143,9 @@ class LazyFrame(ExprHandler[Relation]):
 
         return self.__from_lf__(
             self._expr.sort(
-                *iter_into_exprs(*by)
+                *try_iter(by)
+                .chain(more_by)
+                .into(iter_into_exprs)
                 .zip(_args_iter(arg=descending), _args_iter(arg=nulls_last))
                 .map_star(_make_order)
             )
