@@ -11,6 +11,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any, Literal, Self, SupportsInt, overload
 
 import duckdb
+import pyochain as pc
 from duckdb import ExplainType, RenderMode
 from ._core import ExprHandler, RelHandler, try_iter
 from ._expr import SqlExpr, into_duckdb

@@ -12,6 +12,8 @@ class PyLit(StrEnum):
     NONE = "None"
     ANY = "Any"
     SELF_RET = "Self"
+    LIST = auto()
+    DICT = auto()
     OVERLOAD = auto()
     PROPERTY = auto()
     SELF = auto()

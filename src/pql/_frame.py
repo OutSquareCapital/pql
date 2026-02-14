@@ -270,12 +270,12 @@ class LazyFrame(ExprHandler[Relation]):
     @property
     def columns(self) -> pc.Vec[str]:
         """Get column names."""
-        return pc.Vec.from_ref(self._expr.columns)
+        return self._expr.columns
 
     @property
     def dtypes(self) -> pc.Vec[sql.datatypes.DataType]:
         """Get column data types."""
-        return pc.Vec.from_ref(self._expr.dtypes)
+        return self._expr.dtypes
 
     @property
     def width(self) -> int:

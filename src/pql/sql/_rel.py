@@ -8,6 +8,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Literal, Self, SupportsInt, overload
 
+import pyochain as pc
 from duckdb import ExplainType, RenderMode
 
 from ._core import RelHandler, try_iter
@@ -320,21 +321,21 @@ class Relation(RelHandler):
         """Execute and return an Arrow Record Batch Reader that yields all rows."""
         return self.inner().fetch_record_batch(rows_per_batch)
 
-    def fetchall(self) -> list[tuple[Any, ...]]:
+    def fetchall(self) -> pc.Vec[tuple[Any, ...]]:
         """Execute and fetch all rows as a list of tuples."""
-        return self.inner().fetchall()
+        return pc.Vec.from_ref(self.inner().fetchall())
 
     def fetchdf(self, *, date_as_object: bool = False) -> pd.DataFrame:
         """Execute and fetch all rows as a pandas DataFrame."""
         return self.inner().fetchdf(date_as_object=date_as_object)
 
-    def fetchmany(self, size: SupportsInt = 1) -> list[tuple[Any, ...]]:
+    def fetchmany(self, size: SupportsInt = 1) -> pc.Vec[tuple[Any, ...]]:
         """Execute and fetch the next set of rows as a list of tuples."""
-        return self.inner().fetchmany(size)
+        return pc.Vec.from_ref(self.inner().fetchmany(size))
 
-    def fetchnumpy(self) -> dict[str, np.typing.NDArray[Any] | pd.Categorical]:
+    def fetchnumpy(self) -> pc.Dict[str, np.typing.NDArray[Any] | pd.Categorical]:
         """Execute and fetch all rows as a Python dict mapping each column to one numpy arrays."""
-        return self.inner().fetchnumpy()
+        return pc.Dict.from_ref(self.inner().fetchnumpy())
 
     def fetchone(self) -> tuple[Any, ...] | None:
         """Execute and fetch a single row as a tuple."""
@@ -785,9 +786,9 @@ class Relation(RelHandler):
             self.inner().sum(column, groups, window_spec, projected_columns)
         )
 
-    def tf(self) -> dict[str, tf.Tensor]:
+    def tf(self) -> pc.Dict[str, tf.Tensor]:
         """Fetch a result as dict of TensorFlow Tensors."""
-        return self.inner().tf()
+        return pc.Dict.from_ref(self.inner().tf())
 
     def to_arrow_table(self, batch_size: SupportsInt = 1000000) -> pa.Table:
         """Execute and fetch all rows as an Arrow Table."""
@@ -879,9 +880,9 @@ class Relation(RelHandler):
         """Creates a view named view_name that refers to the relation object."""
         return self._new(self.inner().to_view(view_name, replace))
 
-    def torch(self) -> dict[str, torch.Tensor]:
+    def torch(self) -> pc.Dict[str, torch.Tensor]:
         """Fetch a result as dict of PyTorch Tensors."""
-        return self.inner().torch()
+        return pc.Dict.from_ref(self.inner().torch())
 
     def union(self, union_rel: Self) -> Self:
         """Create the set union of this relation object with another relation object in other_rel."""
@@ -1029,21 +1030,21 @@ class Relation(RelHandler):
         return self.inner().alias
 
     @property
-    def columns(self) -> list[str]:
+    def columns(self) -> pc.Vec[str]:
         """Return a list containing the names of the columns of the relation."""
-        return self.inner().columns
+        return pc.Vec.from_ref(self.inner().columns)
 
     @property
     def description(
         self,
-    ) -> list[tuple[str, sqltypes.DuckDBPyType, None, None, None, None, None]]:
+    ) -> pc.Vec[tuple[str, sqltypes.DuckDBPyType, None, None, None, None, None]]:
         """Return the description of the result."""
-        return self.inner().description
+        return pc.Vec.from_ref(self.inner().description)
 
     @property
-    def dtypes(self) -> list[sqltypes.DuckDBPyType]:
+    def dtypes(self) -> pc.Vec[sqltypes.DuckDBPyType]:
         """Return a list containing the types of the columns of the relation."""
-        return self.inner().dtypes  # pyright: ignore[reportReturnType]
+        return pc.Vec.from_ref(self.inner().dtypes)  # pyright: ignore[reportReturnType]
 
     @property
     def shape(self) -> tuple[int, int]:
@@ -1056,6 +1057,6 @@ class Relation(RelHandler):
         return self.inner().type
 
     @property
-    def types(self) -> list[sqltypes.DuckDBPyType]:
+    def types(self) -> pc.Vec[sqltypes.DuckDBPyType]:
         """Return a list containing the types of the columns of the relation."""
-        return self.inner().types
+        return pc.Vec.from_ref(self.inner().types)
