@@ -38,15 +38,12 @@ def sample_df() -> pl.DataFrame:
 
 
 def test_lazyframe_from_duckdb_relation() -> None:
-    result = pql.LazyFrame(duckdb.sql("SELECT 1 as a, 2 as b")).collect()
-    expected = duckdb.sql("SELECT 1 as a, 2 as b").pl()
-    assert_eq(result, expected)
+    qry = "SELECT 1 as a, 2 as b"
+    assert_eq(pql.LazyFrame(duckdb.sql(qry)).collect(), duckdb.sql(qry).pl())
 
 
 def test_lazyframe_from_pl_lazyframe(sample_df: pl.DataFrame) -> None:
-    result = pql.LazyFrame(sample_df.lazy().filter(pl.col("age") > 20)).collect()
-    expected = sample_df.lazy().filter(pl.col("age") > 20).collect()
-    assert_eq(result, expected)
+    assert_eq(pql.LazyFrame(sample_df.lazy()).collect(), sample_df.lazy().collect())
 
 
 def test_lazyframe_from_dict() -> None:
@@ -170,15 +167,33 @@ def test_limit(sample_df: pl.DataFrame) -> None:
     )
 
 
-def test_with_columns_filter(sample_df: pl.DataFrame) -> None:
+def test_filter(sample_df: pl.DataFrame) -> None:
+    assert_eq(
+        pql.LazyFrame(sample_df).filter(pql.col("salary").mul(12).gt(600000)).collect(),
+        sample_df.lazy().filter(pl.col("salary").mul(12).gt(600000)).collect(),
+    )
     assert_eq(
         pql.LazyFrame(sample_df)
-        .select(pql.col("salary").mul(12).alias("annual_salary"))
-        .filter(pql.col("annual_salary").gt(600000))
+        .filter(pql.col("salary").mul(12).gt(600000), pql.col("age").lt(50))
         .collect(),
         sample_df.lazy()
-        .select(pl.col("salary").mul(12).alias("annual_salary"))
-        .filter(pl.col("annual_salary").gt(600000))
+        .filter(pl.col("salary").mul(12).gt(600000), pl.col("age").lt(50))
+        .collect(),
+    )
+    assert_eq(
+        pql.LazyFrame(sample_df)
+        .filter([pql.col("salary").mul(12).gt(600000), pql.col("age").lt(50)])
+        .collect(),
+        sample_df.lazy()
+        .filter([pl.col("salary").mul(12).gt(600000), pl.col("age").lt(50)])
+        .collect(),
+    )
+    assert_eq(
+        pql.LazyFrame(sample_df)
+        .filter(pql.col("age").gt(20), is_active=True, department="Sales")
+        .collect(),
+        sample_df.lazy()
+        .filter(pl.col("age").gt(20), is_active=True, department="Sales")
         .collect(),
     )
 
@@ -243,9 +258,14 @@ def test_top_k(sample_df: pl.DataFrame) -> None:
 
 
 def test_bottom_k(sample_df: pl.DataFrame) -> None:
-    result = pql.LazyFrame(sample_df).bottom_k(3, by="age").collect()
-    expected = sample_df.lazy().bottom_k(3, by="age").collect()
-    assert_eq(result, expected)
+    assert_eq(
+        pql.LazyFrame(sample_df).bottom_k(3, by="age").collect(),
+        sample_df.lazy().bottom_k(3, by="age").collect(),
+    )
+    assert_eq(
+        pql.LazyFrame(sample_df).bottom_k(3, by=["age", "salary"]).collect(),
+        sample_df.lazy().bottom_k(3, by=["age", "salary"]).collect(),
+    )
 
 
 def test_cast(sample_df: pl.DataFrame) -> None:

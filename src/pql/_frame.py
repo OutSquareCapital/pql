@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
-from collections.abc import Callable, Iterable, Mapping
+from collections.abc import Callable, Iterable, Mapping, Sequence
 from pathlib import Path
-from typing import TYPE_CHECKING, Self
+from typing import TYPE_CHECKING, Any, Self
 
 import pyochain as pc
 
@@ -48,7 +48,13 @@ class LazyFrame(ExprHandler[Relation]):
 
     def _filter(self, *predicates: IntoExprColumn) -> Self:
         return pc.Iter(predicates).fold(
-            self, lambda lf, p: lf.__from_lf__(lf._expr.filter(*sql.from_cols(p)))
+            self,
+            lambda lf, p: sql.from_cols(p).fold(
+                lf,
+                lambda inner_lf, pred: inner_lf.__from_lf__(
+                    inner_lf._expr.filter(pred)
+                ),
+            ),
         )
 
     def _agg(self, exprs: IntoExprColumn, group_expr: SqlExpr | str = "") -> Self:
@@ -90,10 +96,21 @@ class LazyFrame(ExprHandler[Relation]):
             args_into_exprs(*exprs, **named_exprs).insert(sql.all()).into(self._select)
         )
 
-    def filter(self, *predicates: Expr) -> Self:
-        """Filter rows based on predicates."""
-        return pc.Iter(predicates).fold(
-            self, lambda lf, p: lf.__from_lf__(lf._expr.filter(p.inner()))
+    def filter(
+        self,
+        *predicates: IntoExpr | Iterable[IntoExpr],
+        **constraints: Any,  # noqa: ANN401
+    ) -> Self:
+        """Filter rows based on predicates and equality constraints."""
+        return (
+            args_into_exprs(*predicates)
+            .chain(
+                pc.Dict.from_ref(constraints)
+                .items()
+                .iter()
+                .map_star(lambda name, value: sql.col(name).eq(into_expr(value)))
+            )
+            .into(self._filter)
         )
 
     def sort(
@@ -296,13 +313,21 @@ class LazyFrame(ExprHandler[Relation]):
         return self._iter_agg(lambda c: c.quantile_cont(sql.lit(quantile)))
 
     def top_k(
-        self, k: int, *, by: IntoExpr | Iterable[IntoExpr], reverse: bool = False
+        self,
+        k: int,
+        *,
+        by: IntoExpr | Iterable[IntoExpr],
+        reverse: bool | Sequence[bool] = False,
     ) -> Self:
         """Return top k rows by column(s)."""
         return self.sort(by, descending=not reverse).head(k)
 
     def bottom_k(
-        self, k: int, *, by: IntoExpr | Iterable[IntoExpr], reverse: bool = False
+        self,
+        k: int,
+        *,
+        by: IntoExpr | Iterable[IntoExpr],
+        reverse: bool | Sequence[bool] = False,
     ) -> Self:
         """Return bottom k rows by column(s)."""
         return self.sort(by, descending=reverse).head(k)
@@ -336,4 +361,4 @@ class LazyFrame(ExprHandler[Relation]):
 
     def sink_ndjson(self, path: str | Path) -> None:
         """Write to newline-delimited JSON file."""
-        self._expr.pl(lazy=True).sink_ndjson(str(path))
+        self._expr.pl(lazy=True).sink_ndjson(path)
