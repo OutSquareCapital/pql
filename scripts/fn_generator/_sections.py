@@ -51,7 +51,7 @@ def build_file(fns: pc.Seq[FunctionInfo]) -> str:
 
     return (
         f"{_header()}"
-        f"{_class_block('Fns', 'Mixin providing auto-generated DuckDB functions as methods.', base_fns, 'ExprHandler[Expression]')}"
+        f"{_class_block('Fns', 'Mixin providing auto-generated DuckDB functions as methods.', base_fns, 'DuckHandler')}"
         f"{NAMESPACE_SPECS.iter().map(_namespace_block).join('')}\n"
     )
 
@@ -72,7 +72,5 @@ def _header() -> str:
         from datetime import date, datetime, time, timedelta
         from typing import Self
 
-        from duckdb import Expression
-
-        from ._core import ExprHandler, NameSpaceHandler, func
+        from ._core import DuckHandler, NameSpaceHandler, func
     ''')

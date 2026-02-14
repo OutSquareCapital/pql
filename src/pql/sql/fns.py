@@ -12,12 +12,10 @@ from __future__ import annotations
 from datetime import date, datetime, time, timedelta
 from typing import Self
 
-from duckdb import Expression
-
-from ._core import ExprHandler, NameSpaceHandler, func
+from ._core import DuckHandler, NameSpaceHandler, func
 
 
-class Fns(ExprHandler[Expression]):
+class Fns(DuckHandler):
     """Mixin providing auto-generated DuckDB functions as methods."""
 
     def abs(self) -> Self:

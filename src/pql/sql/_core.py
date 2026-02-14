@@ -58,32 +58,6 @@ class ExprHandler[T]:
         return self._expr
 
 
-@dataclass(slots=True)
-class NameSpaceHandler[T: ExprHandler[duckdb.Expression]]:
-    """A wrapper for expression namespaces that return the parent type."""
-
-    _parent: T
-
-    def _new(self, expr: duckdb.Expression) -> T:
-        return self._parent.__class__(expr)
-
-    def inner(self) -> duckdb.Expression:
-        """Unwrap the underlying expression."""
-        return self._parent.inner()
-
-
-def func(name: str, *args: Any) -> duckdb.Expression:  # noqa: ANN401
-    """Create a SQL function expression."""
-    from ._expr import any_into_duckdb
-
-    return (
-        pc.Iter(args)
-        .filter(lambda a: a is not None)
-        .map(any_into_duckdb)
-        .into(lambda args: duckdb.FunctionExpression(name, *args))
-    )
-
-
 class RelHandler(ExprHandler[duckdb.DuckDBPyRelation]):
     """A wrapper for DuckDB relations."""
 
@@ -107,3 +81,65 @@ class RelHandler(ExprHandler[duckdb.DuckDBPyRelation]):
                         self._expr = duckdb.table(data)
             case _:
                 self._expr = duckdb.from_arrow(pl.DataFrame(data))
+
+
+class DuckHandler(ExprHandler[duckdb.Expression]):
+    """A wrapper for DuckDB expressions."""
+
+    __slots__ = ()
+
+
+def iter_into_duckdb[T](
+    value: Iterable[T | DuckHandler],
+) -> pc.Iter[T | duckdb.Expression]:
+    """Convert an iterable of values to an iterable of DuckDB Expressions, converting SqlExpr as needed."""
+    return pc.Iter(value).map(into_duckdb)
+
+
+def into_duckdb[T](value: T | DuckHandler) -> T | duckdb.Expression:
+    """Convert a value to a DuckDB Expression if it's a SqlExpr, otherwise return it as is."""
+    match value:
+        case DuckHandler():
+            return value.inner()
+        case _:
+            return value
+
+
+def any_into_duckdb(arg: Any) -> duckdb.Expression:  # noqa: ANN401
+    from .._expr import Expr
+
+    match arg:
+        case duckdb.Expression():
+            return arg
+        case DuckHandler():
+            return arg.inner()
+        case Expr():
+            return arg.inner().inner()
+        case str():
+            return duckdb.ColumnExpression(arg)
+        case _:
+            return duckdb.ConstantExpression(arg)
+
+
+@dataclass(slots=True)
+class NameSpaceHandler[T: DuckHandler]:
+    """A wrapper for expression namespaces that return the parent type."""
+
+    _parent: T
+
+    def _new(self, expr: duckdb.Expression) -> T:
+        return self._parent.__class__(expr)
+
+    def inner(self) -> duckdb.Expression:
+        """Unwrap the underlying expression."""
+        return self._parent.inner()
+
+
+def func(name: str, *args: Any) -> duckdb.Expression:  # noqa: ANN401
+    """Create a SQL function expression."""
+    return (
+        pc.Iter(args)
+        .filter(lambda a: a is not None)
+        .map(any_into_duckdb)
+        .into(lambda args: duckdb.FunctionExpression(name, *args))
+    )
