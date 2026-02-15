@@ -840,14 +840,7 @@ class ExprListNameSpace(ExprHandler[sql.SqlExpr]):
 
     def sum(self) -> Expr:
         """Compute the sum value of the lists in the array."""
-        expr_no_nulls = self._expr.list.filter(
-            sql.fn_once("_", sql.col("_").is_not_null())
-        )
-        return Expr(
-            sql.when(expr_no_nulls.list.length().eq(sql.lit(0)), sql.lit(0)).otherwise(
-                expr_no_nulls.list.sum()
-            )
-        )
+        return Expr(self._expr.list.sum())
 
     def sort(self, *, descending: bool = False, nulls_last: bool = False) -> Expr:
         """Sort the lists of the expression."""
