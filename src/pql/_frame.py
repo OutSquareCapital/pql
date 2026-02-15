@@ -46,12 +46,14 @@ class LazyFrame(ExprHandler[Relation]):
         return instance
 
     def _select(self, exprs: IntoExprColumn, groups: str = "") -> Self:
-        return self.__from_lf__(self._expr.select(*sql.from_cols(exprs), groups=groups))
+        return self.__from_lf__(
+            self._expr.select(*sql.into_expr_col(exprs), groups=groups)
+        )
 
     def _filter(self, *predicates: IntoExprColumn) -> Self:
         return pc.Iter(predicates).fold(
             self,
-            lambda lf, p: sql.from_cols(p).fold(
+            lambda lf, p: sql.into_expr_col(p).fold(
                 lf,
                 lambda inner_lf, pred: inner_lf.__from_lf__(
                     inner_lf._expr.filter(pred)
@@ -61,7 +63,9 @@ class LazyFrame(ExprHandler[Relation]):
 
     def _agg(self, exprs: IntoExprColumn, group_expr: SqlExpr | str = "") -> Self:
         """Note: duckdb relation.aggregate has type issues, it does accept iterables of expressions but the type signature is wrong."""
-        return self.__from_lf__(self._expr.aggregate(sql.from_cols(exprs), group_expr))
+        return self.__from_lf__(
+            self._expr.aggregate(sql.into_expr_col(exprs), group_expr)
+        )
 
     def _iter_slct(self, func: Callable[[str], SqlExpr]) -> Self:
         return self.columns.iter().map(func).into(self._select)

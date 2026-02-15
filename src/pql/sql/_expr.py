@@ -64,13 +64,13 @@ def coalesce(*exprs: SqlExpr) -> SqlExpr:
     return SqlExpr(duckdb.CoalesceOperator(*pc.Iter(exprs).map(lambda e: e.inner())))
 
 
-def from_cols(exprs: IntoExprColumn) -> pc.Iter[SqlExpr]:
+def into_expr_col(exprs: IntoExprColumn) -> pc.Iter[SqlExpr]:
     """Convert one or more values or iterables of values to an iterable of DuckDB Expressions or strings."""
     match exprs:
         case str():
             return pc.Iter.once(col(exprs))
         case Iterable():
-            return pc.Iter(exprs).map(from_cols).flatten()
+            return pc.Iter(exprs).map(into_expr_col).flatten()
         case _:
             return pc.Iter.once(into_expr(exprs))
 
