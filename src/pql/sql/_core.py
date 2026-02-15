@@ -14,7 +14,7 @@ if TYPE_CHECKING:
 
 def try_iter[T](val: Iterable[T] | T) -> pc.Iter[T]:
     match val:
-        case str():
+        case str() | bytes() | bytearray():
             return pc.Iter[T].once(val)
         case Iterable():
             return pc.Iter(val)  # pyright: ignore[reportUnknownArgumentType]
@@ -91,13 +91,6 @@ class DuckHandler(ExprHandler[duckdb.Expression]):
     __slots__ = ()
 
 
-def iter_into_duckdb[T](
-    value: Iterable[T | DuckHandler],
-) -> pc.Iter[T | duckdb.Expression]:
-    """Convert an iterable of values to an iterable of DuckDB Expressions, converting SqlExpr as needed."""
-    return pc.Iter(value).map(into_duckdb)
-
-
 def into_duckdb[T](value: T | DuckHandler) -> T | duckdb.Expression:
     """Convert a value to a DuckDB Expression if it's a SqlExpr, otherwise return it as is."""
     match value:
@@ -105,22 +98,6 @@ def into_duckdb[T](value: T | DuckHandler) -> T | duckdb.Expression:
             return value.inner()
         case _:
             return value
-
-
-def any_into_duckdb(arg: Any) -> duckdb.Expression:  # noqa: ANN401
-    from .._expr import Expr
-
-    match arg:
-        case duckdb.Expression():
-            return arg
-        case DuckHandler():
-            return arg.inner()
-        case Expr():
-            return arg.inner().inner()
-        case str():
-            return duckdb.ColumnExpression(arg)
-        case _:
-            return duckdb.ConstantExpression(arg)
 
 
 @dataclass(slots=True)
@@ -139,6 +116,22 @@ class NameSpaceHandler[T: DuckHandler]:
 
 def func(name: str, *args: Any) -> duckdb.Expression:  # noqa: ANN401
     """Create a SQL function expression."""
+    from .._expr import Expr
+
+    def any_into_duckdb(arg: Any) -> duckdb.Expression:  # noqa: ANN401
+
+        match arg:
+            case duckdb.Expression():
+                return arg
+            case DuckHandler():
+                return arg.inner()
+            case Expr():
+                return arg.inner().inner()
+            case str():
+                return duckdb.ColumnExpression(arg)
+            case _:
+                return duckdb.ConstantExpression(arg)
+
     return (
         pc.Iter(args)
         .filter(lambda a: a is not None)
