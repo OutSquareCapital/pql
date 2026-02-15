@@ -75,10 +75,10 @@ def test_repeat_by() -> None:
 
 
 def test_mul() -> None:
-    assert_eq((pql.col("x") * 5).alias("r"), (nw.col("x") * 5).alias("r"))
+    assert_eq(pql.col("x").mul(5).alias("r"), nw.col("x").__mul__(5).alias("r"))
     assert_eq(
-        (pql.col("salary").mul(2).alias("double_salary")),
-        (nw.col("salary").__mul__(2).alias("double_salary")),
+        pql.col("salary").mul(2).alias("double_salary"),
+        nw.col("salary").__mul__(2).alias("double_salary"),
     )
 
 

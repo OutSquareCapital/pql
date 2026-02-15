@@ -10,7 +10,7 @@ SELF_PATTERN = re.compile(r"\b(Self|Expr|LazyFrame)\b")
 
 class _GenericCanonicalizer(ast.NodeTransformer):
     def __init__(self) -> None:
-        self._mapping: dict[str, str] = {}
+        self._mapping: pc.Dict[str, str] = pc.Dict.new()
 
     def visit_Name(self, node: ast.Name) -> ast.AST:
         match node.id:
@@ -18,7 +18,7 @@ class _GenericCanonicalizer(ast.NodeTransformer):
                 GENERIC_SYMBOL_PATTERN.match(name)
             ):
                 canonical_name = self._mapping.setdefault(
-                    name, f"__GENERIC_{len(self._mapping)}__"
+                    name, f"__GENERIC_{self._mapping.length()}__"
                 )
                 return ast.copy_location(
                     ast.Name(id=canonical_name, ctx=node.ctx), node
@@ -87,12 +87,12 @@ def normalize_annotation(annotation: str) -> str:
     return extract_last_name(
         SELF_PATTERN.sub(
             "__SELF__",
-            extract_last_name(_normalize_unions(_normalize_generics(annotation))),
+            extract_last_name(_normalize_unions(_normalize(annotation))),
         )
     )
 
 
-def _normalize_generics(annotation: str) -> str:
+def _normalize(annotation: str) -> str:
     try:
         parsed = ast.parse(annotation, mode="eval")
     except SyntaxError:

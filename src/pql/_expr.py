@@ -285,7 +285,7 @@ class Expr(ExprHandler[SqlExpr]):
     def tanh(self) -> Self:
         """Compute the hyperbolic tangent."""
         exp_x = self._expr.exp()
-        exp_neg_x = (-self._expr).exp()
+        exp_neg_x = self._expr.neg().exp()
         return self.__class__(exp_x.sub(exp_neg_x)).truediv(exp_x.add(exp_neg_x))
 
     def degrees(self) -> Self:
@@ -316,7 +316,7 @@ class Expr(ExprHandler[SqlExpr]):
 
     def is_not_nan(self) -> Self:
         """Check if value is not NaN."""
-        return self.__class__(~self._expr.isnan())
+        return self.__class__(self._expr.isnan().not_())
 
     def is_finite(self) -> Self:
         """Check if value is finite."""
@@ -326,7 +326,7 @@ class Expr(ExprHandler[SqlExpr]):
         """Check if value is infinite."""
         return self.__class__(self._expr.isinf())
 
-    def fill_nan(self, value: int | float | Expr | None) -> Self:  # noqa: PYI041
+    def fill_nan(self, value: float | Expr | None) -> Self:
         """Fill NaN values."""
         return self.__class__(
             sql.when(self._expr.isnan(), into_expr(value)).otherwise(self._expr)
@@ -360,9 +360,7 @@ class Expr(ExprHandler[SqlExpr]):
 
     def is_first_distinct(self) -> Self:
         """Check if value is first occurrence."""
-        return self.__class__(
-            self._expr.row_number().over(self._expr).eq(sql.lit(value=1))
-        )
+        return self.__class__(self._expr.row_number().over(self._expr).eq(sql.lit(1)))
 
     def is_last_distinct(self) -> Self:
         """Check if value is last occurrence."""
