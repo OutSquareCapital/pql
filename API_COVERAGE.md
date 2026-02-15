@@ -7,7 +7,7 @@ This report shows the API coverage of pql compared to Polars.
 | Class       | Coverage vs Narwhals | Total | Matched | Missing | Mismatched | Extra | Extra vs Narwhals |
 | ----------- | -------------------- | ----- | ------- | ------- | ---------- | ----- | ----------------- |
 | LazyFrame   | 56.2%                | 48    | 27      | 11      | 10         | 1     | 22                |
-| Expr        | 71.7%                | 106   | 76      | 22      | 8          | 2     | 36                |
+| Expr        | 74.5%                | 106   | 79      | 16      | 11         | 2     | 36                |
 | Expr.str    | 93.1%                | 29    | 27      | 0       | 2          | 0     | 10                |
 | Expr.list   | 100.0%               | 10    | 10      | 0       | 0          | 2     | 0                 |
 | Expr.struct | 100.0%               | 1     | 1       | 0       | 0          | 2     | 0                 |
@@ -71,32 +71,26 @@ This report shows the API coverage of pql compared to Polars.
 
 ## Expr
 
-### [x] Missing Methods (22)
+### [x] Missing Methods (16)
 
 - `any_value` (ignore_nulls: bool) -> Self
 - `cat` ()
-- `clip` (lower_bound: IntoExpr | NumericLiteral | TemporalLiteral | None, upper_bound: IntoExpr | NumericLiteral | TemporalLiteral | None) -> Self
 - `dt` ()
 - `ewm_mean` (com: float | None, span: float | None, half_life: float | None, alpha: float | None, adjust: bool, min_samples: int, ignore_nulls: bool) -> Self
-- `fill_null` (value: Expr | NonNestedLiteral, strategy: FillNullStrategy | None, limit: int | None) -> Self
 - `first` (order_by: str | Iterable[str] | None) -> Self
 - `is_close` (other: Expr | Series[Any] | NumericLiteral, abs_tol: float, rel_tol: float, nans_equal: bool) -> Self
-- `kurtosis` () -> Self
 - `last` (order_by: str | Iterable[str] | None) -> Self
 - `map_batches` (function: Callable[[Any], CompliantExpr[Any, Any]], return_dtype: DType | None, returns_scalar: bool) -> Self
 - `mode` (keep: ModeKeepStrategy) -> Self
 - `name` ()
-- `over` (*partition_by: str | Sequence[str], order_by: str | Sequence[str] | None) -> Self
-- `quantile` (quantile: float, interpolation: RollingInterpolationMethod) -> Self
 - `replace_strict` (old: Sequence[Any] | Mapping[Any, Any], new: Sequence[Any] | None, default: Any | NoDefault, return_dtype: IntoDType | None) -> Self
 - `rolling_mean` (window_size: int, min_samples: int | None, center: bool) -> Self
 - `rolling_std` (window_size: int, min_samples: int | None, center: bool, ddof: int) -> Self
 - `rolling_sum` (window_size: int, min_samples: int | None, center: bool) -> Self
 - `rolling_var` (window_size: int, min_samples: int | None, center: bool, ddof: int) -> Self
-- `skew` () -> Self
 - `unique` () -> Self
 
-### [!] Signature Mismatches (8)
+### [!] Signature Mismatches (11)
 
 - `backward_fill` (pl)
   - Polars: (`limit: int | None`) -> Expr
@@ -105,6 +99,14 @@ This report shows the API coverage of pql compared to Polars.
   - Narwhals: (`dtype: IntoDType`) -> Self
   - Polars: (`dtype: DataTypeExpr | type[Any]`, `strict: bool`, `wrap_numerical: bool`) -> Expr
   - pql: (`dtype: DataType`) -> Self
+- `clip` (nw)
+  - Narwhals: (`lower_bound: IntoExpr | NumericLiteral | TemporalLiteral | None`, `upper_bound: IntoExpr | NumericLiteral | TemporalLiteral | None`) -> Self
+  - Polars: (`lower_bound: NumericLiteral | TemporalLiteral | IntoExprColumn | None`, `upper_bound: NumericLiteral | TemporalLiteral | IntoExprColumn | None`) -> Expr
+  - pql: (`lower_bound: IntoExpr | None`, `upper_bound: IntoExpr | None`) -> Self
+- `fill_null` (nw)
+  - Narwhals: (`value: Expr | NonNestedLiteral`, strategy: FillNullStrategy | None, limit: int | None) -> Self
+  - Polars: (`value: Any | Expr | None`, strategy: FillNullStrategy | None, limit: int | None) -> Expr
+  - pql: (`value: IntoExpr | None`, strategy: FillNullStrategy | None, limit: int | None) -> Self
 - `forward_fill` (pl)
   - Polars: (`limit: int | None`) -> Expr
   - pql: () -> Self
@@ -115,6 +117,10 @@ This report shows the API coverage of pql compared to Polars.
   - Narwhals: (`other: Any`) -> Self
   - Polars: (`other: Expr | Collection[Any] | Series`, `nulls_equal: bool`) -> Expr
   - pql: (`other: Collection[IntoExpr] | IntoExpr`) -> Self
+- `over` (nw)
+  - Narwhals: (`*partition_by: str | Sequence[str]`, `order_by: str | Sequence[str] | None`) -> Self
+  - Polars: (partition_by: IntoExpr | Iterable[IntoExpr] | None, *more_exprs: IntoExpr, order_by: IntoExpr | Iterable[IntoExpr] | None, `descending: bool`, `nulls_last: bool`, `mapping_strategy: WindowMappingStrategy`) -> Expr
+  - pql: (`partition_by: IntoExpr | Iterable[IntoExpr] | None`, `*more_exprs: IntoExpr`, `order_by: IntoExpr | Iterable[IntoExpr] | None`) -> Self
 - `pow` (pl)
   - Polars: (`exponent: IntoExprColumn | int | float`) -> Expr
   - pql: (`other: Any`) -> Self

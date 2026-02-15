@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import re
-from collections.abc import Collection
+from collections.abc import Collection, Iterable
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Literal, Self
 
@@ -18,6 +18,8 @@ if TYPE_CHECKING:
 RoundMode = Literal["half_to_even", "half_away_from_zero"]
 ClosedInterval = Literal["both", "left", "right", "none"]
 RankMethod = Literal["average", "min", "max", "dense", "ordinal"]
+FillNullStrategy = Literal["forward", "backward", "min", "max", "mean", "zero", "one"]
+RollingInterpolationMethod = Literal["nearest", "higher", "lower", "midpoint", "linear"]
 
 
 class Col:
@@ -50,7 +52,9 @@ class Expr(ExprHandler[SqlExpr]):
         is_scalar_like: bool | None = None,
     ) -> Self:
         return self.__class__(
-            expr, pc.Option(is_scalar_like).unwrap_or(self._is_scalar_like)
+            expr,
+            pc.Option(is_scalar_like).unwrap_or(self._is_scalar_like),
+            _has_window=self._has_window,
         )
 
     def _new_window(self, expr: SqlExpr, *, is_scalar_like: bool | None = None) -> Self:
@@ -277,6 +281,21 @@ class Expr(ExprHandler[SqlExpr]):
             case "none":
                 return self.gt(lower_expr).and_(self.lt(upper_expr))
 
+    def clip(
+        self, lower_bound: IntoExpr | None = None, upper_bound: IntoExpr | None = None
+    ) -> Self:
+        match (lower_bound, upper_bound):
+            case (None, None):
+                return self
+            case (None, upper):
+                return self._new(self._expr.least(into_expr(upper)))
+            case (lower, None):
+                return self._new(self._expr.greatest(into_expr(lower)))
+            case (lower, upper):
+                return self._new(
+                    self._expr.greatest(into_expr(lower)).least(into_expr(upper))
+                )
+
     def count(self) -> Self:
         """Count the number of values."""
         return self._new(self._expr.count(), is_scalar_like=True)
@@ -321,6 +340,36 @@ class Expr(ExprHandler[SqlExpr]):
                 expr = self._expr.var_pop()
             case _:
                 expr = self._expr.var_samp()
+        return self._new(expr, is_scalar_like=True)
+
+    def kurtosis(self, *, fisher: bool = True, bias: bool = True) -> Self:
+        base = self._expr.kurtosis_pop() if bias else self._expr.kurtosis()
+        match fisher:
+            case True:
+                return self._new(base, is_scalar_like=True)
+            case False:
+                return self._new(base.add(sql.lit(3)), is_scalar_like=True)
+
+    def skew(self, *, bias: bool = True) -> Self:
+        adjusted = self._expr.skewness()
+        match bias:
+            case False:
+                return self._new(adjusted, is_scalar_like=True)
+            case True:
+                n = self._expr.count()
+                factor = n.sub(sql.lit(2)).truediv(n.mul(n.sub(sql.lit(1))).sqrt())
+                return self._new(adjusted.mul(factor), is_scalar_like=True)
+
+    def quantile(
+        self,
+        quantile: float,
+        interpolation: RollingInterpolationMethod = "nearest",
+    ) -> Self:
+        match interpolation:
+            case "linear" | "midpoint":
+                expr = self._expr.quantile_cont(sql.lit(quantile))
+            case _:
+                expr = self._expr.quantile(sql.lit(quantile))
         return self._new(expr, is_scalar_like=True)
 
     def all(self) -> Self:
@@ -382,6 +431,29 @@ class Expr(ExprHandler[SqlExpr]):
     def cum_max(self, *, reverse: bool = False) -> Self:
         """Cumulative maximum."""
         return self._reversed(self._expr.max(), reverse=reverse)
+
+    def over(
+        self,
+        partition_by: IntoExpr | Iterable[IntoExpr] | None,
+        *more_exprs: IntoExpr,
+        order_by: IntoExpr | Iterable[IntoExpr] | None = None,
+    ) -> Self:
+        partition_exprs = (
+            try_iter(partition_by)
+            .chain(more_exprs)
+            .map(lambda x: into_expr(x, as_col=True))
+        )
+        expr = (
+            pc.Option(order_by)
+            .map(
+                lambda value: (
+                    try_iter(value).map(lambda x: into_expr(x, as_col=True)).collect()
+                )
+            )
+            .map(lambda x: self._expr.over(partition_exprs, x))
+            .unwrap_or(self._expr.over(partition_exprs))
+        )
+        return self._new_window(expr)
 
     def filter(self, *predicates: Any) -> Self:  # noqa: ANN401
         cond = iter_into_exprs(predicates).fold(
@@ -502,6 +574,52 @@ class Expr(ExprHandler[SqlExpr]):
         return self._new(
             sql.when(self._expr.isnan(), into_expr(value)).otherwise(self._expr)
         )
+
+    def fill_null(  # noqa: PLR0911,PLR0912,C901
+        self,
+        value: IntoExpr | None = None,
+        strategy: FillNullStrategy | None = None,
+        limit: int | None = None,
+    ) -> Self:
+        match (pc.Option(value), pc.Option(strategy)):
+            case (pc.Some(val), pc.NONE):
+                return self._new(sql.coalesce(self._expr, into_expr(val)))
+            case (_, pc.Some("forward") | pc.Some("backward") as strat):
+                match pc.Option(limit):
+                    case pc.Some(lim) if lim <= 0:
+                        return self
+                    case pc.Some(lim):
+                        return self._new(
+                            pc.Iter(range(1, lim + 1))
+                            .map(
+                                lambda offset: (
+                                    self.shift(offset).inner()
+                                    if strategy == "forward"
+                                    else self.shift(-offset).inner()
+                                )
+                            )
+                            .insert(self._expr)
+                            .reduce(sql.coalesce)
+                        )
+                    case _:
+                        match strat:
+                            case pc.Some("forward"):
+                                return self.forward_fill()
+                            case _:
+                                return self.backward_fill()
+            case (_, pc.Some("min")):
+                return self._new(sql.coalesce(self._expr, self._expr.min().over()))
+            case (_, pc.Some("max")):
+                return self._new(sql.coalesce(self._expr, self._expr.max().over()))
+            case (_, pc.Some("mean")):
+                return self._new(sql.coalesce(self._expr, self._expr.mean().over()))
+            case (_, pc.Some("zero")):
+                return self._new(sql.coalesce(self._expr, sql.lit(0)))
+            case (_, pc.Some("one")):
+                return self._new(sql.coalesce(self._expr, sql.lit(1)))
+            case _:
+                msg = "must specify either a fill `value` or `strategy`"
+                raise ValueError(msg)
 
     def hash(self, seed: int = 0) -> Self:
         """Compute a hash."""

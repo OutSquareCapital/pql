@@ -191,11 +191,6 @@ def test_floordiv() -> None:
 
 
 def test_is_first_distinct() -> None:
-    with pytest.raises(nw.exceptions.InvalidOperationError):
-        assert_eq(
-            pql.col("a").is_first_distinct().alias("is_first"),
-            nw.col("a").is_first_distinct().alias("is_first"),
-        )
     assert_eq_pl(
         pql.col("a").is_first_distinct().alias("is_first"),
         pl.col("a").is_first_distinct().alias("is_first"),
@@ -203,11 +198,6 @@ def test_is_first_distinct() -> None:
 
 
 def test_is_last_distinct() -> None:
-    with pytest.raises(nw.exceptions.InvalidOperationError):
-        assert_eq(
-            pql.col("x").is_last_distinct().alias("is_last"),
-            nw.col("x").is_last_distinct().alias("is_last"),
-        )
     assert_eq_pl(
         pql.col("x").is_last_distinct().alias("is_last"),
         pl.col("x").is_last_distinct().alias("is_last"),
@@ -560,6 +550,138 @@ def test_min() -> None:
 
 def test_max() -> None:
     assert_eq_pl(pql.col("x").max().alias("x_max"), pl.col("x").max().alias("x_max"))
+
+
+def test_clip() -> None:
+    assert_eq_pl(
+        pql.col("x").clip(lower_bound=2, upper_bound=10).alias("x_clip"),
+        pl.col("x").clip(lower_bound=2, upper_bound=10).alias("x_clip"),
+    )
+    assert_eq_pl(
+        pql.col("x").clip(lower_bound=2).alias("x_clip_lower"),
+        pl.col("x").clip(lower_bound=2).alias("x_clip_lower"),
+    )
+    assert_eq_pl(
+        pql.col("x").clip(upper_bound=10).alias("x_clip_upper"),
+        pl.col("x").clip(upper_bound=10).alias("x_clip_upper"),
+    )
+    assert_eq_pl(
+        pql.col("x").clip().alias("x_clip_none"),
+        pl.col("x").clip().alias("x_clip_none"),
+    )
+
+
+def test_kurtosis() -> None:
+    assert_eq_pl(
+        pql.col("x").kurtosis().alias("x_kurtosis"),
+        pl.col("x").kurtosis().alias("x_kurtosis"),
+    )
+    assert_eq_pl(
+        pql.col("x").kurtosis(fisher=False).alias("x_kurtosis_pearson"),
+        pl.col("x").kurtosis(fisher=False).alias("x_kurtosis_pearson"),
+    )
+    assert_eq_pl(
+        pql.col("x").kurtosis(bias=False).alias("x_kurtosis_unbiased"),
+        pl.col("x").kurtosis(bias=False).alias("x_kurtosis_unbiased"),
+    )
+
+
+def test_skew() -> None:
+    assert_eq_pl(
+        pql.col("x").skew().alias("x_skew"),
+        pl.col("x").skew().alias("x_skew"),
+    )
+    assert_eq_pl(
+        pql.col("x").skew(bias=False).alias("x_skew_unbiased"),
+        pl.col("x").skew(bias=False).alias("x_skew_unbiased"),
+    )
+
+
+def test_quantile() -> None:
+    assert_eq_pl(
+        pql.col("x").quantile(0.5, interpolation="lower").alias("x_quantile"),
+        pl.col("x").quantile(0.5, interpolation="lower").alias("x_quantile"),
+    )
+    assert_eq_pl(
+        pql.col("x").quantile(0.5, interpolation="linear").alias("x_quantile_linear"),
+        pl.col("x").quantile(0.5, interpolation="linear").alias("x_quantile_linear"),
+    )
+    assert_eq_pl(
+        pql.col("x")
+        .quantile(0.5, interpolation="midpoint")
+        .alias("x_quantile_midpoint"),
+        pl.col("x")
+        .quantile(0.5, interpolation="midpoint")
+        .alias("x_quantile_midpoint"),
+    )
+
+
+def test_over() -> None:
+    assert_eq_pl(
+        pql.col("x").sum().over("a").alias("x_sum_over_a"),
+        pl.col("x").sum().over("a").alias("x_sum_over_a"),
+    )
+
+
+def test_fill_null() -> None:
+    with pytest.raises(
+        ValueError,
+        match="must specify either a fill `value` or `strategy`",
+    ):
+        pql.col("age").fill_null()
+    with pytest.raises(
+        ValueError,
+        match="must specify either a fill `value` or `strategy`",
+    ):
+        pl.col("age").fill_null()
+    assert_eq_pl(
+        pql.col("age").fill_null(0).alias("age_fill_null"),
+        pl.col("age").fill_null(0).alias("age_fill_null"),
+    )
+    assert_eq_pl(
+        pql.col("age").fill_null(strategy="forward").alias("age_fill_fwd"),
+        pl.col("age").fill_null(strategy="forward").alias("age_fill_fwd"),
+    )
+    assert_eq_pl(
+        pql.col("age").fill_null(strategy="backward").alias("age_fill_bwd"),
+        pl.col("age").fill_null(strategy="backward").alias("age_fill_bwd"),
+    )
+    assert_eq_pl(
+        pql.col("age").fill_null(strategy="forward", limit=0).alias("age_fill_fwd_l0"),
+        pl.col("age").fill_null(strategy="forward", limit=0).alias("age_fill_fwd_l0"),
+    )
+    assert_eq_pl(
+        pql.col("age").fill_null(strategy="forward", limit=1).alias("age_fill_fwd_l1"),
+        pl.col("age").fill_null(strategy="forward", limit=1).alias("age_fill_fwd_l1"),
+    )
+    assert_eq_pl(
+        pql.col("age").fill_null(strategy="backward", limit=0).alias("age_fill_bwd_l0"),
+        pl.col("age").fill_null(strategy="backward", limit=0).alias("age_fill_bwd_l0"),
+    )
+    assert_eq_pl(
+        pql.col("age").fill_null(strategy="backward", limit=1).alias("age_fill_bwd_l1"),
+        pl.col("age").fill_null(strategy="backward", limit=1).alias("age_fill_bwd_l1"),
+    )
+    assert_eq_pl(
+        pql.col("age").fill_null(strategy="min").alias("age_fill_min"),
+        pl.col("age").fill_null(strategy="min").alias("age_fill_min"),
+    )
+    assert_eq_pl(
+        pql.col("age").fill_null(strategy="max").alias("age_fill_max"),
+        pl.col("age").fill_null(strategy="max").alias("age_fill_max"),
+    )
+    assert_eq_pl(
+        pql.col("age").fill_null(strategy="mean").alias("age_fill_mean"),
+        pl.col("age").fill_null(strategy="mean").alias("age_fill_mean"),
+    )
+    assert_eq_pl(
+        pql.col("age").fill_null(strategy="zero").alias("age_fill_zero"),
+        pl.col("age").fill_null(strategy="zero").alias("age_fill_zero"),
+    )
+    assert_eq_pl(
+        pql.col("age").fill_null(strategy="one").alias("age_fill_one"),
+        pl.col("age").fill_null(strategy="one").alias("age_fill_one"),
+    )
 
 
 def test_std() -> None:
