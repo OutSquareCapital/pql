@@ -61,10 +61,6 @@ def test_properties(sample_df: pl.DataFrame) -> None:
     assert isinstance(lf.lazy(), pl.LazyFrame)
 
 
-def test_relation_property(sample_df: pl.DataFrame) -> None:
-    assert isinstance(pql.LazyFrame(sample_df).relation, pql.sql.Relation)
-
-
 def test_repr(sample_df: pl.DataFrame) -> None:
     assert "LazyFrame" in repr(pql.LazyFrame(sample_df))
 

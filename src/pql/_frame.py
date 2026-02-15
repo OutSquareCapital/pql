@@ -75,11 +75,6 @@ class LazyFrame(ExprHandler[Relation]):
             self.columns.iter().map(lambda c: func(sql.col(c)).alias(c)).into(self._agg)
         )
 
-    @property
-    def relation(self) -> Relation:
-        """Get the underlying DuckDB relation."""
-        return self._expr
-
     def lazy(self) -> pl.LazyFrame:
         """Get a Polars LazyFrame."""
         return self._expr.pl(lazy=True)
