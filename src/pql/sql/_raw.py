@@ -1,13 +1,17 @@
 import re
+from dataclasses import dataclass
 from enum import StrEnum
+from typing import Final, Self
 
 import pyochain as pc
 import sqlglot
+from sqlglot.errors import ParseError
 
 _POINTER_LITERAL_PATTERN = re.compile(r"\b0x[0-9a-fA-F]+\b")
 _POINTER_FN_CALL_PATTERN = re.compile(
     r"(?P<fn>\b(?:arrow_scan|arrow_scan_dumb|pandas_scan|python_map_function)\s*\()(?P<args>[^)]*)(?P<end>\))"
 )
+_POINTER_PLACEHOLDER_PREFIX: Final[str] = "__pql_pointer_"
 
 
 class Kword(StrEnum):
@@ -55,19 +59,43 @@ class Kword(StrEnum):
     def order_by(cls, by: str) -> str:
         return f"{cls.ORDER_BY} {by}"
 
+
+@dataclass(slots=True)
+class QueryHolder:
+    query: str
+    pointer_map: pc.Dict[str, str]
+
     @classmethod
-    def prettify(cls, qry: str) -> str:
-        return sqlglot.parse_one(to_sqlglot(qry), dialect="duckdb").sql(
-            dialect="duckdb", pretty=True
-        )
+    def from_query(cls, qry: str) -> Self:
+        pointer_map = pc.Dict[str, str].new()
 
+        def _sanitize_pointer_literal(match: re.Match[str]) -> str:
+            placeholder = f"'{_POINTER_PLACEHOLDER_PREFIX}{pointer_map.length()}__'"
+            pointer_map[placeholder] = match.group(0)
+            return placeholder
 
-def to_sqlglot(qry: str) -> str:
-    def _replace_pointers(match: re.Match[str]) -> str:
+        def _replace_pointers(match: re.Match[str]) -> str:
+            return (
+                f"{match.group('fn')}"
+                f"{_POINTER_LITERAL_PATTERN.sub(_sanitize_pointer_literal, match.group('args'))}"
+                f"{match.group('end')}"
+            )
+
+        return cls(_POINTER_FN_CALL_PATTERN.sub(_replace_pointers, qry), pointer_map)
+
+    def restore(self, qry: str) -> str:
         return (
-            f"{match.group('fn')}"
-            f"{_POINTER_LITERAL_PATTERN.sub('pointer', match.group('args'))}"
-            f"{match.group('end')}"
+            self.pointer_map.items()
+            .iter()
+            .fold(qry, lambda current_qry, item: current_qry.replace(*item))
         )
 
-    return _POINTER_FN_CALL_PATTERN.sub(_replace_pointers, qry)
+    def prettify(self) -> str:
+        try:
+            return self.restore(
+                sqlglot.parse_one(self.query, dialect="duckdb").sql(  # pyright: ignore[reportUnknownMemberType]
+                    dialect="duckdb", pretty=True
+                )
+            )
+        except ParseError:
+            return self.restore(self.query)

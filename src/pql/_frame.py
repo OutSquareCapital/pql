@@ -11,7 +11,7 @@ import pyochain as pc
 from . import sql
 from .sql import (
     ExprHandler,
-    Kword,
+    QueryHolder,
     Relation,
     SqlExpr,
     args_into_exprs,
@@ -184,7 +184,7 @@ class LazyFrame(ExprHandler[Relation]):
 
     def explain(self) -> str:
         """Generate SQL string."""
-        return Kword.prettify(self._expr.sql_query())
+        return QueryHolder.from_query(self._expr.sql_query()).prettify()
 
     def first(self) -> Self:
         """Get the first row."""

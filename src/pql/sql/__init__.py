@@ -18,7 +18,7 @@ from ._expr import (
     row_number,
     when,
 )
-from ._raw import Kword
+from ._raw import Kword, QueryHolder
 from ._rel import Relation
 from ._typing import FrameInit, IntoExpr, IntoExprColumn
 
@@ -28,6 +28,7 @@ __all__ = [
     "IntoExpr",
     "IntoExprColumn",
     "Kword",
+    "QueryHolder",
     "Relation",
     "SqlExpr",
     "all",
