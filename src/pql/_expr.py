@@ -17,6 +17,7 @@ if TYPE_CHECKING:
 
 RoundMode = Literal["half_to_even", "half_away_from_zero"]
 ClosedInterval = Literal["both", "left", "right", "none"]
+RankMethod = Literal["average", "min", "max", "dense", "ordinal"]
 
 
 class Col:
@@ -47,13 +48,24 @@ class Expr(ExprHandler[SqlExpr]):
         expr: SqlExpr,
         *,
         is_scalar_like: bool | None = None,
-        has_window: bool | None = None,
     ) -> Self:
+        return self.__class__(
+            expr, pc.Option(is_scalar_like).unwrap_or(self._is_scalar_like)
+        )
+
+    def _new_window(self, expr: SqlExpr, *, is_scalar_like: bool | None = None) -> Self:
         return self.__class__(
             expr,
             pc.Option(is_scalar_like).unwrap_or(self._is_scalar_like),
-            pc.Option(has_window).unwrap_or(self._has_window),
+            _has_window=True,
         )
+
+    def _reversed(self, expr: SqlExpr, *, reverse: bool = False) -> Self:
+        match reverse:
+            case True:
+                return self._new_window(expr.over(rows_start=0))
+            case False:
+                return self._new_window(expr.over(rows_end=0))
 
     def __repr__(self) -> str:
         return f"Expr({self._expr})"
@@ -242,7 +254,7 @@ class Expr(ExprHandler[SqlExpr]):
                 expr = self._expr.lag(sql.lit(n_val))
             case _:
                 expr = self._expr.lead(sql.lit(-n))
-        return self._new(expr.over(), has_window=True)
+        return self._new_window(expr.over())
 
     def diff(self) -> Self:
         return self.sub(self.shift())
@@ -267,7 +279,109 @@ class Expr(ExprHandler[SqlExpr]):
 
     def count(self) -> Self:
         """Count the number of values."""
-        return self._new(self._expr.count(), is_scalar_like=True, has_window=False)
+        return self._new(self._expr.count(), is_scalar_like=True)
+
+    def len(self) -> Self:
+        """Get the number of rows in context (including nulls)."""
+        return self._new(self._expr.is_null().count(), is_scalar_like=True)
+
+    def sum(self) -> Self:
+        """Compute the sum."""
+        return self._new(self._expr.sum(), is_scalar_like=True)
+
+    def mean(self) -> Self:
+        """Compute the mean."""
+        return self._new(self._expr.mean(), is_scalar_like=True)
+
+    def median(self) -> Self:
+        """Compute the median."""
+        return self._new(self._expr.median(), is_scalar_like=True)
+
+    def min(self) -> Self:
+        """Compute the minimum."""
+        return self._new(self._expr.min(), is_scalar_like=True)
+
+    def max(self) -> Self:
+        """Compute the maximum."""
+        return self._new(self._expr.max(), is_scalar_like=True)
+
+    def std(self, ddof: int = 1) -> Self:
+        """Compute the standard deviation."""
+        match ddof:
+            case 0:
+                expr = self._expr.stddev_pop()
+            case _:
+                expr = self._expr.stddev_samp()
+        return self._new(expr, is_scalar_like=True)
+
+    def var(self, ddof: int = 1) -> Self:
+        """Compute the variance."""
+        match ddof:
+            case 0:
+                expr = self._expr.var_pop()
+            case _:
+                expr = self._expr.var_samp()
+        return self._new(expr, is_scalar_like=True)
+
+    def all(self) -> Self:
+        """Return whether all values are true."""
+        return self._new(self._expr.bool_and(), is_scalar_like=True)
+
+    def any(self) -> Self:
+        """Return whether any value is true."""
+        return self._new(self._expr.bool_or(), is_scalar_like=True)
+
+    def n_unique(self) -> Self:
+        """Count distinct values."""
+        return self._new(
+            self._expr.implode().list.distinct().list.length(), is_scalar_like=True
+        )
+
+    def null_count(self) -> Self:
+        """Count null values."""
+        return self.len().sub(self.count())
+
+    def rank(self, method: RankMethod = "average", *, descending: bool = False) -> Self:
+        """Compute rank values."""
+        base_rank = self._expr.rank().over(order_by=self._expr, descending=descending)
+        peer_count = sql.all().count().over(self._expr)
+        match method:
+            case "average":
+                max_rank = base_rank.add(peer_count).sub(sql.lit(1))
+                expr = base_rank.add(max_rank).truediv(sql.lit(2))
+            case "min":
+                expr = base_rank
+            case "max":
+                expr = base_rank.add(peer_count).sub(sql.lit(1))
+            case "dense":
+                expr = self._expr.dense_rank().over(
+                    order_by=self._expr, descending=descending
+                )
+            case "ordinal":
+                expr = self._expr.row_number().over(
+                    order_by=self._expr, descending=descending
+                )
+        return self._new_window(expr)
+
+    def cum_count(self, *, reverse: bool = False) -> Self:
+        """Cumulative non-null count."""
+        return self._reversed(self._expr.count(), reverse=reverse)
+
+    def cum_sum(self, *, reverse: bool = False) -> Self:
+        """Cumulative sum."""
+        return self._reversed(self._expr.sum(), reverse=reverse)
+
+    def cum_prod(self, *, reverse: bool = False) -> Self:
+        """Cumulative product."""
+        return self._reversed(self._expr.product(), reverse=reverse)
+
+    def cum_min(self, *, reverse: bool = False) -> Self:
+        """Cumulative minimum."""
+        return self._reversed(self._expr.min(), reverse=reverse)
+
+    def cum_max(self, *, reverse: bool = False) -> Self:
+        """Cumulative maximum."""
+        return self._reversed(self._expr.max(), reverse=reverse)
 
     def filter(self, *predicates: Any) -> Self:  # noqa: ANN401
         cond = iter_into_exprs(predicates).fold(

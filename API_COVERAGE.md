@@ -6,8 +6,8 @@ This report shows the API coverage of pql compared to Polars.
 
 | Class       | Coverage vs Narwhals | Total | Matched | Missing | Mismatched | Extra | Extra vs Narwhals |
 | ----------- | -------------------- | ----- | ------- | ------- | ---------- | ----- | ----------------- |
-| LazyFrame   | 56.2%                | 48    | 27      | 11      | 10         | 2     | 22                |
-| Expr        | 54.7%                | 106   | 58      | 40      | 8          | 2     | 36                |
+| LazyFrame   | 56.2%                | 48    | 27      | 11      | 10         | 1     | 22                |
+| Expr        | 71.7%                | 106   | 76      | 22      | 8          | 2     | 36                |
 | Expr.str    | 93.1%                | 29    | 27      | 0       | 2          | 0     | 10                |
 | Expr.list   | 100.0%               | 10    | 10      | 0       | 0          | 2     | 0                 |
 | Expr.struct | 100.0%               | 1     | 1       | 0       | 0          | 2     | 0                 |
@@ -65,25 +65,17 @@ This report shows the API coverage of pql compared to Polars.
   - Polars: (`path: str | Path | IO[bytes] | PartitionBy`, compression: str, `compression_level: int | None`, `statistics: bool | str | dict[str, bool]`, `row_group_size: int | None`, `data_page_size: int | None`, `maintain_order: bool`, `storage_options: StorageOptionsDict | None`, `credential_provider: CredentialProviderFunction | Literal['auto'] | None`, `retries: int | None`, `sync_on_close: SyncOnCloseMethod | None`, `metadata: ParquetMetadata | None`, `arrow_schema: ArrowSchemaExportable | None`, `mkdir: bool`, `lazy: bool`, `engine: EngineType`, `optimizations: QueryOptFlags`) -> LazyFrame | None
   - pql: (`path: str | Path`, `compression: str`) -> None
 
-### [+] Extra Methods (pql-only) (2)
+### [+] Extra Methods (pql-only) (1)
 
 - `inner`
-- `relation`
 
 ## Expr
 
-### [x] Missing Methods (40)
+### [x] Missing Methods (22)
 
-- `all` () -> Self
-- `any` () -> Self
 - `any_value` (ignore_nulls: bool) -> Self
 - `cat` ()
 - `clip` (lower_bound: IntoExpr | NumericLiteral | TemporalLiteral | None, upper_bound: IntoExpr | NumericLiteral | TemporalLiteral | None) -> Self
-- `cum_count` (reverse: bool) -> Self
-- `cum_max` (reverse: bool) -> Self
-- `cum_min` (reverse: bool) -> Self
-- `cum_prod` (reverse: bool) -> Self
-- `cum_sum` (reverse: bool) -> Self
 - `dt` ()
 - `ewm_mean` (com: float | None, span: float | None, half_life: float | None, alpha: float | None, adjust: bool, min_samples: int, ignore_nulls: bool) -> Self
 - `fill_null` (value: Expr | NonNestedLiteral, strategy: FillNullStrategy | None, limit: int | None) -> Self
@@ -91,29 +83,18 @@ This report shows the API coverage of pql compared to Polars.
 - `is_close` (other: Expr | Series[Any] | NumericLiteral, abs_tol: float, rel_tol: float, nans_equal: bool) -> Self
 - `kurtosis` () -> Self
 - `last` (order_by: str | Iterable[str] | None) -> Self
-- `len` () -> Self
 - `map_batches` (function: Callable[[Any], CompliantExpr[Any, Any]], return_dtype: DType | None, returns_scalar: bool) -> Self
-- `max` () -> Self
-- `mean` () -> Self
-- `median` () -> Self
-- `min` () -> Self
 - `mode` (keep: ModeKeepStrategy) -> Self
-- `n_unique` () -> Self
 - `name` ()
-- `null_count` () -> Self
 - `over` (*partition_by: str | Sequence[str], order_by: str | Sequence[str] | None) -> Self
 - `quantile` (quantile: float, interpolation: RollingInterpolationMethod) -> Self
-- `rank` (method: RankMethod, descending: bool) -> Self
 - `replace_strict` (old: Sequence[Any] | Mapping[Any, Any], new: Sequence[Any] | None, default: Any | NoDefault, return_dtype: IntoDType | None) -> Self
 - `rolling_mean` (window_size: int, min_samples: int | None, center: bool) -> Self
 - `rolling_std` (window_size: int, min_samples: int | None, center: bool, ddof: int) -> Self
 - `rolling_sum` (window_size: int, min_samples: int | None, center: bool) -> Self
 - `rolling_var` (window_size: int, min_samples: int | None, center: bool, ddof: int) -> Self
 - `skew` () -> Self
-- `std` (ddof: int) -> Self
-- `sum` () -> Self
 - `unique` () -> Self
-- `var` (ddof: int) -> Self
 
 ### [!] Signature Mismatches (8)
 

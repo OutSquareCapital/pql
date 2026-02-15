@@ -98,7 +98,7 @@ def test_replace() -> None:
     )
 
 
-def test_all() -> None:
+def test_all_fn() -> None:
     assert_eq(pql.all(), nw.all())
 
 
@@ -530,4 +530,158 @@ def test_drop_nulls() -> None:
 def test_count() -> None:
     assert_eq(
         pql.col("x").count().alias("x_count"), nw.col("x").count().alias("x_count")
+    )
+
+
+def test_len() -> None:
+    assert_eq_pl(pql.col("x").len().alias("x_len"), pl.col("x").len().alias("x_len"))
+
+
+def test_sum() -> None:
+    assert_eq_pl(pql.col("x").sum().alias("x_sum"), pl.col("x").sum().alias("x_sum"))
+
+
+def test_mean() -> None:
+    assert_eq_pl(
+        pql.col("x").mean().alias("x_mean"), pl.col("x").mean().alias("x_mean")
+    )
+
+
+def test_median() -> None:
+    assert_eq_pl(
+        pql.col("x").median().alias("x_median"),
+        pl.col("x").median().alias("x_median"),
+    )
+
+
+def test_min() -> None:
+    assert_eq_pl(pql.col("x").min().alias("x_min"), pl.col("x").min().alias("x_min"))
+
+
+def test_max() -> None:
+    assert_eq_pl(pql.col("x").max().alias("x_max"), pl.col("x").max().alias("x_max"))
+
+
+def test_std() -> None:
+    assert_eq_pl(pql.col("x").std().alias("x_std"), pl.col("x").std().alias("x_std"))
+    assert_eq_pl(
+        pql.col("x").std(ddof=0).alias("x_std_pop"),
+        pl.col("x").std(ddof=0).alias("x_std_pop"),
+    )
+
+
+def test_var() -> None:
+    assert_eq_pl(pql.col("x").var().alias("x_var"), pl.col("x").var().alias("x_var"))
+    assert_eq_pl(
+        pql.col("x").var(ddof=0).alias("x_var_pop"),
+        pl.col("x").var(ddof=0).alias("x_var_pop"),
+    )
+
+
+def test_all_expr() -> None:
+    assert_eq_pl(
+        pql.col("x").gt(0).all().alias("all_pos"),
+        pl.col("x").gt(0).all().alias("all_pos"),
+    )
+
+
+def test_any() -> None:
+    assert_eq_pl(
+        pql.col("x").gt(10).any().alias("any_gt_10"),
+        pl.col("x").gt(10).any().alias("any_gt_10"),
+    )
+
+
+def test_n_unique() -> None:
+    assert_eq_pl(
+        pql.col("x").n_unique().alias("x_n_unique"),
+        pl.col("x").n_unique().alias("x_n_unique"),
+    )
+
+
+def test_null_count() -> None:
+    assert_eq_pl(
+        pql.col("age").null_count().alias("age_null_count"),
+        pl.col("age").null_count().alias("age_null_count"),
+    )
+
+
+def test_rank() -> None:
+    assert_eq_pl(
+        pql.col("x").rank().alias("x_rank"), pl.col("x").rank().alias("x_rank")
+    )
+    assert_eq_pl(
+        pql.col("x").rank(method="min").alias("x_rank_min"),
+        pl.col("x").rank(method="min").alias("x_rank_min"),
+    )
+    assert_eq_pl(
+        pql.col("x").rank(method="max").alias("x_rank_max"),
+        pl.col("x").rank(method="max").alias("x_rank_max"),
+    )
+    assert_eq_pl(
+        pql.col("x").rank(method="dense").alias("x_rank_dense"),
+        pl.col("x").rank(method="dense").alias("x_rank_dense"),
+    )
+    assert_eq_pl(
+        pql.col("x").rank(method="ordinal").alias("x_rank_ord"),
+        pl.col("x").rank(method="ordinal").alias("x_rank_ord"),
+    )
+    assert_eq_pl(
+        pql.col("x").rank(descending=True).alias("x_rank_desc"),
+        pl.col("x").rank(descending=True).alias("x_rank_desc"),
+    )
+
+
+def test_cum_count() -> None:
+    assert_eq_pl(
+        pql.col("x").cum_count().alias("x_cum_count"),
+        pl.col("x").cum_count().alias("x_cum_count"),
+    )
+    assert_eq_pl(
+        pql.col("x").cum_count(reverse=True).alias("x_cum_count_rev"),
+        pl.col("x").cum_count(reverse=True).alias("x_cum_count_rev"),
+    )
+
+
+def test_cum_sum() -> None:
+    assert_eq_pl(
+        pql.col("x").cum_sum().alias("x_cum_sum"),
+        pl.col("x").cum_sum().alias("x_cum_sum"),
+    )
+    assert_eq_pl(
+        pql.col("x").cum_sum(reverse=True).alias("x_cum_sum_rev"),
+        pl.col("x").cum_sum(reverse=True).alias("x_cum_sum_rev"),
+    )
+
+
+def test_cum_prod() -> None:
+    assert_eq_pl(
+        pql.col("x").cum_prod().alias("x_cum_prod"),
+        pl.col("x").cum_prod().alias("x_cum_prod"),
+    )
+    assert_eq_pl(
+        pql.col("x").cum_prod(reverse=True).alias("x_cum_prod_rev"),
+        pl.col("x").cum_prod(reverse=True).alias("x_cum_prod_rev"),
+    )
+
+
+def test_cum_min() -> None:
+    assert_eq_pl(
+        pql.col("x").cum_min().alias("x_cum_min"),
+        pl.col("x").cum_min().alias("x_cum_min"),
+    )
+    assert_eq_pl(
+        pql.col("x").cum_min(reverse=True).alias("x_cum_min_rev"),
+        pl.col("x").cum_min(reverse=True).alias("x_cum_min_rev"),
+    )
+
+
+def test_cum_max() -> None:
+    assert_eq_pl(
+        pql.col("x").cum_max().alias("x_cum_max"),
+        pl.col("x").cum_max().alias("x_cum_max"),
+    )
+    assert_eq_pl(
+        pql.col("x").cum_max(reverse=True).alias("x_cum_max_rev"),
+        pl.col("x").cum_max(reverse=True).alias("x_cum_max_rev"),
     )
