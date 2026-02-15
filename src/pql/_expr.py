@@ -284,9 +284,7 @@ class Expr(ExprHandler[SqlExpr]):
 
     def tanh(self) -> Self:
         """Compute the hyperbolic tangent."""
-        exp_x = self._expr.exp()
-        exp_neg_x = self._expr.neg().exp()
-        return self.__class__(exp_x.sub(exp_neg_x)).truediv(exp_x.add(exp_neg_x))
+        return self.__class__(self._expr.tanh())
 
     def degrees(self) -> Self:
         """Convert radians to degrees."""
@@ -465,13 +463,7 @@ class ExprStringNameSpace:
 
     def slice(self, offset: int, length: int | None = None) -> Expr:
         """Extract a substring."""
-        match length:
-            case None:
-                return Expr(self._expr.str.substring(sql.lit(offset + 1)))
-            case _:
-                return Expr(
-                    self._expr.str.substring(sql.lit(offset + 1), sql.lit(length))
-                )
+        return Expr(self._expr.str.substring(sql.lit(offset + 1), length))
 
     def len_bytes(self) -> Expr:
         """Get the length in bytes."""
