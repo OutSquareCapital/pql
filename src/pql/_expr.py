@@ -66,43 +66,43 @@ class Expr(ExprHandler[SqlExpr]):
         return self.add(other)
 
     def __radd__(self, other: IntoExpr) -> Self:
-        return self.__class__(into_expr(other).radd(self._expr))
+        return self._new(into_expr(other).radd(self._expr))
 
     def __sub__(self, other: IntoExpr) -> Self:
         return self.sub(other)
 
     def __rsub__(self, other: IntoExpr) -> Self:
-        return self.__class__(self._expr.rsub(into_expr(other)))
+        return self._new(self._expr.rsub(into_expr(other)))
 
     def __mul__(self, other: IntoExpr) -> Self:
         return self.mul(other)
 
     def __rmul__(self, other: IntoExpr) -> Self:
-        return self.__class__(into_expr(other).rmul(self._expr))
+        return self._new(into_expr(other).rmul(self._expr))
 
     def __truediv__(self, other: IntoExpr) -> Self:
         return self.truediv(other)
 
     def __rtruediv__(self, other: IntoExpr) -> Self:
-        return self.__class__(self._expr.rtruediv(into_expr(other)))
+        return self._new(self._expr.rtruediv(into_expr(other)))
 
     def __floordiv__(self, other: IntoExpr) -> Self:
         return self.floordiv(other)
 
     def __rfloordiv__(self, other: IntoExpr) -> Self:
-        return self.__class__(self._expr.rfloordiv(into_expr(other)))
+        return self._new(self._expr.rfloordiv(into_expr(other)))
 
     def __mod__(self, other: IntoExpr) -> Self:
         return self.mod(other)
 
     def __rmod__(self, other: IntoExpr) -> Self:
-        return self.__class__(self._expr.rmod(into_expr(other)))
+        return self._new(self._expr.rmod(into_expr(other)))
 
     def __pow__(self, other: IntoExpr) -> Self:
         return self.pow(other)
 
     def __rpow__(self, other: IntoExpr) -> Self:
-        return self.__class__(self._expr.rpow(into_expr(other)))
+        return self._new(self._expr.rpow(into_expr(other)))
 
     def __neg__(self) -> Self:
         return self.neg()
@@ -129,13 +129,13 @@ class Expr(ExprHandler[SqlExpr]):
         return self.and_(other)
 
     def __rand__(self, other: IntoExpr) -> Self:
-        return self.__class__(into_expr(other).rand(self._expr))
+        return self._new(into_expr(other).rand(self._expr))
 
     def __or__(self, other: IntoExpr) -> Self:
         return self.or_(other)
 
     def __ror__(self, other: IntoExpr) -> Self:
-        return self.__class__(into_expr(other).ror(self._expr))
+        return self._new(into_expr(other).ror(self._expr))
 
     def __invert__(self) -> Self:
         return self.not_()
@@ -145,87 +145,87 @@ class Expr(ExprHandler[SqlExpr]):
 
     def add(self, other: Any) -> Self:  # noqa: ANN401
         """Add another expression or value."""
-        return self.__class__(self._expr.add(into_expr(other)))
+        return self._new(self._expr.add(into_expr(other)))
 
     def sub(self, other: Any) -> Self:  # noqa: ANN401
-        return self.__class__(self._expr.sub(into_expr(other)))
+        return self._new(self._expr.sub(into_expr(other)))
 
     def mul(self, other: Any) -> Self:  # noqa: ANN401
-        return self.__class__(self._expr.mul(into_expr(other)))
+        return self._new(self._expr.mul(into_expr(other)))
 
     def truediv(self, other: Any) -> Self:  # noqa: ANN401
-        return self.__class__(self._expr.truediv(into_expr(other)))
+        return self._new(self._expr.truediv(into_expr(other)))
 
     def floordiv(self, other: Any) -> Self:  # noqa: ANN401
-        return self.__class__(self._expr.floordiv(into_expr(other)))
+        return self._new(self._expr.floordiv(into_expr(other)))
 
     def mod(self, other: Any) -> Self:  # noqa: ANN401
-        return self.__class__(self._expr.mod(into_expr(other)))
+        return self._new(self._expr.mod(into_expr(other)))
 
     def pow(self, other: Any) -> Self:  # noqa: ANN401
-        return self.__class__(self._expr.pow(into_expr(other)))
+        return self._new(self._expr.pow(into_expr(other)))
 
     def neg(self) -> Self:
-        return self.__class__(self._expr.neg())
+        return self._new(self._expr.neg())
 
     def abs(self) -> Self:
-        return self.__class__(self._expr.abs())
+        return self._new(self._expr.abs())
 
     def eq(self, other: Any) -> Self:  # noqa: ANN401
-        return self.__class__(self._expr.eq(into_expr(other)))
+        return self._new(self._expr.eq(into_expr(other)))
 
     def ne(self, other: Any) -> Self:  # noqa: ANN401
-        return self.__class__(self._expr.ne(into_expr(other)))
+        return self._new(self._expr.ne(into_expr(other)))
 
     def lt(self, other: Any) -> Self:  # noqa: ANN401
-        return self.__class__(self._expr.lt(into_expr(other)))
+        return self._new(self._expr.lt(into_expr(other)))
 
     def le(self, other: Any) -> Self:  # noqa: ANN401
-        return self.__class__(self._expr.le(into_expr(other)))
+        return self._new(self._expr.le(into_expr(other)))
 
     def gt(self, other: Any) -> Self:  # noqa: ANN401
-        return self.__class__(self._expr.gt(into_expr(other)))
+        return self._new(self._expr.gt(into_expr(other)))
 
     def ge(self, other: Any) -> Self:  # noqa: ANN401
-        return self.__class__(self._expr.ge(into_expr(other)))
+        return self._new(self._expr.ge(into_expr(other)))
 
     def and_(self, others: Any) -> Self:  # noqa: ANN401
-        return self.__class__(self._expr.and_(into_expr(others)))
+        return self._new(self._expr.and_(into_expr(others)))
 
     def or_(self, others: Any) -> Self:  # noqa: ANN401
-        return self.__class__(self._expr.or_(into_expr(others)))
+        return self._new(self._expr.or_(into_expr(others)))
 
     def not_(self) -> Self:
-        return self.__class__(self._expr.not_())
+        return self._new(self._expr.not_())
 
     def alias(self, name: str) -> Self:
         """Rename the expression."""
-        return self.__class__(self._expr.alias(name))
+        return self._new(self._expr.alias(name))
 
     def is_null(self) -> Self:
         """Check if the expression is NULL."""
-        return self.__class__(self._expr.is_null())
+        return self._new(self._expr.is_null())
 
     def is_not_null(self) -> Self:
         """Check if the expression is not NULL."""
-        return self.__class__(self._expr.is_not_null())
+        return self._new(self._expr.is_not_null())
 
     def cast(self, dtype: sql.datatypes.DataType) -> Self:
         """Cast to a different data type."""
-        return self.__class__(self._expr.cast(dtype))
+        return self._new(self._expr.cast(dtype))
 
     def is_in(self, other: Collection[IntoExpr] | IntoExpr) -> Self:
         """Check if value is in an iterable of values."""
-        return self.__class__(self._expr.is_in(*iter_into_exprs(other)))
+        return self._new(self._expr.is_in(*iter_into_exprs(other)))
 
     def shift(self, n: int = 1) -> Self:
         match n:
             case 0:
                 return self
             case n_val if n_val > 0:
-                return self.__class__(self._expr.lag(sql.lit(n_val)).over())
+                return self._new(self._expr.lag(sql.lit(n_val)).over())
             case _:
-                return self.__class__(self._expr.lead(sql.lit(-n)).over())
+                return self._new(self._expr.lead(sql.lit(-n)).over())
 
     def diff(self) -> Self:
         return self.sub(self.shift())
@@ -252,18 +252,18 @@ class Expr(ExprHandler[SqlExpr]):
         cond = iter_into_exprs(*predicates).fold(
             sql.lit(value=True), lambda acc, pred: acc.and_(pred)
         )
-        return self.__class__(sql.when(cond, self._expr).otherwise(sql.lit(None)))
+        return self._new(sql.when(cond, self._expr).otherwise(sql.lit(None)))
 
     def drop_nulls(self) -> Self:
         return self.filter(self.is_not_null())
 
     def floor(self) -> Self:
         """Round down to the nearest integer."""
-        return self.__class__(self._expr.floor())
+        return self._new(self._expr.floor())
 
     def ceil(self) -> Self:
         """Round up to the nearest integer."""
-        return self.__class__(self._expr.ceil())
+        return self._new(self._expr.ceil())
 
     def round(self, decimals: int = 0, *, mode: RoundMode = "half_to_even") -> Self:
         """Round to given number of decimal places."""
@@ -272,111 +272,109 @@ class Expr(ExprHandler[SqlExpr]):
                 rounded = self._expr.round_even(sql.lit(decimals))
             case "half_away_from_zero":
                 rounded = self._expr.round(sql.lit(decimals))
-        return self.__class__(rounded)
+        return self._new(rounded)
 
     def sqrt(self) -> Self:
         """Compute the square root."""
-        return self.__class__(self._expr.sqrt())
+        return self._new(self._expr.sqrt())
 
     def cbrt(self) -> Self:
         """Compute the cube root."""
-        return self.__class__(self._expr.cbrt())
+        return self._new(self._expr.cbrt())
 
     def log(self, base: float = 2.718281828459045) -> Self:
         """Compute the logarithm."""
-        return self.__class__(self._expr.log(sql.lit(base)))
+        return self._new(self._expr.log(sql.lit(base)))
 
     def log10(self) -> Self:
         """Compute the base 10 logarithm."""
-        return self.__class__(self._expr.log10())
+        return self._new(self._expr.log10())
 
     def log1p(self) -> Self:
         """Compute the natural logarithm of 1+x."""
-        return self.__class__(self._expr.add(sql.lit(1)).ln())
+        return self._new(self._expr.add(sql.lit(1)).ln())
 
     def exp(self) -> Self:
         """Compute the exponential."""
-        return self.__class__(self._expr.exp())
+        return self._new(self._expr.exp())
 
     def sin(self) -> Self:
         """Compute the sine."""
-        return self.__class__(self._expr.sin())
+        return self._new(self._expr.sin())
 
     def cos(self) -> Self:
         """Compute the cosine."""
-        return self.__class__(self._expr.cos())
+        return self._new(self._expr.cos())
 
     def tan(self) -> Self:
         """Compute the tangent."""
-        return self.__class__(self._expr.tan())
+        return self._new(self._expr.tan())
 
     def arctan(self) -> Self:
         """Compute the arc tangent."""
-        return self.__class__(self._expr.atan())
+        return self._new(self._expr.atan())
 
     def sinh(self) -> Self:
         """Compute the hyperbolic sine."""
-        return self.__class__(self._expr.sinh())
+        return self._new(self._expr.sinh())
 
     def cosh(self) -> Self:
         """Compute the hyperbolic cosine."""
-        return self.__class__(self._expr.cosh())
+        return self._new(self._expr.cosh())
 
     def tanh(self) -> Self:
         """Compute the hyperbolic tangent."""
-        return self.__class__(self._expr.tanh())
+        return self._new(self._expr.tanh())
 
     def degrees(self) -> Self:
         """Convert radians to degrees."""
-        return self.__class__(self._expr.degrees())
+        return self._new(self._expr.degrees())
 
     def radians(self) -> Self:
         """Convert degrees to radians."""
-        return self.__class__(self._expr.radians())
+        return self._new(self._expr.radians())
 
     def sign(self) -> Self:
         """Get the sign of the value."""
-        return self.__class__(self._expr.sign())
+        return self._new(self._expr.sign())
 
     def forward_fill(self) -> Self:
         """Fill null values with the last non-null value."""
-        return self.__class__(
-            self._expr.last_value().over(rows_end=0, ignore_nulls=True)
-        )
+        return self._new(self._expr.last_value().over(rows_end=0, ignore_nulls=True))
 
     def backward_fill(self) -> Self:
         """Fill null values with the next non-null value."""
-        return self.__class__(self._expr.any_value().over(rows_start=0))
+        return self._new(self._expr.any_value().over(rows_start=0))
 
     def is_nan(self) -> Self:
         """Check if value is NaN."""
-        return self.__class__(self._expr.isnan())
+        return self._new(self._expr.isnan())
 
     def is_not_nan(self) -> Self:
         """Check if value is not NaN."""
-        return self.__class__(self._expr.isnan().not_())
+        return self._new(self._expr.isnan().not_())
 
     def is_finite(self) -> Self:
         """Check if value is finite."""
-        return self.__class__(self._expr.isfinite())
+        return self._new(self._expr.isfinite())
 
     def is_infinite(self) -> Self:
         """Check if value is infinite."""
-        return self.__class__(self._expr.isinf())
+        return self._new(self._expr.isinf())
 
     def fill_nan(self, value: float | Expr | None) -> Self:
         """Fill NaN values."""
-        return self.__class__(
+        return self._new(
             sql.when(self._expr.isnan(), into_expr(value)).otherwise(self._expr)
         )
 
     def hash(self, seed: int = 0) -> Self:
         """Compute a hash."""
-        return self.__class__(self._expr.str.hash(sql.lit(seed)))
+        return self._new(self._expr.str.hash(sql.lit(seed)))
 
     def replace(self, old: IntoExpr, new: IntoExpr) -> Self:
         """Replace values."""
-        return self.__class__(
+        return self._new(
             sql.when(self._expr.eq(into_expr(old)), into_expr(new)).otherwise(
                 self._expr
             )
@@ -384,25 +382,25 @@ class Expr(ExprHandler[SqlExpr]):
 
     def repeat_by(self, by: Expr | int) -> Self:
         """Repeat values by count, returning a list."""
-        return self.__class__(
+        return self._new(
             into_expr(by).list.range().list.transform(sql.fn_once("_", self._expr))
         )
 
     def is_duplicated(self) -> Self:
         """Check if value is duplicated."""
-        return self.__class__(sql.all().count().over(self._expr).gt(sql.lit(1)))
+        return self._new(sql.all().count().over(self._expr).gt(sql.lit(1)))
 
     def is_unique(self) -> Self:
         """Check if value is unique."""
-        return self.__class__(sql.all().count().over(self._expr).eq(sql.lit(1)))
+        return self._new(sql.all().count().over(self._expr).eq(sql.lit(1)))
 
     def is_first_distinct(self) -> Self:
         """Check if value is first occurrence."""
-        return self.__class__(self._expr.row_number().over(self._expr).eq(sql.lit(1)))
+        return self._new(self._expr.row_number().over(self._expr).eq(sql.lit(1)))
 
     def is_last_distinct(self) -> Self:
         """Check if value is last occurrence."""
-        return self.__class__(
+        return self._new(
             self._expr.row_number()
             .over(self._expr, self._expr, descending=True, nulls_last=True)
             .eq(sql.lit(1))
