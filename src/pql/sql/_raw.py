@@ -5,7 +5,6 @@ from typing import Final, Self
 
 import pyochain as pc
 import sqlglot
-from sqlglot.errors import ParseError
 
 _POINTER_LITERAL_PATTERN = re.compile(r"\b0x[0-9a-fA-F]+\b")
 _POINTER_FN_CALL_PATTERN = re.compile(
@@ -91,11 +90,8 @@ class QueryHolder:
         )
 
     def prettify(self) -> str:
-        try:
-            return self.restore(
-                sqlglot.parse_one(self.query, dialect="duckdb").sql(  # pyright: ignore[reportUnknownMemberType]
-                    dialect="duckdb", pretty=True
-                )
+        return self.restore(
+            sqlglot.parse_one(self.query, dialect="duckdb").sql(  # pyright: ignore[reportUnknownMemberType]
+                dialect="duckdb", pretty=True
             )
-        except ParseError:
-            return self.restore(self.query)
+        )
