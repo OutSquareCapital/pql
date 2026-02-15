@@ -16,6 +16,7 @@ if TYPE_CHECKING:
     from .sql import IntoExpr
 
 RoundMode = Literal["half_to_even", "half_away_from_zero"]
+ClosedInterval = Literal["both", "left", "right", "none"]
 
 
 class Col:
@@ -57,7 +58,7 @@ class Expr(ExprHandler[SqlExpr]):
         return ExprStructNameSpace(self._expr)
 
     @property
-    def expr(self) -> SqlExpr:
+    def expr(self) -> SqlExpr:  # pragma: no cover
         """Get the underlying DuckDB expression."""
         return self._expr
 
@@ -216,6 +217,45 @@ class Expr(ExprHandler[SqlExpr]):
     def is_in(self, other: Collection[IntoExpr] | IntoExpr) -> Self:
         """Check if value is in an iterable of values."""
         return self.__class__(self._expr.is_in(*iter_into_exprs(other)))
+
+    def shift(self, n: int = 1) -> Self:
+        match n:
+            case 0:
+                return self
+            case n_val if n_val > 0:
+                return self.__class__(self._expr.lag(sql.lit(n_val)).over())
+            case _:
+                return self.__class__(self._expr.lead(sql.lit(-n)).over())
+
+    def diff(self) -> Self:
+        return self.sub(self.shift())
+
+    def is_between(
+        self,
+        lower_bound: IntoExpr,
+        upper_bound: IntoExpr,
+        closed: ClosedInterval = "both",
+    ) -> Self:
+        lower_expr = into_expr(lower_bound)
+        upper_expr = into_expr(upper_bound)
+        match closed:
+            case "both":
+                return self.ge(lower_expr).and_(self.le(upper_expr))
+            case "left":
+                return self.ge(lower_expr).and_(self.lt(upper_expr))
+            case "right":
+                return self.gt(lower_expr).and_(self.le(upper_expr))
+            case "none":
+                return self.gt(lower_expr).and_(self.lt(upper_expr))
+
+    def filter(self, *predicates: Any) -> Self:  # noqa: ANN401
+        cond = iter_into_exprs(*predicates).fold(
+            sql.lit(value=True), lambda acc, pred: acc.and_(pred)
+        )
+        return self.__class__(sql.when(cond, self._expr).otherwise(sql.lit(None)))
+
+    def drop_nulls(self) -> Self:
+        return self.filter(self.is_not_null())
 
     def floor(self) -> Self:
         """Round down to the nearest integer."""

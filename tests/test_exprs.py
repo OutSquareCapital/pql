@@ -466,3 +466,70 @@ def test_is_in() -> None:
 
 def test_abs() -> None:
     assert_eq(pql.col("x").abs().alias("x"), nw.col("x").abs().alias("x"))
+
+
+def test_shift() -> None:
+    assert_eq_pl(
+        pql.col("x").shift().alias("x_shift"), pl.col("x").shift().alias("x_shift")
+    )
+    assert_eq_pl(
+        pql.col("x").shift(-1).alias("x_shift_neg"),
+        pl.col("x").shift(-1).alias("x_shift_neg"),
+    )
+    assert_eq_pl(
+        pql.col("x").shift(0).alias("x_shift0"), pl.col("x").shift(0).alias("x_shift0")
+    )
+
+
+def test_diff() -> None:
+    assert_eq_pl(
+        pql.col("x").diff().alias("x_diff"), pl.col("x").diff().alias("x_diff")
+    )
+
+
+def test_is_between() -> None:
+    assert_eq_pl(
+        [
+            pql.col("x").is_between(2, 10).alias("x_between"),
+            pql.col("x").is_between(2, 10, closed="left").alias("x_between_left"),
+            pql.col("x").is_between(2, 10, closed="right").alias("x_between_right"),
+            pql.col("x").is_between(2, 10, closed="none").alias("x_between_none"),
+        ],
+        [
+            pl.col("x").is_between(2, 10).alias("x_between"),
+            pl.col("x").is_between(2, 10, closed="left").alias("x_between_left"),
+            pl.col("x").is_between(2, 10, closed="right").alias("x_between_right"),
+            pl.col("x").is_between(2, 10, closed="none").alias("x_between_none"),
+        ],
+    )
+
+
+def test_is_unique() -> None:
+    assert_eq(
+        pql.col("a").is_unique().alias("is_unique"),
+        nw.col("a").is_unique().alias("is_unique"),
+    )
+
+
+def test_filter() -> None:
+    assert_eq_pl(
+        pql.col("x").filter(pql.col("a")).alias("x_filtered"),
+        pl.when(pl.col("a")).then(pl.col("x")).otherwise(None).alias("x_filtered"),
+    )
+    assert_eq_pl(
+        pql.col("x").filter(pql.col("a"), pql.col("b")).alias("x_filtered_ab"),
+        pl.when(pl.col("a") & pl.col("b"))
+        .then(pl.col("x"))
+        .otherwise(None)
+        .alias("x_filtered_ab"),
+    )
+
+
+def test_drop_nulls() -> None:
+    assert_eq_pl(
+        pql.col("x").drop_nulls().alias("x_drop_nulls"),
+        pl.when(pl.col("x").is_not_null())
+        .then(pl.col("x"))
+        .otherwise(None)
+        .alias("x_drop_nulls"),
+    )

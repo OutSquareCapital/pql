@@ -7,7 +7,7 @@ This report shows the API coverage of pql compared to Polars.
 | Class       | Coverage vs Narwhals | Total | Matched | Missing | Mismatched | Extra | Extra vs Narwhals |
 | ----------- | -------------------- | ----- | ------- | ------- | ---------- | ----- | ----------------- |
 | LazyFrame   | 56.2%                | 48    | 27      | 11      | 10         | 2     | 22                |
-| Expr        | 49.1%                | 106   | 52      | 46      | 8          | 2     | 36                |
+| Expr        | 53.8%                | 106   | 57      | 41      | 8          | 2     | 36                |
 | Expr.str    | 82.8%                | 29    | 24      | 3       | 2          | 0     | 10                |
 | Expr.list   | 100.0%               | 10    | 10      | 0       | 0          | 2     | 0                 |
 | Expr.struct | 100.0%               | 1     | 1       | 0       | 0          | 2     | 0                 |
@@ -72,7 +72,7 @@ This report shows the API coverage of pql compared to Polars.
 
 ## Expr
 
-### [x] Missing Methods (46)
+### [x] Missing Methods (41)
 
 - `all` () -> Self
 - `any` () -> Self
@@ -85,14 +85,10 @@ This report shows the API coverage of pql compared to Polars.
 - `cum_min` (reverse: bool) -> Self
 - `cum_prod` (reverse: bool) -> Self
 - `cum_sum` (reverse: bool) -> Self
-- `diff` () -> Self
-- `drop_nulls` () -> Self
 - `dt` ()
 - `ewm_mean` (com: float | None, span: float | None, half_life: float | None, alpha: float | None, adjust: bool, min_samples: int, ignore_nulls: bool) -> Self
 - `fill_null` (value: Expr | NonNestedLiteral, strategy: FillNullStrategy | None, limit: int | None) -> Self
-- `filter` (*predicates: Any) -> Self
 - `first` (order_by: str | Iterable[str] | None) -> Self
-- `is_between` (lower_bound: Any | IntoExpr, upper_bound: Any | IntoExpr, closed: ClosedInterval) -> Self
 - `is_close` (other: Expr | Series[Any] | NumericLiteral, abs_tol: float, rel_tol: float, nans_equal: bool) -> Self
 - `kurtosis` () -> Self
 - `last` (order_by: str | Iterable[str] | None) -> Self
@@ -114,7 +110,6 @@ This report shows the API coverage of pql compared to Polars.
 - `rolling_std` (window_size: int, min_samples: int | None, center: bool, ddof: int) -> Self
 - `rolling_sum` (window_size: int, min_samples: int | None, center: bool) -> Self
 - `rolling_var` (window_size: int, min_samples: int | None, center: bool, ddof: int) -> Self
-- `shift` (n: int) -> Self
 - `skew` () -> Self
 - `std` (ddof: int) -> Self
 - `sum` () -> Self
