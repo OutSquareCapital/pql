@@ -482,11 +482,7 @@ class ExprStringNameSpace:
                 return Expr(self._expr.str.ltrim())
             case _:
                 characters_expr = into_expr(characters)
-                return Expr(
-                    sql.when(characters_expr.is_null(), sql.lit(None)).otherwise(
-                        self._expr.str.ltrim(characters_expr)
-                    )
-                )
+                return Expr(self._expr.str.ltrim(characters_expr))
 
     def strip_chars_end(self, characters: IntoExpr = None) -> Expr:
         """Strip trailing characters."""
@@ -495,11 +491,7 @@ class ExprStringNameSpace:
                 return Expr(self._expr.str.rtrim())
             case _:
                 characters_expr = into_expr(characters)
-                return Expr(
-                    sql.when(characters_expr.is_null(), sql.lit(None)).otherwise(
-                        self._expr.str.rtrim(characters_expr)
-                    )
-                )
+                return Expr(self._expr.str.rtrim(characters_expr))
 
     def slice(self, offset: int, length: int | None = None) -> Expr:
         """Extract a substring."""
@@ -581,14 +573,12 @@ class ExprStringNameSpace:
             case _:
                 prefix_expr = into_expr(prefix)
                 return Expr(
-                    sql.when(prefix_expr.is_null(), sql.lit(None)).otherwise(
-                        sql.when(
-                            self._expr.str.starts_with(prefix_expr),
-                            self._expr.str.substring(
-                                prefix_expr.str.length().add(sql.lit(1))
-                            ),
-                        ).otherwise(self._expr)
-                    )
+                    sql.when(
+                        self._expr.str.starts_with(prefix_expr),
+                        self._expr.str.substring(
+                            prefix_expr.str.length().add(sql.lit(1))
+                        ),
+                    ).otherwise(self._expr)
                 )
 
     def strip_suffix(self, suffix: IntoExpr) -> Expr:
@@ -603,15 +593,13 @@ class ExprStringNameSpace:
             case _:
                 suffix_expr = into_expr(suffix)
                 return Expr(
-                    sql.when(suffix_expr.is_null(), sql.lit(None)).otherwise(
-                        sql.when(
-                            self._expr.str.ends_with(suffix_expr),
-                            self._expr.str.substring(
-                                sql.lit(1),
-                                self._expr.str.length().sub(suffix_expr.str.length()),
-                            ),
-                        ).otherwise(self._expr)
-                    )
+                    sql.when(
+                        self._expr.str.ends_with(suffix_expr),
+                        self._expr.str.substring(
+                            sql.lit(1),
+                            self._expr.str.length().sub(suffix_expr.str.length()),
+                        ),
+                    ).otherwise(self._expr)
                 )
 
     def head(self, n: int) -> Expr:
@@ -625,6 +613,15 @@ class ExprStringNameSpace:
     def reverse(self) -> Expr:
         """Reverse the string."""
         return Expr(self._expr.str.reverse())
+
+    def pad_start(self, length: int, fill_char: str = " ") -> Expr:
+        return Expr(self._expr.str.lpad(sql.lit(length), sql.lit(fill_char)))
+
+    def pad_end(self, length: int, fill_char: str = " ") -> Expr:
+        return Expr(self._expr.str.rpad(sql.lit(length), sql.lit(fill_char)))
+
+    def zfill(self, width: int) -> Expr:
+        return Expr(self._expr.str.lpad(sql.lit(width), sql.lit("0")))
 
     def replace_all(
         self, pattern: str, value: IntoExpr, *, literal: bool = False
@@ -666,13 +663,7 @@ class ExprListNameSpace(ExprHandler[sql.SqlExpr]):
 
     def unique(self) -> Expr:
         """Return unique values in each list."""
-        distinct_expr = self._expr.list.distinct()
-        return Expr(
-            sql.when(
-                self._expr.list.position(sql.lit(None)).is_not_null(),
-                distinct_expr.list.append(sql.lit(None)),
-            ).otherwise(distinct_expr)
-        )
+        return Expr(self._expr.list.distinct())
 
     def contains(self, item: IntoExpr, *, nulls_equal: bool = True) -> Expr:
         """Check if sublists contain the given item."""

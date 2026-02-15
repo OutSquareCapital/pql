@@ -8,7 +8,7 @@ This report shows the API coverage of pql compared to Polars.
 | ----------- | -------------------- | ----- | ------- | ------- | ---------- | ----- | ----------------- |
 | LazyFrame   | 56.2%                | 48    | 27      | 11      | 10         | 2     | 22                |
 | Expr        | 53.8%                | 106   | 57      | 41      | 8          | 2     | 36                |
-| Expr.str    | 82.8%                | 29    | 24      | 3       | 2          | 0     | 10                |
+| Expr.str    | 93.1%                | 29    | 27      | 0       | 2          | 0     | 10                |
 | Expr.list   | 100.0%               | 10    | 10      | 0       | 0          | 2     | 0                 |
 | Expr.struct | 100.0%               | 1     | 1       | 0       | 0          | 2     | 0                 |
 
@@ -151,12 +151,6 @@ This report shows the API coverage of pql compared to Polars.
 - `inner`
 
 ## Expr.str
-
-### [x] Missing Methods (3)
-
-- `pad_end` (length: int, fill_char: str) -> ExprT
-- `pad_start` (length: int, fill_char: str) -> ExprT
-- `zfill` (width: int) -> ExprT
 
 ### [!] Signature Mismatches (2)
 
