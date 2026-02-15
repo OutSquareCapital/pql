@@ -7,7 +7,7 @@ This report shows the API coverage of pql compared to Polars.
 | Class       | Coverage vs Narwhals | Total | Matched | Missing | Mismatched | Extra | Extra vs Narwhals |
 | ----------- | -------------------- | ----- | ------- | ------- | ---------- | ----- | ----------------- |
 | LazyFrame   | 56.2%                | 48    | 27      | 11      | 10         | 2     | 22                |
-| Expr        | 53.8%                | 106   | 57      | 41      | 8          | 2     | 36                |
+| Expr        | 54.7%                | 106   | 58      | 40      | 8          | 2     | 36                |
 | Expr.str    | 93.1%                | 29    | 27      | 0       | 2          | 0     | 10                |
 | Expr.list   | 100.0%               | 10    | 10      | 0       | 0          | 2     | 0                 |
 | Expr.struct | 100.0%               | 1     | 1       | 0       | 0          | 2     | 0                 |
@@ -72,14 +72,13 @@ This report shows the API coverage of pql compared to Polars.
 
 ## Expr
 
-### [x] Missing Methods (41)
+### [x] Missing Methods (40)
 
 - `all` () -> Self
 - `any` () -> Self
 - `any_value` (ignore_nulls: bool) -> Self
 - `cat` ()
 - `clip` (lower_bound: IntoExpr | NumericLiteral | TemporalLiteral | None, upper_bound: IntoExpr | NumericLiteral | TemporalLiteral | None) -> Self
-- `count` () -> Self
 - `cum_count` (reverse: bool) -> Self
 - `cum_max` (reverse: bool) -> Self
 - `cum_min` (reverse: bool) -> Self

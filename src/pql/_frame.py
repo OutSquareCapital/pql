@@ -9,6 +9,7 @@ from typing import TYPE_CHECKING, Any, Self
 import pyochain as pc
 
 from . import sql
+from ._expr import Expr
 from .sql import (
     ExprHandler,
     QueryHolder,
@@ -23,7 +24,6 @@ from .sql import (
 if TYPE_CHECKING:
     import polars as pl
 
-    from ._expr import Expr
     from .sql import FrameInit, IntoExpr, IntoExprColumn
 TEMP_NAME = "__pql_temp__"
 TEMP_COL = sql.col(TEMP_NAME)
@@ -47,13 +47,13 @@ class LazyFrame(ExprHandler[Relation]):
 
     def _select(self, exprs: IntoExprColumn, groups: str = "") -> Self:
         return self.__from_lf__(
-            self._expr.select(*sql.into_expr_col(exprs), groups=groups)
+            self._expr.select(*iter_into_exprs(exprs), groups=groups)
         )
 
     def _filter(self, *predicates: IntoExprColumn) -> Self:
         return pc.Iter(predicates).fold(
             self,
-            lambda lf, p: sql.into_expr_col(p).fold(
+            lambda lf, p: iter_into_exprs(p).fold(
                 lf,
                 lambda inner_lf, pred: inner_lf.__from_lf__(
                     inner_lf._expr.filter(pred)
@@ -64,7 +64,7 @@ class LazyFrame(ExprHandler[Relation]):
     def _agg(self, exprs: IntoExprColumn, group_expr: SqlExpr | str = "") -> Self:
         """Note: duckdb relation.aggregate has type issues, it does accept iterables of expressions but the type signature is wrong."""
         return self.__from_lf__(
-            self._expr.aggregate(sql.into_expr_col(exprs), group_expr)
+            self._expr.aggregate(iter_into_exprs(exprs), group_expr)
         )
 
     def _iter_slct(self, func: Callable[[str], SqlExpr]) -> Self:
@@ -92,14 +92,47 @@ class LazyFrame(ExprHandler[Relation]):
         self, *exprs: IntoExpr | Iterable[IntoExpr], **named_exprs: IntoExpr
     ) -> Self:
         """Select columns or expressions."""
-        return self._select(args_into_exprs(*exprs, **named_exprs))
+
+        def _is_scalar_select() -> bool:
+            def _single(value: IntoExpr | Iterable[IntoExpr]) -> pc.Iter[IntoExpr]:
+                match value:
+                    case str() | bytes() | bytearray():
+                        return pc.Iter.once(value)
+                    case Iterable():
+                        return pc.Iter(value).map(_single).flatten()
+                    case _:
+                        return pc.Iter.once(value)
+
+            return (
+                pc.Iter(exprs)
+                .flat_map(_single)
+                .chain(named_exprs.values())
+                .collect()
+                .then(
+                    lambda x: x.iter().all(
+                        lambda value: (
+                            isinstance(value, Expr)
+                            and value._is_scalar_like  # pyright: ignore[reportPrivateUsage]
+                            and not value._has_window  # pyright: ignore[reportPrivateUsage]
+                        )
+                    )
+                )
+                .unwrap_or(default=False)
+            )
+
+        parsed = args_into_exprs(exprs, named_exprs).collect()
+        if _is_scalar_select():
+            return self._agg(parsed)
+        return self._select(parsed)
 
     def with_columns(
         self, *exprs: IntoExpr | Iterable[IntoExpr], **named_exprs: IntoExpr
     ) -> Self:
         """Add or replace columns."""
         return (
-            args_into_exprs(*exprs, **named_exprs).insert(sql.all()).into(self._select)
+            args_into_exprs(exprs, named_exprs=named_exprs)
+            .insert(sql.all())
+            .into(self._select)
         )
 
     def filter(
@@ -109,7 +142,7 @@ class LazyFrame(ExprHandler[Relation]):
     ) -> Self:
         """Filter rows based on predicates and equality constraints."""
         return (
-            args_into_exprs(*predicates)
+            args_into_exprs(predicates)
             .chain(
                 pc.Dict.from_ref(constraints)
                 .items()
@@ -127,14 +160,19 @@ class LazyFrame(ExprHandler[Relation]):
         nulls_last: bool | Sequence[bool] = False,
     ) -> Self:
         """Sort by columns."""
-        sort_exprs = try_iter(by).chain(more_by).into(iter_into_exprs).collect()
+        sort_exprs = (
+            try_iter(by)
+            .chain(more_by)
+            .map(lambda v: into_expr(v, as_col=True))
+            .collect()
+        )
 
         def _args_iter(
             *, arg: bool | Sequence[bool], name: str
         ) -> pc.Result[pc.Iter[bool], ValueError]:
             match arg:
                 case bool():
-                    return pc.Ok(pc.Iter.once(arg).cycle().take(len(sort_exprs)))
+                    return pc.Ok(pc.Iter.once(arg).cycle().take(sort_exprs.length()))
                 case Sequence():
                     if len(arg) != sort_exprs.length():
                         msg = (

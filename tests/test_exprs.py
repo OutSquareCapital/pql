@@ -525,3 +525,9 @@ def test_drop_nulls() -> None:
         .otherwise(None)
         .alias("x_drop_nulls"),
     )
+
+
+def test_count() -> None:
+    assert_eq(
+        pql.col("x").count().alias("x_count"), nw.col("x").count().alias("x_count")
+    )

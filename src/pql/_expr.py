@@ -10,7 +10,7 @@ from typing import TYPE_CHECKING, Any, Literal, Self
 import pyochain as pc
 
 from . import sql
-from .sql import ExprHandler, SqlExpr, into_expr, iter_into_exprs
+from .sql import ExprHandler, SqlExpr, into_expr, iter_into_exprs, try_iter
 
 if TYPE_CHECKING:
     from .sql import IntoExpr
@@ -38,6 +38,22 @@ def all() -> Expr:
 @dataclass(slots=True)
 class Expr(ExprHandler[SqlExpr]):
     """Expression wrapper providing Polars-like API over DuckDB expressions."""
+
+    _is_scalar_like: bool = False
+    _has_window: bool = False
+
+    def _new(
+        self,
+        expr: SqlExpr,
+        *,
+        is_scalar_like: bool | None = None,
+        has_window: bool | None = None,
+    ) -> Self:
+        return self.__class__(
+            expr,
+            pc.Option(is_scalar_like).unwrap_or(self._is_scalar_like),
+            pc.Option(has_window).unwrap_or(self._has_window),
+        )
 
     def __repr__(self) -> str:
         return f"Expr({self._expr})"
@@ -216,16 +232,17 @@ class Expr(ExprHandler[SqlExpr]):
 
     def is_in(self, other: Collection[IntoExpr] | IntoExpr) -> Self:
         """Check if value is in an iterable of values."""
-        return self._new(self._expr.is_in(*iter_into_exprs(other)))
+        return self._new(self._expr.is_in(*try_iter(other).map(into_expr)))
 
     def shift(self, n: int = 1) -> Self:
         match n:
             case 0:
                 return self
             case n_val if n_val > 0:
-                return self._new(self._expr.lag(sql.lit(n_val)).over())
+                expr = self._expr.lag(sql.lit(n_val))
             case _:
-                return self._new(self._expr.lead(sql.lit(-n)).over())
+                expr = self._expr.lead(sql.lit(-n))
+        return self._new(expr.over(), has_window=True)
 
     def diff(self) -> Self:
         return self.sub(self.shift())
@@ -248,8 +265,12 @@ class Expr(ExprHandler[SqlExpr]):
             case "none":
                 return self.gt(lower_expr).and_(self.lt(upper_expr))
 
+    def count(self) -> Self:
+        """Count the number of values."""
+        return self._new(self._expr.count(), is_scalar_like=True, has_window=False)
+
     def filter(self, *predicates: Any) -> Self:  # noqa: ANN401
-        cond = iter_into_exprs(*predicates).fold(
+        cond = iter_into_exprs(predicates).fold(
             sql.lit(value=True), lambda acc, pred: acc.and_(pred)
         )
         return self._new(sql.when(cond, self._expr).otherwise(sql.lit(None)))
