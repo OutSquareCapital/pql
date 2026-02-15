@@ -149,6 +149,7 @@ SPECIAL_CASES = pc.Set(
         "alias",  # conflicts with duckdb alias method
         "list",  # conflict with namespace, renamed to implode
         "json",  # conflict with namespace, renamed to parse
+        "map",  # conflict with namespace, renamed to to_map
         # Misc
         "log",  # Need to swap argument order to take self._expr as value and not as base
         "strftime",  # Need custom "str" prefix rule, but this rule will also take "struct" funcs in string namespace, so better to just special case it
@@ -233,6 +234,13 @@ NAMESPACE_SPECS = pc.Seq(
             prefixes=pc.Seq(("json_",)),
             categories=pc.Seq(()),
             strip_prefixes=pc.Seq(("json_",)),
+        ),
+        NamespaceSpec(
+            name="MapFns",
+            doc="Mixin providing auto-generated DuckDB map functions as methods.",
+            prefixes=pc.Seq(("map_",)),
+            categories=pc.Seq(()),
+            strip_prefixes=pc.Seq(("map_",)),
         ),
     )
 )

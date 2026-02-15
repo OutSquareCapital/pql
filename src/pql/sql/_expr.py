@@ -17,6 +17,7 @@ from .fns import (
     Fns,
     JsonFns,
     ListFns,
+    MapFns,
     RegexFns,
     StringFns,
     StructFns,
@@ -165,6 +166,11 @@ class SqlExpr(Expression, Fns):
         """Access regex functions."""
         return SqlExprRegexNameSpace(self)
 
+    @property
+    def map(self) -> SqlExprMapNameSpace:
+        """Access map functions."""
+        return SqlExprMapNameSpace(self)
+
     def log(self, x: Self | float | None = None) -> Self:
         """Computes the logarithm of x to base b.
 
@@ -226,6 +232,19 @@ class SqlExpr(Expression, Fns):
             Self
         """
         return self._new(func("least", self.inner(), *args))
+
+    def to_map(self, values: Self) -> Self:
+        """Creates a map from a set of keys and values.
+
+        **SQL name**: *map*
+
+        Args:
+            values (Self): `V[]` expression
+
+        Returns:
+            Self
+        """
+        return self._new(func("map", self.inner(), values))
 
     def __str__(self) -> str:
         return self._expr.__str__()
@@ -562,3 +581,8 @@ class SqlExprJsonNameSpace(JsonFns[SqlExpr]):
 @dataclass(slots=True)
 class SqlExprRegexNameSpace(RegexFns[SqlExpr]):
     """Regex function namespace for SQL expressions."""
+
+
+@dataclass(slots=True)
+class SqlExprMapNameSpace(MapFns[SqlExpr]):
+    """Map function namespace for SQL expressions."""

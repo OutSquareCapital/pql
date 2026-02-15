@@ -1677,155 +1677,6 @@ class Fns(DuckHandler):
             func("make_timestamptz", self.inner(), col1, col2, col3, col4, col5, col6)
         )
 
-    def map(self, values: Self) -> Self:
-        """Creates a map from a set of keys and values.
-
-        **SQL name**: *map*
-
-        Args:
-            values (Self): `V[]` expression
-
-        Returns:
-            Self
-        """
-        return self._new(func("map", self.inner(), values))
-
-    def map_concat(self, *args: Self) -> Self:
-        """Returns a map created from merging the input maps, on key collision the value is taken from the last map with that key.
-
-        **SQL name**: *map_concat*
-
-        Args:
-            *args (Self): `ANY` expression
-
-        Returns:
-            Self
-        """
-        return self._new(func("map_concat", self.inner(), *args))
-
-    def map_contains(self, key: Self) -> Self:
-        """Checks if a map contains a given key.
-
-        **SQL name**: *map_contains*
-
-        Args:
-            key (Self): `K` expression
-
-        Returns:
-            Self
-        """
-        return self._new(func("map_contains", self.inner(), key))
-
-    def map_contains_entry(self, key: Self, value: Self) -> Self:
-        """SQL map_contains_entry function.
-
-        **SQL name**: *map_contains_entry*
-
-        Args:
-            key (Self): `ANY` expression
-            value (Self): `ANY` expression
-
-        Returns:
-            Self
-        """
-        return self._new(func("map_contains_entry", self.inner(), key, value))
-
-    def map_contains_value(self, value: Self) -> Self:
-        """SQL map_contains_value function.
-
-        **SQL name**: *map_contains_value*
-
-        Args:
-            value (Self): `ANY` expression
-
-        Returns:
-            Self
-        """
-        return self._new(func("map_contains_value", self.inner(), value))
-
-    def map_entries(self) -> Self:
-        """Returns the map entries as a list of keys/values.
-
-        **SQL name**: *map_entries*
-
-        Returns:
-            Self
-        """
-        return self._new(func("map_entries", self.inner()))
-
-    def map_extract(self, key: Self) -> Self:
-        """Returns a list containing the value for a given key or an empty list if the key is not contained in the map.
-
-        The type of the key provided in the second parameter must match the type of the map's keys else an error is returned.
-
-        **SQL name**: *map_extract*
-
-        See Also:
-            element_at
-
-        Args:
-            key (Self): `K` expression
-
-        Returns:
-            Self
-        """
-        return self._new(func("map_extract", self.inner(), key))
-
-    def map_extract_value(self, key: Self) -> Self:
-        """Returns the value for a given key or NULL if the key is not contained in the map.
-
-        The type of the key provided in the second parameter must match the type of the map's keys else an error is returned.
-
-        **SQL name**: *map_extract_value*
-
-        Args:
-            key (Self): `K` expression
-
-        Returns:
-            Self
-        """
-        return self._new(func("map_extract_value", self.inner(), key))
-
-    def map_from_entries(self) -> Self:
-        """Returns a map created from the entries of the array.
-
-        **SQL name**: *map_from_entries*
-
-        Returns:
-            Self
-        """
-        return self._new(func("map_from_entries", self.inner()))
-
-    def map_keys(self) -> Self:
-        """Returns the keys of a map as a list.
-
-        **SQL name**: *map_keys*
-
-        Returns:
-            Self
-        """
-        return self._new(func("map_keys", self.inner()))
-
-    def map_to_pg_oid(self) -> Self:
-        """SQL map_to_pg_oid function.
-
-        **SQL name**: *map_to_pg_oid*
-
-        Returns:
-            Self
-        """
-        return self._new(func("map_to_pg_oid", self.inner()))
-
-    def map_values(self) -> Self:
-        """Returns the values of a map as a list.
-
-        **SQL name**: *map_values*
-
-        Returns:
-            Self
-        """
-        return self._new(func("map_values", self.inner()))
-
     def max(self, col1: Self | int | None = None) -> Self:
         """Returns the maximum value present in arg.
 
@@ -7141,3 +6992,143 @@ class JsonFns[T: Fns](NameSpaceHandler[T]):
             T
         """
         return self._new(func("json_value", self.inner(), col1))
+
+
+class MapFns[T: Fns](NameSpaceHandler[T]):
+    """Mixin providing auto-generated DuckDB map functions as methods."""
+
+    def concat(self, *args: T) -> T:
+        """Returns a map created from merging the input maps, on key collision the value is taken from the last map with that key.
+
+        **SQL name**: *map_concat*
+
+        Args:
+            *args (T): `ANY` expression
+
+        Returns:
+            T
+        """
+        return self._new(func("map_concat", self.inner(), *args))
+
+    def contains(self, key: T) -> T:
+        """Checks if a map contains a given key.
+
+        **SQL name**: *map_contains*
+
+        Args:
+            key (T): `K` expression
+
+        Returns:
+            T
+        """
+        return self._new(func("map_contains", self.inner(), key))
+
+    def contains_entry(self, key: T, value: T) -> T:
+        """SQL map_contains_entry function.
+
+        **SQL name**: *map_contains_entry*
+
+        Args:
+            key (T): `ANY` expression
+            value (T): `ANY` expression
+
+        Returns:
+            T
+        """
+        return self._new(func("map_contains_entry", self.inner(), key, value))
+
+    def contains_value(self, value: T) -> T:
+        """SQL map_contains_value function.
+
+        **SQL name**: *map_contains_value*
+
+        Args:
+            value (T): `ANY` expression
+
+        Returns:
+            T
+        """
+        return self._new(func("map_contains_value", self.inner(), value))
+
+    def entries(self) -> T:
+        """Returns the map entries as a list of keys/values.
+
+        **SQL name**: *map_entries*
+
+        Returns:
+            T
+        """
+        return self._new(func("map_entries", self.inner()))
+
+    def extract(self, key: T) -> T:
+        """Returns a list containing the value for a given key or an empty list if the key is not contained in the map.
+
+        The type of the key provided in the second parameter must match the type of the map's keys else an error is returned.
+
+        **SQL name**: *map_extract*
+
+        See Also:
+            element_at
+
+        Args:
+            key (T): `K` expression
+
+        Returns:
+            T
+        """
+        return self._new(func("map_extract", self.inner(), key))
+
+    def extract_value(self, key: T) -> T:
+        """Returns the value for a given key or NULL if the key is not contained in the map.
+
+        The type of the key provided in the second parameter must match the type of the map's keys else an error is returned.
+
+        **SQL name**: *map_extract_value*
+
+        Args:
+            key (T): `K` expression
+
+        Returns:
+            T
+        """
+        return self._new(func("map_extract_value", self.inner(), key))
+
+    def from_entries(self) -> T:
+        """Returns a map created from the entries of the array.
+
+        **SQL name**: *map_from_entries*
+
+        Returns:
+            T
+        """
+        return self._new(func("map_from_entries", self.inner()))
+
+    def keys(self) -> T:
+        """Returns the keys of a map as a list.
+
+        **SQL name**: *map_keys*
+
+        Returns:
+            T
+        """
+        return self._new(func("map_keys", self.inner()))
+
+    def to_pg_oid(self) -> T:
+        """SQL map_to_pg_oid function.
+
+        **SQL name**: *map_to_pg_oid*
+
+        Returns:
+            T
+        """
+        return self._new(func("map_to_pg_oid", self.inner()))
+
+    def values(self) -> T:
+        """Returns the values of a map as a list.
+
+        **SQL name**: *map_values*
+
+        Returns:
+            T
+        """
+        return self._new(func("map_values", self.inner()))
