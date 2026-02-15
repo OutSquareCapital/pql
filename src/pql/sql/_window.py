@@ -1,13 +1,13 @@
 from __future__ import annotations
 
 from collections.abc import Iterable
-from enum import StrEnum
 from typing import TYPE_CHECKING
 
 import duckdb
 import pyochain as pc
 
 from ._core import try_iter
+from ._raw import Kword
 
 if TYPE_CHECKING:
     from ._expr import SqlExpr
@@ -42,41 +42,6 @@ def _build_over(
     )
 
 
-class Kword(StrEnum):
-    PARTITION_BY = "PARTITION BY"
-    ORDER_BY = "ORDER BY"
-    DESC = "DESC"
-    ASC = "ASC"
-    NULLS_LAST = "NULLS LAST"
-    NULLS_FIRST = "NULLS FIRST"
-    ROWS_BETWEEN = "ROWS BETWEEN"
-    OVER = "OVER"
-
-    @classmethod
-    def sort_strat(cls, item: SqlExpr, *, desc: bool, nulls_last: bool) -> str:
-        return f"{item} {cls.DESC if desc else cls.ASC} {cls.NULLS_LAST if nulls_last else cls.NULLS_FIRST}"
-
-    @classmethod
-    def rows_clause(cls, row_start: pc.Option[int], row_end: pc.Option[int]) -> str:
-        match (row_start, row_end):
-            case (pc.Some(start), pc.Some(end)):
-                return f"{cls.ROWS_BETWEEN} {-start} PRECEDING AND {end} FOLLOWING"
-            case (pc.Some(start), pc.NONE):
-                return f"{cls.ROWS_BETWEEN} {-start} PRECEDING AND UNBOUNDED FOLLOWING"
-            case (pc.NONE, pc.Some(end)):
-                return f"{cls.ROWS_BETWEEN} UNBOUNDED PRECEDING AND {end} FOLLOWING"
-            case _:
-                return ""
-
-    @classmethod
-    def partition_by(cls, by: str) -> str:
-        return f"{cls.PARTITION_BY} {by}"
-
-    @classmethod
-    def order_by(cls, by: str) -> str:
-        return f"{cls.ORDER_BY} {by}"
-
-
 def get_partition_by(partition_by: pc.Option[pc.Seq[SqlExpr]]) -> str:
     return (
         partition_by.map(lambda x: x.iter().map(str).join(", "))
@@ -88,7 +53,7 @@ def get_partition_by(partition_by: pc.Option[pc.Seq[SqlExpr]]) -> str:
 def handle_nulls(expr: SqlExpr, *, ignore_nulls: bool) -> str:
     match ignore_nulls:
         case True:
-            return f"{str(expr).removesuffix(')')} ignore nulls)"
+            return f"{str(expr).removesuffix(')')} IGNORE NULLS)"
         case False:
             return str(expr)
 
@@ -99,6 +64,10 @@ def get_order_by(
     descending: Iterable[bool] | bool,
     nulls_last: Iterable[bool] | bool,
 ) -> str:
+
+    def _sort_strat(item: SqlExpr, *, desc: bool, nulls_last: bool) -> str:
+        return f"{item} {Kword.DESC if desc else Kword.ASC} {Kword.NULLS_LAST if nulls_last else Kword.NULLS_FIRST}"
+
     def _get_clauses(*, clauses: Iterable[bool] | bool) -> pc.Seq[bool]:
         match clauses:
             case bool() as val:
@@ -117,9 +86,7 @@ def get_order_by(
                 x.iter()
                 .zip(_get_clauses(clauses=descending), _get_clauses(clauses=nulls_last))
                 .map_star(
-                    lambda item, desc, nl: Kword.sort_strat(
-                        item=item, desc=desc, nulls_last=nl
-                    )
+                    lambda item, desc, nl: _sort_strat(item, desc=desc, nulls_last=nl)
                 )
                 .join(", ")
             )
