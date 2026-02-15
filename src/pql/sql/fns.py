@@ -23,6 +23,9 @@ class Fns(DuckHandler):
 
         **SQL name**: *abs*
 
+        Examples:
+            abs(-17.4)
+
         Returns:
             Self
         """
@@ -33,6 +36,9 @@ class Fns(DuckHandler):
 
         **SQL name**: *acos*
 
+        Examples:
+            acos(0.5)
+
         Returns:
             Self
         """
@@ -42,6 +48,9 @@ class Fns(DuckHandler):
         """Computes the inverse hyperbolic cos of x.
 
         **SQL name**: *acosh*
+
+        Examples:
+            acosh(2.3)
 
         Returns:
             Self
@@ -55,6 +64,9 @@ class Fns(DuckHandler):
 
         Args:
             timestamp (Self | datetime | None): `TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
+
+        Examples:
+            age(TIMESTAMP '2001-04-10', TIMESTAMP '1992-09-20')
 
         Returns:
             Self
@@ -78,6 +90,9 @@ class Fns(DuckHandler):
 
         **SQL name**: *approx_count_distinct*
 
+        Examples:
+            approx_count_distinct(A)
+
         Returns:
             Self
         """
@@ -91,6 +106,9 @@ class Fns(DuckHandler):
         Args:
             pos (Self | float | list[float]): `FLOAT | FLOAT[]` expression
 
+        Examples:
+            approx_quantile(x, 0.5)
+
         Returns:
             Self
         """
@@ -103,6 +121,9 @@ class Fns(DuckHandler):
 
         Args:
             k (Self | int): `BIGINT` expression
+
+        Examples:
+            approx_top_k(x, 5)
 
         Returns:
             Self
@@ -118,6 +139,9 @@ class Fns(DuckHandler):
 
         See Also:
             first
+
+        Examples:
+            arbitrary(A)
 
         Returns:
             Self
@@ -142,6 +166,9 @@ class Fns(DuckHandler):
             val (Self | bytes | bytearray | memoryview | date | datetime | float | int | str): `ANY | BIGINT | BLOB | DATE | DOUBLE | HUGEINT | INTEGER | TIMESTAMP | TIMESTAMP WITH TIME ZONE | VARCHAR` expression
             col2 (Self | int | None): `BIGINT` expression
 
+        Examples:
+            arg_max(A, B)
+
         Returns:
             Self
         """
@@ -159,6 +186,9 @@ class Fns(DuckHandler):
 
         Args:
             val (Self | bytes | bytearray | memoryview | date | datetime | float | int | str): `ANY | BIGINT | BLOB | DATE | DOUBLE | HUGEINT | INTEGER | TIMESTAMP | TIMESTAMP WITH TIME ZONE | VARCHAR` expression
+
+        Examples:
+            arg_max_null(A, B)
 
         Returns:
             Self
@@ -183,6 +213,9 @@ class Fns(DuckHandler):
             val (Self | bytes | bytearray | memoryview | date | datetime | float | int | str): `ANY | BIGINT | BLOB | DATE | DOUBLE | HUGEINT | INTEGER | TIMESTAMP | TIMESTAMP WITH TIME ZONE | VARCHAR` expression
             col2 (Self | int | None): `BIGINT` expression
 
+        Examples:
+            arg_min(A, B)
+
         Returns:
             Self
         """
@@ -200,6 +233,9 @@ class Fns(DuckHandler):
 
         Args:
             val (Self | bytes | bytearray | memoryview | date | datetime | float | int | str): `ANY | BIGINT | BLOB | DATE | DOUBLE | HUGEINT | INTEGER | TIMESTAMP | TIMESTAMP WITH TIME ZONE | VARCHAR` expression
+
+        Examples:
+            arg_min_null(A, B)
 
         Returns:
             Self
@@ -224,6 +260,9 @@ class Fns(DuckHandler):
             val (Self | bytes | bytearray | memoryview | date | datetime | float | int | str): `ANY | BIGINT | BLOB | DATE | DOUBLE | HUGEINT | INTEGER | TIMESTAMP | TIMESTAMP WITH TIME ZONE | VARCHAR` expression
             col2 (Self | int | None): `BIGINT` expression
 
+        Examples:
+            argmax(A, B)
+
         Returns:
             Self
         """
@@ -247,6 +286,9 @@ class Fns(DuckHandler):
             val (Self | bytes | bytearray | memoryview | date | datetime | float | int | str): `ANY | BIGINT | BLOB | DATE | DOUBLE | HUGEINT | INTEGER | TIMESTAMP | TIMESTAMP WITH TIME ZONE | VARCHAR` expression
             col2 (Self | int | None): `BIGINT` expression
 
+        Examples:
+            argmin(A, B)
+
         Returns:
             Self
         """
@@ -256,6 +298,9 @@ class Fns(DuckHandler):
         """Computes the arcsine of x.
 
         **SQL name**: *asin*
+
+        Examples:
+            asin(0.5)
 
         Returns:
             Self
@@ -267,6 +312,9 @@ class Fns(DuckHandler):
 
         **SQL name**: *asinh*
 
+        Examples:
+            asinh(0.5)
+
         Returns:
             Self
         """
@@ -276,6 +324,9 @@ class Fns(DuckHandler):
         """Computes the arctangent of x.
 
         **SQL name**: *atan*
+
+        Examples:
+            atan(0.5)
 
         Returns:
             Self
@@ -290,6 +341,9 @@ class Fns(DuckHandler):
         Args:
             x (Self | float): `DOUBLE` expression
 
+        Examples:
+            atan2(1.0, 0.0)
+
         Returns:
             Self
         """
@@ -299,6 +353,9 @@ class Fns(DuckHandler):
         """Computes the inverse hyperbolic tan of x.
 
         **SQL name**: *atanh*
+
+        Examples:
+            atanh(0.5)
 
         Returns:
             Self
@@ -313,6 +370,9 @@ class Fns(DuckHandler):
         See Also:
             mean
 
+        Examples:
+            SUM(x) / COUNT(*)
+
         Returns:
             Self
         """
@@ -326,6 +386,9 @@ class Fns(DuckHandler):
         See Also:
             to_binary
 
+        Examples:
+            bin(42)
+
         Returns:
             Self
         """
@@ -335,6 +398,9 @@ class Fns(DuckHandler):
         """Returns the bitwise AND of all bits in a given expression.
 
         **SQL name**: *bit_and*
+
+        Examples:
+            bit_and(A)
 
         Returns:
             Self
@@ -346,6 +412,9 @@ class Fns(DuckHandler):
 
         **SQL name**: *bit_count*
 
+        Examples:
+            bit_count(31)
+
         Returns:
             Self
         """
@@ -356,6 +425,9 @@ class Fns(DuckHandler):
 
         **SQL name**: *bit_length*
 
+        Examples:
+            bit_length(42::TINYINT::BIT)
+
         Returns:
             Self
         """
@@ -365,6 +437,9 @@ class Fns(DuckHandler):
         """Returns the bitwise OR of all bits in a given expression.
 
         **SQL name**: *bit_or*
+
+        Examples:
+            bit_or(A)
 
         Returns:
             Self
@@ -381,6 +456,9 @@ class Fns(DuckHandler):
         Args:
             bitstring (Self | bytes | bytearray | memoryview): `BIT` expression
 
+        Examples:
+            bit_position('010'::BIT, '1110101'::BIT)
+
         Returns:
             Self
         """
@@ -390,6 +468,9 @@ class Fns(DuckHandler):
         """Returns the bitwise XOR of all bits in a given expression.
 
         **SQL name**: *bit_xor*
+
+        Examples:
+            bit_xor(A)
 
         Returns:
             Self
@@ -403,6 +484,9 @@ class Fns(DuckHandler):
 
         Args:
             length (Self | int): `INTEGER` expression
+
+        Examples:
+            bitstring('1010'::BIT, 7)
 
         Returns:
             Self
@@ -420,6 +504,9 @@ class Fns(DuckHandler):
             col1 (Self | int | None): `BIGINT | HUGEINT | INTEGER | SMALLINT | TINYINT | UBIGINT | UHUGEINT | UINTEGER | USMALLINT | UTINYINT` expression
             col2 (Self | int | None): `BIGINT | HUGEINT | INTEGER | SMALLINT | TINYINT | UBIGINT | UHUGEINT | UINTEGER | USMALLINT | UTINYINT` expression
 
+        Examples:
+            bitstring_agg(A)
+
         Returns:
             Self
         """
@@ -430,6 +517,9 @@ class Fns(DuckHandler):
 
         **SQL name**: *bool_and*
 
+        Examples:
+            bool_and(A)
+
         Returns:
             Self
         """
@@ -439,6 +529,9 @@ class Fns(DuckHandler):
         """Returns TRUE if any input value is TRUE, otherwise FALSE.
 
         **SQL name**: *bool_or*
+
+        Examples:
+            bool_or(A)
 
         Returns:
             Self
@@ -453,6 +546,9 @@ class Fns(DuckHandler):
         Args:
             target_type (Self): `ANY` expression
 
+        Examples:
+            can_cast_implicitly(NULL::INTEGER, NULL::BIGINT)
+
         Returns:
             Self
         """
@@ -465,6 +561,9 @@ class Fns(DuckHandler):
 
         Args:
             *args (Self): `ANY` expression
+
+        Examples:
+            cardinality( map([4, 2], ['a', 'b']) );
 
         Returns:
             Self
@@ -479,6 +578,9 @@ class Fns(DuckHandler):
         Args:
             type_arg (Self): `ANY` expression
 
+        Examples:
+            cast_to_type('42', NULL::INTEGER)
+
         Returns:
             Self
         """
@@ -488,6 +590,9 @@ class Fns(DuckHandler):
         """Returns the cube root of x.
 
         **SQL name**: *cbrt*
+
+        Examples:
+            cbrt(8)
 
         Returns:
             Self
@@ -502,6 +607,9 @@ class Fns(DuckHandler):
         See Also:
             ceiling
 
+        Examples:
+            ceil(17.4)
+
         Returns:
             Self
         """
@@ -515,6 +623,9 @@ class Fns(DuckHandler):
         See Also:
             ceil
 
+        Examples:
+            ceiling(17.4)
+
         Returns:
             Self
         """
@@ -524,6 +635,9 @@ class Fns(DuckHandler):
         """Extract the century component from a date or timestamp.
 
         **SQL name**: *century*
+
+        Examples:
+            century(timestamp '2021-08-03 11:59:44.123456')
 
         Returns:
             Self
@@ -538,6 +652,9 @@ class Fns(DuckHandler):
         See Also:
             character_length, len, length
 
+        Examples:
+            char_length(42::TINYINT::BIT)
+
         Returns:
             Self
         """
@@ -550,6 +667,9 @@ class Fns(DuckHandler):
 
         See Also:
             char_length, len, length
+
+        Examples:
+            character_length(42::TINYINT::BIT)
 
         Returns:
             Self
@@ -593,6 +713,9 @@ class Fns(DuckHandler):
             arg2 (Self): `ANY` expression
             *args (Self): `ANY` expression
 
+        Examples:
+            constant_or_null(42, NULL)
+
         Returns:
             Self
         """
@@ -619,6 +742,9 @@ class Fns(DuckHandler):
         Args:
             x (Self | float): `DOUBLE` expression
 
+        Examples:
+            COVAR_POP(y, x) / (STDDEV_POP(x) * STDDEV_POP(y))
+
         Returns:
             Self
         """
@@ -628,6 +754,9 @@ class Fns(DuckHandler):
         """Computes the cos of x.
 
         **SQL name**: *cos*
+
+        Examples:
+            cos(90)
 
         Returns:
             Self
@@ -639,6 +768,9 @@ class Fns(DuckHandler):
 
         **SQL name**: *cosh*
 
+        Examples:
+            cosh(1)
+
         Returns:
             Self
         """
@@ -649,6 +781,9 @@ class Fns(DuckHandler):
 
         **SQL name**: *cot*
 
+        Examples:
+            cot(0.5)
+
         Returns:
             Self
         """
@@ -658,6 +793,9 @@ class Fns(DuckHandler):
         """Returns the number of non-NULL values in arg.
 
         **SQL name**: *count*
+
+        Examples:
+            count(A)
 
         Returns:
             Self
@@ -672,6 +810,9 @@ class Fns(DuckHandler):
         See Also:
             countif
 
+        Examples:
+            count_if(A)
+
         Returns:
             Self
         """
@@ -684,6 +825,9 @@ class Fns(DuckHandler):
 
         See Also:
             count_if
+
+        Examples:
+            countif(A)
 
         Returns:
             Self
@@ -698,6 +842,9 @@ class Fns(DuckHandler):
         Args:
             x (Self | float): `DOUBLE` expression
 
+        Examples:
+            (SUM(x*y) - SUM(x) * SUM(y) / COUNT(*)) / COUNT(*)
+
         Returns:
             Self
         """
@@ -710,6 +857,9 @@ class Fns(DuckHandler):
 
         Args:
             x (Self | float): `DOUBLE` expression
+
+        Examples:
+            (SUM(x*y) - SUM(x) * SUM(y) / COUNT(*)) / (COUNT(*) - 1)
 
         Returns:
             Self
@@ -724,6 +874,9 @@ class Fns(DuckHandler):
         Args:
             *args (Self): `ANY` expression
 
+        Examples:
+            create_sort_key('A', 'DESC')
+
         Returns:
             Self
         """
@@ -736,6 +889,9 @@ class Fns(DuckHandler):
 
         **SQL name**: *currval*
 
+        Examples:
+            currval('my_sequence_name')
+
         Returns:
             Self
         """
@@ -746,17 +902,23 @@ class Fns(DuckHandler):
 
         **SQL name**: *decade*
 
+        Examples:
+            decade(timestamp '2021-08-03 11:59:44.123456')
+
         Returns:
             Self
         """
         return self._new(func("decade", self.inner()))
 
     def decode(self) -> Self:
-        """Converts `blob` to `VARCHAR`.
+        r"""Converts `blob` to `VARCHAR`.
 
         Fails if `blob` is not valid UTF-8.
 
         **SQL name**: *decode*
+
+        Examples:
+            decode('\xc3\xbc'::BLOB)
 
         Returns:
             Self
@@ -767,6 +929,9 @@ class Fns(DuckHandler):
         """Converts radians to degrees.
 
         **SQL name**: *degrees*
+
+        Examples:
+            degrees(pi())
 
         Returns:
             Self
@@ -786,6 +951,9 @@ class Fns(DuckHandler):
         Args:
             key (Self): `K` expression
 
+        Examples:
+            element_at(map(['key'], ['val']), 'key')
+
         Returns:
             Self
         """
@@ -797,6 +965,9 @@ class Fns(DuckHandler):
         Converts UTF-8 characters into literal encoding.
 
         **SQL name**: *encode*
+
+        Examples:
+            encode('my_string_with_ü')
 
         Returns:
             Self
@@ -818,6 +989,9 @@ class Fns(DuckHandler):
 
         **SQL name**: *enum_code*
 
+        Examples:
+            enum_code('happy'::mood)
+
         Returns:
             Self
         """
@@ -827,6 +1001,9 @@ class Fns(DuckHandler):
         """Returns the first value of the input enum type.
 
         **SQL name**: *enum_first*
+
+        Examples:
+            enum_first(NULL::mood)
 
         Returns:
             Self
@@ -838,6 +1015,9 @@ class Fns(DuckHandler):
 
         **SQL name**: *enum_last*
 
+        Examples:
+            enum_last(NULL::mood)
+
         Returns:
             Self
         """
@@ -847,6 +1027,9 @@ class Fns(DuckHandler):
         """Returns all values of the input enum type as an array.
 
         **SQL name**: *enum_range*
+
+        Examples:
+            enum_range(NULL::mood)
 
         Returns:
             Self
@@ -867,6 +1050,9 @@ class Fns(DuckHandler):
         Args:
             end (Self): `ANY` expression
 
+        Examples:
+            enum_range_boundary(NULL, 'happy'::mood)
+
         Returns:
             Self
         """
@@ -876,6 +1062,9 @@ class Fns(DuckHandler):
         """Extract the epoch component from a temporal type.
 
         **SQL name**: *epoch*
+
+        Examples:
+            epoch(timestamp '2021-08-03 11:59:44.123456')
 
         Returns:
             Self
@@ -887,6 +1076,9 @@ class Fns(DuckHandler):
 
         **SQL name**: *epoch_ms*
 
+        Examples:
+            epoch_ms(timestamp '2021-08-03 11:59:44.123456')
+
         Returns:
             Self
         """
@@ -897,6 +1089,9 @@ class Fns(DuckHandler):
 
         **SQL name**: *epoch_ns*
 
+        Examples:
+            epoch_ns(timestamp '2021-08-03 11:59:44.123456')
+
         Returns:
             Self
         """
@@ -906,6 +1101,9 @@ class Fns(DuckHandler):
         """Extract the epoch component in microseconds from a temporal type.
 
         **SQL name**: *epoch_us*
+
+        Examples:
+            epoch_us(timestamp '2021-08-03 11:59:44.123456')
 
         Returns:
             Self
@@ -929,6 +1127,9 @@ class Fns(DuckHandler):
             bin_count (Self | int): `BIGINT` expression
             nice_rounding (Self | bool): `BOOLEAN` expression
 
+        Examples:
+            equi_width_bins(0, 10, 2, true)
+
         Returns:
             Self
         """
@@ -941,6 +1142,9 @@ class Fns(DuckHandler):
 
         **SQL name**: *era*
 
+        Examples:
+            era(timestamp '2021-08-03 11:59:44.123456')
+
         Returns:
             Self
         """
@@ -950,6 +1154,9 @@ class Fns(DuckHandler):
         """Throws the given error message.
 
         **SQL name**: *error*
+
+        Examples:
+            error('access_mode')
 
         Returns:
             Self
@@ -961,6 +1168,9 @@ class Fns(DuckHandler):
 
         **SQL name**: *even*
 
+        Examples:
+            even(2.9)
+
         Returns:
             Self
         """
@@ -970,6 +1180,9 @@ class Fns(DuckHandler):
         """Computes e to the power of x.
 
         **SQL name**: *exp*
+
+        Examples:
+            exp(1)
 
         Returns:
             Self
@@ -983,6 +1196,9 @@ class Fns(DuckHandler):
 
         **SQL name**: *factorial*
 
+        Examples:
+            4!
+
         Returns:
             Self
         """
@@ -992,6 +1208,9 @@ class Fns(DuckHandler):
         """Calculates the average using a more accurate floating point summation (Kahan Sum).
 
         **SQL name**: *favg*
+
+        Examples:
+            favg(A)
 
         Returns:
             Self
@@ -1031,6 +1250,9 @@ class Fns(DuckHandler):
         See Also:
             arbitrary
 
+        Examples:
+            first(A)
+
         Returns:
             Self
         """
@@ -1040,6 +1262,9 @@ class Fns(DuckHandler):
         """Rounds the number down.
 
         **SQL name**: *floor*
+
+        Examples:
+            floor(17.4)
 
         Returns:
             Self
@@ -1119,6 +1344,9 @@ class Fns(DuckHandler):
         See Also:
             kahan_sum, sumkahan
 
+        Examples:
+            fsum(A)
+
         Returns:
             Self
         """
@@ -1128,6 +1356,9 @@ class Fns(DuckHandler):
         """Interpolation of (x-1) factorial (so decimal inputs are allowed).
 
         **SQL name**: *gamma*
+
+        Examples:
+            gamma(5.5)
 
         Returns:
             Self
@@ -1144,6 +1375,9 @@ class Fns(DuckHandler):
 
         Args:
             y (Self | int): `BIGINT | HUGEINT` expression
+
+        Examples:
+            gcd(42, 57)
 
         Returns:
             Self
@@ -1191,6 +1425,9 @@ class Fns(DuckHandler):
         Args:
             index (Self | int): `INTEGER` expression
 
+        Examples:
+            get_bit('0110010'::BIT, 2)
+
         Returns:
             Self
         """
@@ -1227,6 +1464,9 @@ class Fns(DuckHandler):
         Args:
             y (Self | int): `BIGINT | HUGEINT` expression
 
+        Examples:
+            greatest_common_divisor(42, 57)
+
         Returns:
             Self
         """
@@ -1243,6 +1483,9 @@ class Fns(DuckHandler):
         Args:
             arg (Self | str | None): `VARCHAR` expression
 
+        Examples:
+            group_concat(A, '-')
+
         Returns:
             Self
         """
@@ -1255,6 +1498,9 @@ class Fns(DuckHandler):
 
         See Also:
             to_hex
+
+        Examples:
+            hex(42)
 
         Returns:
             Self
@@ -1269,6 +1515,9 @@ class Fns(DuckHandler):
         Args:
             col1 (Self | None): `ANY[]` expression
 
+        Examples:
+            histogram(A)
+
         Returns:
             Self
         """
@@ -1282,6 +1531,9 @@ class Fns(DuckHandler):
         Args:
             bins (Self): `ANY[]` expression
 
+        Examples:
+            histogram_exact(A, [0, 1, 2])
+
         Returns:
             Self
         """
@@ -1291,6 +1543,9 @@ class Fns(DuckHandler):
         """Extract the hour component from a date or timestamp.
 
         **SQL name**: *hour*
+
+        Examples:
+            hour(timestamp '2021-08-03 11:59:44.123456')
 
         Returns:
             Self
@@ -1305,6 +1560,9 @@ class Fns(DuckHandler):
         Args:
             schema_name (Self | str): `VARCHAR` expression
 
+        Examples:
+            in_search_path('memory', 'main')
+
         Returns:
             Self
         """
@@ -1314,6 +1572,9 @@ class Fns(DuckHandler):
         """Whether or not the provided value is the histogram "other" bin (used for values not belonging to any provided bin).
 
         **SQL name**: *is_histogram_other_bin*
+
+        Examples:
+            is_histogram_other_bin(v)
 
         Returns:
             Self
@@ -1325,6 +1586,9 @@ class Fns(DuckHandler):
 
         **SQL name**: *isfinite*
 
+        Examples:
+            isfinite(5.5)
+
         Returns:
             Self
         """
@@ -1334,6 +1598,9 @@ class Fns(DuckHandler):
         """Returns true if the floating point value is infinite, false otherwise.
 
         **SQL name**: *isinf*
+
+        Examples:
+            isinf('Infinity'::float)
 
         Returns:
             Self
@@ -1345,6 +1612,9 @@ class Fns(DuckHandler):
 
         **SQL name**: *isnan*
 
+        Examples:
+            isnan('NaN'::FLOAT)
+
         Returns:
             Self
         """
@@ -1354,6 +1624,9 @@ class Fns(DuckHandler):
         """Extract the isodow component from a date or timestamp.
 
         **SQL name**: *isodow*
+
+        Examples:
+            isodow(timestamp '2021-08-03 11:59:44.123456')
 
         Returns:
             Self
@@ -1365,6 +1638,9 @@ class Fns(DuckHandler):
 
         **SQL name**: *isoyear*
 
+        Examples:
+            isoyear(timestamp '2021-08-03 11:59:44.123456')
+
         Returns:
             Self
         """
@@ -1374,6 +1650,9 @@ class Fns(DuckHandler):
         """Extract the Julian Day number from a date or timestamp.
 
         **SQL name**: *julian*
+
+        Examples:
+            julian(timestamp '2006-01-01 12:00')
 
         Returns:
             Self
@@ -1387,6 +1666,9 @@ class Fns(DuckHandler):
 
         See Also:
             fsum, sumkahan
+
+        Examples:
+            kahan_sum(A)
 
         Returns:
             Self
@@ -1420,6 +1702,9 @@ class Fns(DuckHandler):
 
         **SQL name**: *last*
 
+        Examples:
+            last(A)
+
         Returns:
             Self
         """
@@ -1429,6 +1714,9 @@ class Fns(DuckHandler):
         """Returns the last day of the month.
 
         **SQL name**: *last_day*
+
+        Examples:
+            last_day(TIMESTAMP '1992-03-22 01:02:03.1234')
 
         Returns:
             Self
@@ -1446,6 +1734,9 @@ class Fns(DuckHandler):
         Args:
             y (Self | int): `BIGINT | HUGEINT` expression
 
+        Examples:
+            lcm(42, 57)
+
         Returns:
             Self
         """
@@ -1462,6 +1753,9 @@ class Fns(DuckHandler):
         Args:
             y (Self | int): `BIGINT | HUGEINT` expression
 
+        Examples:
+            least_common_multiple(42, 57)
+
         Returns:
             Self
         """
@@ -1474,6 +1768,9 @@ class Fns(DuckHandler):
 
         See Also:
             char_length, character_length, length
+
+        Examples:
+            length(42::TINYINT::BIT)
 
         Returns:
             Self
@@ -1488,6 +1785,9 @@ class Fns(DuckHandler):
         See Also:
             char_length, character_length, len
 
+        Examples:
+            length(42::TINYINT::BIT)
+
         Returns:
             Self
         """
@@ -1497,6 +1797,9 @@ class Fns(DuckHandler):
         """Computes the log of the gamma function.
 
         **SQL name**: *lgamma*
+
+        Examples:
+            lgamma(2)
 
         Returns:
             Self
@@ -1514,6 +1817,9 @@ class Fns(DuckHandler):
         Args:
             arg (Self | str | None): `VARCHAR` expression
 
+        Examples:
+            listagg(A, '-')
+
         Returns:
             Self
         """
@@ -1523,6 +1829,9 @@ class Fns(DuckHandler):
         """Computes the natural logarithm of x.
 
         **SQL name**: *ln*
+
+        Examples:
+            ln(2)
 
         Returns:
             Self
@@ -1534,6 +1843,9 @@ class Fns(DuckHandler):
 
         **SQL name**: *log10*
 
+        Examples:
+            log10(1000)
+
         Returns:
             Self
         """
@@ -1543,6 +1855,9 @@ class Fns(DuckHandler):
         """Computes the 2-log of x.
 
         **SQL name**: *log2*
+
+        Examples:
+            log2(8)
 
         Returns:
             Self
@@ -1557,6 +1872,9 @@ class Fns(DuckHandler):
         Temporal types return a positive INTERVAL.
 
         **SQL name**: *mad*
+
+        Examples:
+            mad(x)
 
         Returns:
             Self
@@ -1584,6 +1902,9 @@ class Fns(DuckHandler):
             month (Self | int | None): `BIGINT` expression
             day (Self | int | None): `BIGINT` expression
 
+        Examples:
+            make_date(1992, 9, 20)
+
         Returns:
             Self
         """
@@ -1597,6 +1918,9 @@ class Fns(DuckHandler):
         Args:
             minute (Self | int): `BIGINT` expression
             seconds (Self | float): `DOUBLE` expression
+
+        Examples:
+            make_time(13, 34, 27.123456)
 
         Returns:
             Self
@@ -1622,6 +1946,9 @@ class Fns(DuckHandler):
             minute (Self | int | None): `BIGINT` expression
             seconds (Self | float | None): `DOUBLE` expression
 
+        Examples:
+            make_timestamp(1992, 9, 20, 13, 34, 27.123456)
+
         Returns:
             Self
         """
@@ -1634,6 +1961,9 @@ class Fns(DuckHandler):
 
         **SQL name**: *make_timestamp_ms*
 
+        Examples:
+            make_timestamp_ms(1732117793000000)
+
         Returns:
             Self
         """
@@ -1643,6 +1973,9 @@ class Fns(DuckHandler):
         """The timestamp for the given nanoseconds since epoch.
 
         **SQL name**: *make_timestamp_ns*
+
+        Examples:
+            make_timestamp_ns(1732117793000000000)
 
         Returns:
             Self
@@ -1685,6 +2018,9 @@ class Fns(DuckHandler):
         Args:
             col1 (Self | int | None): `BIGINT` expression
 
+        Examples:
+            max(A)
+
         Returns:
             Self
         """
@@ -1708,15 +2044,21 @@ class Fns(DuckHandler):
             val (Self | bytes | bytearray | memoryview | date | datetime | float | int | str): `ANY | BIGINT | BLOB | DATE | DOUBLE | HUGEINT | INTEGER | TIMESTAMP | TIMESTAMP WITH TIME ZONE | VARCHAR` expression
             col2 (Self | int | None): `BIGINT` expression
 
+        Examples:
+            max_by(A, B)
+
         Returns:
             Self
         """
         return self._new(func("max_by", self.inner(), val, col2))
 
     def md5(self) -> Self:
-        """Returns the MD5 hash of the `blob` as a `VARCHAR`.
+        r"""Returns the MD5 hash of the `blob` as a `VARCHAR`.
 
         **SQL name**: *md5*
+
+        Examples:
+            md5('\xaa\xbb'::BLOB)
 
         Returns:
             Self
@@ -1724,9 +2066,12 @@ class Fns(DuckHandler):
         return self._new(func("md5", self.inner()))
 
     def md5_number(self) -> Self:
-        """Returns the MD5 hash of the `blob` as a `HUGEINT`.
+        r"""Returns the MD5 hash of the `blob` as a `HUGEINT`.
 
         **SQL name**: *md5_number*
+
+        Examples:
+            md5_number('\xaa\xbb'::BLOB)
 
         Returns:
             Self
@@ -1761,6 +2106,9 @@ class Fns(DuckHandler):
         See Also:
             avg
 
+        Examples:
+            SUM(x) / COUNT(*)
+
         Returns:
             Self
         """
@@ -1777,6 +2125,9 @@ class Fns(DuckHandler):
 
         **SQL name**: *median*
 
+        Examples:
+            median(x)
+
         Returns:
             Self
         """
@@ -1786,6 +2137,9 @@ class Fns(DuckHandler):
         """Extract the microsecond component from a date or timestamp.
 
         **SQL name**: *microsecond*
+
+        Examples:
+            microsecond(timestamp '2021-08-03 11:59:44.123456')
 
         Returns:
             Self
@@ -1797,6 +2151,9 @@ class Fns(DuckHandler):
 
         **SQL name**: *millennium*
 
+        Examples:
+            millennium(timestamp '2021-08-03 11:59:44.123456')
+
         Returns:
             Self
         """
@@ -1806,6 +2163,9 @@ class Fns(DuckHandler):
         """Extract the millisecond component from a date or timestamp.
 
         **SQL name**: *millisecond*
+
+        Examples:
+            millisecond(timestamp '2021-08-03 11:59:44.123456')
 
         Returns:
             Self
@@ -1819,6 +2179,9 @@ class Fns(DuckHandler):
 
         Args:
             col1 (Self | int | None): `BIGINT` expression
+
+        Examples:
+            min(A)
 
         Returns:
             Self
@@ -1843,6 +2206,9 @@ class Fns(DuckHandler):
             val (Self | bytes | bytearray | memoryview | date | datetime | float | int | str): `ANY | BIGINT | BLOB | DATE | DOUBLE | HUGEINT | INTEGER | TIMESTAMP | TIMESTAMP WITH TIME ZONE | VARCHAR` expression
             col2 (Self | int | None): `BIGINT` expression
 
+        Examples:
+            min_by(A, B)
+
         Returns:
             Self
         """
@@ -1852,6 +2218,9 @@ class Fns(DuckHandler):
         """Extract the minute component from a date or timestamp.
 
         **SQL name**: *minute*
+
+        Examples:
+            minute(timestamp '2021-08-03 11:59:44.123456')
 
         Returns:
             Self
@@ -1875,6 +2244,9 @@ class Fns(DuckHandler):
 
         **SQL name**: *month*
 
+        Examples:
+            month(timestamp '2021-08-03 11:59:44.123456')
+
         Returns:
             Self
         """
@@ -1885,6 +2257,9 @@ class Fns(DuckHandler):
 
         **SQL name**: *monthname*
 
+        Examples:
+            monthname(TIMESTAMP '1992-09-20')
+
         Returns:
             Self
         """
@@ -1894,6 +2269,9 @@ class Fns(DuckHandler):
         """Extract the nanosecond component from a date or timestamp.
 
         **SQL name**: *nanosecond*
+
+        Examples:
+            nanosecond(timestamp_ns '2021-08-03 11:59:44.123456789')
 
         Returns:
             Self
@@ -1908,6 +2286,9 @@ class Fns(DuckHandler):
         Args:
             y (Self | float): `DOUBLE | FLOAT` expression
 
+        Examples:
+            nextafter(1::float, 2::float)
+
         Returns:
             Self
         """
@@ -1918,6 +2299,9 @@ class Fns(DuckHandler):
 
         **SQL name**: *nextval*
 
+        Examples:
+            nextval('my_sequence_name')
+
         Returns:
             Self
         """
@@ -1927,6 +2311,9 @@ class Fns(DuckHandler):
         """Normalizes an INTERVAL to an equivalent interval.
 
         **SQL name**: *normalized_interval*
+
+        Examples:
+            normalized_interval(INTERVAL '30 days')
 
         Returns:
             Self
@@ -1960,9 +2347,12 @@ class Fns(DuckHandler):
         return self._new(func("obj_description", self.inner(), catalog_name))
 
     def octet_length(self) -> Self:
-        """Number of bytes in `blob`.
+        r"""Number of bytes in `blob`.
 
         **SQL name**: *octet_length*
+
+        Examples:
+            octet_length('\xaa\xbb'::BLOB)
 
         Returns:
             Self
@@ -1977,6 +2367,9 @@ class Fns(DuckHandler):
         Args:
             message (Self | str): `VARCHAR` expression
 
+        Examples:
+            parse_duckdb_log_message('FileSystem', log_message)
+
         Returns:
             Self
         """
@@ -1986,6 +2379,9 @@ class Fns(DuckHandler):
         """Calculates the product of all tuples in arg.
 
         **SQL name**: *product*
+
+        Examples:
+            product(A)
 
         Returns:
             Self
@@ -2005,6 +2401,9 @@ class Fns(DuckHandler):
         Args:
             pos (Self | float | list[float] | None): `DOUBLE | DOUBLE[]` expression
 
+        Examples:
+            quantile_disc(x, 0.5)
+
         Returns:
             Self
         """
@@ -2019,6 +2418,9 @@ class Fns(DuckHandler):
 
         Args:
             pos (Self | float | list[float]): `DOUBLE | DOUBLE[]` expression
+
+        Examples:
+            quantile_cont(x, 0.5)
 
         Returns:
             Self
@@ -2038,6 +2440,9 @@ class Fns(DuckHandler):
         Args:
             pos (Self | float | list[float] | None): `DOUBLE | DOUBLE[]` expression
 
+        Examples:
+            quantile_disc(x, 0.5)
+
         Returns:
             Self
         """
@@ -2048,6 +2453,9 @@ class Fns(DuckHandler):
 
         **SQL name**: *quarter*
 
+        Examples:
+            quarter(timestamp '2021-08-03 11:59:44.123456')
+
         Returns:
             Self
         """
@@ -2057,6 +2465,9 @@ class Fns(DuckHandler):
         """Converts degrees to radians.
 
         **SQL name**: *radians*
+
+        Examples:
+            radians(90)
 
         Returns:
             Self
@@ -2097,6 +2508,9 @@ class Fns(DuckHandler):
         Args:
             x (Self | float): `DOUBLE` expression
 
+        Examples:
+            (SUM(x*y) - SUM(x) * SUM(y) / COUNT(*)) / COUNT(*)
+
         Returns:
             Self
         """
@@ -2109,6 +2523,9 @@ class Fns(DuckHandler):
 
         Args:
             x (Self | float): `DOUBLE` expression
+
+        Examples:
+            AVG(y)-REGR_SLOPE(y, x)*AVG(x)
 
         Returns:
             Self
@@ -2136,6 +2553,9 @@ class Fns(DuckHandler):
         Args:
             x (Self | float): `DOUBLE` expression
 
+        Examples:
+            COVAR_POP(x, y) / VAR_POP(x)
+
         Returns:
             Self
         """
@@ -2148,6 +2568,9 @@ class Fns(DuckHandler):
 
         Args:
             x (Self | float): `DOUBLE` expression
+
+        Examples:
+            REGR_COUNT(y, x) * VAR_POP(x)
 
         Returns:
             Self
@@ -2162,6 +2585,9 @@ class Fns(DuckHandler):
         Args:
             x (Self | float): `DOUBLE` expression
 
+        Examples:
+            REGR_COUNT(y, x) * COVAR_POP(y, x)
+
         Returns:
             Self
         """
@@ -2174,6 +2600,9 @@ class Fns(DuckHandler):
 
         Args:
             x (Self | float): `DOUBLE` expression
+
+        Examples:
+            REGR_COUNT(y, x) * VAR_POP(y)
 
         Returns:
             Self
@@ -2190,6 +2619,9 @@ class Fns(DuckHandler):
             mapping (Self): `ANY` expression
             defaults (Self): `ANY` expression
 
+        Examples:
+            remap_struct({'i': 1, 'j': 2}, NULL::ROW(v1 INT, v2 INT, v3 INT), {'v1': 'j', 'v3': 'i'}, {'v2': NULL::INTEGER})
+
         Returns:
             Self
         """
@@ -2198,12 +2630,15 @@ class Fns(DuckHandler):
         )
 
     def repeat(self, count: Self | int) -> Self:
-        """Repeats the `blob` `count` number of times.
+        r"""Repeats the `blob` `count` number of times.
 
         **SQL name**: *repeat*
 
         Args:
             count (Self | int): `BIGINT` expression
+
+        Examples:
+            repeat('\xaa\xbb'::BLOB, 5)
 
         Returns:
             Self
@@ -2218,6 +2653,9 @@ class Fns(DuckHandler):
         Args:
             type1 (Self): `ANY` expression
             type2 (Self): `ANY` expression
+
+        Examples:
+            replace_type({duck: 3.141592653589793::DOUBLE}, NULL::DOUBLE, NULL::DECIMAL(15,2))
 
         Returns:
             Self
@@ -2237,6 +2675,9 @@ class Fns(DuckHandler):
             quantile (Self | float | list[float]): `DOUBLE | DOUBLE[]` expression
             sample_size (Self | int | None): `INTEGER` expression
 
+        Examples:
+            reservoir_quantile(A, 0.5, 1024)
+
         Returns:
             Self
         """
@@ -2251,6 +2692,9 @@ class Fns(DuckHandler):
 
         Args:
             precision (Self | int | None): `INTEGER` expression
+
+        Examples:
+            round(42.4332, 2)
 
         Returns:
             Self
@@ -2291,6 +2735,9 @@ class Fns(DuckHandler):
         Args:
             *args (Self): `ANY` expression
 
+        Examples:
+            row(i, i % 4, i / 4)
+
         Returns:
             Self
         """
@@ -2313,6 +2760,9 @@ class Fns(DuckHandler):
         """Extract the second component from a date or timestamp.
 
         **SQL name**: *second*
+
+        Examples:
+            second(timestamp '2021-08-03 11:59:44.123456')
 
         Returns:
             Self
@@ -2340,6 +2790,9 @@ class Fns(DuckHandler):
             index (Self | int): `INTEGER` expression
             new_value (Self | int): `INTEGER` expression
 
+        Examples:
+            set_bit('0110010'::BIT, 2, 0)
+
         Returns:
             Self
         """
@@ -2350,15 +2803,21 @@ class Fns(DuckHandler):
 
         **SQL name**: *setseed*
 
+        Examples:
+            setseed(0.42)
+
         Returns:
             Self
         """
         return self._new(func("setseed", self.inner()))
 
     def sha1(self) -> Self:
-        """Returns a `VARCHAR` with the SHA-1 hash of the `blob`.
+        r"""Returns a `VARCHAR` with the SHA-1 hash of the `blob`.
 
         **SQL name**: *sha1*
+
+        Examples:
+            sha1('\xaa\xbb'::BLOB)
 
         Returns:
             Self
@@ -2366,9 +2825,12 @@ class Fns(DuckHandler):
         return self._new(func("sha1", self.inner()))
 
     def sha256(self) -> Self:
-        """Returns a `VARCHAR` with the SHA-256 hash of the `blob`.
+        r"""Returns a `VARCHAR` with the SHA-256 hash of the `blob`.
 
         **SQL name**: *sha256*
+
+        Examples:
+            sha256('\xaa\xbb'::BLOB)
 
         Returns:
             Self
@@ -2393,6 +2855,9 @@ class Fns(DuckHandler):
 
         **SQL name**: *sign*
 
+        Examples:
+            sign(-349)
+
         Returns:
             Self
         """
@@ -2402,6 +2867,9 @@ class Fns(DuckHandler):
         """Returns whether the signbit is set or not.
 
         **SQL name**: *signbit*
+
+        Examples:
+            signbit(-0.0)
 
         Returns:
             Self
@@ -2413,6 +2881,9 @@ class Fns(DuckHandler):
 
         **SQL name**: *sin*
 
+        Examples:
+            sin(90)
+
         Returns:
             Self
         """
@@ -2423,6 +2894,9 @@ class Fns(DuckHandler):
 
         **SQL name**: *sinh*
 
+        Examples:
+            sinh(1)
+
         Returns:
             Self
         """
@@ -2432,6 +2906,9 @@ class Fns(DuckHandler):
         """Returns the skewness of all input values.
 
         **SQL name**: *skewness*
+
+        Examples:
+            skewness(A)
 
         Returns:
             Self
@@ -2457,6 +2934,9 @@ class Fns(DuckHandler):
 
         **SQL name**: *sqrt*
 
+        Examples:
+            sqrt(4)
+
         Returns:
             Self
         """
@@ -2468,6 +2948,9 @@ class Fns(DuckHandler):
         Expression can be a column, constant, or SQL expression.
 
         **SQL name**: *stats*
+
+        Examples:
+            stats(5)
 
         Returns:
             Self
@@ -2482,6 +2965,9 @@ class Fns(DuckHandler):
         See Also:
             stddev_samp
 
+        Examples:
+            sqrt(var_samp(x))
+
         Returns:
             Self
         """
@@ -2491,6 +2977,9 @@ class Fns(DuckHandler):
         """Returns the population standard deviation.
 
         **SQL name**: *stddev_pop*
+
+        Examples:
+            sqrt(var_pop(x))
 
         Returns:
             Self
@@ -2505,6 +2994,9 @@ class Fns(DuckHandler):
         See Also:
             stddev
 
+        Examples:
+            sqrt(var_samp(x))
+
         Returns:
             Self
         """
@@ -2514,6 +3006,9 @@ class Fns(DuckHandler):
         """Calculates the sum value for all tuples in arg.
 
         **SQL name**: *sum*
+
+        Examples:
+            sum(A)
 
         Returns:
             Self
@@ -2526,6 +3021,9 @@ class Fns(DuckHandler):
         Calculates the sum value for all tuples in arg without overflow checks.
 
         **SQL name**: *sum_no_overflow*
+
+        Examples:
+            sum_no_overflow(A)
 
         Returns:
             Self
@@ -2540,6 +3038,9 @@ class Fns(DuckHandler):
         See Also:
             fsum, kahan_sum
 
+        Examples:
+            sumkahan(A)
+
         Returns:
             Self
         """
@@ -2550,6 +3051,9 @@ class Fns(DuckHandler):
 
         **SQL name**: *tan*
 
+        Examples:
+            tan(90)
+
         Returns:
             Self
         """
@@ -2559,6 +3063,9 @@ class Fns(DuckHandler):
         """Computes the hyperbolic tan of x.
 
         **SQL name**: *tanh*
+
+        Examples:
+            tanh(1)
 
         Returns:
             Self
@@ -2582,6 +3089,9 @@ class Fns(DuckHandler):
             timestamp (Self | date | datetime): `DATE | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
             origin (Self | date | datetime | str | timedelta | None): `DATE | INTERVAL | TIMESTAMP | TIMESTAMP WITH TIME ZONE | VARCHAR` expression
 
+        Examples:
+            time_bucket(INTERVAL '2 weeks', TIMESTAMP '1992-04-20 15:26:00-07', TIMESTAMP '1992-04-01 00:00:00-07')
+
         Returns:
             Self
         """
@@ -2591,6 +3101,9 @@ class Fns(DuckHandler):
         """Converts a TIME WITH TIME ZONE to an integer sort key.
 
         **SQL name**: *timetz_byte_comparable*
+
+        Examples:
+            timetz_byte_comparable('18:18:16.21-07:00'::TIMETZ)
 
         Returns:
             Self
@@ -2605,6 +3118,9 @@ class Fns(DuckHandler):
         Args:
             col1 (Self | datetime | None): `TIME WITH TIME ZONE | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
 
+        Examples:
+            timezone(timestamp '2021-08-03 11:59:44.123456')
+
         Returns:
             Self
         """
@@ -2615,6 +3131,9 @@ class Fns(DuckHandler):
 
         **SQL name**: *timezone_hour*
 
+        Examples:
+            timezone_hour(timestamp '2021-08-03 11:59:44.123456')
+
         Returns:
             Self
         """
@@ -2624,6 +3143,9 @@ class Fns(DuckHandler):
         """Extract the timezone_minute component from a date or timestamp.
 
         **SQL name**: *timezone_minute*
+
+        Examples:
+            timezone_minute(timestamp '2021-08-03 11:59:44.123456')
 
         Returns:
             Self
@@ -2638,6 +3160,9 @@ class Fns(DuckHandler):
         See Also:
             bin
 
+        Examples:
+            to_binary(42)
+
         Returns:
             Self
         """
@@ -2647,6 +3172,9 @@ class Fns(DuckHandler):
         """Construct a century interval.
 
         **SQL name**: *to_centuries*
+
+        Examples:
+            to_centuries(5)
 
         Returns:
             Self
@@ -2658,6 +3186,9 @@ class Fns(DuckHandler):
 
         **SQL name**: *to_days*
 
+        Examples:
+            to_days(5)
+
         Returns:
             Self
         """
@@ -2667,6 +3198,9 @@ class Fns(DuckHandler):
         """Construct a decade interval.
 
         **SQL name**: *to_decades*
+
+        Examples:
+            to_decades(5)
 
         Returns:
             Self
@@ -2681,6 +3215,9 @@ class Fns(DuckHandler):
         See Also:
             hex
 
+        Examples:
+            to_hex(42)
+
         Returns:
             Self
         """
@@ -2690,6 +3227,9 @@ class Fns(DuckHandler):
         """Construct a hour interval.
 
         **SQL name**: *to_hours*
+
+        Examples:
+            to_hours(5)
 
         Returns:
             Self
@@ -2714,6 +3254,9 @@ class Fns(DuckHandler):
 
         **SQL name**: *to_microseconds*
 
+        Examples:
+            to_microseconds(5)
+
         Returns:
             Self
         """
@@ -2723,6 +3266,9 @@ class Fns(DuckHandler):
         """Construct a millenium interval.
 
         **SQL name**: *to_millennia*
+
+        Examples:
+            to_millennia(1)
 
         Returns:
             Self
@@ -2734,6 +3280,9 @@ class Fns(DuckHandler):
 
         **SQL name**: *to_milliseconds*
 
+        Examples:
+            to_milliseconds(5.5)
+
         Returns:
             Self
         """
@@ -2743,6 +3292,9 @@ class Fns(DuckHandler):
         """Construct a minute interval.
 
         **SQL name**: *to_minutes*
+
+        Examples:
+            to_minutes(5)
 
         Returns:
             Self
@@ -2754,6 +3306,9 @@ class Fns(DuckHandler):
 
         **SQL name**: *to_months*
 
+        Examples:
+            to_months(5)
+
         Returns:
             Self
         """
@@ -2763,6 +3318,9 @@ class Fns(DuckHandler):
         """Construct a quarter interval.
 
         **SQL name**: *to_quarters*
+
+        Examples:
+            to_quarters(5)
 
         Returns:
             Self
@@ -2774,6 +3332,9 @@ class Fns(DuckHandler):
 
         **SQL name**: *to_seconds*
 
+        Examples:
+            to_seconds(5.5)
+
         Returns:
             Self
         """
@@ -2783,6 +3344,9 @@ class Fns(DuckHandler):
         """Converts secs since epoch to a timestamp with time zone.
 
         **SQL name**: *to_timestamp*
+
+        Examples:
+            to_timestamp(1284352323.5)
 
         Returns:
             Self
@@ -2794,6 +3358,9 @@ class Fns(DuckHandler):
 
         **SQL name**: *to_weeks*
 
+        Examples:
+            to_weeks(5)
+
         Returns:
             Self
         """
@@ -2803,6 +3370,9 @@ class Fns(DuckHandler):
         """Construct a year interval.
 
         **SQL name**: *to_years*
+
+        Examples:
+            to_years(5)
 
         Returns:
             Self
@@ -2816,6 +3386,9 @@ class Fns(DuckHandler):
 
         Args:
             col1 (Self | int | None): `INTEGER` expression
+
+        Examples:
+            trunc(17.4)
 
         Returns:
             Self
@@ -2832,6 +3405,9 @@ class Fns(DuckHandler):
         Args:
             format_arg (Self | list[str] | str): `VARCHAR | VARCHAR[]` expression
 
+        Examples:
+            try_strptime('Wed, 1 January 1992 - 08:38:40 PM', '%a, %-d %B %Y - %I:%M:%S %p')
+
         Returns:
             Self
         """
@@ -2841,6 +3417,9 @@ class Fns(DuckHandler):
         """Returns the name of the data type of the result of the expression.
 
         **SQL name**: *typeof*
+
+        Examples:
+            typeof('abc')
 
         Returns:
             Self
@@ -2857,6 +3436,9 @@ class Fns(DuckHandler):
         Args:
             tag (Self | str): `VARCHAR` expression
 
+        Examples:
+            union_extract(s, 'k')
+
         Returns:
             Self
         """
@@ -2866,6 +3448,9 @@ class Fns(DuckHandler):
         """Retrieve the currently selected tag of the union as an ENUM.
 
         **SQL name**: *union_tag*
+
+        Examples:
+            union_tag(union_value(k := 'foo'))
 
         Returns:
             Self
@@ -2882,6 +3467,9 @@ class Fns(DuckHandler):
         Args:
             *args (Self): `ANY` expression
 
+        Examples:
+            union_value(k := 'hello')
+
         Returns:
             Self
         """
@@ -2892,6 +3480,9 @@ class Fns(DuckHandler):
 
         **SQL name**: *uuid_extract_timestamp*
 
+        Examples:
+            uuid_extract_timestamp('019482e4-1441-7aad-8127-eec99573b0a0')
+
         Returns:
             Self
         """
@@ -2901,6 +3492,9 @@ class Fns(DuckHandler):
         """Extract a version for the given UUID.
 
         **SQL name**: *uuid_extract_version*
+
+        Examples:
+            uuid_extract_version('019482e4-1441-7aad-8127-eec99573b0a0')
 
         Returns:
             Self
@@ -2925,6 +3519,9 @@ class Fns(DuckHandler):
         See Also:
             variance
 
+        Examples:
+            (SUM(x^2) - SUM(x)^2 / COUNT(x)) / (COUNT(x) - 1)
+
         Returns:
             Self
         """
@@ -2937,6 +3534,9 @@ class Fns(DuckHandler):
 
         See Also:
             var_samp
+
+        Examples:
+            (SUM(x^2) - SUM(x)^2 / COUNT(x)) / (COUNT(x) - 1)
 
         Returns:
             Self
@@ -2961,6 +3561,9 @@ class Fns(DuckHandler):
 
         **SQL name**: *variant_typeof*
 
+        Examples:
+            variant_typeof({'a': 42, 'b': [1,2,3]})::VARIANT)
+
         Returns:
             Self
         """
@@ -2970,6 +3573,9 @@ class Fns(DuckHandler):
         """Returns the VectorType of a given column.
 
         **SQL name**: *vector_type*
+
+        Examples:
+            vector_type(col)
 
         Returns:
             Self
@@ -2994,6 +3600,9 @@ class Fns(DuckHandler):
 
         **SQL name**: *week*
 
+        Examples:
+            week(timestamp '2021-08-03 11:59:44.123456')
+
         Returns:
             Self
         """
@@ -3004,6 +3613,9 @@ class Fns(DuckHandler):
 
         **SQL name**: *weekday*
 
+        Examples:
+            weekday(timestamp '2021-08-03 11:59:44.123456')
+
         Returns:
             Self
         """
@@ -3013,6 +3625,9 @@ class Fns(DuckHandler):
         """Extract the weekofyear component from a date or timestamp.
 
         **SQL name**: *weekofyear*
+
+        Examples:
+            weekofyear(timestamp '2021-08-03 11:59:44.123456')
 
         Returns:
             Self
@@ -3040,6 +3655,9 @@ class Fns(DuckHandler):
         Args:
             *args (Self): `ANY` expression
 
+        Examples:
+            write_log('Hello')
+
         Returns:
             Self
         """
@@ -3053,6 +3671,9 @@ class Fns(DuckHandler):
         Args:
             right (Self | bytes | bytearray | memoryview | int): `BIGINT | BIT | HUGEINT | INTEGER | SMALLINT | TINYINT | UBIGINT | UHUGEINT | UINTEGER | USMALLINT | UTINYINT` expression
 
+        Examples:
+            xor(17, 5)
+
         Returns:
             Self
         """
@@ -3063,6 +3684,9 @@ class Fns(DuckHandler):
 
         **SQL name**: *year*
 
+        Examples:
+            year(timestamp '2021-08-03 11:59:44.123456')
+
         Returns:
             Self
         """
@@ -3072,6 +3696,9 @@ class Fns(DuckHandler):
         """Extract the yearweek component from a date or timestamp.
 
         **SQL name**: *yearweek*
+
+        Examples:
+            yearweek(timestamp '2021-08-03 11:59:44.123456')
 
         Returns:
             Self
@@ -3094,6 +3721,9 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
             function_name (T | str): `VARCHAR` expression
             *args (T): `ANY` expression
 
+        Examples:
+            list_aggregate([1, 2, NULL], 'min')
+
         Returns:
             T
         """
@@ -3110,6 +3740,9 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         Args:
             function_name (T | str): `VARCHAR` expression
             *args (T): `ANY` expression
+
+        Examples:
+            aggregate([1, 2, NULL], 'min')
 
         Returns:
             T
@@ -3151,6 +3784,9 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
 
         Args:
             lambda_arg (T): `LAMBDA` expression
+
+        Examples:
+            apply([1, 2, 3], lambda x : x + 1)
 
         Returns:
             T
@@ -3242,6 +3878,9 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         Args:
             *args (T): `ANY[]` expression
 
+        Examples:
+            list_cat([2, 3], [4, 5, 6], [7])
+
         Returns:
             T
         """
@@ -3255,6 +3894,9 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         See Also:
             character_length, len, length
 
+        Examples:
+            char_length([1,2,3])
+
         Returns:
             T
         """
@@ -3267,6 +3909,9 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
 
         See Also:
             char_length, len, length
+
+        Examples:
+            character_length([1,2,3])
 
         Returns:
             T
@@ -3288,6 +3933,9 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         Args:
             *args (T): `ANY[]` expression
 
+        Examples:
+            list_concat([2, 3], [4, 5, 6], [7])
+
         Returns:
             T
         """
@@ -3304,6 +3952,9 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         Args:
             element (T): `T` expression
 
+        Examples:
+            list_contains([1, 2, NULL], 1)
+
         Returns:
             T
         """
@@ -3317,6 +3968,9 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         Args:
             list2 (T | list[float]): `DOUBLE[] | FLOAT[]` expression
 
+        Examples:
+            list_cosine_distance([1, 2, 3], [1, 2, 3])
+
         Returns:
             T
         """
@@ -3329,6 +3983,9 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
 
         Args:
             list2 (T | list[float]): `DOUBLE[] | FLOAT[]` expression
+
+        Examples:
+            list_cosine_similarity([1, 2, 3], [1, 2, 3])
 
         Returns:
             T
@@ -3353,6 +4010,9 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         Args:
             list2 (T | list[float]): `DOUBLE[] | FLOAT[]` expression
 
+        Examples:
+            list_distance([1, 2, 3], [1, 2, 5])
+
         Returns:
             T
         """
@@ -3367,6 +4027,9 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
 
         See Also:
             array_distinct
+
+        Examples:
+            list_distinct([1, 1, NULL, -3, 1, 5])
 
         Returns:
             T
@@ -3384,6 +4047,9 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         Args:
             list2 (T | list[float]): `DOUBLE[] | FLOAT[]` expression
 
+        Examples:
+            list_dot_product([1, 2, 3], [1, 2, 3])
+
         Returns:
             T
         """
@@ -3399,6 +4065,9 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
 
         Args:
             index (T | int): `BIGINT` expression
+
+        Examples:
+            list_element([4, 5, 6], 3)
 
         Returns:
             T
@@ -3426,6 +4095,9 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         Args:
             index (T | int): `BIGINT` expression
 
+        Examples:
+            list_extract([4, 5, 6], 3)
+
         Returns:
             T
         """
@@ -3445,6 +4117,9 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
 
         Args:
             lambda_arg (T): `LAMBDA` expression
+
+        Examples:
+            filter([3, 4, 5], lambda x : x > 4)
 
         Returns:
             T
@@ -3466,6 +4141,9 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
 
         **SQL name**: *flatten*
 
+        Examples:
+            flatten([[1, 2, 3], [4, 5]])
+
         Returns:
             T
         """
@@ -3484,6 +4162,9 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
             stop (T | datetime | int | None): `BIGINT | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
             step (T | int | timedelta | None): `BIGINT | INTERVAL` expression
 
+        Examples:
+            generate_series(2, 5, 3)
+
         Returns:
             T
         """
@@ -3501,6 +4182,9 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
             col1 (T | str | None): `VARCHAR` expression
             col2 (T | str | None): `VARCHAR` expression
 
+        Examples:
+            grade_up([3, 6, 1, 2])
+
         Returns:
             T
         """
@@ -3516,6 +4200,9 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
 
         Args:
             element (T): `T` expression
+
+        Examples:
+            list_has([1, 2, NULL], 1)
 
         Returns:
             T
@@ -3535,6 +4222,9 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         Args:
             list2 (T): `T[]` expression
 
+        Examples:
+            list_has_all([1, 2, 3], [2, 3])
+
         Returns:
             T
         """
@@ -3552,6 +4242,9 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
 
         Args:
             list2 (T): `T[]` expression
+
+        Examples:
+            list_has_any([1, 2, 3], [2, 3, 4])
 
         Returns:
             T
@@ -3581,6 +4274,9 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         Args:
             element (T): `T` expression
 
+        Examples:
+            list_indexof([1, 2, NULL], 2)
+
         Returns:
             T
         """
@@ -3596,6 +4292,9 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
 
         Args:
             list2 (T | list[float]): `DOUBLE[] | FLOAT[]` expression
+
+        Examples:
+            list_inner_product([1, 2, 3], [1, 2, 3])
 
         Returns:
             T
@@ -3653,6 +4352,9 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         See Also:
             char_length, character_length, length
 
+        Examples:
+            length([1,2,3])
+
         Returns:
             T
         """
@@ -3665,6 +4367,9 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
 
         See Also:
             char_length, character_length, len
+
+        Examples:
+            length([1,2,3])
 
         Returns:
             T
@@ -3732,6 +4437,9 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         Args:
             list2 (T | list[float]): `DOUBLE[] | FLOAT[]` expression
 
+        Examples:
+            list_negative_dot_product([1, 2, 3], [1, 2, 3])
+
         Returns:
             T
         """
@@ -3748,6 +4456,9 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         Args:
             list2 (T | list[float]): `DOUBLE[] | FLOAT[]` expression
 
+        Examples:
+            list_negative_inner_product([1, 2, 3], [1, 2, 3])
+
         Returns:
             T
         """
@@ -3763,6 +4474,9 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
 
         Args:
             *args (T): `T` expression
+
+        Examples:
+            list_pack(4, 5, 6)
 
         Returns:
             T
@@ -3781,6 +4495,9 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
 
         Args:
             element (T): `T` expression
+
+        Examples:
+            list_position([1, 2, NULL], 2)
 
         Returns:
             T
@@ -3823,6 +4540,9 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
             stop (T | datetime | int | None): `BIGINT | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
             step (T | int | timedelta | None): `BIGINT | INTERVAL` expression
 
+        Examples:
+            range(2, 5, 3)
+
         Returns:
             T
         """
@@ -3842,6 +4562,9 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
             lambda_arg (T): `LAMBDA` expression
             initial_value (T | None): `ANY` expression
 
+        Examples:
+            list_reduce([1, 2, 3], lambda x, y : x + y)
+
         Returns:
             T
         """
@@ -3860,6 +4583,9 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         Args:
             size (T): `ANY` expression
             value (T | None): `ANY` expression
+
+        Examples:
+            list_resize([1, 2, 3], 5, 0)
 
         Returns:
             T
@@ -3887,6 +4613,9 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         Args:
             col1 (T | str | None): `VARCHAR` expression
 
+        Examples:
+            list_reverse_sort([3, 6, 1, 2])
+
         Returns:
             T
         """
@@ -3902,6 +4631,9 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
 
         Args:
             index_list (T | list[int]): `BIGINT[]` expression
+
+        Examples:
+            list_select([10, 20, 30, 40], [1, 4])
 
         Returns:
             T
@@ -3943,6 +4675,9 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
             end (T): `ANY` expression
             step (T | int | None): `BIGINT` expression
 
+        Examples:
+            list_slice([4, 5, 6], 2, 3)
+
         Returns:
             T
         """
@@ -3959,6 +4694,9 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         Args:
             col1 (T | str | None): `VARCHAR` expression
             col2 (T | str | None): `VARCHAR` expression
+
+        Examples:
+            list_sort([3, 6, 1, 2])
 
         Returns:
             T
@@ -4018,6 +4756,9 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         Args:
             lambda_arg (T): `LAMBDA` expression
 
+        Examples:
+            list_transform([1, 2, 3], lambda x : x + 1)
+
         Returns:
             T
         """
@@ -4031,6 +4772,9 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         See Also:
             array_unique
 
+        Examples:
+            list_unique([1, 1, NULL, -3, 1, 5])
+
         Returns:
             T
         """
@@ -4043,6 +4787,9 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
 
         Args:
             *args (T): `ANY` expression
+
+        Examples:
+            unpivot_list(4, 5, 6)
 
         Returns:
             T
@@ -4059,6 +4806,9 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
 
         Args:
             *args (T): `T` expression
+
+        Examples:
+            list_value(4, 5, 6)
 
         Returns:
             T
@@ -4096,6 +4846,9 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         Args:
             mask_list (T | list[bool]): `BOOLEAN[]` expression
 
+        Examples:
+            list_where([10, 20, 30, 40], [true, false, false, true])
+
         Returns:
             T
         """
@@ -4116,6 +4869,11 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         Args:
             *args (T): `ANY` expression
 
+        Examples:
+            list_zip([1, 2], [3, 4], [5, 6])
+            list_zip([1, 2], [3, 4], [5, 6, 7])
+            list_zip([1, 2], [3, 4], [5, 6, 7], true)
+
         Returns:
             T
         """
@@ -4133,6 +4891,9 @@ class StructFns[T: Fns](NameSpaceHandler[T]):
         Args:
             *args (T): `ANY` expression
 
+        Examples:
+            struct_concat(struct_pack(i := 4), struct_pack(s := 'string'))
+
         Returns:
             T
         """
@@ -4149,6 +4910,9 @@ class StructFns[T: Fns](NameSpaceHandler[T]):
         Args:
             entry (T): `ANY` expression
 
+        Examples:
+            struct_contains(ROW(3, 3, 0), 3)
+
         Returns:
             T
         """
@@ -4162,6 +4926,9 @@ class StructFns[T: Fns](NameSpaceHandler[T]):
         Args:
             entry (T | int | str): `BIGINT | VARCHAR` expression
 
+        Examples:
+            struct_extract({'i': 3, 'v2': 3, 'v3': 0}, 'i')
+
         Returns:
             T
         """
@@ -4174,6 +4941,9 @@ class StructFns[T: Fns](NameSpaceHandler[T]):
 
         Args:
             entry (T | int): `BIGINT` expression
+
+        Examples:
+            struct_extract_at({'i': 3, 'v2': 3, 'v3': 0}, 2)
 
         Returns:
             T
@@ -4191,6 +4961,9 @@ class StructFns[T: Fns](NameSpaceHandler[T]):
         Args:
             entry (T): `ANY` expression
 
+        Examples:
+            struct_has(ROW(3, 3, 0), 3)
+
         Returns:
             T
         """
@@ -4207,6 +4980,9 @@ class StructFns[T: Fns](NameSpaceHandler[T]):
         Args:
             entry (T): `ANY` expression
 
+        Examples:
+            struct_indexof(ROW(3, 3, 0), 3)
+
         Returns:
             T
         """
@@ -4222,6 +4998,9 @@ class StructFns[T: Fns](NameSpaceHandler[T]):
         Args:
             *args (T): `ANY` expression
 
+        Examples:
+            struct_insert({'a': 1}, b := 2)
+
         Returns:
             T
         """
@@ -4236,6 +5015,9 @@ class StructFns[T: Fns](NameSpaceHandler[T]):
 
         Args:
             *args (T): `ANY` expression
+
+        Examples:
+            struct_pack(i := 4, s := 'string')
 
         Returns:
             T
@@ -4253,6 +5035,9 @@ class StructFns[T: Fns](NameSpaceHandler[T]):
         Args:
             entry (T): `ANY` expression
 
+        Examples:
+            struct_position(ROW(3, 3, 0), 3)
+
         Returns:
             T
         """
@@ -4268,6 +5053,9 @@ class StructFns[T: Fns](NameSpaceHandler[T]):
         Args:
             *args (T): `ANY` expression
 
+        Examples:
+            struct_update({'a': 1}, a := 2)
+
         Returns:
             T
         """
@@ -4281,6 +5069,9 @@ class RegexFns[T: Fns](NameSpaceHandler[T]):
         """Escapes special patterns to turn `string` into a regular expression similarly to Python's `re.escape` function.
 
         **SQL name**: *regexp_escape*
+
+        Examples:
+            regexp_escape('https://duckdb.org')
 
         Returns:
             T
@@ -4308,6 +5099,9 @@ class RegexFns[T: Fns](NameSpaceHandler[T]):
             group (T | int | None): `INTEGER` expression
             options (T | str | None): `VARCHAR` expression
 
+        Examples:
+            regexp_extract('abcde', '[a-z]{3}')
+
         Returns:
             T
         """
@@ -4319,7 +5113,7 @@ class RegexFns[T: Fns](NameSpaceHandler[T]):
         group: T | int | None = None,
         options: T | str | None = None,
     ) -> T:
-        """Finds non-overlapping occurrences of the `regex` in the `string` and returns the corresponding values of the capturing `group`.
+        r"""Finds non-overlapping occurrences of the `regex` in the `string` and returns the corresponding values of the capturing `group`.
 
         A set of optional regex `options` can be set.
 
@@ -4329,6 +5123,9 @@ class RegexFns[T: Fns](NameSpaceHandler[T]):
             regex (T | str): `VARCHAR` expression
             group (T | int | None): `INTEGER` expression
             options (T | str | None): `VARCHAR` expression
+
+        Examples:
+            regexp_extract_all('Peter: 33, Paul:14', '(\w+):\s*(\d+)', 2)
 
         Returns:
             T
@@ -4343,7 +5140,7 @@ class RegexFns[T: Fns](NameSpaceHandler[T]):
         name_list: T | list[str] | None = None,
         options: T | str | None = None,
     ) -> T:
-        """If `string` contains the `regex` pattern, returns the capturing groups as a struct with corresponding names from `name_list`; otherwise, returns a struct with the same keys and empty strings as values.
+        r"""If `string` contains the `regex` pattern, returns the capturing groups as a struct with corresponding names from `name_list`; otherwise, returns a struct with the same keys and empty strings as values.
 
         A set of optional regex `options` can be set.
 
@@ -4353,6 +5150,9 @@ class RegexFns[T: Fns](NameSpaceHandler[T]):
             regex (T | str): `VARCHAR` expression
             name_list (T | list[str] | None): `VARCHAR[]` expression
             options (T | str | None): `VARCHAR` expression
+
+        Examples:
+            regexp_extract('2023-04-15', '(\d+)-(\d+)-(\d+)', ['y', 'm', 'd'])
 
         Returns:
             T
@@ -4372,6 +5172,9 @@ class RegexFns[T: Fns](NameSpaceHandler[T]):
             regex (T | str): `VARCHAR` expression
             col2 (T | str | None): `VARCHAR` expression
 
+        Examples:
+            regexp_full_match('anabanana', '(an)*')
+
         Returns:
             T
         """
@@ -4387,6 +5190,9 @@ class RegexFns[T: Fns](NameSpaceHandler[T]):
         Args:
             regex (T | str): `VARCHAR` expression
             options (T | str | None): `VARCHAR` expression
+
+        Examples:
+            regexp_matches('anabanana', '(an)*')
 
         Returns:
             T
@@ -4406,6 +5212,9 @@ class RegexFns[T: Fns](NameSpaceHandler[T]):
             regex (T | str): `VARCHAR` expression
             replacement (T | str): `VARCHAR` expression
             options (T | str | None): `VARCHAR` expression
+
+        Examples:
+            regexp_replace('hello', '[lo]', '-')
 
         Returns:
             T
@@ -4427,6 +5236,9 @@ class RegexFns[T: Fns](NameSpaceHandler[T]):
         Args:
             regex (T | str): `VARCHAR` expression
             options (T | str | None): `VARCHAR` expression
+
+        Examples:
+            regexp_split_to_array('hello world; 42', ';? ')
 
         Returns:
             T
@@ -4461,6 +5273,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         Args:
             arg (T | str | None): `VARCHAR` expression
 
+        Examples:
+            string_agg(A, '-')
+
         Returns:
             T
         """
@@ -4470,6 +5285,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         """Returns an integer that represents the Unicode code point of the first character of the `string`.
 
         **SQL name**: *ascii*
+
+        Examples:
+            ascii('Ω')
 
         Returns:
             T
@@ -4490,6 +5308,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
             max_arg (T | float): `DOUBLE` expression
             width (T | float | None): `DOUBLE` expression
 
+        Examples:
+            bar(5, 0, 20, 10)
+
         Returns:
             T
         """
@@ -4502,6 +5323,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
 
         See Also:
             to_base64
+
+        Examples:
+            base64('A'::BLOB)
 
         Returns:
             T
@@ -4516,6 +5340,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         See Also:
             to_binary
 
+        Examples:
+            bin('Aa')
+
         Returns:
             T
         """
@@ -4525,6 +5352,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         """Number of bits in a `string`.
 
         **SQL name**: *bit_length*
+
+        Examples:
+            bit_length('abc')
 
         Returns:
             T
@@ -4539,6 +5369,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         See Also:
             character_length, len, length
 
+        Examples:
+            char_length('Hello🦆')
+
         Returns:
             T
         """
@@ -4552,6 +5385,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         See Also:
             char_length, len, length
 
+        Examples:
+            character_length('Hello🦆')
+
         Returns:
             T
         """
@@ -4561,6 +5397,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         """Returns a character which is corresponding the ASCII code value or Unicode code point.
 
         **SQL name**: *chr*
+
+        Examples:
+            chr(65)
 
         Returns:
             T
@@ -4578,6 +5417,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
             string (T): `ANY` expression
             *args (T): `ANY` expression
 
+        Examples:
+            concat_ws(', ', 'Banana', 'Apple', 'Melon')
+
         Returns:
             T
         """
@@ -4590,6 +5432,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
 
         Args:
             search_string (T | str): `VARCHAR` expression
+
+        Examples:
+            contains('abc', 'a')
 
         Returns:
             T
@@ -4607,6 +5452,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
 
         Args:
             s2 (T | str): `VARCHAR` expression
+
+        Examples:
+            damerau_levenshtein('duckdb', 'udckbd')
 
         Returns:
             T
@@ -4626,6 +5474,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         Args:
             s2 (T | str): `VARCHAR` expression
 
+        Examples:
+            editdist3('duck', 'db')
+
         Returns:
             T
         """
@@ -4642,6 +5493,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         Args:
             search_string (T | str): `VARCHAR` expression
 
+        Examples:
+            ends_with('abc', 'bc')
+
         Returns:
             T
         """
@@ -4654,6 +5508,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
 
         Args:
             *args (T): `ANY` expression
+
+        Examples:
+            format('Benchmark "{}" took {} seconds', 'CSV', 42)
 
         Returns:
             T
@@ -4668,6 +5525,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         See Also:
             formatReadableSize
 
+        Examples:
+            format_bytes(16_000)
+
         Returns:
             T
         """
@@ -4677,6 +5537,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         """Converts `integer` to a human-readable representation using units based on powers of 10 (KB, MB, GB, etc.).
 
         **SQL name**: *formatReadableDecimalSize*
+
+        Examples:
+            formatReadableDecimalSize(16_000)
 
         Returns:
             T
@@ -4691,6 +5554,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         See Also:
             format_bytes
 
+        Examples:
+            formatReadableSize(16_000)
+
         Returns:
             T
         """
@@ -4700,6 +5566,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         """Converts a base64 encoded `string` to a character string (`BLOB`).
 
         **SQL name**: *from_base64*
+
+        Examples:
+            from_base64('QQ==')
 
         Returns:
             T
@@ -4714,6 +5583,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         See Also:
             unbin
 
+        Examples:
+            from_binary('0110')
+
         Returns:
             T
         """
@@ -4726,6 +5598,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
 
         See Also:
             unhex
+
+        Examples:
+            from_hex('2A')
 
         Returns:
             T
@@ -4747,6 +5622,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         Args:
             s2 (T | str): `VARCHAR` expression
 
+        Examples:
+            hamming('duck', 'luck')
+
         Returns:
             T
         """
@@ -4762,6 +5640,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         Args:
             *args (T): `ANY` expression
 
+        Examples:
+            hash('🦆')
+
         Returns:
             T
         """
@@ -4774,6 +5655,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
 
         See Also:
             to_hex
+
+        Examples:
+            hex('Hello')
 
         Returns:
             T
@@ -4790,6 +5674,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         Args:
             like_specifier (T | str): `VARCHAR` expression
             escape_character (T | str): `VARCHAR` expression
+
+        Examples:
+            ilike_escape('A%c', 'a$%C', '$')
 
         Returns:
             T
@@ -4811,6 +5698,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         Args:
             search_string (T | str): `VARCHAR` expression
 
+        Examples:
+            instr('test test', 'es')
+
         Returns:
             T
         """
@@ -4827,6 +5717,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
 
         Args:
             s2 (T | str): `VARCHAR` expression
+
+        Examples:
+            jaccard('duck', 'luck')
 
         Returns:
             T
@@ -4849,6 +5742,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         Args:
             s2 (T | str): `VARCHAR` expression
             score_cutoff (T | float | None): `DOUBLE` expression
+
+        Examples:
+            jaro_similarity('duck', 'duckdb')
 
         Returns:
             T
@@ -4874,6 +5770,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
             s2 (T | str): `VARCHAR` expression
             score_cutoff (T | float | None): `DOUBLE` expression
 
+        Examples:
+            jaro_winkler_similarity('duck', 'duckdb')
+
         Returns:
             T
         """
@@ -4889,6 +5788,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         See Also:
             lower
 
+        Examples:
+            lcase('Hello')
+
         Returns:
             T
         """
@@ -4901,6 +5803,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
 
         Args:
             count (T | int): `BIGINT` expression
+
+        Examples:
+            left('Hello🦆', 2)
 
         Returns:
             T
@@ -4915,6 +5820,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         Args:
             count (T | int): `BIGINT` expression
 
+        Examples:
+            left_grapheme('🤦🏼‍♂️🤦🏽‍♀️', 1)
+
         Returns:
             T
         """
@@ -4927,6 +5835,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
 
         See Also:
             char_length, character_length, length
+
+        Examples:
+            length('Hello🦆')
 
         Returns:
             T
@@ -4941,6 +5852,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         See Also:
             char_length, character_length, len
 
+        Examples:
+            length('Hello🦆')
+
         Returns:
             T
         """
@@ -4950,6 +5864,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         """Number of grapheme clusters in `string`.
 
         **SQL name**: *length_grapheme*
+
+        Examples:
+            length_grapheme('🤦🏼‍♂️🤦🏽‍♀️')
 
         Returns:
             T
@@ -4969,6 +5886,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         Args:
             s2 (T | str): `VARCHAR` expression
 
+        Examples:
+            levenshtein('duck', 'db')
+
         Returns:
             T
         """
@@ -4985,6 +5905,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
             like_specifier (T | str): `VARCHAR` expression
             escape_character (T | str): `VARCHAR` expression
 
+        Examples:
+            like_escape('a%c', 'a$%c', '$')
+
         Returns:
             T
         """
@@ -4999,6 +5922,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
 
         See Also:
             lcase
+
+        Examples:
+            lower('Hello')
 
         Returns:
             T
@@ -5016,6 +5942,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
             count (T | int): `INTEGER` expression
             character (T | str): `VARCHAR` expression
 
+        Examples:
+            lpad('hello', 8, '>')
+
         Returns:
             T
         """
@@ -5031,6 +5960,10 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         Args:
             characters (T | str | None): `VARCHAR` expression
 
+        Examples:
+            ltrim('    test  ')
+            ltrim('>>>>test<<', '><')
+
         Returns:
             T
         """
@@ -5041,6 +5974,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
 
         **SQL name**: *md5*
 
+        Examples:
+            md5('abc')
+
         Returns:
             T
         """
@@ -5050,6 +5986,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         """Returns the MD5 hash of the `string` as a `HUGEINT`.
 
         **SQL name**: *md5_number*
+
+        Examples:
+            md5_number('abc')
 
         Returns:
             T
@@ -5071,6 +6010,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         Args:
             s2 (T | str): `VARCHAR` expression
 
+        Examples:
+            mismatches('duck', 'luck')
+
         Returns:
             T
         """
@@ -5082,6 +6024,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         Useful for comparisons and ordering if text data is mixed between NFC normalized and not.
 
         **SQL name**: *nfc_normalize*
+
+        Examples:
+            nfc_normalize('ardèch')
 
         Returns:
             T
@@ -5098,6 +6043,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         Args:
             like_specifier (T | str): `VARCHAR` expression
             escape_character (T | str): `VARCHAR` expression
+
+        Examples:
+            not_ilike_escape('A%c', 'a$%C', '$')
 
         Returns:
             T
@@ -5117,6 +6065,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
             like_specifier (T | str): `VARCHAR` expression
             escape_character (T | str): `VARCHAR` expression
 
+        Examples:
+            not_like_escape('a%c', 'a$%c', '$')
+
         Returns:
             T
         """
@@ -5131,6 +6082,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
 
         See Also:
             unicode
+
+        Examples:
+            [unicode('âbcd'), unicode('â'), unicode(''), unicode(NULL)]
 
         Returns:
             T
@@ -5147,6 +6101,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         Args:
             separator (T | str | None): `VARCHAR` expression
 
+        Examples:
+            parse_dirname('path/to/file.csv', 'system')
+
         Returns:
             T
         """
@@ -5161,6 +6118,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
 
         Args:
             separator (T | str | None): `VARCHAR` expression
+
+        Examples:
+            parse_dirpath('path/to/file.csv', 'forward_slash')
 
         Returns:
             T
@@ -5184,6 +6144,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
             trim_extension (T | bool | str | None): `BOOLEAN | VARCHAR` expression
             separator (T | str | None): `VARCHAR` expression
 
+        Examples:
+            parse_filename('path/to/file.csv', true, 'forward_slash')
+
         Returns:
             T
         """
@@ -5200,6 +6163,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
 
         Args:
             separator (T | str | None): `VARCHAR` expression
+
+        Examples:
+            parse_path('path/to/file.csv', 'system')
 
         Returns:
             T
@@ -5219,6 +6185,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         Args:
             search_string (T | str): `VARCHAR` expression
 
+        Examples:
+            position('b' IN 'abc')
+
         Returns:
             T
         """
@@ -5231,6 +6200,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
 
         Args:
             search_string (T | str): `VARCHAR` expression
+
+        Examples:
+            prefix('abc', 'ab')
 
         Returns:
             T
@@ -5245,6 +6217,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         Args:
             *args (T): `ANY` expression
 
+        Examples:
+            printf('Benchmark "%s" took %d seconds', 'CSV', 42)
+
         Returns:
             T
         """
@@ -5257,6 +6232,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
 
         Args:
             count (T | int): `BIGINT` expression
+
+        Examples:
+            repeat('A', 5)
 
         Returns:
             T
@@ -5272,6 +6250,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
             source (T | str): `VARCHAR` expression
             target (T | str): `VARCHAR` expression
 
+        Examples:
+            replace('hello', 'l', '-')
+
         Returns:
             T
         """
@@ -5281,6 +6262,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         """Reverses the `string`.
 
         **SQL name**: *reverse*
+
+        Examples:
+            reverse('hello')
 
         Returns:
             T
@@ -5295,6 +6279,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         Args:
             count (T | int): `BIGINT` expression
 
+        Examples:
+            right('Hello🦆', 3)
+
         Returns:
             T
         """
@@ -5307,6 +6294,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
 
         Args:
             count (T | int): `BIGINT` expression
+
+        Examples:
+            right_grapheme('🤦🏼‍♂️🤦🏽‍♀️', 1)
 
         Returns:
             T
@@ -5324,6 +6314,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
             count (T | int): `INTEGER` expression
             character (T | str): `VARCHAR` expression
 
+        Examples:
+            rpad('hello', 10, '<')
+
         Returns:
             T
         """
@@ -5339,6 +6332,10 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         Args:
             characters (T | str | None): `VARCHAR` expression
 
+        Examples:
+            rtrim('    test  ')
+            rtrim('>>>>test<<', '><')
+
         Returns:
             T
         """
@@ -5349,6 +6346,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
 
         **SQL name**: *sha1*
 
+        Examples:
+            sha1('🦆')
+
         Returns:
             T
         """
@@ -5358,6 +6358,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         """Returns a `VARCHAR` with the SHA-256 hash of the `value`.
 
         **SQL name**: *sha256*
+
+        Examples:
+            sha256('🦆')
 
         Returns:
             T
@@ -5374,6 +6377,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
 
         Args:
             separator (T | str): `VARCHAR` expression
+
+        Examples:
+            split('hello-world', '-')
 
         Returns:
             T
@@ -5394,6 +6400,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
             regex (T | str): `VARCHAR` expression
             options (T | str | None): `VARCHAR` expression
 
+        Examples:
+            string_split_regex('hello world; 42', ';? ')
+
         Returns:
             T
         """
@@ -5407,6 +6416,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         Args:
             search_string (T | str): `VARCHAR` expression
 
+        Examples:
+            starts_with('abc', 'a')
+
         Returns:
             T
         """
@@ -5417,6 +6429,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
 
         **SQL name**: *strip_accents*
 
+        Examples:
+            strip_accents('mühleisen')
+
         Returns:
             T
         """
@@ -5426,6 +6441,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         """Number of bytes in `string`.
 
         **SQL name**: *strlen*
+
+        Examples:
+            strlen('🦆')
 
         Returns:
             T
@@ -5444,6 +6462,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
 
         Args:
             search_string (T | str): `VARCHAR` expression
+
+        Examples:
+            strpos('test test', 'es')
 
         Returns:
             T
@@ -5466,6 +6487,10 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
             start (T | int): `BIGINT` expression
             length (T | int | None): `BIGINT` expression
 
+        Examples:
+            substring('Hello', 2)
+            substring('Hello', 2, 2)
+
         Returns:
             T
         """
@@ -5487,6 +6512,10 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
             start (T | int): `BIGINT` expression
             length (T | int | None): `BIGINT` expression
 
+        Examples:
+            substring('Hello', 2)
+            substring('Hello', 2, 2)
+
         Returns:
             T
         """
@@ -5505,6 +6534,10 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
             start (T | int): `BIGINT` expression
             length (T | int | None): `BIGINT` expression
 
+        Examples:
+            substring_grapheme('🦆🤦🏼‍♂️🤦🏽‍♀️🦆', 3)
+            substring_grapheme('🦆🤦🏼‍♂️🤦🏽‍♀️🦆', 3, 2)
+
         Returns:
             T
         """
@@ -5520,6 +6553,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
 
         Args:
             search_string (T | str): `VARCHAR` expression
+
+        Examples:
+            suffix('abc', 'bc')
 
         Returns:
             T
@@ -5537,6 +6573,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         Args:
             separator (T | str): `VARCHAR` expression
 
+        Examples:
+            string_to_array('hello-world', '-')
+
         Returns:
             T
         """
@@ -5551,6 +6590,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
             radix (T | int): `INTEGER` expression
             min_length (T | int | None): `INTEGER` expression
 
+        Examples:
+            to_base(42, 16, 5)
+
         Returns:
             T
         """
@@ -5563,6 +6605,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
 
         See Also:
             base64
+
+        Examples:
+            to_base64('A'::BLOB)
 
         Returns:
             T
@@ -5577,6 +6622,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         See Also:
             bin
 
+        Examples:
+            to_binary('Aa')
+
         Returns:
             T
         """
@@ -5589,6 +6637,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
 
         See Also:
             hex
+
+        Examples:
+            to_hex('Hello')
 
         Returns:
             T
@@ -5606,6 +6657,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
             from_arg (T | str): `VARCHAR` expression
             to (T | str): `VARCHAR` expression
 
+        Examples:
+            translate('12345', '143', 'ax')
+
         Returns:
             T
         """
@@ -5621,6 +6675,10 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         Args:
             characters (T | str | None): `VARCHAR` expression
 
+        Examples:
+            trim('    test  ')
+            trim('>>>>test<<', '><')
+
         Returns:
             T
         """
@@ -5633,6 +6691,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
 
         See Also:
             upper
+
+        Examples:
+            ucase('Hello')
 
         Returns:
             T
@@ -5647,6 +6708,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         See Also:
             from_binary
 
+        Examples:
+            unbin('0110')
+
         Returns:
             T
         """
@@ -5659,6 +6723,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
 
         See Also:
             from_hex
+
+        Examples:
+            unhex('2A')
 
         Returns:
             T
@@ -5673,6 +6740,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         See Also:
             ord
 
+        Examples:
+            [unicode('âbcd'), unicode('â'), unicode(''), unicode(NULL)]
+
         Returns:
             T
         """
@@ -5686,6 +6756,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         See Also:
             ucase
 
+        Examples:
+            upper('Hello')
+
         Returns:
             T
         """
@@ -5696,6 +6769,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
 
         **SQL name**: *url_decode*
 
+        Examples:
+            url_decode('https%3A%2F%2Fduckdb.org%2Fwhy_duckdb%23portable')
+
         Returns:
             T
         """
@@ -5705,6 +6781,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         """Encodes a URL to a representation using Percent-Encoding.
 
         **SQL name**: *url_encode*
+
+        Examples:
+            url_encode('this string has/ special+ characters>')
 
         Returns:
             T
@@ -5739,6 +6818,9 @@ class DateTimeFns[T: Fns](NameSpaceHandler[T]):
             startdate (T | date | datetime | time): `DATE | TIME | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
             enddate (T | date | datetime | time): `DATE | TIME | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
 
+        Examples:
+            datediff('hour', TIMESTAMPTZ '1992-09-30 23:59:59', TIMESTAMPTZ '1992-10-01 01:58:00')
+
         Returns:
             T
         """
@@ -5751,6 +6833,9 @@ class DateTimeFns[T: Fns](NameSpaceHandler[T]):
 
         Args:
             col1 (T | date | datetime | time | timedelta): `DATE | INTERVAL | TIME | TIME_NS | TIME WITH TIME ZONE | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
+
+        Examples:
+            datepart('minute', TIMESTAMP '1992-09-20 20:38:40')
 
         Returns:
             T
@@ -5768,6 +6853,9 @@ class DateTimeFns[T: Fns](NameSpaceHandler[T]):
             startdate (T | date | datetime | time): `DATE | TIME | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
             enddate (T | date | datetime | time): `DATE | TIME | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
 
+        Examples:
+            datesub('hour', TIMESTAMPTZ '1992-09-30 23:59:59', TIMESTAMPTZ '1992-10-01 01:58:00')
+
         Returns:
             T
         """
@@ -5781,6 +6869,9 @@ class DateTimeFns[T: Fns](NameSpaceHandler[T]):
         Args:
             timestamp (T | date | datetime | timedelta): `DATE | INTERVAL | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
 
+        Examples:
+            datetrunc('hour', TIMESTAMPTZ '1992-09-20 20:38:40')
+
         Returns:
             T
         """
@@ -5790,6 +6881,9 @@ class DateTimeFns[T: Fns](NameSpaceHandler[T]):
         """Extract the day component from a date or timestamp.
 
         **SQL name**: *day*
+
+        Examples:
+            day(timestamp '2021-08-03 11:59:44.123456')
 
         Returns:
             T
@@ -5801,6 +6895,9 @@ class DateTimeFns[T: Fns](NameSpaceHandler[T]):
 
         **SQL name**: *dayname*
 
+        Examples:
+            dayname(TIMESTAMP '1992-03-22')
+
         Returns:
             T
         """
@@ -5810,6 +6907,9 @@ class DateTimeFns[T: Fns](NameSpaceHandler[T]):
         """Extract the dayofmonth component from a date or timestamp.
 
         **SQL name**: *dayofmonth*
+
+        Examples:
+            dayofmonth(timestamp '2021-08-03 11:59:44.123456')
 
         Returns:
             T
@@ -5821,6 +6921,9 @@ class DateTimeFns[T: Fns](NameSpaceHandler[T]):
 
         **SQL name**: *dayofweek*
 
+        Examples:
+            dayofweek(timestamp '2021-08-03 11:59:44.123456')
+
         Returns:
             T
         """
@@ -5830,6 +6933,9 @@ class DateTimeFns[T: Fns](NameSpaceHandler[T]):
         """Extract the dayofyear component from a date or timestamp.
 
         **SQL name**: *dayofyear*
+
+        Examples:
+            dayofyear(timestamp '2021-08-03 11:59:44.123456')
 
         Returns:
             T
@@ -5847,6 +6953,9 @@ class DateTimeFns[T: Fns](NameSpaceHandler[T]):
             startdate (T | date | datetime | time): `DATE | TIME | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
             enddate (T | date | datetime | time): `DATE | TIME | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
 
+        Examples:
+            date_diff('hour', TIMESTAMPTZ '1992-09-30 23:59:59', TIMESTAMPTZ '1992-10-01 01:58:00')
+
         Returns:
             T
         """
@@ -5859,6 +6968,9 @@ class DateTimeFns[T: Fns](NameSpaceHandler[T]):
 
         Args:
             col1 (T | date | datetime | time | timedelta): `DATE | INTERVAL | TIME | TIME_NS | TIME WITH TIME ZONE | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
+
+        Examples:
+            date_part('minute', TIMESTAMP '1992-09-20 20:38:40')
 
         Returns:
             T
@@ -5876,6 +6988,9 @@ class DateTimeFns[T: Fns](NameSpaceHandler[T]):
             startdate (T | date | datetime | time): `DATE | TIME | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
             enddate (T | date | datetime | time): `DATE | TIME | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
 
+        Examples:
+            date_sub('hour', TIMESTAMPTZ '1992-09-30 23:59:59', TIMESTAMPTZ '1992-10-01 01:58:00')
+
         Returns:
             T
         """
@@ -5888,6 +7003,9 @@ class DateTimeFns[T: Fns](NameSpaceHandler[T]):
 
         Args:
             timestamp (T | date | datetime | timedelta): `DATE | INTERVAL | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
+
+        Examples:
+            date_trunc('hour', TIMESTAMPTZ '1992-09-20 20:38:40')
 
         Returns:
             T
@@ -5902,6 +7020,9 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
         """Returns a LIST containing all the values of a column.
 
         **SQL name**: *array_agg*
+
+        Examples:
+            array_agg(A)
 
         Returns:
             T
@@ -5920,6 +7041,9 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
             function_name (T | str): `VARCHAR` expression
             *args (T): `ANY` expression
 
+        Examples:
+            array_aggr([1, 2, NULL], 'min')
+
         Returns:
             T
         """
@@ -5936,6 +7060,9 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
         Args:
             function_name (T | str): `VARCHAR` expression
             *args (T): `ANY` expression
+
+        Examples:
+            array_aggregate([1, 2, NULL], 'min')
 
         Returns:
             T
@@ -5968,6 +7095,9 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
         Args:
             lambda_arg (T): `LAMBDA` expression
 
+        Examples:
+            array_apply([1, 2, 3], lambda x : x + 1)
+
         Returns:
             T
         """
@@ -5987,6 +7117,9 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
 
         Args:
             *args (T): `ANY[]` expression
+
+        Examples:
+            array_cat([2, 3], [4, 5, 6], [7])
 
         Returns:
             T
@@ -6008,6 +7141,9 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
         Args:
             *args (T): `ANY[]` expression
 
+        Examples:
+            array_concat([2, 3], [4, 5, 6], [7])
+
         Returns:
             T
         """
@@ -6023,6 +7159,9 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
 
         Args:
             element (T): `T` expression
+
+        Examples:
+            array_contains([1, 2, NULL], 1)
 
         Returns:
             T
@@ -6041,6 +7180,9 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
         Args:
             array2 (T | float): `DOUBLE[ANY] | FLOAT[ANY]` expression
 
+        Examples:
+            array_cosine_distance(array_value(1.0::FLOAT, 2.0::FLOAT, 3.0::FLOAT), array_value(2.0::FLOAT, 3.0::FLOAT, 4.0::FLOAT))
+
         Returns:
             T
         """
@@ -6058,6 +7200,9 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
         Args:
             array2 (T | float): `DOUBLE[ANY] | FLOAT[ANY]` expression
 
+        Examples:
+            array_cosine_similarity(array_value(1.0::FLOAT, 2.0::FLOAT, 3.0::FLOAT), array_value(2.0::FLOAT, 3.0::FLOAT, 4.0::FLOAT))
+
         Returns:
             T
         """
@@ -6072,6 +7217,9 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
 
         Args:
             array (T | float): `DOUBLE[3] | FLOAT[3]` expression
+
+        Examples:
+            array_cross_product(array_value(1.0::FLOAT, 2.0::FLOAT, 3.0::FLOAT), array_value(2.0::FLOAT, 3.0::FLOAT, 4.0::FLOAT))
 
         Returns:
             T
@@ -6090,6 +7238,9 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
         Args:
             array2 (T | float): `DOUBLE[ANY] | FLOAT[ANY]` expression
 
+        Examples:
+            array_distance(array_value(1.0::FLOAT, 2.0::FLOAT, 3.0::FLOAT), array_value(2.0::FLOAT, 3.0::FLOAT, 4.0::FLOAT))
+
         Returns:
             T
         """
@@ -6104,6 +7255,9 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
 
         See Also:
             list_distinct
+
+        Examples:
+            array_distinct([1, 1, NULL, -3, 1, 5])
 
         Returns:
             T
@@ -6124,6 +7278,9 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
 
         Args:
             array2 (T | float): `DOUBLE[ANY] | FLOAT[ANY]` expression
+
+        Examples:
+            array_dot_product(array_value(1.0::FLOAT, 2.0::FLOAT, 3.0::FLOAT), array_value(2.0::FLOAT, 3.0::FLOAT, 4.0::FLOAT))
 
         Returns:
             T
@@ -6158,6 +7315,9 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
         Args:
             lambda_arg (T): `LAMBDA` expression
 
+        Examples:
+            array_filter([3, 4, 5], lambda x : x > 4)
+
         Returns:
             T
         """
@@ -6175,6 +7335,9 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
             col1 (T | str | None): `VARCHAR` expression
             col2 (T | str | None): `VARCHAR` expression
 
+        Examples:
+            array_grade_up([3, 6, 1, 2])
+
         Returns:
             T
         """
@@ -6190,6 +7353,9 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
 
         Args:
             element (T): `T` expression
+
+        Examples:
+            array_has([1, 2, NULL], 1)
 
         Returns:
             T
@@ -6209,6 +7375,9 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
         Args:
             list2 (T): `T[]` expression
 
+        Examples:
+            array_has_all([1, 2, 3], [2, 3])
+
         Returns:
             T
         """
@@ -6227,6 +7396,9 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
         Args:
             list2 (T): `T[]` expression
 
+        Examples:
+            array_has_any([1, 2, 3], [2, 3, 4])
+
         Returns:
             T
         """
@@ -6244,6 +7416,9 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
 
         Args:
             element (T): `T` expression
+
+        Examples:
+            array_indexof([1, 2, NULL], 2)
 
         Returns:
             T
@@ -6264,6 +7439,9 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
 
         Args:
             array2 (T | float): `DOUBLE[ANY] | FLOAT[ANY]` expression
+
+        Examples:
+            array_inner_product(array_value(1.0::FLOAT, 2.0::FLOAT, 3.0::FLOAT), array_value(2.0::FLOAT, 3.0::FLOAT, 4.0::FLOAT))
 
         Returns:
             T
@@ -6288,6 +7466,9 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
 
         **SQL name**: *array_length*
 
+        Examples:
+            array_length([1, 2, 3])
+
         Returns:
             T
         """
@@ -6300,6 +7481,9 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
 
         Args:
             dimension (T | int | None): `BIGINT` expression
+
+        Examples:
+            array_length([1, 2, 3])
 
         Returns:
             T
@@ -6321,6 +7505,9 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
         Args:
             array2 (T | float): `DOUBLE[ANY] | FLOAT[ANY]` expression
 
+        Examples:
+            array_negative_dot_product(array_value(1.0::FLOAT, 2.0::FLOAT, 3.0::FLOAT), array_value(2.0::FLOAT, 3.0::FLOAT, 4.0::FLOAT))
+
         Returns:
             T
         """
@@ -6340,6 +7527,9 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
 
         Args:
             array2 (T | float): `DOUBLE[ANY] | FLOAT[ANY]` expression
+
+        Examples:
+            array_negative_inner_product(array_value(1.0::FLOAT, 2.0::FLOAT, 3.0::FLOAT), array_value(2.0::FLOAT, 3.0::FLOAT, 4.0::FLOAT))
 
         Returns:
             T
@@ -6378,6 +7568,9 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
 
         Args:
             element (T): `T` expression
+
+        Examples:
+            array_position([1, 2, NULL], 2)
 
         Returns:
             T
@@ -6437,6 +7630,9 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
             lambda_arg (T): `LAMBDA` expression
             initial_value (T | None): `ANY` expression
 
+        Examples:
+            array_reduce([1, 2, 3], lambda x, y : x + y)
+
         Returns:
             T
         """
@@ -6455,6 +7651,9 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
         Args:
             size (T): `ANY` expression
             value (T | None): `ANY` expression
+
+        Examples:
+            array_resize([1, 2, 3], 5, 0)
 
         Returns:
             T
@@ -6482,6 +7681,9 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
         Args:
             col1 (T | str | None): `VARCHAR` expression
 
+        Examples:
+            array_reverse_sort([3, 6, 1, 2])
+
         Returns:
             T
         """
@@ -6497,6 +7699,9 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
 
         Args:
             index_list (T | list[int]): `BIGINT[]` expression
+
+        Examples:
+            array_select([10, 20, 30, 40], [1, 4])
 
         Returns:
             T
@@ -6518,6 +7723,11 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
             end (T): `ANY` expression
             step (T | int | None): `BIGINT` expression
 
+        Examples:
+            array_slice('DuckDB', 3, 4)
+            array_slice('DuckDB', 3, NULL)
+            array_slice('DuckDB', 0, -3)
+
         Returns:
             T
         """
@@ -6534,6 +7744,9 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
         Args:
             col1 (T | str | None): `VARCHAR` expression
             col2 (T | str | None): `VARCHAR` expression
+
+        Examples:
+            array_sort([3, 6, 1, 2])
 
         Returns:
             T
@@ -6592,6 +7805,9 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
         Args:
             lambda_arg (T): `LAMBDA` expression
 
+        Examples:
+            array_transform([1, 2, 3], lambda x : x + 1)
+
         Returns:
             T
         """
@@ -6605,6 +7821,9 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
         See Also:
             list_unique
 
+        Examples:
+            array_unique([1, 1, NULL, -3, 1, 5])
+
         Returns:
             T
         """
@@ -6617,6 +7836,9 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
 
         Args:
             *args (T): `ANY` expression
+
+        Examples:
+            array_value(1.0::FLOAT, 2.0::FLOAT, 3.0::FLOAT)
 
         Returns:
             T
@@ -6633,6 +7855,9 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
 
         Args:
             mask_list (T | list[bool]): `BOOLEAN[]` expression
+
+        Examples:
+            array_where([10, 20, 30, 40], [true, false, false, true])
 
         Returns:
             T
@@ -6653,6 +7878,11 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
 
         Args:
             *args (T): `ANY` expression
+
+        Examples:
+            array_zip([1, 2], [3, 4], [5, 6])
+            array_zip([1, 2], [3, 4], [5, 6, 7])
+            array_zip([1, 2], [3, 4], [5, 6, 7], true)
 
         Returns:
             T
@@ -7005,6 +8235,9 @@ class MapFns[T: Fns](NameSpaceHandler[T]):
         Args:
             *args (T): `ANY` expression
 
+        Examples:
+            map_concat(map([1, 2], ['a', 'b']), map([2, 3], ['c', 'd']));
+
         Returns:
             T
         """
@@ -7017,6 +8250,9 @@ class MapFns[T: Fns](NameSpaceHandler[T]):
 
         Args:
             key (T): `K` expression
+
+        Examples:
+            map_contains(MAP {'key1': 10, 'key2': 20, 'key3': 30}, 'key2')
 
         Returns:
             T
@@ -7055,6 +8291,9 @@ class MapFns[T: Fns](NameSpaceHandler[T]):
 
         **SQL name**: *map_entries*
 
+        Examples:
+            map_entries(map(['key'], ['val']))
+
         Returns:
             T
         """
@@ -7073,6 +8312,9 @@ class MapFns[T: Fns](NameSpaceHandler[T]):
         Args:
             key (T): `K` expression
 
+        Examples:
+            map_extract(map(['key'], ['val']), 'key')
+
         Returns:
             T
         """
@@ -7088,6 +8330,9 @@ class MapFns[T: Fns](NameSpaceHandler[T]):
         Args:
             key (T): `K` expression
 
+        Examples:
+            map_extract_value(map(['key'], ['val']), 'key')
+
         Returns:
             T
         """
@@ -7098,6 +8343,9 @@ class MapFns[T: Fns](NameSpaceHandler[T]):
 
         **SQL name**: *map_from_entries*
 
+        Examples:
+            map_from_entries([{k: 5, v: 'val1'}, {k: 3, v: 'val2'}]);
+
         Returns:
             T
         """
@@ -7107,6 +8355,9 @@ class MapFns[T: Fns](NameSpaceHandler[T]):
         """Returns the keys of a map as a list.
 
         **SQL name**: *map_keys*
+
+        Examples:
+            map_keys(map(['key'], ['val']))
 
         Returns:
             T
@@ -7127,6 +8378,9 @@ class MapFns[T: Fns](NameSpaceHandler[T]):
         """Returns the values of a map as a list.
 
         **SQL name**: *map_values*
+
+        Examples:
+            map_values(map(['key'], ['val']))
 
         Returns:
             T

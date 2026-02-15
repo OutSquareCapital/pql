@@ -227,6 +227,7 @@ class DuckCols:
     function_type: pl.Expr = field(default=pl.col("function_type"))
     description: pl.Expr = field(default=pl.col("description"))
     categories: pl.Expr = field(default=pl.col("categories"))
+    examples: pl.Expr = field(default=pl.col("examples"))
     varargs: pl.Expr = field(default=pl.col("varargs"))
     alias_of: pl.Expr = field(default=pl.col("alias_of"))
     parameters: pl.Expr = field(default=pl.col("parameters"))

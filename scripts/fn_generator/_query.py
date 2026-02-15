@@ -324,6 +324,13 @@ def _to_func(
                 ignore_nulls=True,
             )
         ),
+        examples_section=pl.when(dk.examples.list.len().gt(0)).then(
+            format_kwords(
+                "\n\n        Examples:\n            {examples}",
+                examples=dk.examples.list.join("\n            "),
+                ignore_nulls=True,
+            )
+        ),
         sql_name=dk.function_name,
         dk_name=dk.function_name,
         dk_args=pl.when(has_params.gt(1)).then(
@@ -339,7 +346,7 @@ def _txt() -> str:
     def {func_name}(self{args}{varargs}) -> {self_type}:
         """{description}.
 
-        **SQL name**: *{sql_name}*{see_also_section}{args_section}
+        **SQL name**: *{sql_name}*{see_also_section}{args_section}{examples_section}
 
         Returns:
             {self_type}
