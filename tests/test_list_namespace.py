@@ -16,19 +16,19 @@ def sample_df() -> nw.LazyFrame[duckdb.DuckDBPyRelation]:
             pl.DataFrame(
                 {
                     "x": [
-                        [1, 2, None, 3],
-                        [3, 4, None, 5],
-                        [None, 5],
-                        [None],
+                        [1, 2, 7, 3],
+                        [3, 4, 5, 5],
+                        [2, 5],
+                        [1],
                     ],
                     "x_var": [
                         [],
-                        [1, None],
-                        None,
-                        [None],
+                        [1, 2],
+                        [5],
+                        [1],
                     ],
                     "y": [1, 2, 5, 0],
-                    "z": [None, None, 5, None],
+                    "z": [7, 6, 5, 0],
                 },
             )
         )

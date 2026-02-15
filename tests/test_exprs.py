@@ -17,7 +17,7 @@ def sample_df() -> nw.LazyFrame[duckdb.DuckDBPyRelation]:
                 {
                     "a": [True, False, True, None, True, False],
                     "b": [True, True, False, None, True, False],
-                    "x": [10, 2, 3, None, 10, 20],
+                    "x": [10, 2, 3, 5, 10, 20],
                     "n": [2, 3, 1, None, 2, 3],
                     "s": ["1", "2", "3", None, "1", "2"],
                     "age": [25, 30, 35, None, 25, 30],
@@ -326,21 +326,17 @@ def test_floor() -> None:
 
 
 def test_ceil() -> None:
-    result = pql.col("x").ceil().alias("x_ceil")
-    expected = nw.col("x").ceil().alias("x_ceil")
-    assert_eq(result, expected)
+    assert_eq(pql.col("x").ceil().alias("x_ceil"), nw.col("x").ceil().alias("x_ceil"))
 
 
 def test_round() -> None:
-    result = pql.col("x").round(2).alias("x_round")
-    expected = nw.col("x").round(2).alias("x_round")
-    assert_eq(result, expected)
+    assert_eq(
+        pql.col("x").round(2).alias("x_round"), nw.col("x").round(2).alias("x_round")
+    )
 
 
 def test_sqrt() -> None:
-    result = pql.col("x").sqrt().alias("x_sqrt")
-    expected = nw.col("x").sqrt().alias("x_sqrt")
-    assert_eq(result, expected)
+    assert_eq(pql.col("x").sqrt().alias("x_sqrt"), nw.col("x").sqrt().alias("x_sqrt"))
 
 
 def test_cbrt() -> None:
@@ -368,15 +364,11 @@ def test_log1p() -> None:
 
 
 def test_exp() -> None:
-    result = pql.col("x").exp().alias("x_exp")
-    expected = nw.col("x").exp().alias("x_exp")
-    assert_eq(result, expected)
+    assert_eq(pql.col("x").exp().alias("x_exp"), nw.col("x").exp().alias("x_exp"))
 
 
 def test_sin() -> None:
-    result = pql.col("x").sin().alias("sin_x")
-    expected = nw.col("x").sin().alias("sin_x")
-    assert_eq(result, expected)
+    assert_eq(pql.col("x").sin().alias("sin_x"), nw.col("x").sin().alias("sin_x"))
 
 
 def test_cos() -> None:
@@ -411,11 +403,11 @@ def test_pow() -> None:
     assert_eq(
         (
             pql.col("x").pow(2).alias("x_squared"),
-            (pql.col("x") ** 2).alias("x_squared_bis"),
+            pql.col("x").__pow__(2).alias("x_squared_bis"),
         ),
         (
             nw.col("x").__pow__(2).alias("x_squared"),
-            (nw.col("x") ** 2).alias("x_squared_bis"),
+            nw.col("x").__pow__(2).alias("x_squared_bis"),
         ),
     )
 

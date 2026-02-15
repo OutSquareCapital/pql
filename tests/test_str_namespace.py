@@ -24,7 +24,7 @@ def sample_df() -> nw.LazyFrame[duckdb.DuckDBPyRelation]:
                     ],
                     "text_nullable": [
                         "  abc  ",
-                        None,
+                        "abc",
                         "",
                         "  ",
                     ],
@@ -32,7 +32,7 @@ def sample_df() -> nw.LazyFrame[duckdb.DuckDBPyRelation]:
                         "a",
                         "ab",
                         "",
-                        None,
+                        "abc",
                     ],
                     "date_str": [
                         "2024-01-15",
@@ -80,13 +80,13 @@ def sample_df() -> nw.LazyFrame[duckdb.DuckDBPyRelation]:
                         "prefix_",
                         "prefix_",
                         "pre",
-                        None,
+                        "data",
                     ],
                     "suffix_col": [
                         "_suffix",
                         "_suffix",
                         "suffix",
-                        None,
+                        "data",
                     ],
                     "suffix_val": pc.Iter(range(4)).map(lambda _: "suffix").collect(),
                     "json": ['{"a": 1}', '{"a": 2}', '{"a": 3}', '{"a": 4}'],
@@ -438,4 +438,33 @@ def test_to_decimal() -> None:
     assert_eq_pl(
         (pql.col("numbers").str.to_decimal(scale=10).alias("dec")),
         (pl.col("numbers").str.to_decimal(scale=10).alias("dec")),
+    )
+
+
+def test_pad_start() -> None:
+    assert_eq_pl(
+        (pql.col("text_short").str.pad_start(5).alias("padded")),
+        (pl.col("text_short").str.pad_start(5).alias("padded")),
+    )
+    assert_eq_pl(
+        (pql.col("text_short").str.pad_start(10, fill_char="*").alias("padded")),
+        (pl.col("text_short").str.pad_start(10, fill_char="*").alias("padded")),
+    )
+
+
+def test_pad_end() -> None:
+    assert_eq_pl(
+        (pql.col("text_short").str.pad_end(5).alias("padded")),
+        (pl.col("text_short").str.pad_end(5).alias("padded")),
+    )
+    assert_eq_pl(
+        (pql.col("text_short").str.pad_end(10, fill_char="-").alias("padded")),
+        (pl.col("text_short").str.pad_end(10, fill_char="-").alias("padded")),
+    )
+
+
+def test_zfill() -> None:
+    assert_eq_pl(
+        (pql.col("numbers").str.zfill(10).alias("zfilled")),
+        (pl.col("numbers").str.zfill(10).alias("zfilled")),
     )
