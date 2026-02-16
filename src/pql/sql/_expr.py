@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING, Any, Self
 import duckdb
 import pyochain as pc
 
-from ._core import func, into_duckdb, try_iter
+from ._core import func, into_duckdb, try_flatten, try_iter
 from ._rel import Expression
 from ._window import over_expr
 from .fns import (
@@ -36,12 +36,25 @@ def fn_once(lhs: Any, rhs: SqlExpr) -> SqlExpr:  # noqa: ANN401
     return SqlExpr(duckdb.LambdaExpression(lhs, rhs.inner()))
 
 
-def all(*, exclude: Iterable[SqlExpr | str] | None = None) -> SqlExpr:
-    return SqlExpr(duckdb.StarExpression(exclude=into_duckdb(exclude)))
+def all(*, exclude: Iterable[IntoExprColumn] | None = None) -> SqlExpr:
+    return (
+        pc.Option(exclude)
+        .map(
+            lambda x: (
+                pc.Iter(x).map(lambda e: into_expr(e, as_col=True).inner()).collect()
+            )
+        )
+        .map(lambda exc: SqlExpr(duckdb.StarExpression(exclude=exc)))
+        .unwrap_or(SqlExpr(duckdb.StarExpression()))
+    )
 
 
-def when(condition: SqlExpr, value: SqlExpr) -> SqlExpr:
-    return SqlExpr(duckdb.CaseExpression(condition.inner(), value.inner()))
+def when(condition: IntoExpr, value: IntoExpr) -> SqlExpr:
+    return SqlExpr(
+        duckdb.CaseExpression(
+            into_expr(condition).inner(), into_expr(value, as_col=True).inner()
+        )
+    )
 
 
 def col(name: str) -> SqlExpr:
@@ -59,9 +72,13 @@ def raw(sql: str) -> SqlExpr:
     return SqlExpr(duckdb.SQLExpression(sql))
 
 
-def coalesce(*exprs: SqlExpr) -> SqlExpr:
+def coalesce(exprs: IntoExpr | Iterable[IntoExpr], *more_exprs: IntoExpr) -> SqlExpr:
     """Create a COALESCE expression."""
-    return SqlExpr(duckdb.CoalesceOperator(*pc.Iter(exprs).map(lambda e: e.inner())))
+    return SqlExpr(
+        duckdb.CoalesceOperator(
+            *try_iter(exprs).chain(more_exprs).map(lambda e: into_expr(e).inner())
+        )
+    )
 
 
 def into_expr(value: IntoExpr, *, as_col: bool = False) -> SqlExpr:
@@ -71,8 +88,6 @@ def into_expr(value: IntoExpr, *, as_col: bool = False) -> SqlExpr:
     match value:
         case SqlExpr():
             return value
-        case duckdb.Expression():
-            return SqlExpr(value)
         case Expr():
             return value.inner()
         case str() if as_col:
@@ -81,8 +96,8 @@ def into_expr(value: IntoExpr, *, as_col: bool = False) -> SqlExpr:
             return lit(value)
 
 
-def iter_into_exprs(exprs: IntoExprColumn) -> pc.Iter[SqlExpr]:
-    return try_iter(exprs).flat_map(try_iter).map(lambda v: into_expr(v, as_col=True))
+def iter_into_exprs(exprs: IntoExpr | Iterable[IntoExpr]) -> pc.Iter[SqlExpr]:
+    return try_flatten(exprs).map(lambda v: into_expr(v, as_col=True))
 
 
 def args_into_exprs(

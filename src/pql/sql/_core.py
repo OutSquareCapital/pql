@@ -22,6 +22,10 @@ def try_iter[T](val: Iterable[T] | T) -> pc.Iter[T]:
             return pc.Iter[T].once(val)
 
 
+def try_flatten[T](vals: T | Iterable[T]) -> pc.Iter[T]:
+    return try_iter(vals).flat_map(try_iter)
+
+
 @dataclass(slots=True)
 class ExprHandler[T]:
     """A wrapper for expressions."""

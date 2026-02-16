@@ -1,4 +1,3 @@
-from collections.abc import Iterable
 from datetime import date, datetime, time, timedelta
 from typing import TYPE_CHECKING, Any
 
@@ -10,13 +9,13 @@ if TYPE_CHECKING:
     from .._expr import Expr
     from ._expr import SqlExpr
 
-type ExprLike = SqlExpr | Expr | duckdb.Expression
+type ExprLike = SqlExpr | Expr
 
 
 type FrameInit = (
     duckdb.DuckDBPyRelation | str | pl.DataFrame | pl.LazyFrame | FrameInitTypes
 )
-type PyLiteral = (
+type NonNested = (
     str
     | int
     | float
@@ -28,9 +27,7 @@ type PyLiteral = (
     | bytes
     | bytearray
     | memoryview
-    | list[PyLiteral]
-    | dict[Any, PyLiteral]
-    | None
 )
+type PyLiteral = NonNested | list[PyLiteral] | dict[Any, PyLiteral] | None
 type IntoExpr = PyLiteral | ExprLike
-type IntoExprColumn = str | ExprLike | Iterable[ExprLike]
+type IntoExprColumn = str | ExprLike

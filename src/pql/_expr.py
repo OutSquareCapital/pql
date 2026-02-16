@@ -712,9 +712,7 @@ class Expr(ExprHandler[SqlExpr]):
 
     def fill_nan(self, value: float | Expr | None) -> Self:
         """Fill NaN values."""
-        return self._new(
-            sql.when(self._expr.isnan(), into_expr(value)).otherwise(self._expr)
-        )
+        return self._new(sql.when(self._expr.isnan(), value).otherwise(self._expr))
 
     def fill_null(  # noqa: PLR0911,PLR0912,C901
         self,
@@ -724,7 +722,7 @@ class Expr(ExprHandler[SqlExpr]):
     ) -> Self:
         match (pc.Option(value), pc.Option(strategy)):
             case (pc.Some(val), pc.NONE):
-                return self._new(sql.coalesce(self._expr, into_expr(val)))
+                return self._new(sql.coalesce(self._expr, val))
             case (_, pc.Some("forward") | pc.Some("backward") as strat):
                 match pc.Option(limit):
                     case pc.Some(lim) if lim <= 0:
@@ -769,9 +767,7 @@ class Expr(ExprHandler[SqlExpr]):
     def replace(self, old: IntoExpr, new: IntoExpr) -> Self:
         """Replace values."""
         return self._new(
-            sql.when(self._expr.eq(into_expr(old)), into_expr(new)).otherwise(
-                self._expr
-            )
+            sql.when(self._expr.eq(into_expr(old)), new).otherwise(self._expr)
         )
 
     def repeat_by(self, by: Expr | int) -> Self:
@@ -873,8 +869,7 @@ class ExprStringNameSpace:
             case None:
                 return Expr(self._expr.str.ltrim())
             case _:
-                characters_expr = into_expr(characters)
-                return Expr(self._expr.str.ltrim(characters_expr))
+                return Expr(self._expr.str.ltrim(into_expr(characters)))
 
     def strip_chars_end(self, characters: IntoExpr = None) -> Expr:
         """Strip trailing characters."""
@@ -882,8 +877,7 @@ class ExprStringNameSpace:
             case None:
                 return Expr(self._expr.str.rtrim())
             case _:
-                characters_expr = into_expr(characters)
-                return Expr(self._expr.str.rtrim(characters_expr))
+                return Expr(self._expr.str.rtrim(into_expr(characters)))
 
     def slice(self, offset: int, length: int | None = None) -> Expr:
         """Extract a substring."""
