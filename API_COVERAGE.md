@@ -7,7 +7,7 @@ This report shows the API coverage of pql compared to Polars.
 | Class       | Coverage vs Narwhals | Total | Matched | Missing | Mismatched | Extra | Extra vs Narwhals |
 | ----------- | -------------------- | ----- | ------- | ------- | ---------- | ----- | ----------------- |
 | LazyFrame   | 56.2%                | 48    | 27      | 11      | 10         | 1     | 22                |
-| Expr        | 80.2%                | 106   | 85      | 9       | 12         | 2     | 36                |
+| Expr        | 82.1%                | 106   | 87      | 7       | 12         | 2     | 36                |
 | Expr.str    | 93.1%                | 29    | 27      | 0       | 2          | 0     | 10                |
 | Expr.list   | 100.0%               | 10    | 10      | 0       | 0          | 2     | 0                 |
 | Expr.struct | 100.0%               | 1     | 1       | 0       | 0          | 2     | 0                 |
@@ -71,14 +71,12 @@ This report shows the API coverage of pql compared to Polars.
 
 ## Expr
 
-### [x] Missing Methods (9)
+### [x] Missing Methods (7)
 
 - `any_value` (ignore_nulls: bool) -> Self
 - `cat` ()
 - `dt` ()
 - `ewm_mean` (com: float | None, span: float | None, half_life: float | None, alpha: float | None, adjust: bool, min_samples: int, ignore_nulls: bool) -> Self
-- `first` (order_by: str | Iterable[str] | None) -> Self
-- `last` (order_by: str | Iterable[str] | None) -> Self
 - `map_batches` (function: Callable[[Any], CompliantExpr[Any, Any]], return_dtype: DType | None, returns_scalar: bool) -> Self
 - `name` ()
 - `replace_strict` (old: Sequence[Any] | Mapping[Any, Any], new: Sequence[Any] | None, default: Any | NoDefault, return_dtype: IntoDType | None) -> Self

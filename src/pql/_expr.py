@@ -357,6 +357,24 @@ class Expr(ExprHandler[SqlExpr]):
         """Compute the maximum."""
         return self._new(self._expr.max(), is_scalar_like=True)
 
+    def first(self, *, ignore_nulls: bool = False) -> Self:
+        """Get first value."""
+        match ignore_nulls:
+            case True:
+                return self._new(self._expr.any_value(), is_scalar_like=True)
+            case False:
+                return self._new(self._expr.first(), is_scalar_like=True)
+
+    def last(self, *, ignore_nulls: bool = False) -> Self:
+        """Get last value."""
+        match ignore_nulls:
+            case True:
+                return self._new(
+                    self.filter(self.is_not_null()).inner().last(), is_scalar_like=True
+                )
+            case False:
+                return self._new(self._expr.last(), is_scalar_like=True)
+
     def mode(self) -> Self:
         """Compute mode."""
         return self._new(self._expr.mode(), is_scalar_like=True)

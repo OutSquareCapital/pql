@@ -552,6 +552,52 @@ def test_max() -> None:
     assert_eq_pl(pql.col("x").max().alias("x_max"), pl.col("x").max().alias("x_max"))
 
 
+def test_first_expr() -> None:
+    assert_eq_pl(
+        pql.col("x").first().alias("x_first"),
+        pl.col("x").first().alias("x_first"),
+    )
+    assert_eq_pl(
+        pql.col("x").first(ignore_nulls=False).alias("x_first_with_null"),
+        pl.col("x").first(ignore_nulls=False).alias("x_first_with_null"),
+    )
+    assert_eq_pl(
+        pql.col("x").first(ignore_nulls=True).alias("x_first_non_null"),
+        pl.col("x").first(ignore_nulls=True).alias("x_first_non_null"),
+    )
+    assert_eq_pl(
+        pql.col("age").first(ignore_nulls=False).alias("age_first_with_nulls"),
+        pl.col("age").first(ignore_nulls=False).alias("age_first_with_nulls"),
+    )
+    assert_eq_pl(
+        pql.col("age").first(ignore_nulls=True).alias("age_first_non_null"),
+        pl.col("age").first(ignore_nulls=True).alias("age_first_non_null"),
+    )
+
+
+def test_last_expr() -> None:
+    assert_eq_pl(
+        pql.col("x").last().alias("x_last"),
+        pl.col("x").last().alias("x_last"),
+    )
+    assert_eq_pl(
+        pql.col("x").last(ignore_nulls=False).alias("x_last_with_null"),
+        pl.col("x").last(ignore_nulls=False).alias("x_last_with_null"),
+    )
+    assert_eq_pl(
+        pql.col("x").last(ignore_nulls=True).alias("x_last_non_null"),
+        pl.col("x").last(ignore_nulls=True).alias("x_last_non_null"),
+    )
+    assert_eq_pl(
+        pql.col("age").last(ignore_nulls=False).alias("age_last_with_nulls"),
+        pl.col("age").last(ignore_nulls=False).alias("age_last_with_nulls"),
+    )
+    assert_eq_pl(
+        pql.col("age").last(ignore_nulls=True).alias("age_last_non_null"),
+        pl.col("age").last(ignore_nulls=True).alias("age_last_non_null"),
+    )
+
+
 def test_mode_expr() -> None:
     assert_eq_pl(
         pql.col("x").mode().alias("x_mode"),
