@@ -91,15 +91,6 @@ class DuckHandler(ExprHandler[duckdb.Expression]):
     __slots__ = ()
 
 
-def into_duckdb[T](value: T | DuckHandler) -> T | duckdb.Expression:
-    """Convert a value to a DuckDB Expression if it's a SqlExpr, otherwise return it as is."""
-    match value:
-        case DuckHandler():
-            return value.inner()
-        case _:
-            return value
-
-
 @dataclass(slots=True)
 class NameSpaceHandler[T: DuckHandler]:
     """A wrapper for expression namespaces that return the parent type."""
@@ -114,27 +105,20 @@ class NameSpaceHandler[T: DuckHandler]:
         return self._parent.inner()
 
 
+def into_duckdb[T](value: T | DuckHandler) -> T | duckdb.Expression:
+    """Convert a value to a DuckDB Expression if it's a SqlExpr, otherwise return it as is."""
+    match value:
+        case DuckHandler():
+            return value.inner()
+        case _:
+            return value
+
+
 def func(name: str, *args: Any) -> duckdb.Expression:  # noqa: ANN401
     """Create a SQL function expression."""
-    from .._expr import Expr
-
-    def any_into_duckdb(arg: Any) -> duckdb.Expression:  # noqa: ANN401
-
-        match arg:
-            case duckdb.Expression():
-                return arg
-            case DuckHandler():
-                return arg.inner()
-            case Expr():
-                return arg.inner().inner()
-            case str():
-                return duckdb.ColumnExpression(arg)
-            case _:
-                return duckdb.ConstantExpression(arg)
-
     return (
         pc.Iter(args)
         .filter(lambda a: a is not None)
-        .map(any_into_duckdb)
+        .map(into_duckdb)
         .into(lambda args: duckdb.FunctionExpression(name, *args))
     )

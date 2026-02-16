@@ -606,7 +606,9 @@ class Relation(RelHandler):
 
     def project(self, *args: str | DuckHandler, groups: str = "") -> Self:
         """Project the relation object by the projection in project_expr."""
-        return self._new(self.inner().project(*(map(into_duckdb, args)), groups=groups))
+        return self._new(
+            self.inner().project(*pc.Iter(args).map(into_duckdb), groups=groups)
+        )
 
     def quantile(
         self,
@@ -672,7 +674,9 @@ class Relation(RelHandler):
 
     def select(self, *args: str | DuckHandler, groups: str = "") -> Self:
         """Project the relation object by the projection in project_expr."""
-        return self._new(self.inner().select(*(map(into_duckdb, args)), groups=groups))
+        return self._new(
+            self.inner().select(*pc.Iter(args).map(into_duckdb), groups=groups)
+        )
 
     def select_dtypes(self, types: list[sqltypes.DuckDBPyType | str]) -> Self:
         """Select columns from the relation, by filtering based on type(s)."""
@@ -706,7 +710,7 @@ class Relation(RelHandler):
 
     def sort(self, *args: DuckHandler) -> Self:
         """Reorder the relation object by the provided expressions."""
-        return self._new(self.inner().sort(*(map(lambda arg: arg.inner(), args))))
+        return self._new(self.inner().sort(*pc.Iter(args).map(lambda arg: arg.inner())))
 
     def sql_query(self) -> str:
         """Get the SQL query that is equivalent to the relation."""
@@ -1423,7 +1427,7 @@ class Expression(DuckHandler):
         Returns:
                 DuckDBPyExpression: The compare IN expression
         """
-        return self._new(self.inner().isin(*(map(lambda arg: arg.inner(), args))))
+        return self._new(self.inner().isin(*pc.Iter(args).map(lambda arg: arg.inner())))
 
     def is_not_in(self, *args: Self) -> Self:
         """Return a NOT IN expression comparing self to the input arguments.
@@ -1431,7 +1435,9 @@ class Expression(DuckHandler):
         Returns:
                 DuckDBPyExpression: The compare NOT IN expression
         """
-        return self._new(self.inner().isnotin(*(map(lambda arg: arg.inner(), args))))
+        return self._new(
+            self.inner().isnotin(*pc.Iter(args).map(lambda arg: arg.inner()))
+        )
 
     def is_not_null(self) -> Self:
         """Create a binary IS NOT NULL expression from self.

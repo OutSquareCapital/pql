@@ -29,13 +29,13 @@ class ParamInfo:
             case t if t == REL_TARGET:
                 match target.rewrite_type(self.annotation):
                     case a if PyLit.DUCK_HANDLER in a and PyLit.STR not in a:
-                        return f"*(map(lambda arg: arg.inner(), {self.name}))"
+                        return f"*pc.Iter({self.name}).map(lambda arg: arg.inner())"
                     case a if PyLit.DUCK_HANDLER in a:
-                        return f"*(map({PyLit.INTO_DUCKDB}, {self.name}))"
+                        return f"*pc.Iter({self.name}).map({PyLit.INTO_DUCKDB})"
                     case _:
                         return f"*{self.name}"
             case _ if target.stub_class in self.annotation:
-                return f"*(map(lambda arg: arg.inner(), {self.name}))"
+                return f"*pc.Iter({self.name}).map(lambda arg: arg.inner())"
             case _:
                 return f"*{self.name}"
 
@@ -56,9 +56,7 @@ class ParamInfo:
                 match self.annotation:
                     case a if PyLit.ITERABLE in a and target.stub_class in a:
                         return f"try_iter({self.name}).map(lambda arg: arg.inner())"
-                    case a if target.stub_class in a:
-                        return f"{self.name}.inner()"
-                    case a if PyLit.DUCK_REL in a:
+                    case a if target.stub_class in a or PyLit.DUCK_REL in a:
                         return f"{self.name}.inner()"
                     case _:
                         return self.name
