@@ -6,7 +6,7 @@ This report shows the API coverage of pql compared to Polars.
 
 | Class       | Coverage vs Narwhals | Total | Matched | Missing | Mismatched | Extra | Extra vs Narwhals |
 | ----------- | -------------------- | ----- | ------- | ------- | ---------- | ----- | ----------------- |
-| LazyFrame   | 56.2%                | 48    | 27      | 11      | 10         | 1     | 22                |
+| LazyFrame   | 70.8%                | 48    | 34      | 2       | 12         | 1     | 22                |
 | Expr        | 82.1%                | 106   | 87      | 7       | 12         | 2     | 36                |
 | Expr.str    | 93.1%                | 29    | 27      | 0       | 2          | 0     | 10                |
 | Expr.list   | 100.0%               | 10    | 10      | 0       | 0          | 2     | 0                 |
@@ -14,21 +14,12 @@ This report shows the API coverage of pql compared to Polars.
 
 ## LazyFrame
 
-### [x] Missing Methods (11)
+### [x] Missing Methods (2)
 
-- `drop_nulls` (subset: str | list[str] | None) -> Self
-- `explode` (columns: str | Sequence[str], *more_columns: str) -> Self
-- `gather_every` (n: int, offset: int) -> Self
-- `group_by` (*keys: IntoExpr | Iterable[IntoExpr], drop_null_keys: bool) -> LazyGroupBy[Self]
-- `join` (other: Self, on: str | list[str] | None, how: JoinStrategy, left_on: str | list[str] | None, right_on: str | list[str] | None, suffix: str) -> Self
-- `join_asof` (other: Self, left_on: str | None, right_on: str | None, on: str | None, by_left: str | list[str] | None, by_right: str | list[str] | None, by: str | list[str] | None, strategy: AsofJoinStrategy, suffix: str) -> Self
 - `tail` (n: int) -> Self
 - `to_native` () -> LazyFrameT
-- `unique` (subset: str | list[str] | None, keep: UniqueKeepStrategy, order_by: str | Sequence[str] | None) -> Self
-- `unpivot` (on: str | list[str] | None, index: str | list[str] | None, variable_name: str, value_name: str) -> Self
-- `with_row_index` (name: str, order_by: str | Sequence[str]) -> Self
 
-### [!] Signature Mismatches (10)
+### [!] Signature Mismatches (12)
 
 - `cast` (pl)
   - Polars: (`dtypes: Mapping[ColumnNameOrSelector | PolarsDataType, PolarsDataType | PythonDataType] | PolarsDataType | pl.DataTypeExpr | Schema`, `strict: bool`) -> LazyFrame
@@ -44,6 +35,14 @@ This report shows the API coverage of pql compared to Polars.
 - `explain` (pl)
   - Polars: (`format: ExplainFormat`, `optimized: bool`, `type_coercion: bool`, `predicate_pushdown: bool`, `projection_pushdown: bool`, `simplify_expression: bool`, `slice_pushdown: bool`, `comm_subplan_elim: bool`, `comm_subexpr_elim: bool`, `cluster_with_columns: bool`, `collapse_joins: bool`, `streaming: bool`, `engine: EngineType`, `tree_format: bool | None`, `optimizations: QueryOptFlags`) -> str
   - pql: () -> str
+- `join` (nw)
+  - Narwhals: (other: Self, `on: str | list[str] | None`, how: JoinStrategy, `left_on: str | list[str] | None`, `right_on: str | list[str] | None`, suffix: str) -> Self
+  - Polars: (other: LazyFrame, `on: str | Expr | Sequence[str | Expr] | None`, how: JoinStrategy, `left_on: str | Expr | Sequence[str | Expr] | None`, `right_on: str | Expr | Sequence[str | Expr] | None`, suffix: str, `validate: JoinValidation`, `nulls_equal: bool`, `coalesce: bool | None`, `maintain_order: MaintainOrderJoin | None`, `allow_parallel: bool`, `force_parallel: bool`) -> LazyFrame
+  - pql: (other: Self, `on: str | Iterable[str] | None`, how: JoinStrategy, `left_on: str | Iterable[str] | None`, `right_on: str | Iterable[str] | None`, suffix: str) -> Self
+- `join_asof` (nw)
+  - Narwhals: (other: Self, left_on: str | None, right_on: str | None, on: str | None, `by_left: str | list[str] | None`, `by_right: str | list[str] | None`, `by: str | list[str] | None`, strategy: AsofJoinStrategy, suffix: str) -> Self
+  - Polars: (other: LazyFrame, `left_on: str | None | Expr`, `right_on: str | None | Expr`, `on: str | None | Expr`, `by_left: str | Sequence[str] | None`, `by_right: str | Sequence[str] | None`, `by: str | Sequence[str] | None`, strategy: AsofJoinStrategy, suffix: str, `tolerance: str | int | float | timedelta | None`, `allow_parallel: bool`, `force_parallel: bool`, `coalesce: bool`, `allow_exact_matches: bool`, `check_sortedness: bool`) -> LazyFrame
+  - pql: (other: Self, left_on: str | None, right_on: str | None, on: str | None, `by_left: str | Iterable[str] | None`, `by_right: str | Iterable[str] | None`, `by: str | Iterable[str] | None`, strategy: AsofJoinStrategy, suffix: str) -> Self
 - `quantile` (pl)
   - Polars: (`quantile: float | Expr`, `interpolation: QuantileMethod`) -> LazyFrame
   - pql: (`quantile: float`) -> Self

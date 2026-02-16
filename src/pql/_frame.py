@@ -4,8 +4,9 @@ from __future__ import annotations
 
 from collections.abc import Callable, Iterable, Mapping, Sequence
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Self, TypeIs
+from typing import TYPE_CHECKING, Any, Literal, NamedTuple, Self, TypeIs
 
+import duckdb
 import pyochain as pc
 
 from . import sql
@@ -25,8 +26,125 @@ if TYPE_CHECKING:
     import polars as pl
 
     from .sql import FrameInit, IntoExpr, IntoExprColumn
+
+JoinStrategy = Literal["inner", "left", "full", "cross", "semi", "anti"]
+AsofJoinStrategy = Literal["backward", "forward", "nearest"]
+UniqueKeepStrategy = Literal["any", "none", "first", "last"]
 TEMP_NAME = "__pql_temp__"
 TEMP_COL = sql.col(TEMP_NAME)
+
+type JoinKeysRes[T: pc.Seq[str] | str] = pc.Result[JoinKeys[T], ValueError]
+type OptIter[T] = pc.Option[T | Iterable[T]]
+
+
+class JoinKeys[T: pc.Seq[str] | str](NamedTuple):
+    left: T
+    right: T
+
+    @staticmethod
+    def from_on(
+        on: pc.Option[str], left_on: pc.Option[str], right_on: pc.Option[str]
+    ) -> JoinKeysRes[str]:
+        match (on, left_on, right_on):
+            case (pc.Some(on_key), pc.NONE, pc.NONE):
+                return pc.Ok(JoinKeys(on_key, on_key))
+            case (pc.NONE, pc.Some(lk), pc.Some(rk)):
+                return pc.Ok(JoinKeys(lk, rk))
+            case (pc.NONE, _, _):
+                return pc.Err(
+                    ValueError(
+                        "Either (`left_on` and `right_on`) or `on` keys should be specified."
+                    )
+                )
+            case _:
+                return pc.Err(
+                    ValueError(
+                        "If `on` is specified, `left_on` and `right_on` should be None."
+                    )
+                )
+
+    @staticmethod
+    def from_by(
+        by: OptIter[str], by_left: OptIter[str], by_right: OptIter[str]
+    ) -> JoinKeysRes[pc.Seq[str]]:
+        match (by, by_left, by_right):
+            case (pc.Some(by_key), pc.NONE, pc.NONE):
+                vals = try_iter(by_key).collect()
+                return pc.Ok(JoinKeys(vals, vals))
+            case (pc.NONE, pc.Some(bl), pc.Some(br)):
+                left_vals = try_iter(bl).collect()
+                right_vals = try_iter(br).collect()
+                return (
+                    pc.Ok(JoinKeys(left_vals, right_vals))
+                    if left_vals.length() == right_vals.length()
+                    else pc.Err(
+                        ValueError(
+                            "`by_left` and `by_right` must have the same length."
+                        )
+                    )
+                )
+            case (pc.NONE, pc.NONE, pc.NONE):
+                return pc.Ok(JoinKeys(pc.Seq[str].new(), pc.Seq[str].new()))
+            case (pc.NONE, _, _):
+                msg = "Can not specify only `by_left` or `by_right`, you need to specify both."
+                return pc.Err(ValueError(msg))
+            case _:
+                msg = "If `by` is specified, `by_left` and `by_right` should be None."
+                return pc.Err(ValueError(msg))
+
+    @staticmethod
+    def from_how(
+        how: JoinStrategy,
+        on_opt: pc.Option[pc.Seq[str]],
+        left_on_opt: pc.Option[pc.Seq[str]],
+        right_on_opt: pc.Option[pc.Seq[str]],
+    ) -> JoinKeysRes[pc.Seq[str]]:
+        match (on_opt, left_on_opt, right_on_opt):
+            case (pc.Some(on_vals), pc.NONE, pc.NONE):
+                return pc.Ok(JoinKeys(on_vals, on_vals))
+            case (pc.NONE, pc.Some(lv), pc.Some(rv)) if lv.length() == rv.length():
+                return pc.Ok(JoinKeys(lv, rv))
+            case (pc.NONE, pc.Some(_), pc.Some(_)):
+                return pc.Err(
+                    ValueError("`left_on` and `right_on` must have the same length.")
+                )
+            case (pc.Some(_), _, _):
+                return pc.Err(
+                    ValueError(
+                        f"If `on` is specified, `left_on` and `right_on` should be None for {how}."
+                    )
+                )
+            case _:
+                return pc.Err(
+                    ValueError(
+                        f"Either (`left_on` and `right_on`) or `on` keys should be specified for {how}."
+                    )
+                )
+
+
+class LazyGroupBy:
+    __slots__ = ("_frame", "_group_expr", "_keys")
+
+    def __init__(
+        self,
+        frame: LazyFrame,
+        keys: pc.Seq[SqlExpr],
+    ) -> None:
+        self._frame = frame
+        self._keys = keys
+        self._group_expr = self._keys.iter().map(str).join(", ")
+
+    def agg(
+        self,
+        *aggs: IntoExpr | Iterable[IntoExpr],
+        **named_aggs: IntoExpr,
+    ) -> LazyFrame:
+        return self._frame.__from_lf__(
+            self._frame.inner().aggregate(
+                self._keys.iter().chain(args_into_exprs(aggs, named_aggs)),
+                self._group_expr,
+            )
+        )
 
 
 class LazyFrame(ExprHandler[Relation]):
@@ -209,10 +327,7 @@ class LazyFrame(ExprHandler[Relation]):
                     return pc.Ok(pc.Iter.once(arg).cycle().take(sort_exprs.length()))
                 case Sequence():
                     if len(arg) != sort_exprs.length():
-                        msg = (
-                            f"the length of `{name}` ({len(arg)}) does not match "
-                            f"the length of `by` ({sort_exprs.length()})"
-                        )
+                        msg = f"the length of `{name}` ({len(arg)}) does not match the length of `by` ({sort_exprs.length()})"
                         return pc.Err(ValueError(msg))
                     return pc.Ok(pc.Iter(arg))
 
@@ -249,6 +364,75 @@ class LazyFrame(ExprHandler[Relation]):
     def drop(self, *columns: str) -> Self:
         """Drop columns from the frame."""
         return self._select(sql.all(exclude=columns))
+
+    def drop_nulls(self, subset: str | list[str] | None = None) -> Self:
+        """Drop rows that contain null values."""
+        return (
+            pc.Option(subset)
+            .map(try_iter)
+            .unwrap_or(self.columns.iter())
+            .map(lambda name: sql.col(name).is_not_null())
+            .into(self._filter)
+        )
+
+    def explode(self, columns: str | Sequence[str], *more_columns: str) -> Self:
+        """Explode list-like columns."""
+        to_explode_names = try_iter(columns).chain(more_columns).collect()
+        to_explode = to_explode_names.iter().map(sql.col).collect()
+        target = (
+            to_explode.first()
+            if to_explode.length() == 1
+            else (
+                to_explode.first().list.zip(
+                    *to_explode.iter().skip(1),
+                    sql.lit(1).eq(sql.lit(1)),
+                )
+            )
+        )
+
+        zipped_index = (
+            to_explode_names.iter()
+            .enumerate()
+            .map_star(lambda idx, name: (name, idx + 1))
+            .collect(pc.Dict)
+        )
+        is_single_explode = to_explode.length() == 1
+
+        def _explode_expr(name: str, replace: SqlExpr) -> SqlExpr:
+            match is_single_explode:
+                case True:
+                    return replace.alias(name)
+                case False:
+                    return replace.struct.extract(
+                        sql.lit(zipped_index.get_item(name).unwrap()),
+                    ).alias(name)
+
+        def _project_col(name: str, *, unnest: bool, replace: SqlExpr) -> SqlExpr:
+            match (unnest, name in to_explode_names):
+                case (True, True):
+                    return _explode_expr(name, replace)
+                case (False, True):
+                    return sql.lit(None).alias(name)
+                case _:
+                    return sql.col(name)
+
+        def _proj(*, unnest: bool) -> pc.Iter[SqlExpr]:
+            replace = SqlExpr(sql.func("unnest", target)) if unnest else sql.lit(None)
+            return self.columns.iter().map(
+                lambda name: _project_col(name, unnest=unnest, replace=replace)
+            )
+
+        return self.__from_lf__(
+            target.is_not_null()
+            .and_(target.len().gt(sql.lit(0)))
+            .pipe(
+                lambda cond: (
+                    self._expr.filter(cond)
+                    .select(*_proj(unnest=True))
+                    .union(self._expr.filter(cond.not_()).select(*_proj(unnest=False)))
+                )
+            )
+        )
 
     def rename(self, mapping: Mapping[str, str]) -> Self:
         """Rename columns."""
@@ -312,15 +496,6 @@ class LazyFrame(ExprHandler[Relation]):
             )
         )
 
-    def _col_or_subset(self, subset: str | Iterable[str] | None) -> pc.Iter[str]:
-        match subset:
-            case None:
-                return self.columns.iter()
-            case str():
-                return pc.Iter.once(subset)
-            case Iterable():
-                return pc.Iter(subset)
-
     def shift(self, n: int = 1, *, fill_value: IntoExpr | None = None) -> Self:
         """Shift values by n positions."""
         abs_n = abs(n)
@@ -343,6 +518,23 @@ class LazyFrame(ExprHandler[Relation]):
         """Create a copy of the LazyFrame."""
         return self.__from_lf__(self._expr)
 
+    def gather_every(self, n: int, offset: int = 0) -> Self:
+        """Take every nth row starting from offset."""
+        return (
+            self.with_row_index(name=TEMP_NAME, order_by=self.columns)
+            .filter(
+                sql.col(TEMP_NAME)
+                .ge(sql.lit(offset))
+                .and_(
+                    sql.col(TEMP_NAME)
+                    .sub(sql.lit(offset))
+                    .mod(sql.lit(n))
+                    .eq(sql.lit(0))
+                )
+            )
+            .drop(TEMP_NAME)
+        )
+
     @property
     def columns(self) -> pc.Vec[str]:
         """Get column names."""
@@ -356,7 +548,7 @@ class LazyFrame(ExprHandler[Relation]):
     @property
     def width(self) -> int:
         """Get number of columns."""
-        return len(self._expr.columns)
+        return self.columns.length()
 
     @property
     def schema(self) -> pc.Dict[str, sql.datatypes.DataType]:
@@ -367,9 +559,323 @@ class LazyFrame(ExprHandler[Relation]):
         """Collect the schema (same as schema property for lazy)."""
         return self.schema
 
+    def group_by(
+        self, *keys: IntoExpr | Iterable[IntoExpr], drop_null_keys: bool = False
+    ) -> LazyGroupBy:
+        """Start a group by operation."""
+        key_exprs = (
+            try_iter(keys)
+            .flat_map(try_iter)
+            .map(lambda key: into_expr(key, as_col=True))
+            .collect()
+        )
+        grouped_frame = (
+            key_exprs.iter().map(lambda key: key.is_not_null()).into(self._filter)
+            if drop_null_keys
+            else self
+        )
+        return LazyGroupBy(grouped_frame, key_exprs)
+
+    def join(  # noqa: PLR0913
+        self,
+        other: Self,
+        on: str | Iterable[str] | None = None,
+        how: JoinStrategy = "inner",
+        *,
+        left_on: str | Iterable[str] | None = None,
+        right_on: str | Iterable[str] | None = None,
+        suffix: str = "_right",
+    ) -> Self:
+        """Join with another LazyFrame."""
+        on_opt = pc.Option(on).map(lambda value: try_iter(value).collect())
+        left_on_opt = pc.Option(left_on).map(lambda value: try_iter(value).collect())
+        right_on_opt = pc.Option(right_on).map(lambda value: try_iter(value).collect())
+        native_how = "outer" if how == "full" else how
+
+        def _validate_cross() -> pc.Result[None, ValueError]:
+            match (on_opt, left_on_opt, right_on_opt):
+                case (pc.NONE, pc.NONE, pc.NONE):
+                    return pc.Ok(None)
+                case _:
+                    return pc.Err(
+                        ValueError(
+                            "Can not pass `left_on`, `right_on` or `on` keys for cross join"
+                        )
+                    )
+
+        match how:
+            case "cross":
+                _validate_cross().unwrap()
+                right_on_set = pc.Set[str].new()
+                rel = self._expr.set_alias("lhs").cross(other._expr.set_alias("rhs"))
+            case _:
+                join_keys = JoinKeys.from_how(
+                    how, on_opt, left_on_opt, right_on_opt
+                ).unwrap()
+                right_on_set = join_keys.right.iter().collect(pc.Set)
+                rel = self._expr.set_alias("lhs").join(
+                    other._expr.set_alias("rhs"),
+                    condition=join_keys.left.iter()
+                    .zip(join_keys.right)
+                    .map_star(
+                        lambda left, right: sql.col(f'lhs."{left}"').eq(
+                            sql.col(f'rhs."{right}"')
+                        )
+                    )
+                    .reduce(SqlExpr.and_),
+                    how=native_how,
+                )
+
+        def _rhs_expr(name: str) -> pc.Option[SqlExpr]:
+            col_in_lhs = name in self.columns
+            is_join_key = name in right_on_set
+            match (native_how == "outer", col_in_lhs, is_join_key):
+                case (True, False, _):
+                    return pc.Some(sql.col(f'rhs."{name}"'))
+                case (True, True, _):
+                    return pc.Some(sql.col(f'rhs."{name}"').alias(f"{name}{suffix}"))
+                case (False, _, True):
+                    return pc.NONE
+                case (False, True, False):
+                    return pc.Some(sql.col(f'rhs."{name}"').alias(f"{name}{suffix}"))
+                case _:
+                    return pc.Some(sql.col(f'rhs."{name}"'))
+
+        match native_how:
+            case "inner" | "left" | "cross" | "outer":
+                return self.__from_lf__(
+                    rel.select(
+                        *self.columns.iter()
+                        .map(lambda name: sql.col(f'lhs."{name}"'))
+                        .chain(
+                            other.columns.iter()
+                            .map(_rhs_expr)
+                            .filter_map(lambda expr: expr)
+                        )
+                    ).set_alias(self._expr.alias)
+                )
+            case _:
+                return self.__from_lf__(rel.select("lhs.*").set_alias(self._expr.alias))
+
+    def join_asof(  # noqa: PLR0913
+        self,
+        other: Self,
+        *,
+        left_on: str | None = None,
+        right_on: str | None = None,
+        on: str | None = None,
+        by_left: str | Iterable[str] | None = None,
+        by_right: str | Iterable[str] | None = None,
+        by: str | Iterable[str] | None = None,
+        strategy: AsofJoinStrategy = "backward",
+        suffix: str = "_right",
+    ) -> Self:
+        """Perform an asof join."""
+        rhs = "_rhs"
+        lhs = "_lhs"
+        on_keys = JoinKeys.from_on(
+            pc.Option(on), pc.Option(left_on), pc.Option(right_on)
+        ).unwrap()
+        by_keys = JoinKeys.from_by(
+            pc.Option(by), pc.Option(by_left), pc.Option(by_right)
+        ).unwrap()
+
+        left_columns = self.columns.iter().collect(pc.Set)
+        drop_keys = by_keys.right.iter().collect(pc.SetMut)
+        if on is not None:
+            drop_keys.add(on_keys.right)
+
+        def _rhs_expr(name: str) -> pc.Option[SqlExpr]:
+            match (name in drop_keys, name in left_columns):
+                case (True, _):
+                    return pc.NONE
+                case (False, True):
+                    return pc.Some(sql.col(f'{rhs}."{name}"').alias(f"{name}{suffix}"))
+                case _:
+                    return pc.Some(sql.col(f'{rhs}."{name}"'))
+
+        lhs_select = self.columns.iter().map(lambda c: sql.col(f'{lhs}."{c}"'))
+        rhs_select = other.columns.iter().map(_rhs_expr).filter_map(lambda x: x)
+
+        def _expr_sql(expr: SqlExpr) -> str:
+            base_sql = str(expr)
+            alias_name = expr.inner().get_name()
+            return base_sql if alias_name == base_sql else f"{base_sql} AS {alias_name}"
+
+        by_cond = (
+            by_keys.left.iter()
+            .zip(by_keys.right)
+            .map_star(
+                lambda left, right: sql.col(f'{lhs}."{left}"').eq(
+                    sql.col(f'{rhs}."{right}"')
+                )
+            )
+        )
+        lhs_key = sql.col(f'{lhs}."{on_keys.left}"')
+        rhs_key = sql.col(f'{rhs}."{on_keys.right}"')
+
+        def _simple_asof_join(comparison: Callable[[SqlExpr], SqlExpr]) -> Self:
+            _lhs = self._expr.set_alias(lhs).inner()
+            _rhs = other._expr.set_alias(rhs).inner()
+            return self.__from_lf__(
+                Relation(
+                    duckdb.sql(
+                        f"""--sql
+                        SELECT {lhs_select.chain(rhs_select).map(_expr_sql).join(", ")}
+                        FROM _lhs ASOF
+                        LEFT JOIN _rhs ON {by_cond.chain(pc.Iter.once(comparison(rhs_key))).reduce(SqlExpr.and_)}
+                        """
+                    )
+                )
+            )
+
+        match strategy:
+            case "backward":
+                return _simple_asof_join(lhs_key.ge)
+            case "forward":
+                return _simple_asof_join(lhs_key.le)
+            case "nearest":
+                asof_order = "__pql_asof_order__"
+                asof_rank = "__pql_asof_rank__"
+                condition = by_cond.chain(pc.Iter.once(lhs_key.ge(rhs_key))).reduce(
+                    SqlExpr.and_
+                )
+
+                return self.__from_lf__(
+                    self.with_row_index(name=TEMP_NAME, order_by=self.columns)
+                    .inner()
+                    .set_alias(lhs)
+                    .join(other._expr.set_alias(rhs), condition=condition, how="left")
+                    .select(
+                        sql.all(exclude=drop_keys),
+                        sql.col(f'{rhs}."{on_keys.right}"').alias(asof_order),
+                    )
+                    .select(
+                        sql.all(),
+                        sql.row_number()
+                        .over(
+                            partition_by=sql.col(TEMP_NAME),
+                            order_by=sql.col(asof_order)
+                            .sub(sql.col(on_keys.left))
+                            .abs(),
+                        )
+                        .alias(asof_rank),
+                    )
+                    .filter(sql.col(asof_rank).eq(sql.lit(1)))
+                    .select(sql.all(exclude=(asof_rank, asof_order, TEMP_NAME)))
+                )
+
     def quantile(self, quantile: float) -> Self:
         """Compute quantile for each column."""
         return self._iter_agg(lambda c: c.quantile_cont(sql.lit(quantile)))
+
+    def unique(
+        self,
+        subset: str | list[str] | None = None,
+        *,
+        keep: UniqueKeepStrategy = "any",
+        order_by: str | Sequence[str] | None = None,
+    ) -> Self:
+        """Drop duplicate rows from this LazyFrame."""
+        order_by_opt = pc.Option(order_by).map(lambda value: try_iter(value).collect())
+        (
+            pc.Err(
+                ValueError(
+                    "`order_by` must be specified when `keep` is 'first' or 'last' "
+                    "because LazyFrame makes no assumptions about row order."
+                )
+            )
+            if keep in {"first", "last"} and order_by_opt is pc.NONE
+            else pc.Ok(None)
+        ).unwrap()
+
+        subset_cols = (
+            pc.Option(subset)
+            .map(lambda value: try_iter(value).map(sql.col))
+            .unwrap_or(self.columns.iter().map(sql.col))
+        )
+        order_cols_opt = order_by_opt.map(lambda cols: cols.iter().map(sql.col))
+
+        match keep:
+            case "none":
+                marker = SqlExpr(sql.func("count", sql.all())).over(
+                    partition_by=subset_cols
+                )
+            case "first":
+                marker = sql.row_number().over(
+                    partition_by=subset_cols,
+                    order_by=order_cols_opt.unwrap(),
+                )
+            case "last":
+                marker = sql.row_number().over(
+                    partition_by=subset_cols,
+                    order_by=order_cols_opt.unwrap(),
+                    descending=True,
+                    nulls_last=True,
+                )
+            case _:
+                marker = sql.row_number().over(partition_by=subset_cols)
+
+        return (
+            self.with_columns(marker.alias(TEMP_NAME))
+            .filter(sql.col(TEMP_NAME).eq(sql.lit(1)))
+            .drop(TEMP_NAME)
+        )
+
+    def unpivot(
+        self,
+        on: str | list[str] | None = None,
+        *,
+        index: str | list[str] | None = None,
+        variable_name: str = "variable",
+        value_name: str = "value",
+    ) -> Self:
+        """Unpivot from wide to long format."""
+        index_cols = (
+            pc.Option(index)
+            .map(lambda value: try_iter(value).collect())
+            .unwrap_or(pc.Seq[str].new())
+        )
+        on_cols = (
+            pc.Option(on)
+            .map(lambda value: try_iter(value).collect())
+            .unwrap_or(
+                self.columns.iter()
+                .filter(lambda name: name not in index_cols)
+                .collect()
+            )
+            .join(", ")
+        )
+        _rel = self._expr.inner()
+
+        return self.__from_lf__(
+            Relation(
+                duckdb.sql(
+                    f"""--sql
+                    SELECT {index_cols.iter().chain((variable_name, value_name)).join(", ")} FROM
+                    (UNPIVOT _rel ON {on_cols}
+                    INTO NAME {variable_name} VALUE {value_name})
+                    """
+                )
+            )
+        )
+
+    def with_row_index(
+        self,
+        name: str,
+        *,
+        order_by: str | Sequence[str],
+    ) -> Self:
+        """Insert row index based on order_by."""
+        return self._select(
+            [
+                sql.row_number()
+                .over(order_by=try_iter(order_by).map(sql.col))
+                .sub(sql.lit(1))
+                .alias(name),
+                sql.all(),
+            ]
+        )
 
     def top_k(
         self,
