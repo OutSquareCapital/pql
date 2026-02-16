@@ -552,6 +552,123 @@ def test_max() -> None:
     assert_eq_pl(pql.col("x").max().alias("x_max"), pl.col("x").max().alias("x_max"))
 
 
+def test_mode_expr() -> None:
+    assert_eq_pl(
+        pql.col("x").mode().alias("x_mode"),
+        pl.col("x").mode().alias("x_mode"),
+    )
+
+
+def test_unique_expr() -> None:
+    assert_eq_pl(
+        pql.col("x").unique().alias("x_unique"),
+        pl.col("x").unique().alias("x_unique"),
+    )
+    assert_eq_pl(
+        (
+            pql.col("x").unique().alias("x_unique_left"),
+            pql.col("x").unique().add(3).alias("x_unique_right"),
+        ),
+        (
+            pl.col("x").unique().alias("x_unique_left"),
+            pl.col("x").unique().add(3).alias("x_unique_right"),
+        ),
+    )
+    assert_frame_equal(
+        sample_df()
+        .to_native()
+        .pl(lazy=True)
+        .select(
+            x_unique=pl.col("x").unique(),
+            x_unique_right=pl.col("x").unique().add(3),
+        )
+        .collect(),
+        pql.LazyFrame(sample_df().to_native())
+        .select(
+            x_unique=pql.col("x").unique(),
+            x_unique_right=pql.col("x").unique().add(3),
+        )
+        .collect(),
+        check_dtypes=False,
+        check_row_order=False,
+    )
+
+
+def test_is_close_expr() -> None:
+    assert_eq_pl(
+        pql.col("salary")
+        .is_close(pql.col("salary").add(0.001), abs_tol=0.01, rel_tol=0.0)
+        .alias("salary_close"),
+        pl.col("salary")
+        .is_close(pl.col("salary").add(0.001), abs_tol=0.01, rel_tol=0.0)
+        .alias("salary_close"),
+    )
+    assert_eq_pl(
+        pql.col("salary")
+        .is_close(
+            pql.col("salary").add(0.001), abs_tol=0.01, rel_tol=0.0, nans_equal=True
+        )
+        .alias("salary_close_nans_equal"),
+        pl.col("salary")
+        .is_close(
+            pl.col("salary").add(0.001), abs_tol=0.01, rel_tol=0.0, nans_equal=True
+        )
+        .alias("salary_close_nans_equal"),
+    )
+
+
+def test_rolling_mean() -> None:
+    assert_eq_pl(
+        pql.col("x")
+        .rolling_mean(window_size=3, min_samples=2, center=False)
+        .alias("x_rolling_mean"),
+        pl.col("x")
+        .rolling_mean(window_size=3, min_samples=2, center=False)
+        .alias("x_rolling_mean"),
+    )
+    assert_eq_pl(
+        pql.col("x")
+        .rolling_mean(window_size=3, min_samples=2, center=True)
+        .alias("x_rolling_mean_center_true"),
+        pl.col("x")
+        .rolling_mean(window_size=3, min_samples=2, center=True)
+        .alias("x_rolling_mean_center_true"),
+    )
+
+
+def test_rolling_sum() -> None:
+    assert_eq_pl(
+        pql.col("x")
+        .rolling_sum(window_size=3, min_samples=2, center=False)
+        .alias("x_rolling_sum"),
+        pl.col("x")
+        .rolling_sum(window_size=3, min_samples=2, center=False)
+        .alias("x_rolling_sum"),
+    )
+
+
+def test_rolling_std() -> None:
+    assert_eq_pl(
+        pql.col("x")
+        .rolling_std(window_size=3, min_samples=2, center=False, ddof=1)
+        .alias("x_rolling_std"),
+        pl.col("x")
+        .rolling_std(window_size=3, min_samples=2, center=False, ddof=1)
+        .alias("x_rolling_std"),
+    )
+
+
+def test_rolling_var() -> None:
+    assert_eq_pl(
+        pql.col("x")
+        .rolling_var(window_size=3, min_samples=2, center=False, ddof=1)
+        .alias("x_rolling_var"),
+        pl.col("x")
+        .rolling_var(window_size=3, min_samples=2, center=False, ddof=1)
+        .alias("x_rolling_var"),
+    )
+
+
 def test_clip() -> None:
     assert_eq_pl(
         pql.col("x").clip(lower_bound=2, upper_bound=10).alias("x_clip"),

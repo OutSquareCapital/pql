@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import re
-from collections.abc import Collection, Iterable
+from collections.abc import Callable, Collection, Iterable
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Literal, Self
 
@@ -44,17 +44,22 @@ class Expr(ExprHandler[SqlExpr]):
 
     _is_scalar_like: bool = False
     _has_window: bool = False
+    _is_unique_projection: bool = False
 
     def _new(
         self,
         expr: SqlExpr,
         *,
         is_scalar_like: bool | None = None,
+        is_unique_projection: bool | None = None,
     ) -> Self:
         return self.__class__(
             expr,
             pc.Option(is_scalar_like).unwrap_or(self._is_scalar_like),
             _has_window=self._has_window,
+            _is_unique_projection=pc.Option(is_unique_projection).unwrap_or(
+                self._is_unique_projection
+            ),
         )
 
     def _new_window(self, expr: SqlExpr, *, is_scalar_like: bool | None = None) -> Self:
@@ -62,6 +67,7 @@ class Expr(ExprHandler[SqlExpr]):
             expr,
             pc.Option(is_scalar_like).unwrap_or(self._is_scalar_like),
             _has_window=True,
+            _is_unique_projection=self._is_unique_projection,
         )
 
     def _reversed(self, expr: SqlExpr, *, reverse: bool = False) -> Self:
@@ -70,6 +76,33 @@ class Expr(ExprHandler[SqlExpr]):
                 return self._new_window(expr.over(rows_start=0))
             case False:
                 return self._new_window(expr.over(rows_end=0))
+
+    def _rolling_agg(
+        self,
+        agg: Callable[[SqlExpr], SqlExpr],
+        window_size: int,
+        min_samples: int | None,
+        *,
+        center: bool,
+    ) -> Self:
+        def _rolling_bounds() -> tuple[int, int]:
+            match center:
+                case True:
+                    left = window_size // 2
+                    right = window_size - left - 1
+                    return (-left, right)
+                case False:
+                    return (-(window_size - 1), 0)
+
+        rows_start, rows_end = _rolling_bounds()
+        return self._new_window(
+            sql.when(
+                self._expr.count()
+                .over(rows_start=rows_start, rows_end=rows_end)
+                .ge(sql.lit(pc.Option(min_samples).unwrap_or(window_size))),
+                agg(self._expr).over(rows_start=rows_start, rows_end=rows_end),
+            ).otherwise(sql.lit(None))
+        )
 
     def __repr__(self) -> str:
         return f"Expr({self._expr})"
@@ -323,6 +356,96 @@ class Expr(ExprHandler[SqlExpr]):
     def max(self) -> Self:
         """Compute the maximum."""
         return self._new(self._expr.max(), is_scalar_like=True)
+
+    def mode(self) -> Self:
+        """Compute mode."""
+        return self._new(self._expr.mode(), is_scalar_like=True)
+
+    def unique(self) -> Self:
+        """Get unique values."""
+        return self._new(self._expr, is_unique_projection=True)
+
+    def is_close(
+        self,
+        other: IntoExpr,
+        abs_tol: float = 1e-8,
+        rel_tol: float = 1e-5,
+        *,
+        nans_equal: bool = False,
+    ) -> Self:
+        """Check if two floating point values are close."""
+        other_expr = into_expr(other)
+        threshold = sql.lit(abs_tol).add(sql.lit(rel_tol).mul(other_expr.abs()))
+        close = self._expr.sub(other_expr).abs().le(threshold)
+        match nans_equal:
+            case False:
+                return self._new(close)
+            case True:
+                return self._new(
+                    sql.when(
+                        self._expr.isnan().and_(other_expr.isnan()),
+                        sql.lit(value=True),
+                    ).otherwise(close)
+                )
+
+    def rolling_mean(
+        self,
+        window_size: int,
+        min_samples: int | None = None,
+        *,
+        center: bool = False,
+    ) -> Self:
+        """Compute rolling mean."""
+        return self._rolling_agg(
+            window_size=window_size,
+            min_samples=min_samples,
+            center=center,
+            agg=lambda expr: expr.mean(),
+        )
+
+    def rolling_sum(
+        self,
+        window_size: int,
+        min_samples: int | None = None,
+        *,
+        center: bool = False,
+    ) -> Self:
+        """Compute rolling sum."""
+        return self._rolling_agg(
+            lambda expr: expr.sum(), window_size, min_samples, center=center
+        )
+
+    def rolling_std(
+        self,
+        window_size: int,
+        min_samples: int | None = None,
+        *,
+        center: bool = False,
+        ddof: int = 1,
+    ) -> Self:
+        """Compute rolling std."""
+        return self._rolling_agg(
+            lambda expr: expr.stddev_pop() if ddof == 0 else expr.stddev_samp(),
+            window_size,
+            min_samples,
+            center=center,
+        )
+
+    def rolling_var(
+        self,
+        window_size: int,
+        min_samples: int | None = None,
+        *,
+        center: bool = False,
+        ddof: int = 1,
+    ) -> Self:
+        """Compute rolling variance."""
+        return self._rolling_agg(
+            lambda expr: expr.var_pop() if ddof == 0 else expr.var_samp(),
+            window_size,
+            min_samples,
+            center=center,
+        )
 
     def std(self, ddof: int = 1) -> Self:
         """Compute the standard deviation."""

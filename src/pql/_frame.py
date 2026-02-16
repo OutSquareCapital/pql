@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Callable, Iterable, Mapping, Sequence
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Self
+from typing import TYPE_CHECKING, Any, Self, TypeIs
 
 import pyochain as pc
 
@@ -87,26 +87,56 @@ class LazyFrame(ExprHandler[Relation]):
         self, *exprs: IntoExpr | Iterable[IntoExpr], **named_exprs: IntoExpr
     ) -> Self:
         """Select columns or expressions."""
+        flat = try_iter(exprs).flat_map(try_iter).collect()
+
+        def _is_expr(val: object) -> TypeIs[Expr]:
+            return isinstance(val, Expr)
+
+        def _extract_unique_sql() -> pc.Option[pc.Iter[str]]:
+            has_selected = flat.length() > 0 or len(named_exprs) > 0
+            all_unique = (
+                flat.iter()
+                .chain(named_exprs.values())
+                .all(
+                    lambda value: (
+                        _is_expr(value) and value._is_unique_projection  # pyright: ignore[reportPrivateUsage]
+                    )
+                )
+            )
+            match has_selected and all_unique:
+                case True:
+                    return pc.Some(
+                        flat.iter()
+                        .filter(_is_expr)
+                        .map(_unique_sql)
+                        .chain(
+                            pc.Dict.from_ref(named_exprs)
+                            .items()
+                            .iter()
+                            .map_star(
+                                lambda name, expr: (
+                                    f"{into_expr(expr).inner()} AS {name}"
+                                )
+                            )
+                        )
+                    )
+                case False:
+                    return pc.NONE
+
+        def _unique_sql(expr: Expr) -> str:
+            base_sql = str(expr.inner())
+            alias_name = expr.inner().inner().get_name()
+            return base_sql if alias_name == base_sql else f"{base_sql} AS {alias_name}"
 
         def _is_scalar_select() -> bool:
-            def _single(value: IntoExpr | Iterable[IntoExpr]) -> pc.Iter[IntoExpr]:
-                match value:
-                    case str() | bytes() | bytearray():
-                        return pc.Iter.once(value)
-                    case Iterable():
-                        return pc.Iter(value).map(_single).flatten()
-                    case _:
-                        return pc.Iter.once(value)
-
             return (
-                pc.Iter(exprs)
-                .flat_map(_single)
+                flat.iter()
                 .chain(named_exprs.values())
                 .collect()
                 .then(
                     lambda x: x.iter().all(
                         lambda value: (
-                            isinstance(value, Expr)
+                            _is_expr(value)
                             and value._is_scalar_like  # pyright: ignore[reportPrivateUsage]
                             and not value._has_window  # pyright: ignore[reportPrivateUsage]
                         )
@@ -115,10 +145,14 @@ class LazyFrame(ExprHandler[Relation]):
                 .unwrap_or(default=False)
             )
 
-        parsed = args_into_exprs(exprs, named_exprs).collect()
+        match _extract_unique_sql():
+            case pc.Some(unique_sql):
+                return self.__from_lf__(self._expr.unique(unique_sql.join(", ")))
+            case _:
+                pass
         if _is_scalar_select():
-            return self._agg(parsed)
-        return self._select(parsed)
+            return args_into_exprs(exprs, named_exprs).into(self._agg)
+        return args_into_exprs(exprs, named_exprs).into(self._select)
 
     def with_columns(
         self, *exprs: IntoExpr | Iterable[IntoExpr], **named_exprs: IntoExpr
