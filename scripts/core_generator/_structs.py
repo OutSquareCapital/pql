@@ -120,61 +120,56 @@ class MethodInfo:
     def _build_ast_signature(self, return_annotation: str) -> AstSignature:
         pos_params = self.params.iter().filter(lambda p: not p.is_kw_only).collect()
         kwonly_params = self.params.iter().filter(lambda p: p.is_kw_only).collect()
+        args = Make.arguments(
+            list_arg=pos_params.iter()
+            .map(lambda p: _make_arg(p.name, self.target.rewrite_type(p.annotation)))
+            .insert(Make.arg(PyLit.SELF))
+            .collect(list),
+            vararg=self.vararg.map(
+                lambda p: _make_arg(p.name, self.target.rewrite_type(p.annotation))
+            ).unwrap_or(None),  # pyright: ignore[reportArgumentType]
+            kwonlyargs=kwonly_params.iter()
+            .map(lambda p: _make_arg(p.name, self.target.rewrite_type(p.annotation)))
+            .collect(list),
+            kw_defaults=kwonly_params.iter()
+            .map(
+                lambda p: p.default.map(_to_expr).unwrap_or(None)  # pyright: ignore[reportArgumentType]
+            )
+            .collect(),
+            defaults=(
+                pos_params.iter()
+                .map(lambda p: p.default)
+                .collect(pc.Vec)
+                .into(
+                    lambda pos_defaults: (
+                        pos_defaults.iter()
+                        .enumerate()
+                        .find_map(
+                            lambda item: (
+                                pc.Some(item[0]) if item[1].is_some() else pc.NONE
+                            )
+                        )
+                        .map(
+                            lambda idx: (
+                                pos_defaults.iter()
+                                .skip(idx)
+                                .map(
+                                    lambda d: d.expect(
+                                        "Expected trailing default value"
+                                    )
+                                )
+                                .map(_to_expr)
+                                .collect()
+                            )
+                        )
+                        .unwrap_or(pc.Seq(()))
+                    )
+                )
+            ),
+        )
 
         return AstSignature(
-            self.target.rename_method(self.name),
-            Make.arguments(
-                list_arg=pos_params.iter()
-                .map(
-                    lambda p: _make_arg(p.name, self.target.rewrite_type(p.annotation))
-                )
-                .insert(Make.arg(PyLit.SELF))
-                .collect(list),
-                vararg=self.vararg.map(
-                    lambda p: _make_arg(p.name, self.target.rewrite_type(p.annotation))
-                ).unwrap_or(None),  # pyright: ignore[reportArgumentType]
-                kwonlyargs=kwonly_params.iter()
-                .map(
-                    lambda p: _make_arg(p.name, self.target.rewrite_type(p.annotation))
-                )
-                .collect(list),
-                kw_defaults=kwonly_params.iter()
-                .map(
-                    lambda p: p.default.map(_to_expr).unwrap_or(None)  # pyright: ignore[reportArgumentType]
-                )
-                .collect(),
-                defaults=(
-                    pos_params.iter()
-                    .map(lambda p: p.default)
-                    .collect(pc.Vec)
-                    .into(
-                        lambda pos_defaults: (
-                            pos_defaults.iter()
-                            .enumerate()
-                            .find_map(
-                                lambda item: (
-                                    pc.Some(item[0]) if item[1].is_some() else pc.NONE
-                                )
-                            )
-                            .map(
-                                lambda idx: (
-                                    pos_defaults.iter()
-                                    .skip(idx)
-                                    .map(
-                                        lambda d: d.expect(
-                                            "Expected trailing default value"
-                                        )
-                                    )
-                                    .map(_to_expr)
-                                    .collect()
-                                )
-                            )
-                            .unwrap_or(pc.Seq(()))
-                        )
-                    )
-                ),
-            ),
-            _to_expr(return_annotation),
+            self.target.rename_method(self.name), args, _to_expr(return_annotation)
         )
 
     def _build_property_signature(self, return_annotation: str) -> AstSignature:
@@ -221,7 +216,7 @@ class AstSignature(NamedTuple):
         return_expr: ast.expr,
         decorators: pc.Seq[str] | None = None,
     ) -> str:
-        body = pc.Option.if_true(doc.strip(), predicate=bool).map_or(
+        body = pc.Option.if_some(doc.strip()).map_or(
             [Make.Return(return_expr)],
             lambda txt: [
                 Make.Expr(Make.Constant(txt)),
@@ -258,49 +253,19 @@ def _to_expr(expr: str) -> ast.expr:
 
 
 def _make_arg(name: str, annotation: str) -> ast.arg:
-    return Make.arg(
-        name,
-        pc.Option.if_true(annotation, predicate=bool).map_or(None, _to_expr),
-    )
+    return Make.arg(name, _to_expr(annotation))
 
 
 def _wrap_return_expr(value: ast.expr, wrapper: pc.Option[str]) -> ast.expr:
     return wrapper.map_or(
         value,
-        lambda fn_name: ast.Call(func=_to_expr(fn_name), args=[value], keywords=[]),
+        lambda fn_name: ast.Call(func=_to_expr(fn_name), args=[value]),
     )
-
-
-def _call_name(name: str, *args: ast.expr) -> ast.Call:
-    return ast.Call(func=Make.Name(name), args=list(args), keywords=[])
-
-
-def _call_attr(obj: ast.expr, attr: str, *args: ast.expr) -> ast.expr:
-    node = ast.Attribute(value=obj, attr=attr, ctx=ast.Load())
-    return node if not args else ast.Call(func=node, args=list(args), keywords=[])
-
-
-def _call_attr0(obj: ast.expr, attr: str) -> ast.Call:
-    return ast.Call(
-        ast.Attribute(value=obj, attr=attr, ctx=ast.Load()), args=[], keywords=[]
-    )
-
-
-def _iter_map_name(iterable_expr: ast.expr, fn_name: str) -> ast.expr:
-    return _call_attr(iterable_expr, "map", Make.Name(fn_name))
 
 
 def _iter_map_inner(iterable_expr: ast.expr) -> ast.expr:
     lambda_expr = ast.Lambda(
-        args=ast.arguments(
-            posonlyargs=[],
-            args=[Make.arg("arg")],
-            vararg=None,
-            kwonlyargs=[],
-            kw_defaults=[],
-            kwarg=None,
-            defaults=[],
-        ),
+        args=ast.arguments(args=[Make.arg("arg")]),
         body=_call_attr0(Make.Name("arg"), "inner"),
     )
     return _call_attr(iterable_expr, "map", lambda_expr)
@@ -308,3 +273,20 @@ def _iter_map_inner(iterable_expr: ast.expr) -> ast.expr:
 
 def _iter_from_name(name: str) -> ast.expr:
     return _call_attr(Make.Name("pc"), "Iter", Make.Name(name))
+
+
+def _call_name(name: str, *args: ast.expr) -> ast.Call:
+    return ast.Call(func=Make.Name(name), args=list(args))
+
+
+def _iter_map_name(iterable_expr: ast.expr, fn_name: str) -> ast.expr:
+    return _call_attr(iterable_expr, "map", Make.Name(fn_name))
+
+
+def _call_attr(obj: ast.expr, attr: str, *args: ast.expr) -> ast.expr:
+    node = ast.Attribute(value=obj, attr=attr, ctx=ast.Load())
+    return node if not args else ast.Call(func=node, args=list(args))
+
+
+def _call_attr0(obj: ast.expr, attr: str) -> ast.Call:
+    return ast.Call(ast.Attribute(value=obj, attr=attr, ctx=ast.Load()))
