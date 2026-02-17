@@ -43,18 +43,18 @@ Both use a **composition-based design** (wrapper pattern): they store an underly
 
 The handler system is built on three base classes:
 
-1. **`ExprHandler[T]`** (generic base)
+1. **`CoreHandler[T]`** (generic base)
   - Generic wrapper for any value of type `T`
   - Provides interface: `.pipe(func, ...)`, `.inner()`, `._new(T) -> Self`
   - `._new(expr)` is critical for method chaining: internally creates a new instance of the current subclass with a transformed expression
   - Used everywhere to maintain fluent style
 
-2. **`DuckHandler(ExprHandler[duckdb.Expression])`**
+2. **`DuckHandler(CoreHandler[duckdb.Expression])`**
   - Specialization for `duckdb.Expression`
   - Base for all expression-based functionality
   - No functionality of its own; exists for type clarity
 
-3. **`RelHandler(ExprHandler[duckdb.DuckDBPyRelation])`**
+3. **`RelHandler(CoreHandler[duckdb.DuckDBPyRelation])`**
   - Specialization for `duckdb.DuckDBPyRelation`
   - Handles initialization logic: converts various input types (Polars DF/LazyFrame, SQL strings, table functions) to DuckDB relations
   - `__init__` performs matching on input type (see `FrameInit` union)
@@ -67,7 +67,7 @@ The handler system is built on three base classes:
 #### `SqlExpr` class hierarchy (`src/pql/sql/_expr.py`)
 
 ```
-ExprHandler[duckdb.Expression]
+CoreHandler[duckdb.Expression]
   ↓
 DuckHandler
   ↓
@@ -84,7 +84,7 @@ SqlExpr(Expression, Fns)
 #### `Relation` class hierarchy (`src/pql/sql/_code_gen/_core.py`)
 
 ```
-ExprHandler[duckdb.DuckDBPyRelation]
+CoreHandler[duckdb.DuckDBPyRelation]
   ↓
 RelHandler
   ↓
@@ -121,7 +121,7 @@ Relation (auto-generated wrapper methods)
 #### File manifest (`src/pql/sql/`)
 
 - `src/pql/sql/_expr.py`: `SqlExpr` wrapper + converters (`into_expr`, `lit`, `col`, `when`, `coalesce`, etc.).
-- `src/pql/sql/_core.py`: shared handlers (`ExprHandler`, `RelHandler`, `DuckHandler`, `NameSpaceHandler`), `try_iter`, `try_flatten`, `func`, `into_duckdb`.
+- `src/pql/sql/_core.py`: shared handlers (`CoreHandler`, `RelHandler`, `DuckHandler`, `NameSpaceHandler`), `try_iter`, `try_flatten`, `func`, `into_duckdb`.
 - `src/pql/sql/_window.py`: window SQL builder (`over_expr`, ordering/null handling, bounds).
 - `src/pql/sql/_raw.py`: SQL keyword helpers + query prettify/sanitize (`QueryHolder`).
 - `src/pql/sql/datatypes.py`: dtype aliases and precision mapping.

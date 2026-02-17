@@ -12,7 +12,7 @@ import pyochain as pc
 from . import sql
 from ._expr import Expr
 from .sql import (
-    ExprHandler,
+    CoreHandler,
     QueryHolder,
     Relation,
     SqlExpr,
@@ -140,27 +140,27 @@ class LazyGroupBy:
         )
 
 
-class LazyFrame(ExprHandler[Relation]):
+class LazyFrame(CoreHandler[Relation]):
     """LazyFrame providing Polars-like API over DuckDB relations."""
 
     __slots__ = ()
 
     def __init__(self, data: FrameInit) -> None:
-        self._expr = Relation(data)
+        self._inner = Relation(data)
 
     def __repr__(self) -> str:
-        return f"LazyFrame\n{self._expr}\n"
+        return f"LazyFrame\n{self.inner()}\n"
 
     def __from_lf__(self, rel: Relation) -> Self:
         instance = self.__class__.__new__(self.__class__)
-        instance._expr = rel
+        instance._inner = rel
         return instance
 
     def _select(
         self, exprs: IntoExprColumn | Iterable[IntoExprColumn], groups: str = ""
     ) -> Self:
         return self.__from_lf__(
-            self._expr.select(
+            self.inner().select(
                 *try_flatten(exprs).map(lambda v: into_expr(v, as_col=True)),
                 groups=groups,
             )
@@ -175,7 +175,7 @@ class LazyFrame(ExprHandler[Relation]):
                 .fold(
                     lf,
                     lambda inner_lf, pred: inner_lf.__from_lf__(
-                        inner_lf._expr.filter(pred)
+                        inner_lf.inner().filter(pred)
                     ),
                 )
             ),
@@ -187,7 +187,7 @@ class LazyFrame(ExprHandler[Relation]):
         group_expr: SqlExpr | str = "",
     ) -> Self:
         return self.__from_lf__(
-            self._expr.aggregate(
+            self.inner().aggregate(
                 try_flatten(exprs).map(lambda v: into_expr(v, as_col=True)), group_expr
             )
         )
@@ -202,11 +202,11 @@ class LazyFrame(ExprHandler[Relation]):
 
     def lazy(self) -> pl.LazyFrame:
         """Get a Polars LazyFrame."""
-        return self._expr.pl(lazy=True)
+        return self.inner().pl(lazy=True)
 
     def collect(self) -> pl.DataFrame:
         """Execute the query and return a Polars DataFrame."""
-        return self._expr.pl()
+        return self.inner().pl()
 
     def select(
         self, *exprs: IntoExpr | Iterable[IntoExpr], **named_exprs: IntoExpr
@@ -272,7 +272,7 @@ class LazyFrame(ExprHandler[Relation]):
 
         match _extract_unique_sql():
             case pc.Some(unique_sql):
-                return self.__from_lf__(self._expr.unique(unique_sql.join(", ")))
+                return self.__from_lf__(self.inner().unique(unique_sql.join(", ")))
             case _:
                 pass
         if _is_scalar_select():
@@ -346,7 +346,7 @@ class LazyFrame(ExprHandler[Relation]):
         )
 
         return self.__from_lf__(
-            self._expr.sort(
+            self.inner().sort(
                 *sort_exprs.iter()
                 .zip(
                     _args_iter(sort_exprs, "descending", arg=descending).unwrap(),
@@ -358,7 +358,7 @@ class LazyFrame(ExprHandler[Relation]):
 
     def limit(self, n: int) -> Self:
         """Limit the number of rows."""
-        return self.__from_lf__(self._expr.limit(n))
+        return self.__from_lf__(self.inner().limit(n))
 
     def head(self, n: int = 5) -> Self:
         """Get the first n rows."""
@@ -430,9 +430,12 @@ class LazyFrame(ExprHandler[Relation]):
             .and_(target.len().gt(sql.lit(0)))
             .pipe(
                 lambda cond: (
-                    self._expr.filter(cond)
+                    self.inner()
+                    .filter(cond)
                     .select(*_proj(unnest=True))
-                    .union(self._expr.filter(cond.not_()).select(*_proj(unnest=False)))
+                    .union(
+                        self.inner().filter(cond.not_()).select(*_proj(unnest=False))
+                    )
                 )
             )
         )
@@ -447,7 +450,7 @@ class LazyFrame(ExprHandler[Relation]):
 
     def explain(self) -> str:
         """Generate SQL string."""
-        return QueryHolder.from_query(self._expr.sql_query()).prettify()
+        return QueryHolder.from_query(self.inner().sql_query()).prettify()
 
     def first(self) -> Self:
         """Get the first row."""
@@ -519,7 +522,7 @@ class LazyFrame(ExprHandler[Relation]):
 
     def clone(self) -> Self:
         """Create a copy of the LazyFrame."""
-        return self.__from_lf__(self._expr)
+        return self.__from_lf__(self.inner())
 
     def gather_every(self, n: int, offset: int = 0) -> Self:
         """Take every nth row starting from offset."""
@@ -541,12 +544,12 @@ class LazyFrame(ExprHandler[Relation]):
     @property
     def columns(self) -> pc.Vec[str]:
         """Get column names."""
-        return self._expr.columns
+        return self.inner().columns
 
     @property
     def dtypes(self) -> pc.Vec[sql.datatypes.DataType]:
         """Get column data types."""
-        return self._expr.dtypes
+        return self.inner().dtypes
 
     @property
     def width(self) -> int:
@@ -556,7 +559,7 @@ class LazyFrame(ExprHandler[Relation]):
     @property
     def schema(self) -> pc.Dict[str, sql.datatypes.DataType]:
         """Get the schema as a dictionary."""
-        return self.columns.iter().zip(self._expr.dtypes).collect(pc.Dict)
+        return self.columns.iter().zip(self.inner().dtypes).collect(pc.Dict)
 
     def collect_schema(self) -> pc.Dict[str, sql.datatypes.DataType]:
         """Collect the schema (same as schema property for lazy)."""
@@ -610,23 +613,29 @@ class LazyFrame(ExprHandler[Relation]):
             case "cross":
                 _validate_cross().unwrap()
                 right_on_set = pc.Set[str].new()
-                rel = self._expr.set_alias("lhs").cross(other._expr.set_alias("rhs"))
+                rel = (
+                    self.inner().set_alias("lhs").cross(other.inner().set_alias("rhs"))
+                )
             case _:
                 join_keys = JoinKeys.from_how(
                     how, on_opt, left_on_opt, right_on_opt
                 ).unwrap()
                 right_on_set = join_keys.right.iter().collect(pc.Set)
-                rel = self._expr.set_alias("lhs").join(
-                    other._expr.set_alias("rhs"),
-                    condition=join_keys.left.iter()
-                    .zip(join_keys.right)
-                    .map_star(
-                        lambda left, right: sql.col(f'lhs."{left}"').eq(
-                            sql.col(f'rhs."{right}"')
+                rel = (
+                    self.inner()
+                    .set_alias("lhs")
+                    .join(
+                        other.inner().set_alias("rhs"),
+                        condition=join_keys.left.iter()
+                        .zip(join_keys.right)
+                        .map_star(
+                            lambda left, right: sql.col(f'lhs."{left}"').eq(
+                                sql.col(f'rhs."{right}"')
+                            )
                         )
+                        .reduce(SqlExpr.and_),
+                        how=native_how,
                     )
-                    .reduce(SqlExpr.and_),
-                    how=native_how,
                 )
 
         def _rhs_expr(name: str) -> pc.Option[SqlExpr]:
@@ -655,10 +664,12 @@ class LazyFrame(ExprHandler[Relation]):
                             .map(_rhs_expr)
                             .filter_map(lambda expr: expr)
                         )
-                    ).set_alias(self._expr.alias)
+                    ).set_alias(self.inner().alias)
                 )
             case _:
-                return self.__from_lf__(rel.select("lhs.*").set_alias(self._expr.alias))
+                return self.__from_lf__(
+                    rel.select("lhs.*").set_alias(self.inner().alias)
+                )
 
     def join_asof(  # noqa: PLR0913
         self,
@@ -718,8 +729,8 @@ class LazyFrame(ExprHandler[Relation]):
         rhs_key = sql.col(f'{rhs}."{on_keys.right}"')
 
         def _simple_asof_join(comparison: Callable[[SqlExpr], SqlExpr]) -> Self:
-            _lhs = self._expr.set_alias(lhs).inner()
-            _rhs = other._expr.set_alias(rhs).inner()
+            _lhs = self.inner().set_alias(lhs).inner()
+            _rhs = other.inner().set_alias(rhs).inner()
             return self.__from_lf__(
                 Relation(
                     duckdb.sql(
@@ -748,7 +759,7 @@ class LazyFrame(ExprHandler[Relation]):
                     self.with_row_index(name=TEMP_NAME, order_by=self.columns)
                     .inner()
                     .set_alias(lhs)
-                    .join(other._expr.set_alias(rhs), condition=condition, how="left")
+                    .join(other.inner().set_alias(rhs), condition=condition, how="left")
                     .select(
                         sql.all(exclude=drop_keys),
                         sql.col(f'{rhs}."{on_keys.right}"').alias(asof_order),
@@ -849,7 +860,7 @@ class LazyFrame(ExprHandler[Relation]):
             )
             .join(", ")
         )
-        _rel = self._expr.inner()
+        _rel = self.inner().inner()
 
         return self.__from_lf__(
             Relation(
@@ -926,14 +937,14 @@ class LazyFrame(ExprHandler[Relation]):
 
     def sink_parquet(self, path: str | Path, *, compression: str = "zstd") -> None:
         """Write to Parquet file."""
-        self._expr.write_parquet(str(path), compression=compression)
+        self.inner().write_parquet(str(path), compression=compression)
 
     def sink_csv(
         self, path: str | Path, *, separator: str = ",", include_header: bool = True
     ) -> None:
         """Write to CSV file."""
-        self._expr.write_csv(str(path), sep=separator, header=include_header)
+        self.inner().write_csv(str(path), sep=separator, header=include_header)
 
     def sink_ndjson(self, path: str | Path) -> None:
         """Write to newline-delimited JSON file."""
-        self._expr.pl(lazy=True).sink_ndjson(path)
+        self.inner().pl(lazy=True).sink_ndjson(path)

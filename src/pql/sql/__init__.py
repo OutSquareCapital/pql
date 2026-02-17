@@ -2,7 +2,7 @@
 
 from . import datatypes
 from ._code_gen import Relation
-from ._core import ExprHandler, try_flatten, try_iter
+from ._core import CoreHandler, try_flatten, try_iter
 from ._expr import (
     SqlExpr,
     all,
@@ -21,7 +21,7 @@ from ._raw import Kword, QueryHolder
 from ._typing import FrameInit, IntoExpr, IntoExprColumn
 
 __all__ = [
-    "ExprHandler",
+    "CoreHandler",
     "FrameInit",
     "IntoExpr",
     "IntoExprColumn",

@@ -150,7 +150,6 @@ class MethodInfo:
         )
 
     def _build_body(self, wrapper: pc.Option[str]) -> str:
-        """Build the method body that delegates to ``self._expr``."""
         call_parts = (
             self.params.iter()
             .filter(lambda p: not p.is_kw_only)

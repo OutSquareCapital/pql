@@ -27,10 +27,13 @@ def try_flatten[T](vals: T | Iterable[T]) -> pc.Iter[T]:
 
 
 @dataclass(slots=True)
-class ExprHandler[T]:
-    """A wrapper for expressions."""
+class CoreHandler[T]:
+    """A wrapper for an inner value.
 
-    _expr: T
+    Is used as a base class for Expressions, Relation, LazyFrame, and namespaces, since they all share the same pattern of wrapping an inner value and forwarding method calls to it.
+    """
+
+    _inner: T
 
     def pipe[**P, R](
         self,
@@ -56,15 +59,16 @@ class ExprHandler[T]:
         """
         return function(self, *args, **kwargs)
 
-    def _new(self, expr: T) -> Self:
-        return self.__class__(expr)
+    def _new(self, value: T) -> Self:
+        """Create a new instance of *Self* with the given value."""
+        return self.__class__(value)
 
     def inner(self) -> T:
-        """Unwrap the underlying expression."""
-        return self._expr
+        """Unwrap the underlying value."""
+        return self._inner
 
 
-class RelHandler(ExprHandler[duckdb.DuckDBPyRelation]):
+class RelHandler(CoreHandler[duckdb.DuckDBPyRelation]):
     """A wrapper for DuckDB relations."""
 
     __slots__ = ()
@@ -72,24 +76,24 @@ class RelHandler(ExprHandler[duckdb.DuckDBPyRelation]):
     def __init__(self, data: FrameInit) -> None:
         match data:
             case duckdb.DuckDBPyRelation():
-                self._expr = data
+                self._inner = data
             case pl.DataFrame():
-                self._expr = duckdb.from_arrow(data)
+                self._inner = duckdb.from_arrow(data)
             case pl.LazyFrame():
                 _ = data
                 qry = """SELECT * FROM _"""
-                self._expr = duckdb.from_query(qry)
+                self._inner = duckdb.from_query(qry)
             case str() as tbl:
                 match tbl:
                     case fn if tbl.endswith("()"):
-                        self._expr = duckdb.table_function(fn)
+                        self._inner = duckdb.table_function(fn)
                     case _:
-                        self._expr = duckdb.table(data)
+                        self._inner = duckdb.table(data)
             case _:
-                self._expr = duckdb.from_arrow(pl.DataFrame(data))
+                self._inner = duckdb.from_arrow(pl.DataFrame(data))
 
 
-class DuckHandler(ExprHandler[duckdb.Expression]):
+class DuckHandler(CoreHandler[duckdb.Expression]):
     """A wrapper for DuckDB expressions."""
 
     __slots__ = ()

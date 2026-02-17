@@ -151,7 +151,7 @@ SPECIAL_CASES = pc.Set(
         "json",  # conflict with namespace, renamed to parse
         "map",  # conflict with namespace, renamed to to_map
         # Misc
-        "log",  # Need to swap argument order to take self._expr as value and not as base
+        "log",  # Need to swap argument order to take self.inner() as value and not as base
         "strftime",  # Need custom "str" prefix rule, but this rule will also take "struct" funcs in string namespace, so better to just special case it
         "strptime",  # Same as strftime
         # Generic functions that cause too much conflicts with other names

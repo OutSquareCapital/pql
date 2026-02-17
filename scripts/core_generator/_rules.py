@@ -6,6 +6,7 @@ import pyochain as pc
 class PyLit(StrEnum):
     INTO_DUCKDB = auto()
     RELATION = "Relation"
+    CORE_HANDLER = "CoreHandler"
     REL_HANDLER = "RelHandler"
     DUCK_HANDLER = "DuckHandler"
     DUCK_REL = "DuckDBPyRelation"
@@ -38,7 +39,7 @@ from typing import TYPE_CHECKING, {cls.ANY}, {cls.LITERAL}, {cls.SELF_RET}, Supp
 import duckdb
 import pyochain as pc
 from duckdb import ExplainType, RenderMode
-from .._core import ExprHandler, {cls.REL_HANDLER}, try_iter, into_duckdb, {cls.DUCK_HANDLER}
+from .._core import {cls.CORE_HANDLER}, {cls.REL_HANDLER}, try_iter, into_duckdb, {cls.DUCK_HANDLER}
 if TYPE_CHECKING:
     from collections.abc import Callable, {cls.ITERABLE}
     import numpy as np

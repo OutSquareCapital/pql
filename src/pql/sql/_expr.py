@@ -183,7 +183,7 @@ class SqlExpr(Expression, Fns):
         Returns:
             Self
         """
-        return self._new(func("log", x, self._expr))
+        return self._new(func("log", x, self.inner()))
 
     def implode(self) -> Self:
         """Returns a LIST containing all the values of a column.
@@ -196,7 +196,7 @@ class SqlExpr(Expression, Fns):
         Returns:
             Self
         """
-        return self._new(func("list", self._expr))
+        return self._new(func("list", self.inner()))
 
     def greatest(self, *args: Self) -> Self:
         """Returns the largest value.
@@ -246,7 +246,7 @@ class SqlExpr(Expression, Fns):
         return self._new(func("map", self.inner(), values))
 
     def __str__(self) -> str:
-        return self._expr.__str__()
+        return self.inner().__str__()
 
     def add(self, other: Self) -> Self:
         return self.__add__(other)
@@ -386,7 +386,7 @@ class SqlExpr(Expression, Fns):
         Returns:
             Self
         """
-        return self._new(func("fill", self._expr))
+        return self._new(func("fill", self.inner()))
 
     def first_value(self) -> Self:
         """Returns expr evaluated at the row that is the first row (with a non-null value of expr if IGNORE NULLS is set) of the window frame.
@@ -396,7 +396,7 @@ class SqlExpr(Expression, Fns):
         Returns:
             Self
         """
-        return self._new(func("first_value", self._expr))
+        return self._new(func("first_value", self.inner()))
 
     def lag(self, offset: SqlExpr | int = 1, default: SqlExpr | None = None) -> Self:
         """Returns expr evaluated at the row that is offset rows (among rows with a non-null value of expr if IGNORE NULLS is set) before the current row within the window frame.
@@ -416,7 +416,7 @@ class SqlExpr(Expression, Fns):
         Returns:
             Self
         """
-        return self._new(func("lag", self._expr, offset, default))
+        return self._new(func("lag", self.inner(), offset, default))
 
     def last_value(self) -> Self:
         """Returns expr evaluated at the row that is the last row (among rows with a non-null value of expr if IGNORE NULLS is set) of the window frame.
@@ -427,7 +427,7 @@ class SqlExpr(Expression, Fns):
         Returns:
             Self
         """
-        return self._new(func("last_value", self._expr))
+        return self._new(func("last_value", self.inner()))
 
     def lead(self, offset: SqlExpr | int = 1, default: SqlExpr | None = None) -> Self:
         """Returns expr evaluated at the row that is offset rows after the current row (among rows with a non-null value of expr if IGNORE NULLS is set) within the window frame.
@@ -445,7 +445,7 @@ class SqlExpr(Expression, Fns):
         Returns:
             Self
         """
-        return self._new(func("lead", self._expr, offset, default))
+        return self._new(func("lead", self.inner(), offset, default))
 
     def nth_value(self, nth: SqlExpr | int) -> Self:
         """Returns expr evaluated at the nth row (among rows with a non-null value of expr if IGNORE NULLS is set) of the window frame (counting from 1).
@@ -460,7 +460,7 @@ class SqlExpr(Expression, Fns):
         Returns:
             Self
         """
-        return self._new(func("nth_value", self._expr, nth))
+        return self._new(func("nth_value", self.inner(), nth))
 
     def ntile(self) -> Self:
         """An integer ranging from 1 to num_buckets, dividing the partition as equally as possible.
@@ -473,7 +473,7 @@ class SqlExpr(Expression, Fns):
         Returns:
             Self
         """
-        return self._new(func("ntile", self._expr))
+        return self._new(func("ntile", self.inner()))
 
     def percent_rank(self) -> Self:
         """The relative rank of the current row: (rank() - 1) / (total partition rows - 1).
