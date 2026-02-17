@@ -1,12 +1,15 @@
 from __future__ import annotations
 
+import ast
 from dataclasses import dataclass, field
-from typing import Self
+from textwrap import indent
+from typing import NamedTuple, Self
 
 import pyochain as pc
+from astToolkit import Make
 
 from ._rules import PyLit
-from ._target import REL_TARGET, TargetSpec
+from ._target import REL_TARGET, ReturnMeta, TargetSpec
 
 
 @dataclass(slots=True)
@@ -18,48 +21,51 @@ class ParamInfo:
     default: pc.Option[str] = field(default_factory=lambda: pc.NONE)
     is_kw_only: bool = False
 
-    def format_param(self, target: TargetSpec) -> str:
-        ann = target.rewrite_type(self.annotation)
-        base = f"{self.name}: {ann}" if ann else self.name
-        return self.default.map(lambda d: f"{base} = {d}").unwrap_or(base)
-
-    def forward_vararg(self, target: TargetSpec) -> str:
+    def forward_vararg(self, target: TargetSpec) -> ast.Starred:
         """Generate the forwarded vararg, converting types at boundary."""
         match target:
             case t if t == REL_TARGET:
                 match target.rewrite_type(self.annotation):
                     case a if PyLit.DUCK_HANDLER in a and PyLit.STR not in a:
-                        return f"*pc.Iter({self.name}).map(lambda arg: arg.inner())"
+                        expr = _iter_map_inner(_iter_from_name(self.name))
                     case a if PyLit.DUCK_HANDLER in a:
-                        return f"*pc.Iter({self.name}).map({PyLit.INTO_DUCKDB})"
+                        expr = _iter_map_name(
+                            _iter_from_name(self.name), PyLit.INTO_DUCKDB
+                        )
                     case _:
-                        return f"*{self.name}"
+                        expr = Make.Name(self.name)
             case _ if target.stub_class in self.annotation:
-                return f"*pc.Iter({self.name}).map(lambda arg: arg.inner())"
+                expr = _iter_map_inner(_iter_from_name(self.name))
             case _:
-                return f"*{self.name}"
+                expr = Make.Name(self.name)
+        return ast.Starred(value=expr, ctx=ast.Load())
 
-    def forward_arg(self, target: TargetSpec) -> str:  # noqa: PLR0911
+    def forward_arg(self, target: TargetSpec) -> ast.expr:  # noqa: PLR0911
         """Generate the forwarded argument, converting types at boundary."""
         match target:
             case t if t == REL_TARGET:
                 match self.annotation:
                     case a if PyLit.ITERABLE in a and PyLit.DUCK_EXPR in a:
-                        return f"try_iter({self.name}).map({PyLit.INTO_DUCKDB})"
+                        return _iter_map_name(
+                            _call_name("try_iter", Make.Name(self.name)),
+                            PyLit.INTO_DUCKDB,
+                        )
                     case a if PyLit.DUCK_EXPR in a and PyLit.DUCK_REL not in a:
-                        return f"{PyLit.INTO_DUCKDB}({self.name})"
+                        return _call_name(PyLit.INTO_DUCKDB, Make.Name(self.name))
                     case a if PyLit.DUCK_REL in a:
-                        return f"{self.name}.inner()"
+                        return _call_attr0(Make.Name(self.name), "inner")
                     case _:
-                        return self.name
+                        return Make.Name(self.name)
             case _:
                 match self.annotation:
                     case a if PyLit.ITERABLE in a and target.stub_class in a:
-                        return f"try_iter({self.name}).map(lambda arg: arg.inner())"
+                        return _iter_map_inner(
+                            _call_name("try_iter", Make.Name(self.name))
+                        )
                     case a if target.stub_class in a or PyLit.DUCK_REL in a:
-                        return f"{self.name}.inner()"
+                        return _call_attr0(Make.Name(self.name), "inner")
                     case _:
-                        return self.name
+                        return Make.Name(self.name)
 
 
 @dataclass(slots=True)
@@ -87,120 +93,218 @@ class MethodInfo:
     def returns_none(self) -> bool:
         return self.return_type == PyLit.NONE
 
-    def _return_meta(self) -> tuple[str, pc.Option[str]]:
+    def _return_meta(self) -> ReturnMeta:
         if self.returns_relation:
-            return PyLit.SELF_RET, pc.NONE
+            return ReturnMeta(PyLit.SELF_RET, pc.NONE)
         return self.target.return_meta(self.return_type)
-
-    def _build_signature(self, return_annotation: str) -> str:
-        """Build the full ``def`` signature line."""
-        parts: pc.Vec[str] = (
-            self.params.iter()
-            .filter(lambda p: not p.is_kw_only)
-            .map(lambda p: p.format_param(self.target))
-            .insert(PyLit.SELF)
-            .collect(pc.Vec)
-        )
-
-        match (self.vararg.is_some(), self.params.iter().any(lambda p: p.is_kw_only)):
-            case (True, _):
-                self.vararg.inspect(
-                    lambda v: parts.append(
-                        f"*{v.name}: {self.target.rewrite_type(v.annotation)}"
-                    )
-                )
-            case (False, True):
-                parts.append("*")
-            case _:
-                pass
-
-        joined = (
-            self.params.iter()
-            .filter(lambda p: p.is_kw_only)
-            .map(lambda p: p.format_param(self.target))
-            .collect_into(parts)
-            .join(", ")
-        )
-        return f"    def {self.target.rename_method(self.name)}({joined}) -> {return_annotation}:"
 
     def generate_method(self) -> str:
         """Generate a single method wrapper."""
         return_annotation, wrapper = self._return_meta()
+        ast_signature = self._build_ast_signature(return_annotation)
         match self.name:
             case _ if self.is_overload:
-                return self._to_overload(return_annotation)
+                return ast_signature.render_overload()
             case _ if self.is_property:
-                return self._to_property(return_annotation, wrapper)
+                return self._build_property_signature(return_annotation).render(
+                    self.doc,
+                    _wrap_return_expr(
+                        _call_attr(_call_attr0(Make.Name("self"), "inner"), self.name),
+                        wrapper,
+                    ),
+                    decorators=pc.Seq((PyLit.PROPERTY,)),
+                )
             case _:
-                sig = self._build_signature(return_annotation)
-                doc_str = _format_doc(self.doc)
+                return ast_signature.render(self.doc, self._build_return_expr(wrapper))
 
-                return f"{sig}{doc_str}\n{self._build_body(wrapper)}"
+    def _build_ast_signature(self, return_annotation: str) -> AstSignature:
+        pos_params = self.params.iter().filter(lambda p: not p.is_kw_only).collect()
+        kwonly_params = self.params.iter().filter(lambda p: p.is_kw_only).collect()
 
-    def _to_overload(self, return_annotation: str) -> str:
-        return f"    @{PyLit.OVERLOAD}\n{self._build_signature(return_annotation)}\n        ..."
-
-    def _to_property(self, return_annotation: str, wrapper: pc.Option[str]) -> str:
-        doc_str = _format_doc(self.doc)
-        body = _wrap_return(f"self.inner().{self.name}", wrapper)
-        return (
-            f"    @{PyLit.PROPERTY}\n"
-            f"    def {self.target.rename_method(self.name)}(self) -> {return_annotation}:{doc_str}\n"
-            f"        return {body}"
+        return AstSignature(
+            self.target.rename_method(self.name),
+            Make.arguments(
+                list_arg=pos_params.iter()
+                .map(
+                    lambda p: _make_arg(p.name, self.target.rewrite_type(p.annotation))
+                )
+                .insert(Make.arg(PyLit.SELF))
+                .collect(list),
+                vararg=self.vararg.map(
+                    lambda p: _make_arg(p.name, self.target.rewrite_type(p.annotation))
+                ).unwrap_or(None),  # pyright: ignore[reportArgumentType]
+                kwonlyargs=kwonly_params.iter()
+                .map(
+                    lambda p: _make_arg(p.name, self.target.rewrite_type(p.annotation))
+                )
+                .collect(list),
+                kw_defaults=kwonly_params.iter()
+                .map(
+                    lambda p: p.default.map(_to_expr).unwrap_or(None)  # pyright: ignore[reportArgumentType]
+                )
+                .collect(),
+                defaults=(
+                    pos_params.iter()
+                    .map(lambda p: p.default)
+                    .collect(pc.Vec)
+                    .into(
+                        lambda pos_defaults: (
+                            pos_defaults.iter()
+                            .enumerate()
+                            .find_map(
+                                lambda item: (
+                                    pc.Some(item[0]) if item[1].is_some() else pc.NONE
+                                )
+                            )
+                            .map(
+                                lambda idx: (
+                                    pos_defaults.iter()
+                                    .skip(idx)
+                                    .map(
+                                        lambda d: d.expect(
+                                            "Expected trailing default value"
+                                        )
+                                    )
+                                    .map(_to_expr)
+                                    .collect()
+                                )
+                            )
+                            .unwrap_or(pc.Seq(()))
+                        )
+                    )
+                ),
+            ),
+            _to_expr(return_annotation),
         )
 
-    def _build_body(self, wrapper: pc.Option[str]) -> str:
-        call_parts = (
+    def _build_property_signature(self, return_annotation: str) -> AstSignature:
+        return AstSignature(
+            self.target.rename_method(self.name),
+            Make.arguments(list_arg=[Make.arg(PyLit.SELF)]),
+            _to_expr(return_annotation),
+        )
+
+    def _build_return_expr(self, wrapper: pc.Option[str]) -> ast.expr:
+        args = (
             self.params.iter()
             .filter(lambda p: not p.is_kw_only)
             .map(lambda p: p.forward_arg(self.target))
-            .collect(pc.Vec)
         )
-
-        self.vararg.map(lambda v: call_parts.append(v.forward_vararg(self.target)))
-
-        all_args = (
+        kwargs = (
             self.params.iter()
             .filter(lambda p: p.is_kw_only)
-            .map(lambda p: f"{p.name}={p.forward_arg(self.target)}")
-            .collect_into(call_parts)
-            .join(", ")
+            .map(lambda p: ast.keyword(arg=p.name, value=p.forward_arg(self.target)))
         )
 
-        call = f"self.inner().{self.name}({all_args})"
+        call = ast.Call(
+            func=_call_attr(_call_attr0(Make.Name("self"), "inner"), self.name),
+            args=self.vararg.map_or(
+                args.collect(list),
+                lambda v: args.insert(v.forward_vararg(self.target)).collect(list),
+            ),
+            keywords=kwargs.collect(list),
+        )
 
         if self.returns_relation:
-            return f"        return self._new({call})"
-        return f"        return {_wrap_return(call, wrapper)}"
+            return _call_attr(Make.Name("self"), "_new", call)
+        return _wrap_return_expr(call, wrapper)
 
 
-def _wrap_return(value: str, wrapper: pc.Option[str]) -> str:
-    return wrapper.map(lambda fn_name: f"{fn_name}({value})").unwrap_or(value)
+class AstSignature(NamedTuple):
+    name: str
+    args: ast.arguments
+    returns: ast.expr
+
+    def render(
+        self,
+        doc: str,
+        return_expr: ast.expr,
+        decorators: pc.Seq[str] | None = None,
+    ) -> str:
+        body = pc.Option.if_true(doc.strip(), predicate=bool).map_or(
+            [Make.Return(return_expr)],
+            lambda txt: [
+                Make.Expr(Make.Constant(txt)),
+                Make.Return(return_expr),
+            ],
+        )
+
+        rendered = Make.FunctionDef(
+            name=self.name,
+            argumentSpecification=self.args,
+            body=body,
+            decorator_list=pc.Option(decorators)
+            .map(lambda ds: ds.iter().map(Make.Name).collect())
+            .unwrap_or(pc.Seq(())),
+            returns=self.returns,
+        )
+        ast.fix_missing_locations(rendered)
+        return indent(ast.unparse(rendered), "    ")
+
+    def render_overload(self) -> str:
+        rendered = Make.FunctionDef(
+            name=self.name,
+            argumentSpecification=self.args,
+            body=[Make.Expr(Make.Constant(Ellipsis))],
+            decorator_list=[Make.Name(PyLit.OVERLOAD)],
+            returns=self.returns,
+        )
+        ast.fix_missing_locations(rendered)
+        return indent(ast.unparse(rendered), "    ")
 
 
-def _format_doc(doc: str) -> str:
-    """Format a docstring for the generated wrapper."""
+def _to_expr(expr: str) -> ast.expr:
+    return ast.parse(expr, mode="eval").body
 
-    def _format_lines(lines: pc.Vec[str]) -> str:
-        match lines.length():
-            case 1:
-                return f'        """{lines.first().rstrip()}"""'
-            case _:
-                first_ln = f'        """{lines.first().rstrip()}\n'
-                last_ln = '\n        """'
-                return (
-                    first_ln
-                    + lines.iter()
-                    .skip(1)
-                    .map(lambda line: f"        {line}")
-                    .join("\n")
-                    + last_ln
-                )
 
-    return (
-        pc.Vec.from_ref(doc.strip().splitlines())
-        .then_some()
-        .map(_format_lines)
-        .map(lambda d: f"\n{d}")
-        .unwrap_or("")
+def _make_arg(name: str, annotation: str) -> ast.arg:
+    return Make.arg(
+        name,
+        pc.Option.if_true(annotation, predicate=bool).map_or(None, _to_expr),
     )
+
+
+def _wrap_return_expr(value: ast.expr, wrapper: pc.Option[str]) -> ast.expr:
+    return wrapper.map_or(
+        value,
+        lambda fn_name: ast.Call(func=_to_expr(fn_name), args=[value], keywords=[]),
+    )
+
+
+def _call_name(name: str, *args: ast.expr) -> ast.Call:
+    return ast.Call(func=Make.Name(name), args=list(args), keywords=[])
+
+
+def _call_attr(obj: ast.expr, attr: str, *args: ast.expr) -> ast.expr:
+    node = ast.Attribute(value=obj, attr=attr, ctx=ast.Load())
+    return node if not args else ast.Call(func=node, args=list(args), keywords=[])
+
+
+def _call_attr0(obj: ast.expr, attr: str) -> ast.Call:
+    return ast.Call(
+        ast.Attribute(value=obj, attr=attr, ctx=ast.Load()), args=[], keywords=[]
+    )
+
+
+def _iter_map_name(iterable_expr: ast.expr, fn_name: str) -> ast.expr:
+    return _call_attr(iterable_expr, "map", Make.Name(fn_name))
+
+
+def _iter_map_inner(iterable_expr: ast.expr) -> ast.expr:
+    lambda_expr = ast.Lambda(
+        args=ast.arguments(
+            posonlyargs=[],
+            args=[Make.arg("arg")],
+            vararg=None,
+            kwonlyargs=[],
+            kw_defaults=[],
+            kwarg=None,
+            defaults=[],
+        ),
+        body=_call_attr0(Make.Name("arg"), "inner"),
+    )
+    return _call_attr(iterable_expr, "map", lambda_expr)
+
+
+def _iter_from_name(name: str) -> ast.expr:
+    return _call_attr(Make.Name("pc"), "Iter", Make.Name(name))

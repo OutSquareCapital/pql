@@ -1,6 +1,7 @@
 import inspect
 from dataclasses import dataclass, field
 from textwrap import dedent
+from typing import NamedTuple
 
 import duckdb
 import pyochain as pc
@@ -14,6 +15,11 @@ from ._rules import (
     TYPE_SUBS,
     PyLit,
 )
+
+
+class ReturnMeta(NamedTuple):
+    return_annotation: str
+    wrapper: pc.Option[str]
 
 
 @dataclass(slots=True)
@@ -43,7 +49,7 @@ class TargetSpec:
             .fold(PYTYPING_REWRITES.items().iter().fold(annotation, _sub_one), _sub_one)
         )
 
-    def return_meta(self, annotation: str) -> tuple[str, pc.Option[str]]:
+    def return_meta(self, annotation: str) -> ReturnMeta:
         def _collection_kind() -> pc.Option[PyLit]:
             match rewritten:
                 case _ if rewritten.startswith(PyLit.LIST):
@@ -53,8 +59,8 @@ class TargetSpec:
                 case _:
                     return pc.NONE
 
-        def _build(collection: str, suffix: str) -> tuple[str, pc.Some[str]]:
-            return (
+        def _build(collection: str, suffix: str) -> ReturnMeta:
+            return ReturnMeta(
                 f"pc.{collection}{suffix}" if suffix else f"pc.{collection}[Any]",
                 pc.Some(f"pc.{collection}.from_ref"),
             )
@@ -66,7 +72,7 @@ class TargetSpec:
             case pc.Some(PyLit.DICT):
                 return _build("Dict", rewritten.removeprefix(PyLit.DICT))
             case _:
-                return rewritten, pc.NONE
+                return ReturnMeta(rewritten, pc.NONE)
 
     def fix_param(self, method_name: str, param_name: str, annotation: str) -> str:
         return (
