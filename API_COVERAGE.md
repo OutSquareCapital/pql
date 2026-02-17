@@ -6,9 +6,9 @@ This report shows the API coverage of pql compared to Polars.
 
 | Class       | Coverage vs Narwhals | Total | Matched | Missing | Mismatched | Extra | Extra vs Narwhals |
 | ----------- | -------------------- | ----- | ------- | ------- | ---------- | ----- | ----------------- |
-| LazyFrame   | 68.8%                | 48    | 33      | 2       | 13         | 1     | 22                |
+| LazyFrame   | 68.1%                | 47    | 32      | 2       | 13         | 1     | 21                |
 | Expr        | 82.1%                | 106   | 87      | 7       | 12         | 2     | 36                |
-| Expr.str    | 93.1%                | 29    | 27      | 0       | 2          | 0     | 10                |
+| Expr.str    | 92.6%                | 27    | 25      | 2       | 0          | 2     | 8                 |
 | Expr.list   | 100.0%               | 10    | 10      | 0       | 0          | 2     | 0                 |
 | Expr.struct | 100.0%               | 1     | 1       | 0       | 0          | 2     | 0                 |
 
@@ -23,7 +23,7 @@ This report shows the API coverage of pql compared to Polars.
 
 - `cast` (pl)
   - Polars: (`dtypes: Mapping[ColumnNameOrSelector | PolarsDataType, PolarsDataType | PythonDataType] | PolarsDataType | pl.DataTypeExpr | Schema`, `strict: bool`) -> LazyFrame
-  - pql: (`dtypes: Mapping[str, sql.datatypes.DataType] | sql.datatypes.DataType`) -> Self
+  - pql: (`dtypes: Mapping[str, DataType] | DataType`) -> Self
 - `collect` (nw)
   - Narwhals: (`backend: IntoBackend[Polars | Pandas | Arrow] | None`, `**kwargs: Any`) -> DataFrame[Any]
   - Polars: (`type_coercion: bool`, `predicate_pushdown: bool`, `projection_pushdown: bool`, `simplify_expression: bool`, `slice_pushdown: bool`, `comm_subplan_elim: bool`, `comm_subexpr_elim: bool`, `cluster_with_columns: bool`, `collapse_joins: bool`, `no_optimization: bool`, `engine: EngineType`, `background: bool`, `optimizations: QueryOptFlags`, `**_kwargs: Any`) -> DataFrame | InProcessQuery
@@ -136,15 +136,15 @@ This report shows the API coverage of pql compared to Polars.
 
 ## Expr.str
 
-### [!] Signature Mismatches (2)
+### [x] Missing Methods (2)
 
-- `to_datetime` (nw)
-  - Narwhals: (format: str | None) -> ExprT
-  - Polars: (format: str | None, `time_unit: TimeUnit | None`, `time_zone: str | None`, `strict: bool`, `exact: bool`, `cache: bool`, `ambiguous: Ambiguous | Expr`) -> Expr
-  - pql: (format: str | None, `time_unit: TimeUnit`) -> Expr
-- `to_time` (pl)
-  - Polars: (format: str | None, `strict: bool`, `cache: bool`) -> Expr
-  - pql: (format: str | None) -> Expr
+- `to_date` (format: str | None) -> ExprT
+- `to_datetime` (format: str | None) -> ExprT
+
+### [+] Extra Methods (pql-only) (2)
+
+- `inner`
+- `pipe`
 
 ## Expr.list
 

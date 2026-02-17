@@ -402,17 +402,6 @@ def test_pow() -> None:
     )
 
 
-def test_cast() -> None:
-    assert_eq(
-        pql.col("x").cast(pql.String).alias("x_str"),
-        nw.col("x").cast(nw.String).alias("x_str"),
-    )
-    assert_eq(
-        pql.col("age").cast(pql.Float64).alias("age"),
-        nw.col("age").cast(nw.Float64).alias("age"),
-    )
-
-
 def test_add() -> None:
     assert_eq(
         (

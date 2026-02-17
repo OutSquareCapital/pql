@@ -54,7 +54,6 @@ def test_lazyframe_from_dict() -> None:
 
 def test_properties(sample_df: pl.DataFrame) -> None:
     lf = pql.LazyFrame(sample_df)
-    assert len(lf.dtypes) == len(sample_df.dtypes)
     assert lf.width == sample_df.width
     assert set(lf.schema.keys()) == set(sample_df.columns)
     assert lf.schema == lf.collect_schema()
@@ -279,7 +278,7 @@ def test_cast(sample_df: pl.DataFrame) -> None:
     assert_frame_equal(
         pql.LazyFrame(sample_df)
         .select(pql.col("age"), pql.col("id"))
-        .cast({"age": pql.Float64})
+        .cast({"age": pql.Float64()})
         .collect(),
         sample_df.lazy()
         .select(pl.col("age"), pl.col("id"))
@@ -289,7 +288,7 @@ def test_cast(sample_df: pl.DataFrame) -> None:
     assert_frame_equal(
         pql.LazyFrame(sample_df)
         .select(pql.col("age"), pql.col("id"))
-        .cast(pql.String)
+        .cast(pql.String())
         .collect(),
         sample_df.lazy().select(pl.col("age"), pl.col("id")).cast(pl.String).collect(),
     )

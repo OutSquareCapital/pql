@@ -10,6 +10,7 @@ import duckdb
 import pyochain as pc
 
 from . import sql
+from ._datatypes import DataType, DeferredTimeZone
 from ._expr import Expr
 from .sql import (
     CoreHandler,
@@ -547,21 +548,27 @@ class LazyFrame(CoreHandler[Relation]):
         return self.inner().columns
 
     @property
-    def dtypes(self) -> pc.Vec[sql.datatypes.DataType]:
-        """Get column data types."""
-        return self.inner().dtypes
-
-    @property
     def width(self) -> int:
         """Get number of columns."""
         return self.columns.length()
 
     @property
-    def schema(self) -> pc.Dict[str, sql.datatypes.DataType]:
-        """Get the schema as a dictionary."""
-        return self.columns.iter().zip(self.inner().dtypes).collect(pc.Dict)
+    def schema(self) -> pc.Dict[str, DataType]:
+        deferred_time_zone = DeferredTimeZone(self.inner().inner())
+        return (
+            self.inner()
+            .columns.iter()
+            .zip(self.inner().dtypes, strict=True)
+            .map_star(
+                lambda column_name, duckdb_dtype: (
+                    column_name,
+                    DataType.from_duckdb(duckdb_dtype, deferred_time_zone),
+                )
+            )
+            .collect(pc.Dict)
+        )
 
-    def collect_schema(self) -> pc.Dict[str, sql.datatypes.DataType]:
+    def collect_schema(self) -> pc.Dict[str, DataType]:
         """Collect the schema (same as schema property for lazy)."""
         return self.schema
 
@@ -918,22 +925,20 @@ class LazyFrame(CoreHandler[Relation]):
         """Return bottom k rows by column(s)."""
         return self.sort(by, descending=reverse).head(k)
 
-    def cast(
-        self, dtypes: Mapping[str, sql.datatypes.DataType] | sql.datatypes.DataType
-    ) -> Self:
+    def cast(self, dtypes: Mapping[str, DataType] | DataType) -> Self:
         """Cast columns to specified dtypes."""
         match dtypes:
             case Mapping():
                 dtype_map = pc.Dict(dtypes)
                 return self._iter_slct(
                     lambda c: (
-                        sql.col(c).cast(dtype_map.get_item(c).unwrap()).alias(c)
-                        if c in dtypes
-                        else sql.col(c)
+                        dtype_map.get_item(c)
+                        .map(lambda dtype: sql.col(c).cast(dtype.sql()).alias(c))
+                        .unwrap_or(sql.col(c))
                     )
                 )
             case _:
-                return self._iter_slct(lambda c: sql.col(c).cast(dtypes).alias(c))
+                return self._iter_slct(lambda c: sql.col(c).cast(dtypes.sql()).alias(c))
 
     def sink_parquet(self, path: str | Path, *, compression: str = "zstd") -> None:
         """Write to Parquet file."""

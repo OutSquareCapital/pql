@@ -401,46 +401,6 @@ def test_count_matches_regex() -> None:
     )
 
 
-def test_to_date() -> None:
-    assert_eq(
-        (pql.col("date_str").str.to_date("%Y-%m-%d").alias("date")),
-        (nw.col("date_str").str.to_date("%Y-%m-%d").alias("date")),
-    )
-    assert_eq(
-        (pql.col("date_str").str.to_date().alias("date")),
-        (nw.col("date_str").str.to_date().alias("date")),
-    )
-
-
-def test_to_datetime() -> None:
-    assert_eq(
-        (pql.col("dt_str").str.to_datetime("%Y-%m-%d %H:%M:%S").alias("dt")),
-        (nw.col("dt_str").str.to_datetime("%Y-%m-%d %H:%M:%S").alias("dt")),
-    )
-    assert_eq_pl(
-        (pql.col("dt_str").str.to_datetime().alias("dt")),
-        (pl.col("dt_str").str.to_datetime().alias("dt")),
-    )
-
-
-def test_to_time() -> None:
-    assert_eq_pl(
-        (pql.col("time_str").str.to_time("%H:%M:%S").alias("time")),
-        (pl.col("time_str").str.to_time("%H:%M:%S").alias("time")),
-    )
-    assert_eq_pl(
-        (pql.col("time_str").str.to_time().alias("time")),
-        (pl.col("time_str").str.to_time().alias("time")),
-    )
-
-
-def test_to_decimal() -> None:
-    assert_eq_pl(
-        (pql.col("numbers").str.to_decimal(scale=10).alias("dec")),
-        (pl.col("numbers").str.to_decimal(scale=10).alias("dec")),
-    )
-
-
 def test_pad_start() -> None:
     assert_eq_pl(
         (pql.col("text_short").str.pad_start(5).alias("padded")),

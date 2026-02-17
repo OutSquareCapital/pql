@@ -1,25 +1,46 @@
 """PQL - Polars Query Language over DuckDB."""
 
 from . import sql
-from ._expr import Expr, all, col
-from ._frame import LazyFrame
-from .sql.datatypes import (
+from ._datatypes import (
+    Array,
+    Binary,
     Boolean,
+    DataType,
+    Date,
+    Datetime,
+    Decimal,
+    Duration,
+    Enum,
     Float32,
     Float64,
     Int8,
     Int16,
     Int32,
     Int64,
+    Int128,
+    List,
     String,
+    Struct,
+    Time,
     UInt8,
     UInt16,
     UInt32,
     UInt64,
+    UInt128,
 )
+from ._expr import Expr, all, col
+from ._frame import LazyFrame
 
 __all__ = [
+    "Array",
+    "Binary",
     "Boolean",
+    "DataType",
+    "Date",
+    "Datetime",
+    "Decimal",
+    "Duration",
+    "Enum",
     "Expr",
     "Float32",
     "Float64",
@@ -27,12 +48,17 @@ __all__ = [
     "Int16",
     "Int32",
     "Int64",
+    "Int128",
     "LazyFrame",
+    "List",
     "String",
+    "Struct",
+    "Time",
     "UInt8",
     "UInt16",
     "UInt32",
     "UInt64",
+    "UInt128",
     "all",
     "col",
     "sql",

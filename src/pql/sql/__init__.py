@@ -1,6 +1,5 @@
 """SQL expression functions and converters."""
 
-from . import datatypes
 from ._code_gen import Relation
 from ._core import CoreHandler, try_flatten, try_iter
 from ._expr import (
@@ -33,8 +32,6 @@ __all__ = [
     "args_into_exprs",
     "coalesce",
     "col",
-    "datatypes",
-    "datatypes",
     "fn_once",
     "func",
     "into_expr",

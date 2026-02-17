@@ -13,6 +13,7 @@ from . import sql
 from .sql import CoreHandler, SqlExpr, into_expr, try_flatten, try_iter
 
 if TYPE_CHECKING:
+    from ._datatypes import DataType
     from .sql import IntoExpr
 
 RoundMode = Literal["half_to_even", "half_away_from_zero"]
@@ -276,9 +277,9 @@ class Expr(CoreHandler[SqlExpr]):
         """Check if the expression is not NULL."""
         return self._new(self.inner().is_not_null())
 
-    def cast(self, dtype: sql.datatypes.DataType) -> Self:
+    def cast(self, dtype: DataType) -> Self:
         """Cast to a different data type."""
-        return self._new(self.inner().cast(dtype))
+        return self._new(self.inner().cast(dtype.sql()))
 
     def is_in(self, other: Collection[IntoExpr] | IntoExpr) -> Self:
         """Check if value is in an iterable of values."""
@@ -920,43 +921,6 @@ class ExprStringNameSpace(CoreHandler[SqlExpr]):
                     )
                     .truediv(pattern_expr.str.length())
                 )
-
-    def to_date(self, format: str | None = None) -> Expr:  # noqa: A002
-        """Convert string to date."""
-        match format:
-            case None:
-                return Expr(self.inner().cast(sql.datatypes.Date))
-            case _:
-                return Expr(self.inner().str.strptime(sql.lit(format)))
-
-    def to_datetime(
-        self,
-        format: str | None = None,  # noqa: A002
-        *,
-        time_unit: sql.datatypes.TimeUnit = "us",
-    ) -> Expr:
-        """Convert string to datetime."""
-        match format:
-            case None:
-                return Expr(self.inner().cast(sql.datatypes.PRECISION_MAP[time_unit]))
-            case _:
-                return Expr(self.inner().str.strptime(sql.lit(format)))
-
-    def to_time(self, format: str | None = None) -> Expr:  # noqa: A002
-        """Convert string to time."""
-        match format:
-            case None:
-                return Expr(self.inner().cast(sql.datatypes.Time))
-            case _:
-                return Expr(
-                    self.inner().str.strptime(sql.lit(format)).cast(sql.datatypes.Time)
-                )
-
-    def to_decimal(self, *, scale: int = 38) -> Expr:
-        """Convert string to decimal."""
-        precision = min(scale, 38)
-
-        return Expr(self.inner().cast(f"DECIMAL({precision}, {precision // 2})"))  # pyright: ignore[reportArgumentType]
 
     def strip_prefix(self, prefix: IntoExpr) -> Expr:
         """Strip prefix from string."""
