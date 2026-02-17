@@ -1,7 +1,7 @@
 """SQL expression functions and converters."""
 
 from . import datatypes
-from ._core import ExprHandler, try_iter
+from ._core import ExprHandler, try_flatten, try_iter
 from ._expr import (
     SqlExpr,
     all,
@@ -11,7 +11,6 @@ from ._expr import (
     fn_once,
     func,
     into_expr,
-    iter_into_exprs,
     lit,
     raw,
     row_number,
@@ -39,10 +38,10 @@ __all__ = [
     "fn_once",
     "func",
     "into_expr",
-    "iter_into_exprs",
     "lit",
     "raw",
     "row_number",
+    "try_flatten",
     "try_iter",
     "when",
 ]

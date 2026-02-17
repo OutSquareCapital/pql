@@ -10,7 +10,7 @@ from typing import TYPE_CHECKING, Any, Literal, Self
 import pyochain as pc
 
 from . import sql
-from .sql import ExprHandler, SqlExpr, into_expr, iter_into_exprs, try_iter
+from .sql import ExprHandler, SqlExpr, into_expr, try_flatten, try_iter
 
 if TYPE_CHECKING:
     from .sql import IntoExpr
@@ -597,8 +597,10 @@ class Expr(ExprHandler[SqlExpr]):
         return self._new_window(expr)
 
     def filter(self, *predicates: Any) -> Self:  # noqa: ANN401
-        cond = iter_into_exprs(predicates).fold(
-            sql.lit(value=True), lambda acc, pred: acc.and_(pred)
+        cond = (
+            try_flatten(predicates)
+            .map(lambda v: into_expr(v, as_col=True))
+            .fold(sql.lit(value=True), lambda acc, pred: acc.and_(pred))
         )
         return self._new(sql.when(cond, self._expr).otherwise(sql.lit(None)))
 

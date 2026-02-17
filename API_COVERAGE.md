@@ -6,7 +6,7 @@ This report shows the API coverage of pql compared to Polars.
 
 | Class       | Coverage vs Narwhals | Total | Matched | Missing | Mismatched | Extra | Extra vs Narwhals |
 | ----------- | -------------------- | ----- | ------- | ------- | ---------- | ----- | ----------------- |
-| LazyFrame   | 70.8%                | 48    | 34      | 2       | 12         | 1     | 22                |
+| LazyFrame   | 68.8%                | 48    | 33      | 2       | 13         | 1     | 22                |
 | Expr        | 82.1%                | 106   | 87      | 7       | 12         | 2     | 36                |
 | Expr.str    | 93.1%                | 29    | 27      | 0       | 2          | 0     | 10                |
 | Expr.list   | 100.0%               | 10    | 10      | 0       | 0          | 2     | 0                 |
@@ -19,7 +19,7 @@ This report shows the API coverage of pql compared to Polars.
 - `tail` (n: int) -> Self
 - `to_native` () -> LazyFrameT
 
-### [!] Signature Mismatches (12)
+### [!] Signature Mismatches (13)
 
 - `cast` (pl)
   - Polars: (`dtypes: Mapping[ColumnNameOrSelector | PolarsDataType, PolarsDataType | PythonDataType] | PolarsDataType | pl.DataTypeExpr | Schema`, `strict: bool`) -> LazyFrame
@@ -32,6 +32,10 @@ This report shows the API coverage of pql compared to Polars.
   - Narwhals: (`*columns: str | Iterable[str]`, `strict: bool`) -> Self
   - Polars: (`*columns: ColumnNameOrSelector | Iterable[ColumnNameOrSelector]`, `strict: bool`) -> LazyFrame
   - pql: (`*columns: str`) -> Self
+- `drop_nulls` (nw)
+  - Narwhals: (`subset: str | list[str] | None`) -> Self
+  - Polars: (`subset: ColumnNameOrSelector | Collection[ColumnNameOrSelector] | None`) -> LazyFrame
+  - pql: (`subset: str | Iterable[str] | None`) -> Self
 - `explain` (pl)
   - Polars: (`format: ExplainFormat`, `optimized: bool`, `type_coercion: bool`, `predicate_pushdown: bool`, `projection_pushdown: bool`, `simplify_expression: bool`, `slice_pushdown: bool`, `comm_subplan_elim: bool`, `comm_subexpr_elim: bool`, `cluster_with_columns: bool`, `collapse_joins: bool`, `streaming: bool`, `engine: EngineType`, `tree_format: bool | None`, `optimizations: QueryOptFlags`) -> str
   - pql: () -> str

@@ -39,11 +39,7 @@ def fn_once(lhs: Any, rhs: SqlExpr) -> SqlExpr:  # noqa: ANN401
 def all(*, exclude: Iterable[IntoExprColumn] | None = None) -> SqlExpr:
     return (
         pc.Option(exclude)
-        .map(
-            lambda x: (
-                pc.Iter(x).map(lambda e: into_expr(e, as_col=True).inner()).collect()
-            )
-        )
+        .map(lambda x: pc.Iter(x).map(lambda e: into_expr(e, as_col=True).inner()))
         .map(lambda exc: SqlExpr(duckdb.StarExpression(exclude=exc)))
         .unwrap_or(SqlExpr(duckdb.StarExpression()))
     )
@@ -82,7 +78,15 @@ def coalesce(exprs: IntoExpr | Iterable[IntoExpr], *more_exprs: IntoExpr) -> Sql
 
 
 def into_expr(value: IntoExpr, *, as_col: bool = False) -> SqlExpr:
-    """Convert a value to a DuckDB Expression (strings become columns for select/group_by)."""
+    """Convert a value to a DuckDB Expression.
+
+    Args:
+        value (IntoExpr): The value to convert.
+        as_col (bool): Whether to treat `str` values as column names (default: `False`).
+
+    Returns:
+        SqlExpr: The resulting DuckDB wrapper Expression.
+    """
     from .._expr import Expr
 
     match value:
@@ -96,26 +100,28 @@ def into_expr(value: IntoExpr, *, as_col: bool = False) -> SqlExpr:
             return lit(value)
 
 
-def iter_into_exprs(exprs: IntoExpr | Iterable[IntoExpr]) -> pc.Iter[SqlExpr]:
-    return try_flatten(exprs).map(lambda v: into_expr(v, as_col=True))
-
-
 def args_into_exprs(
     exprs: Iterable[IntoExpr | Iterable[IntoExpr]],
     named_exprs: dict[str, IntoExpr] | None = None,
 ) -> pc.Iter[SqlExpr]:
     """Convert positional and keyword arguments to an iterator of DuckDB Expressions."""
-    return iter_into_exprs(exprs).chain(  # pyright: ignore[reportArgumentType]
-        pc.Option(named_exprs)
-        .map(
-            lambda x: (
-                pc.Dict.from_ref(x)
-                .items()
-                .iter()
-                .map_star(lambda name, expr: into_expr(expr, as_col=True).alias(name))
+    return (
+        try_flatten(exprs)
+        .map(lambda v: into_expr(v, as_col=True))  # pyright: ignore[reportArgumentType]
+        .chain(
+            pc.Option(named_exprs)
+            .map(
+                lambda x: (
+                    pc.Dict.from_ref(x)
+                    .items()
+                    .iter()
+                    .map_star(
+                        lambda name, expr: into_expr(expr, as_col=True).alias(name)
+                    )
+                )
             )
+            .unwrap_or(pc.Iter[SqlExpr].new())
         )
-        .unwrap_or(pc.Iter[SqlExpr].new())
     )
 
 
@@ -353,7 +359,7 @@ class SqlExpr(Expression, Fns):
     def cume_dist(self) -> Self:
         """The cumulative distribution: (number of partition rows preceding or peer with current row) / total partition rows.
 
-        If an ORDER BY clause is specified, the distribution is computed within the frame using the provided ordering instead of the frame ordering.
+        If an `ORDER BY` clause is specified, the distribution is computed within the frame using the provided ordering instead of the frame ordering.
 
         Returns:
             Self
@@ -371,7 +377,11 @@ class SqlExpr(Expression, Fns):
     def fill(self) -> Self:
         """Replaces NULL values of expr with a linear interpolation based on the closest non-NULL values and the sort values.
 
-        Both values must support arithmetic and there must be only one ordering key. For missing values at the ends, linear extrapolation is used. Failure to interpolate results in the NULL value being retained.
+        Both values must support arithmetic and there must be only one ordering key.
+
+        For missing values at the ends, linear extrapolation is used.
+
+        Failure to interpolate results in the NULL value being retained.
 
         Returns:
             Self
@@ -381,7 +391,7 @@ class SqlExpr(Expression, Fns):
     def first_value(self) -> Self:
         """Returns expr evaluated at the row that is the first row (with a non-null value of expr if IGNORE NULLS is set) of the window frame.
 
-        If an ORDER BY clause is specified, the first row number is computed within the frame using the provided ordering instead of the frame ordering.
+        If an `ORDER BY` clause is specified, the first row number is computed within the frame using the provided ordering instead of the frame ordering.
 
         Returns:
             Self
@@ -389,9 +399,15 @@ class SqlExpr(Expression, Fns):
         return self._new(func("first_value", self._expr))
 
     def lag(self, offset: SqlExpr | int = 1, default: SqlExpr | None = None) -> Self:
-        """Returns expr evaluated at the row that is offset rows (among rows with a non-null value of expr if IGNORE NULLS is set) before the current row within the window frame; if there is no such row, instead return default (which must be of the Same type as expr).
+        """Returns expr evaluated at the row that is offset rows (among rows with a non-null value of expr if IGNORE NULLS is set) before the current row within the window frame.
 
-        Both offset and default are evaluated with respect to the current row. If omitted, offset defaults to 1 and default to NULL. If an ORDER BY clause is specified, the lagged row number is computed within the frame using the provided ordering instead of the frame ordering.
+        If there is no such row, instead return default (which must be of the Same type as expr).
+
+        Both offset and default are evaluated with respect to the current row.
+
+        If omitted, offset defaults to 1 and default to NULL.
+
+        If an `ORDER BY` clause is specified, the lagged row number is computed within the frame using the provided ordering instead of the frame ordering.
 
         Args:
             offset (SqlExpr | int): Number of rows to look back (default: 1)
@@ -405,7 +421,7 @@ class SqlExpr(Expression, Fns):
     def last_value(self) -> Self:
         """Returns expr evaluated at the row that is the last row (among rows with a non-null value of expr if IGNORE NULLS is set) of the window frame.
 
-        If an ORDER BY clause is specified, the last row is determined within the frame using the provided ordering instead of the frame ordering.
+        If an `ORDER BY` clause is specified, the last row is determined within the frame using the provided ordering instead of the frame ordering.
 
 
         Returns:
@@ -414,9 +430,13 @@ class SqlExpr(Expression, Fns):
         return self._new(func("last_value", self._expr))
 
     def lead(self, offset: SqlExpr | int = 1, default: SqlExpr | None = None) -> Self:
-        """Returns expr evaluated at the row that is offset rows after the current row (among rows with a non-null value of expr if IGNORE NULLS is set) within the window frame; if there is no such row, instead return default (which must be of the Same type as expr).
+        """Returns expr evaluated at the row that is offset rows after the current row (among rows with a non-null value of expr if IGNORE NULLS is set) within the window frame.
 
-        Both offset and default are evaluated with respect to the current row. If omitted, offset defaults to 1 and default to NULL. If an ORDER BY clause is specified, the leading row number is computed within the frame using the provided ordering instead of the frame ordering.
+        If there is no such row, instead return default (which must be of the Same type as expr).
+
+        Both offset and default are evaluated with respect to the current row. If omitted, offset defaults to 1 and default to NULL.
+
+        If an `ORDER BY` clause is specified, the leading row number is computed within the frame using the provided ordering instead of the frame ordering.
 
         Args:
             offset (SqlExpr | int): Number of rows to look ahead (default: 1)
@@ -428,9 +448,11 @@ class SqlExpr(Expression, Fns):
         return self._new(func("lead", self._expr, offset, default))
 
     def nth_value(self, nth: SqlExpr | int) -> Self:
-        """Returns expr evaluated at the nth row (among rows with a non-null value of expr if IGNORE NULLS is set) of the window frame (counting from 1); NULL if no such row.
+        """Returns expr evaluated at the nth row (among rows with a non-null value of expr if IGNORE NULLS is set) of the window frame (counting from 1).
 
-        If an ORDER BY clause is specified, the nth row number is computed within the frame using the provided ordering instead of the frame ordering.
+        Return `NULL` if no such row.
+
+        If an `ORDER BY` clause is specified, the nth row number is computed within the frame using the provided ordering instead of the frame ordering.
 
         Args:
             nth (SqlExpr | int): The row number to retrieve (1-based)
@@ -443,7 +465,7 @@ class SqlExpr(Expression, Fns):
     def ntile(self) -> Self:
         """An integer ranging from 1 to num_buckets, dividing the partition as equally as possible.
 
-        If an ORDER BY clause is specified, the ntile is computed within the frame using the provided ordering instead of the frame ordering.
+        If an `ORDER BY` clause is specified, the ntile is computed within the frame using the provided ordering instead of the frame ordering.
 
         Args:
             num_buckets (SqlExpr | int): Number of buckets to divide into
@@ -456,7 +478,7 @@ class SqlExpr(Expression, Fns):
     def percent_rank(self) -> Self:
         """The relative rank of the current row: (rank() - 1) / (total partition rows - 1).
 
-        If an ORDER BY clause is specified, the relative rank is computed within the frame using the provided ordering instead of the frame ordering.
+        If an `ORDER BY` clause is specified, the relative rank is computed within the frame using the provided ordering instead of the frame ordering.
 
         Returns:
             Self
@@ -466,7 +488,7 @@ class SqlExpr(Expression, Fns):
     def rank(self) -> Self:
         """The rank of the current row with gaps; same as row_number of its first peer.
 
-        If an ORDER BY clause is specified, the rank is computed within the frame using the provided ordering instead of the frame ordering.
+        If an `ORDER BY` clause is specified, the rank is computed within the frame using the provided ordering instead of the frame ordering.
 
         Returns:
             Self
@@ -476,7 +498,7 @@ class SqlExpr(Expression, Fns):
     def row_number(self) -> Self:
         """The number of the current row within the partition, counting from 1.
 
-        If an ORDER BY clause is specified, the row number is computed within the frame using the provided ordering instead of the frame ordering.
+        If an `ORDER BY` clause is specified, the row number is computed within the frame using the provided ordering instead of the frame ordering.
 
         Returns:
             Self
