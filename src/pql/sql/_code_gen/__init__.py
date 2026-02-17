@@ -1,3 +1,4 @@
+from ._core import Expression, Relation
 from ._fns import (
     ArrayFns,
     DateTimeFns,
@@ -9,7 +10,6 @@ from ._fns import (
     StringFns,
     StructFns,
 )
-from ._rel import Expression, Relation
 
 __all__ = [
     "ArrayFns",

@@ -13,14 +13,14 @@ import typer
 from rich.console import Console
 from rich.text import Text
 
-from . import rel_generator
+from . import core_generator
 from ._func_table_analysis import analyze
 from .fn_generator import get_data, run_pipeline
 
 CODE_GEN = Path("src", "pql", "sql", "_code_gen")
 
 FNS_OUTPUT = CODE_GEN.joinpath("_fns.py")
-REL_OUTPUT = CODE_GEN.joinpath("_rel.py")
+REL_OUTPUT = CODE_GEN.joinpath("_core.py")
 
 DATA_PATH = Path("scripts", "fn_generator", "functions.parquet")
 STUB_PATH = Path(".venv", "Lib", "site-packages", "_duckdb-stubs", "__init__.pyi")
@@ -37,14 +37,14 @@ console = Console()
 
 
 @app.command()
-def gen_rel(
+def gen_core(
     stub_path: InputPath = STUB_PATH,
     output_path: OutputPath = REL_OUTPUT,
     *,
     check_only: CheckArg = False,
 ) -> None:
-    """Generate typed DuckDB function wrappers from the database."""
-    content = rel_generator.generate(stub_path)
+    """Generate typed DuckDB wrappers from the database."""
+    content = core_generator.generate(stub_path)
     output_path.parent.mkdir(parents=True, exist_ok=True)
     output_path.write_text(content, encoding="utf-8")
     console.print(Text("Generated ").append(output_path.as_posix(), style="cyan"))

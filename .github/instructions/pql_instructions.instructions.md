@@ -71,7 +71,7 @@ ExprHandler[duckdb.Expression]
   ↓
 DuckHandler
   ↓
-Fns (auto-generated, from _code_gen/_fns.py) + Expression (auto-generated, from _code_gen/_rel.py)
+Fns (auto-generated, from _code_gen/_fns.py) + Expression (auto-generated, from _code_gen/_core.py)
   ↓
 SqlExpr(Expression, Fns)
   + namespaces: SqlExprStringNameSpace, SqlExprListNameSpace, etc.
@@ -81,7 +81,7 @@ SqlExpr(Expression, Fns)
 
 ```
 
-#### `Relation` class hierarchy (`src/pql/sql/_code_gen/_rel.py`)
+#### `Relation` class hierarchy (`src/pql/sql/_code_gen/_core.py`)
 
 ```
 ExprHandler[duckdb.DuckDBPyRelation]
@@ -129,14 +129,14 @@ Relation (auto-generated wrapper methods)
 ### 3) Auto-generated wrappers (do not edit manually)
 
 - `src/pql/sql/_code_gen/_fns.py`: DuckDB function wrappers.
-- `src/pql/sql/_code_gen/_rel.py`: `Relation` wrapper methods.
+- `src/pql/sql/_code_gen/_core.py`: `Relation` wrapper methods.
 
 Generated from scripts in `scripts/`.
 
 ### 4) Code generation + analysis scripts
 
 - `scripts/fn_generator/*`: generate function wrappers from DuckDB catalog.
-- `scripts/rel_generator/*`: generate relation wrapper from DuckDB stubs.
+- `scripts/core_generator/*`: generate relation wrapper from DuckDB stubs.
 - `scripts/comparator/*`: build API comparison report.
 - `scripts/__main__.py`: CLI entrypoint.
 

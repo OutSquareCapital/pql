@@ -65,7 +65,7 @@ def _generate_target(stub_path: Path, target_name: str) -> str:
 
 
 def generate(stub_path: Path) -> str:
-    """Generate the full ``_rel.py`` file content."""
+    """Generate the full ``_core.py`` file content."""
     return (
         pc.Iter(("relation", "expression"))
         .map(lambda name: _generate_target(stub_path, name))
