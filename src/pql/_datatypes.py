@@ -111,17 +111,29 @@ def into_struct(dtype: DuckDBPyType, deferred_time_zone: DeferredTimeZone) -> St
 
 
 def into_array(dtype: DuckDBPyType, deferred_time_zone: DeferredTimeZone) -> Array:
-    child: Incomplete
-    size: Incomplete
-    child, size = dtype.children
-    shape = pc.Vec([size[1]])
+    def _node(
+        node: list[tuple[str, Any]],
+    ) -> pc.Option[list[tuple[str, Any]]]:
+        match node[0][1].id:
+            case RawTypes.ARRAY:
+                return pc.Some(node[0][1].children)
+            case _:
+                return pc.NONE
 
-    while child[1].id == RawTypes.ARRAY:
-        child, size = child[1].children
-        shape.insert(0, size[1])
+    def _first_or(shape: pc.Seq[int]) -> int | Iterable[int]:
+        return shape.first() if shape.length() == 1 else shape
 
+    levels = pc.Iter.successors(pc.Some(dtype.children), _node).collect()
+    shape = (
+        levels.iter()
+        .map(lambda node: node[1][1])
+        .collect()
+        .rev()
+        .collect()
+        .into(_first_or)  # pyright: ignore[reportArgumentType]
+    )
     return Array(
-        inner=DataType.from_duckdb(child[1], deferred_time_zone),
+        DataType.from_duckdb(levels.last()[0][1], deferred_time_zone),  # pyright: ignore[reportArgumentType]
         shape=shape,
     )
 

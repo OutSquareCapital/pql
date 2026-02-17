@@ -1,14 +1,21 @@
 from __future__ import annotations
 
+from enum import Enum
+
 import pql
 
 
 def test_expr_cast_numeric_and_string_schema() -> None:
+    class MyEnum(Enum):
+        A = "A"
+        B = "B"
+        C = "C"
+
     source = pql.LazyFrame(
         {
             "x": [1, 2, 3],
-            "y": [[1, 2], [3, 4], [5, 6]],
-            "z": [[[1, 2], [3, 4]], [[5, 6], [7, 8]], [[9, 10], [11, 12]]],
+            "1d": [[1, 2], [3, 4], [5, 6]],
+            "2d": [[[1, 2], [3, 4]], [[5, 6], [7, 8]], [[9, 10], [11, 12]]],
             "dates": ["2021-01-01", "2021-01-02", "2021-01-03"],
             "hours": [
                 "2021-01-01 00:00:00",
@@ -47,11 +54,13 @@ def test_expr_cast_numeric_and_string_schema() -> None:
         pql.col("dates").cast(pql.Date()).alias("dates"),
         pql.col("hours").cast(pql.Datetime(time_zone="UTC")).alias("hours"),
         pql.col("nanoseconds").cast(pql.Datetime(time_unit="ns")).alias("nanoseconds"),
-        pql.col("y").cast(pql.List(pql.UInt16())).alias("lst"),
-        pql.col("y").cast(pql.Array(pql.UInt16(), shape=(2, 3))).alias("arr"),
+        pql.col("1d").cast(pql.List(pql.UInt16())).alias("lst"),
+        pql.col("1d").cast(pql.Array(pql.UInt16(), shape=2)).alias("arr_1d"),
+        pql.col("2d").cast(pql.Array(pql.UInt16(), shape=(2, 3))).alias("arr_2d"),
         pql.col("blobs").cast(pql.Binary()).alias("blobs"),
         pql.col("duration").cast(pql.Duration()).alias("duration"),
         pql.col("enumerated").cast(pql.Enum(["A", "B", "C"])).alias("enumerated"),
+        pql.col("enumerated").cast(pql.Enum(MyEnum)).alias("enumerated_enum"),
     )
     schema = casted.schema
     assert isinstance(schema["i8"], pql.Int8)
@@ -68,9 +77,11 @@ def test_expr_cast_numeric_and_string_schema() -> None:
     assert isinstance(schema["dec"], pql.Decimal)
     assert isinstance(schema["time"], pql.Time)
     assert isinstance(schema["s"], pql.String)
-    assert isinstance(schema["arr"], pql.Array)
-    assert isinstance(schema["arr"].inner, pql.UInt16)  # pyright: ignore[reportAttributeAccessIssue, reportUnknownMemberType]
-    assert tuple(schema["arr"].shape) == (2, 3)  # pyright: ignore[reportUnknownArgumentType, reportUnknownMemberType, reportAttributeAccessIssue]
+    assert isinstance(schema["arr_1d"], pql.Array)
+    assert isinstance(schema["arr_1d"].inner, pql.UInt16)  # pyright: ignore[reportAttributeAccessIssue, reportUnknownMemberType]
+    assert schema["arr_1d"].shape == 2  # pyright: ignore[reportUnknownArgumentType, reportUnknownMemberType, reportAttributeAccessIssue]
+    assert isinstance(schema["arr_2d"], pql.Array)
+    assert tuple(schema["arr_2d"].shape) == (2, 3)  # pyright: ignore[reportUnknownArgumentType, reportUnknownMemberType, reportAttributeAccessIssue]
     assert isinstance(schema["lst"], pql.List)
     assert isinstance(schema["lst"].inner, pql.UInt16)  # pyright: ignore[reportAttributeAccessIssue, reportUnknownMemberType]
     assert isinstance(schema["dates"], pql.Date)
@@ -80,6 +91,8 @@ def test_expr_cast_numeric_and_string_schema() -> None:
     assert isinstance(schema["duration"], pql.Duration)
     assert isinstance(schema["enumerated"], pql.Enum)
     assert tuple(schema["enumerated"].categories) == ("A", "B", "C")  # pyright: ignore[reportUnknownArgumentType, reportUnknownMemberType, reportAttributeAccessIssue]
+    assert isinstance(schema["enumerated_enum"], pql.Enum)
+    assert tuple(schema["enumerated_enum"].categories) == ("A", "B", "C")  # pyright: ignore[reportUnknownArgumentType, reportUnknownMemberType, reportAttributeAccessIssue]
 
 
 def test_schema_nested_types_from_casts() -> None:
