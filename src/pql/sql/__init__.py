@@ -1,6 +1,7 @@
 """SQL expression functions and converters."""
 
 from . import datatypes
+from ._code_gen import Relation
 from ._core import ExprHandler, try_flatten, try_iter
 from ._expr import (
     SqlExpr,
@@ -17,7 +18,6 @@ from ._expr import (
     when,
 )
 from ._raw import Kword, QueryHolder
-from ._rel import Relation
 from ._typing import FrameInit, IntoExpr, IntoExprColumn
 
 __all__ = [

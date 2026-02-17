@@ -1,9 +1,5 @@
 [project]
-    dependencies    = [
-    "duckdb>=1.4.4",
-    "pyochain>=0.9.2",
-    "sqlglot[rs]>=28.10.1",
-]
+    dependencies    = ["duckdb>=1.4.4", "pyochain>=0.9.2", "sqlglot[rs]>=28.10.1"]
     description     = "Polars syntax for SQL"
     name            = "pql"
     readme          = "README.md"
@@ -57,7 +53,7 @@
     [tool.ruff.lint.pydocstyle]
         convention = "google"
     [tool.ruff.lint.per-file-ignores]
-        "src/pql/sql/_rel.py" = [
+        "src/pql/sql/_code_gen/*.py" = [
             "A002",
             "ANN401",
             "FBT001",
@@ -65,7 +61,6 @@
             "PLR0913",
             "PLW1641",
         ]
-        "src/pql/sql/fns.py" = ["FBT001", "PLR0913"]
         "tests/*" = ["D100", "D101", "D102", "D103", "D104"]
     [tool.ruff.lint.isort]
         combine-as-imports = true

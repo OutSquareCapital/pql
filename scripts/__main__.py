@@ -17,14 +17,13 @@ from . import rel_generator
 from ._func_table_analysis import analyze
 from .fn_generator import get_data, run_pipeline
 
-SQL = Path("src", "pql", "sql")
+CODE_GEN = Path("src", "pql", "sql", "_code_gen")
 
-DEFAULT_OUTPUT = SQL.joinpath("fns.py")
+FNS_OUTPUT = CODE_GEN.joinpath("_fns.py")
+REL_OUTPUT = CODE_GEN.joinpath("_rel.py")
 
 DATA_PATH = Path("scripts", "fn_generator", "functions.parquet")
-
 STUB_PATH = Path(".venv", "Lib", "site-packages", "_duckdb-stubs", "__init__.pyi")
-REL_PATH = SQL.joinpath("_rel.py")
 
 
 InputPath = Annotated[Path, typer.Option("--input-path", "-ip")]
@@ -38,9 +37,9 @@ console = Console()
 
 
 @app.command()
-def generate_rel(
+def gen_rel(
     stub_path: InputPath = STUB_PATH,
-    output_path: OutputPath = REL_PATH,
+    output_path: OutputPath = REL_OUTPUT,
     *,
     check_only: CheckArg = False,
 ) -> None:
@@ -54,25 +53,9 @@ def generate_rel(
 
 
 @app.command()
-def get_functions(path: InputPath = DATA_PATH) -> None:
-    """Fetch function metadata from DuckDB and store as parquet at `scripts/generator/functions.parquet`."""
-    get_data(path)
-
-    typer.echo(f"Fetched function metadata and stored at {path}")
-
-
-@app.command()
-def compare() -> None:
-    """Run the comparison between polars/narwhals and pql and generate markdown report at the repo root."""
-    from .comparator import get_comparisons
-
-    Path("API_COVERAGE.md").write_text(get_comparisons(), encoding="utf-8")
-
-
-@app.command()
-def generate(
+def gen_fns(
     data_path: InputPath = DATA_PATH,
-    output: OutputPath = DEFAULT_OUTPUT,
+    output: OutputPath = FNS_OUTPUT,
     *,
     check_only: CheckArg = False,
     profile: Annotated[
@@ -88,6 +71,22 @@ def generate(
     console.print(Text("Generated file at ").append(output.as_posix(), style="cyan"))
     _run_ruff(check_only=check_only, output=output)
     console.print("Done!", style="bold green")
+
+
+@app.command()
+def fns_to_parquet(path: InputPath = DATA_PATH) -> None:
+    """Fetch function metadata from DuckDB and store as parquet at `scripts/generator/functions.parquet`."""
+    get_data(path)
+
+    typer.echo(f"Fetched function metadata and stored at {path}")
+
+
+@app.command()
+def compare() -> None:
+    """Run the comparison between polars/narwhals and pql and generate markdown report at the repo root."""
+    from .comparator import get_comparisons
+
+    Path("API_COVERAGE.md").write_text(get_comparisons(), encoding="utf-8")
 
 
 @app.command()

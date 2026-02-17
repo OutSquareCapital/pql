@@ -8,12 +8,10 @@ from typing import TYPE_CHECKING, Any, Self
 import duckdb
 import pyochain as pc
 
-from ._core import func, into_duckdb, try_flatten, try_iter
-from ._rel import Expression
-from ._window import over_expr
-from .fns import (
+from ._code_gen import (
     ArrayFns,
     DateTimeFns,
+    Expression,
     Fns,
     JsonFns,
     ListFns,
@@ -22,6 +20,8 @@ from .fns import (
     StringFns,
     StructFns,
 )
+from ._core import func, into_duckdb, try_flatten, try_iter
+from ._window import over_expr
 
 if TYPE_CHECKING:
     from ._typing import IntoExpr, IntoExprColumn

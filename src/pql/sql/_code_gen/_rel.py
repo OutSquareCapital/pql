@@ -11,7 +11,7 @@ from typing import TYPE_CHECKING, Any, Literal, Self, SupportsInt, overload
 import pyochain as pc
 from duckdb import ExplainType, RenderMode
 
-from ._core import DuckHandler, RelHandler, into_duckdb, try_iter
+from .._core import DuckHandler, RelHandler, into_duckdb, try_iter
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Iterable

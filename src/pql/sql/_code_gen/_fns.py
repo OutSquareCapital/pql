@@ -12,7 +12,7 @@ from __future__ import annotations
 from datetime import date, datetime, time, timedelta
 from typing import Self
 
-from ._core import DuckHandler, NameSpaceHandler, func
+from .._core import DuckHandler, NameSpaceHandler, func
 
 
 class Fns(DuckHandler):
