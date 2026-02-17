@@ -1,11 +1,5 @@
 from __future__ import annotations
 
-import enum
-
-import duckdb
-from duckdb import sqltypes
-from polars.testing import assert_frame_equal
-
 import pql
 
 
@@ -29,6 +23,7 @@ def test_expr_cast_numeric_and_string_schema() -> None:
             ],
             "time": ["12:00:00", "13:00:00", "14:00:00"],
             "duration": ["1 day", "2 days", "3 days"],
+            "enumerated": ["A", "B", "C"],
         }
     )
 
@@ -56,6 +51,7 @@ def test_expr_cast_numeric_and_string_schema() -> None:
         pql.col("y").cast(pql.Array(pql.UInt16(), shape=(2, 3))).alias("arr"),
         pql.col("blobs").cast(pql.Binary()).alias("blobs"),
         pql.col("duration").cast(pql.Duration()).alias("duration"),
+        pql.col("enumerated").cast(pql.Enum(["A", "B", "C"])).alias("enumerated"),
     )
     schema = casted.schema
     assert isinstance(schema["i8"], pql.Int8)
@@ -82,6 +78,8 @@ def test_expr_cast_numeric_and_string_schema() -> None:
     assert schema["nanoseconds"].time_unit == "ns"  # pyright: ignore[reportUnknownMemberType, reportAttributeAccessIssue]
     assert isinstance(schema["blobs"], pql.Binary)
     assert isinstance(schema["duration"], pql.Duration)
+    assert isinstance(schema["enumerated"], pql.Enum)
+    assert tuple(schema["enumerated"].categories) == ("A", "B", "C")  # pyright: ignore[reportUnknownArgumentType, reportUnknownMemberType, reportAttributeAccessIssue]
 
 
 def test_schema_nested_types_from_casts() -> None:
@@ -116,26 +114,3 @@ def test_schema_nested_types_from_casts() -> None:
 
     assert isinstance(arr_dtype, pql.List)
     assert isinstance(arr_dtype.inner, pql.Int32)
-
-
-def test_enum_dtype_behaves_like_string_cast() -> None:
-    source = pql.LazyFrame({"label": ["A", "B", None]})
-
-    enum_cast = source.select(pql.col("label").cast(pql.Enum(["A", "B"]))).collect()
-    string_cast = source.select(pql.col("label").cast(pql.String())).collect()
-
-    assert_frame_equal(enum_cast, string_cast)
-
-
-def test_array_and_enum_sql_paths() -> None:
-    class _Status(enum.Enum):
-        A = "A"
-        B = "B"
-
-    enum_dtype = pql.Enum(_Status)
-    array_dtype = pql.Array(pql.Int32(), 4)
-
-    assert enum_dtype.sql() == sqltypes.VARCHAR
-    assert "A" in enum_dtype.categories
-    assert "B" in enum_dtype.categories
-    assert array_dtype.sql().id == duckdb.array_type(sqltypes.INTEGER, 4).id

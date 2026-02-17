@@ -8,7 +8,6 @@ from dataclasses import dataclass, field
 from datetime import timezone
 from enum import Enum as PyEnum, StrEnum, auto
 from functools import partial
-from inspect import isclass
 from typing import Any, Literal
 
 import duckdb
@@ -309,21 +308,18 @@ class List(DataType):
 
 @dataclass(slots=True)
 class Enum(DataType):
-    categories: pc.Set[str]
+    categories: pc.Seq[str]
 
     def __init__(self, categories: Iterable[str] | type[PyEnum]) -> None:
-        if isclass(categories):
-            categories = pc.Iter(categories).map(lambda i: i.value)
-        self.categories = pc.Set(categories)
+        match categories:
+            case type():
+                cats = pc.Iter(categories).map(lambda i: i.value)
+            case Iterable():
+                cats = pc.Iter(categories)
+        self.categories = cats.collect()
 
     def sql(self) -> DuckDBPyType:
-        """Return the enum type as `VARCHAR`.
-
-        DuckDB requires a separate `CREATE TYPE ... AS ENUM (...)` statement to define true ENUM types.
-
-        Since `Column` role is not responsible for handling table/database level logic, we return `VARCHAR` here.
-        """
-        return sqltypes.VARCHAR  # TODO: implement it correctly.
+        return DuckDBPyType(f"ENUM{self.categories.into(tuple)!r}")
 
 
 @dataclass(slots=True)
