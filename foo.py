@@ -17,6 +17,30 @@ type RawUnionChildren = list[RawNamedType]
 type RawDecimalChildren = tuple[RawNamedInt, RawNamedInt]
 
 
+def into_raw_array(dtype: object) -> RawArrayChildren:
+    return cast(RawArrayChildren, dtype)
+
+
+def into_raw_struct(dtype: object) -> RawStructChildren:
+    return cast(RawStructChildren, dtype)
+
+
+def into_raw_map(dtype: object) -> RawMapChildren:
+    return cast(RawMapChildren, dtype)
+
+
+def into_raw_enum(dtype: object) -> RawEnumChildren:
+    return cast(RawEnumChildren, dtype)
+
+
+def into_raw_union(dtype: object) -> RawUnionChildren:
+    return cast(RawUnionChildren, dtype)
+
+
+def into_raw_decimal(dtype: object) -> RawDecimalChildren:
+    return cast(RawDecimalChildren, dtype)
+
+
 @dataclass(slots=True)
 class ScalarType:
     """Leaf scalar DuckDB type (no nested children)."""
@@ -136,9 +160,9 @@ def _into_array(dtype: DuckDBPyType) -> ArrayType:
         return _ArrayLevel(child_name, child_dtype, size_name, size)
 
     levels = pc.Iter.successors(
-        pc.Some(_as_array_level(cast(RawArrayChildren, dtype.children))),
+        pc.Some(_as_array_level(into_raw_array(dtype.children))),
         lambda level: (
-            pc.Some(_as_array_level(cast(RawArrayChildren, level.child_dtype.children)))
+            pc.Some(_as_array_level(into_raw_array(level.child_dtype.children)))
             if level.child_dtype.id == "array"
             else pc.NONE
         ),
@@ -155,7 +179,7 @@ def _into_array(dtype: DuckDBPyType) -> ArrayType:
 
 def _into_struct(dtype: DuckDBPyType) -> StructType:
     fields = (
-        pc.Vec.from_ref(cast(RawStructChildren, dtype.children))
+        pc.Vec.from_ref(into_raw_struct(dtype.children))
         .iter()
         .map_star(
             lambda field_name, field_dtype: StructField(
@@ -168,9 +192,7 @@ def _into_struct(dtype: DuckDBPyType) -> StructType:
 
 
 def _into_map(dtype: DuckDBPyType) -> MapType:
-    (key_name, key_dtype), (value_name, value_dtype) = cast(
-        RawMapChildren, dtype.children
-    )
+    (key_name, key_dtype), (value_name, value_dtype) = into_raw_map(dtype.children)
     return MapType(
         key_name,
         parse_duckdb_type(key_dtype),
@@ -180,14 +202,14 @@ def _into_map(dtype: DuckDBPyType) -> MapType:
 
 
 def _into_enum(dtype: DuckDBPyType) -> EnumType:
-    values_name, values = cast(RawEnumChildren, dtype.children)[0]
-    return EnumType(values_name=values_name, values=pc.Iter(values).collect(tuple))
+    values_name, values = into_raw_enum(dtype.children)[0]
+    return EnumType(values_name, pc.Iter(values).collect(tuple))
 
 
 def _into_union(dtype: DuckDBPyType) -> UnionType:
-    tag_name, tag_dtype = cast(RawUnionChildren, dtype.children)[0]
+    tag_name, tag_dtype = into_raw_union(dtype.children)[0]
     members = (
-        pc.Vec.from_ref(cast(RawUnionChildren, dtype.children))
+        pc.Vec.from_ref(into_raw_union(dtype.children))
         .iter()
         .skip(1)
         .map_star(
@@ -201,9 +223,7 @@ def _into_union(dtype: DuckDBPyType) -> UnionType:
 
 
 def _into_decimal(dtype: DuckDBPyType) -> DecimalType:
-    (precision_name, precision), (scale_name, scale) = cast(
-        RawDecimalChildren, dtype.children
-    )
+    (precision_name, precision), (scale_name, scale) = into_raw_decimal(dtype.children)
     return DecimalType(precision_name, precision, scale_name, scale)
 
 
@@ -238,38 +258,6 @@ def parse_duckdb_type(dtype: DuckDBPyType) -> DType:  # noqa: PLR0911
                     return ScalarType(duckdb_id)
 
 
-def describe_dtype(dtype: DType) -> str:  # noqa: PLR0911
-    match dtype:
-        case ScalarType(duckdb_id):
-            return f"Scalar<{duckdb_id}>"
-        case DecimalType(precision_name, precision, scale_name, scale):
-            return f"Decimal({precision_name}={precision}, {scale_name}={scale})"
-        case EnumType(values_name, values):
-            return f"Enum({values_name}={values!r})"
-        case ListType(inner=inner):
-            return f"List<{describe_dtype(inner)}>"
-        case ArrayType(child_name, size_name, inner, shape):
-            return f"Array({child_name}={describe_dtype(inner)}, {size_name}={shape!r})"
-        case StructType(fields):
-            items = (
-                pc.Iter(fields)
-                .map(lambda f: f"{f.name}: {describe_dtype(f.dtype)}")
-                .join(", ")
-            )
-            return f"Struct<{items}>"
-        case MapType(key_name, key, value_name, value):
-            return f"Map({key_name}={describe_dtype(key)}, {value_name}={describe_dtype(value)})"
-        case UnionType(tag_name, tag_dtype, members):
-            members_txt = (
-                pc.Iter(members)
-                .map(lambda m: f"{m.name}: {describe_dtype(m.dtype)}")
-                .join(", ")
-            )
-            return f"Union({tag_name}={describe_dtype(tag_dtype)}, {members_txt})"
-        case UnknownType(duckdb_id):
-            return f"Unknown<{duckdb_id}>"
-
-
 def _relation_types() -> pc.Dict[str, DuckDBPyType]:
     qry = """--sql
     SELECT
@@ -296,9 +284,7 @@ def main() -> None:
         .items()
         .iter()
         .map_star(
-            lambda col_name, duck_type: (
-                f"{col_name}: {describe_dtype(parse_duckdb_type(duck_type))}"
-            )
+            lambda col_name, duck_type: f"{col_name}: {parse_duckdb_type(duck_type)}"
         )
         .for_each(print)
     )
