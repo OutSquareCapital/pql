@@ -129,17 +129,12 @@ class _ArrayLevel:
     size: int
 
 
-def _as_array_level(raw_children: RawArrayChildren) -> _ArrayLevel:
-    (child_name, child_dtype), (size_name, size) = raw_children
-    return _ArrayLevel(
-        child_name=child_name,
-        child_dtype=child_dtype,
-        size_name=size_name,
-        size=size,
-    )
-
-
 def _parse_array_dtype(dtype: DuckDBPyType) -> ArrayType:
+
+    def _as_array_level(raw_children: RawArrayChildren) -> _ArrayLevel:
+        (child_name, child_dtype), (size_name, size) = raw_children
+        return _ArrayLevel(child_name, child_dtype, size_name, size)
+
     levels = pc.Iter.successors(
         pc.Some(_as_array_level(cast(RawArrayChildren, dtype.children))),
         lambda level: (
@@ -151,10 +146,10 @@ def _parse_array_dtype(dtype: DuckDBPyType) -> ArrayType:
     shape = levels.iter().map(lambda level: level.size).collect().rev().collect(tuple)
     root = levels.first()
     return ArrayType(
-        child_name=root.child_name,
-        size_name=root.size_name,
-        inner=parse_duckdb_type(levels.last().child_dtype),
-        shape=shape,
+        root.child_name,
+        root.size_name,
+        parse_duckdb_type(levels.last().child_dtype),
+        shape,
     )
 
 
@@ -164,13 +159,12 @@ def _parse_struct_dtype(dtype: DuckDBPyType) -> StructType:
         .iter()
         .map_star(
             lambda field_name, field_dtype: StructField(
-                name=field_name,
-                dtype=parse_duckdb_type(field_dtype),
+                field_name, parse_duckdb_type(field_dtype)
             )
         )
         .collect(tuple)
     )
-    return StructType(fields=fields)
+    return StructType(fields)
 
 
 def _parse_map_dtype(dtype: DuckDBPyType) -> MapType:
@@ -178,10 +172,10 @@ def _parse_map_dtype(dtype: DuckDBPyType) -> MapType:
         RawMapChildren, dtype.children
     )
     return MapType(
-        key_name=key_name,
-        key=parse_duckdb_type(key_dtype),
-        value_name=value_name,
-        value=parse_duckdb_type(value_dtype),
+        key_name,
+        parse_duckdb_type(key_dtype),
+        value_name,
+        parse_duckdb_type(value_dtype),
     )
 
 
@@ -203,11 +197,7 @@ def _parse_union_dtype(dtype: DuckDBPyType) -> UnionType:
         )
         .collect(tuple)
     )
-    return UnionType(
-        tag_name=tag_name,
-        tag_dtype=parse_duckdb_type(tag_dtype),
-        members=members,
-    )
+    return UnionType(tag_name, parse_duckdb_type(tag_dtype), members)
 
 
 def _parse_decimal_dtype(dtype: DuckDBPyType) -> DecimalType:
@@ -227,7 +217,7 @@ def _children_or_none(dtype: DuckDBPyType) -> pc.Option[list[object]]:
 def parse_duckdb_type(dtype: DuckDBPyType) -> DType:  # noqa: PLR0911
     match dtype.id:
         case "list":
-            return ListType(inner=parse_duckdb_type(dtype.child))
+            return ListType(parse_duckdb_type(dtype.child))
         case "array":
             return _parse_array_dtype(dtype)
         case "struct":
@@ -250,43 +240,33 @@ def parse_duckdb_type(dtype: DuckDBPyType) -> DType:  # noqa: PLR0911
 
 def describe_dtype(dtype: DType) -> str:  # noqa: PLR0911
     match dtype:
-        case ScalarType(duckdb_id=duckdb_id):
+        case ScalarType(duckdb_id):
             return f"Scalar<{duckdb_id}>"
-        case DecimalType(
-            precision_name=precision_name,
-            precision=precision,
-            scale_name=scale_name,
-            scale=scale,
-        ):
+        case DecimalType(precision_name, precision, scale_name, scale):
             return f"Decimal({precision_name}={precision}, {scale_name}={scale})"
-        case EnumType(values_name=values_name, values=values):
+        case EnumType(values_name, values):
             return f"Enum({values_name}={values!r})"
         case ListType(inner=inner):
             return f"List<{describe_dtype(inner)}>"
-        case ArrayType(
-            child_name=child_name,
-            size_name=size_name,
-            inner=inner,
-            shape=shape,
-        ):
+        case ArrayType(child_name, size_name, inner, shape):
             return f"Array({child_name}={describe_dtype(inner)}, {size_name}={shape!r})"
-        case StructType(fields=fields):
+        case StructType(fields):
             items = (
                 pc.Iter(fields)
                 .map(lambda f: f"{f.name}: {describe_dtype(f.dtype)}")
                 .join(", ")
             )
             return f"Struct<{items}>"
-        case MapType(key_name=key_name, key=key, value_name=value_name, value=value):
+        case MapType(key_name, key, value_name, value):
             return f"Map({key_name}={describe_dtype(key)}, {value_name}={describe_dtype(value)})"
-        case UnionType(tag_name=tag_name, tag_dtype=tag_dtype, members=members):
+        case UnionType(tag_name, tag_dtype, members):
             members_txt = (
                 pc.Iter(members)
                 .map(lambda m: f"{m.name}: {describe_dtype(m.dtype)}")
                 .join(", ")
             )
             return f"Union({tag_name}={describe_dtype(tag_dtype)}, {members_txt})"
-        case UnknownType(duckdb_id=duckdb_id):
+        case UnknownType(duckdb_id):
             return f"Unknown<{duckdb_id}>"
 
 
@@ -301,7 +281,7 @@ def _relation_types() -> pc.Dict[str, DuckDBPyType]:
         'on'::ENUM('on', 'off') AS enum_col,
         12.34::DECIMAL(10, 2) AS decimal_col
     """
-    rel = duckdb.sql(qry)
+    rel = duckdb.from_query(qry)
     return (
         pc.Vec.from_ref(rel.columns)
         .iter()
@@ -311,11 +291,17 @@ def _relation_types() -> pc.Dict[str, DuckDBPyType]:
 
 
 def main() -> None:
-    _relation_types().items().iter().map_star(
-        lambda col_name, duck_type: (
-            f"{col_name}: {describe_dtype(parse_duckdb_type(duck_type))}"
+    return (
+        _relation_types()
+        .items()
+        .iter()
+        .map_star(
+            lambda col_name, duck_type: (
+                f"{col_name}: {describe_dtype(parse_duckdb_type(duck_type))}"
+            )
         )
-    ).for_each(print)
+        .for_each(print)
+    )
 
 
 if __name__ == "__main__":
