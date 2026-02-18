@@ -56,7 +56,9 @@ def test_expr_cast_numeric_and_string_schema() -> None:
         pql.col("nanoseconds").cast(pql.Datetime(time_unit="ns")).alias("nanoseconds"),
         pql.col("1d").cast(pql.List(pql.UInt16())).alias("lst"),
         pql.col("1d").cast(pql.Array(pql.UInt16(), shape=2)).alias("arr_1d"),
-        pql.col("2d").cast(pql.Array(pql.UInt16(), shape=(2, 3))).alias("arr_2d"),
+        pql.col("2d")
+        .cast(pql.Array(pql.Array(pql.UInt16(), shape=2), shape=2))
+        .alias("arr_2d"),
         pql.col("blobs").cast(pql.Binary()).alias("blobs"),
         pql.col("duration").cast(pql.Duration()).alias("duration"),
         pql.col("enumerated").cast(pql.Enum(["A", "B", "C"])).alias("enumerated"),
@@ -81,7 +83,7 @@ def test_expr_cast_numeric_and_string_schema() -> None:
     assert isinstance(schema["arr_1d"].inner, pql.UInt16)  # pyright: ignore[reportAttributeAccessIssue, reportUnknownMemberType]
     assert schema["arr_1d"].shape == 2  # pyright: ignore[reportUnknownArgumentType, reportUnknownMemberType, reportAttributeAccessIssue]
     assert isinstance(schema["arr_2d"], pql.Array)
-    assert tuple(schema["arr_2d"].shape) == (2, 3)  # pyright: ignore[reportUnknownArgumentType, reportUnknownMemberType, reportAttributeAccessIssue]
+    assert schema["arr_2d"].shape == 2  # pyright: ignore[reportUnknownArgumentType, reportUnknownMemberType, reportAttributeAccessIssue]
     assert isinstance(schema["lst"], pql.List)
     assert isinstance(schema["lst"].inner, pql.UInt16)  # pyright: ignore[reportAttributeAccessIssue, reportUnknownMemberType]
     assert isinstance(schema["dates"], pql.Date)

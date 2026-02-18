@@ -2,7 +2,19 @@
 
 from ._code_gen import Relation
 from ._core import CoreHandler, try_flatten, try_iter
-from ._datatypes import RawTypes, SqlType, parse
+from ._datatypes import (
+    ArrayType,
+    DecimalType,
+    DType,
+    EnumType,
+    ListType,
+    MapType,
+    RawTypes,
+    SqlType,
+    StructType,
+    UnionType,
+    parse_dtype,
+)
 from ._expr import (
     SqlExpr,
     all,
@@ -21,16 +33,24 @@ from ._raw import Kword, QueryHolder
 from ._typing import FrameInit, IntoExpr, IntoExprColumn
 
 __all__ = [
+    "ArrayType",
     "CoreHandler",
+    "DType",
+    "DecimalType",
+    "EnumType",
     "FrameInit",
     "IntoExpr",
     "IntoExprColumn",
     "Kword",
+    "ListType",
+    "MapType",
     "QueryHolder",
     "RawTypes",
     "Relation",
     "SqlExpr",
     "SqlType",
+    "StructType",
+    "UnionType",
     "all",
     "args_into_exprs",
     "coalesce",
@@ -39,7 +59,7 @@ __all__ = [
     "func",
     "into_expr",
     "lit",
-    "parse",
+    "parse_dtype",
     "raw",
     "row_number",
     "try_flatten",

@@ -19,6 +19,7 @@ from .sql import (
     SqlExpr,
     args_into_exprs,
     into_expr,
+    parse_dtype,
     try_flatten,
     try_iter,
 )
@@ -562,7 +563,7 @@ class LazyFrame(CoreHandler[Relation]):
             .map_star(
                 lambda column_name, duckdb_dtype: (
                     column_name,
-                    DataType.from_duckdb(duckdb_dtype, deferred_time_zone),
+                    DataType.from_duckdb(parse_dtype(duckdb_dtype), deferred_time_zone),
                 )
             )
             .collect(pc.Dict)

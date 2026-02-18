@@ -125,7 +125,7 @@ class Field:
     @classmethod
     def from_raw(cls, raw: RawNamedType) -> Self:
         name, dtype = raw
-        return cls(name, parse(dtype))
+        return cls(name, parse_dtype(dtype))
 
 
 @dataclass(slots=True)
@@ -138,21 +138,6 @@ class DType:
     @classmethod
     def from_duckdb(cls, dtype: DuckDBPyType) -> Self:
         return cls(str(dtype), dtype.id)
-
-
-@dataclass(slots=True)
-class VarcharType(DType):
-    """DuckDB `VARCHAR` dtype, which can also represent `JSON` when the physical type is `VARCHAR` but the logical type is `JSON`."""
-
-    logical: str
-
-    @classmethod
-    def from_duckdb(cls, dtype: DuckDBPyType) -> Self:
-        match str(dtype):
-            case RawTypes.JSON:
-                return cls(str(dtype), dtype.id, RawTypes.JSON)
-            case _:
-                return cls(str(dtype), dtype.id, dtype.id)
 
 
 @dataclass(slots=True)
@@ -257,8 +242,8 @@ class UnionType(DType):
 
 type NestedType = ListType | ArrayType | StructType | UnionType
 """Types who can have nested children, and thus require recursive parsing logic."""
-type ConfiguredType = DecimalType | EnumType | VarcharType
-"""Types who are not nested, but have additional configuration parameters (like precision/scale for `Decimal`, or logical type for `Varchar`)."""
+type ConfiguredType = DecimalType | EnumType
+"""Types who are not nested, but have additional configuration parameters (like precision/scale for `Decimal`)."""
 type SqlType = NestedType | ConfiguredType | DType
 """All possible parsed types, including simple scalar types which are represented as the base `DType`."""
 DTYPE_MAP: pc.Dict[str, type[SqlType]] = pc.Dict.from_ref(
@@ -270,7 +255,6 @@ DTYPE_MAP: pc.Dict[str, type[SqlType]] = pc.Dict.from_ref(
         RawTypes.UNION: UnionType,
         RawTypes.ENUM: EnumType,
         RawTypes.DECIMAL: DecimalType,
-        RawTypes.VARCHAR: VarcharType,
     }
 )
 """Mapping of parsing strategies for each raw `DuckDB` type id.
@@ -278,7 +262,7 @@ DTYPE_MAP: pc.Dict[str, type[SqlType]] = pc.Dict.from_ref(
 If a type id is not present in this map, it will be parsed as a simple `DType`."""
 
 
-def parse(dtype: DuckDBPyType) -> SqlType:
+def parse_dtype(dtype: DuckDBPyType) -> SqlType:
     """Main entry point to convert a raw DuckDBPyType into a parsed `DType`.
 
     Recursively matches the raw type id to the appropriate parsing logic.

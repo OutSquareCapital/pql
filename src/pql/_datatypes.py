@@ -6,49 +6,26 @@ from abc import ABC, abstractmethod
 from collections.abc import Callable, Iterable, Mapping
 from dataclasses import dataclass, field
 from datetime import timezone
-from enum import Enum as PyEnum, StrEnum, auto
+from enum import Enum as PyEnum
 from functools import partial
-from typing import Any, Literal
+from typing import Literal
 
 import duckdb
 import pyochain as pc
 from duckdb import sqltypes
 from duckdb.sqltypes import DuckDBPyType
 
+from .sql import (
+    ArrayType,
+    DecimalType,
+    DType,
+    EnumType,
+    ListType,
+    RawTypes,
+    SqlType,
+    StructType,
+)
 
-class RawTypes(StrEnum):
-    LIST = auto()
-    STRUCT = auto()
-    ARRAY = auto()
-    ENUM = auto()
-    MAP = auto()
-    DECIMAL = auto()
-    HUGEINT = sqltypes.HUGEINT.id
-    BIGINT = sqltypes.BIGINT.id
-    INTEGER = sqltypes.INTEGER.id
-    SMALLINT = sqltypes.SMALLINT.id
-    TINYINT = sqltypes.TINYINT.id
-    UHUGEINT = sqltypes.UHUGEINT.id
-    UBIGINT = sqltypes.UBIGINT.id
-    UINTEGER = sqltypes.UINTEGER.id
-    USMALLINT = sqltypes.USMALLINT.id
-    UTINYINT = sqltypes.UTINYINT.id
-    DOUBLE = sqltypes.DOUBLE.id
-    FLOAT = sqltypes.FLOAT.id
-    VARCHAR = sqltypes.VARCHAR.id
-    DATE = sqltypes.DATE.id
-    TIMESTAMP_S = sqltypes.TIMESTAMP_S.id
-    TIMESTAMP_MS = sqltypes.TIMESTAMP_MS.id
-    TIMESTAMP = sqltypes.TIMESTAMP.id
-    TIMESTAMP_NS = sqltypes.TIMESTAMP_NS.id
-    TIMESTAMP_TZ = sqltypes.TIMESTAMP_TZ.id
-    BOOLEAN = sqltypes.BOOLEAN.id
-    INTERVAL = sqltypes.INTERVAL.id
-    TIME = sqltypes.TIME.id
-    BLOB = sqltypes.BLOB.id
-
-
-type Incomplete = Any
 TimeUnit = Literal["s", "ms", "us", "ns"]
 PRECISION_MAP: dict[TimeUnit, DuckDBPyType] = {
     "s": sqltypes.TIMESTAMP_S,
@@ -69,85 +46,58 @@ class DataType(ABC):
 
     @staticmethod
     def from_duckdb(  # noqa: PLR0911
-        dtype: DuckDBPyType, deferred_time_zone: DeferredTimeZone
+        dtype: SqlType, deferred_time_zone: DeferredTimeZone
     ) -> DataType:
-        match dtype.id:
-            case RawTypes.LIST:
+        match dtype:
+            case ListType():
                 return into_list(dtype, deferred_time_zone)
-            case RawTypes.STRUCT:
+            case StructType():
                 return into_struct(dtype, deferred_time_zone)
-            case RawTypes.ARRAY:
+            case ArrayType():
                 return into_array(dtype, deferred_time_zone)
-            case RawTypes.ENUM:
+            case EnumType():
                 return into_enum(dtype)
-            case RawTypes.TIMESTAMP_TZ:
-                return Datetime(time_zone=deferred_time_zone.time_zone)
-            case RawTypes.DECIMAL:
+            case DecimalType():
                 return into_decimal(dtype)
-            case _ as dtype_id:
+            case DType() if dtype.type_id == RawTypes.TIMESTAMP_TZ:
+                return Datetime(time_zone=deferred_time_zone.time_zone)
+            case _:
                 return (
-                    NON_NESTED_MAP.get_item(dtype_id)
+                    NON_NESTED_MAP.get_item(dtype.type_id)
                     .map(lambda dt: dt())
-                    .expect(f"Unsupported data type: {dtype_id}")
+                    .expect(f"Unsupported data type: {dtype}")
                 )
 
 
-def into_list(dtype: DuckDBPyType, deferred_time_zone: DeferredTimeZone) -> List:
-    return List(DataType.from_duckdb(dtype.child, deferred_time_zone))
+def into_list(dtype: ListType, deferred_time_zone: DeferredTimeZone) -> List:
+    return List(DataType.from_duckdb(dtype.child.dtype, deferred_time_zone))
 
 
-def into_struct(dtype: DuckDBPyType, deferred_time_zone: DeferredTimeZone) -> Struct:
+def into_struct(dtype: StructType, deferred_time_zone: DeferredTimeZone) -> Struct:
     return (
-        pc.Vec.from_ref(dtype.children)
-        .iter()
-        .map_star(
-            lambda name, dtype: (
-                name,
-                DataType.from_duckdb(dtype, deferred_time_zone),  # pyright: ignore[reportArgumentType]
-            )
+        pc.Iter(dtype.fields)
+        .map(
+            lambda field: (
+                field.name,
+                DataType.from_duckdb(field.dtype, deferred_time_zone),
+            ),
         )
         .into(Struct)
     )
 
 
-def into_array(dtype: DuckDBPyType, deferred_time_zone: DeferredTimeZone) -> Array:
-    def _node(
-        node: list[tuple[str, Any]],
-    ) -> pc.Option[list[tuple[str, Any]]]:
-        match node[0][1].id:
-            case RawTypes.ARRAY:
-                return pc.Some(node[0][1].children)
-            case _:
-                return pc.NONE
-
-    def _first_or(shape: pc.Seq[int]) -> int | Iterable[int]:
-        return shape.first() if shape.length() == 1 else shape
-
-    levels = pc.Iter.successors(pc.Some(dtype.children), _node).collect()
-    shape = (
-        levels.iter()
-        .map(lambda node: node[1][1])
-        .collect()
-        .rev()
-        .collect()
-        .into(_first_or)  # pyright: ignore[reportArgumentType]
-    )
+def into_array(dtype: ArrayType, deferred_time_zone: DeferredTimeZone) -> Array:
     return Array(
-        DataType.from_duckdb(levels.last()[0][1], deferred_time_zone),  # pyright: ignore[reportArgumentType]
-        shape=shape,
+        DataType.from_duckdb(dtype.child.dtype, deferred_time_zone), dtype.size.value
     )
 
 
-def into_enum(dtype: DuckDBPyType) -> Enum:
-    categories: Incomplete = dtype.children[0][1]
-    return Enum(categories)
+def into_enum(dtype: EnumType) -> Enum:
+    return Enum(dtype.child.values)
 
 
-def into_decimal(dtype: DuckDBPyType) -> Decimal:
-    precision: Incomplete
-    scale: Incomplete
-    (_, precision), (_, scale) = dtype.children
-    return Decimal(precision, scale)
+def into_decimal(dtype: DecimalType) -> Decimal:
+    return Decimal(dtype.precision.value, dtype.scale.value)
 
 
 @dataclass(slots=True)
@@ -281,15 +231,10 @@ class Decimal(DataType):
 @dataclass(slots=True)
 class Array(DataType):
     inner: DataType
-    shape: int | Iterable[int]
+    shape: int
 
     def sql(self) -> DuckDBPyType:
-        match self.shape:
-            case int() as size:
-                return duckdb.array_type(self.inner.sql(), size)
-            case _:
-                shapes = pc.Iter(self.shape).map(lambda item: f"[{item}]").join("")
-                return DuckDBPyType(f"{self.inner.sql()}{shapes}")
+        return duckdb.array_type(self.inner.sql(), self.shape)
 
 
 @dataclass(slots=True)
