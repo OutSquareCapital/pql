@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from enum import StrEnum, auto
 from typing import NamedTuple, Self, cast
 
+import duckdb
 import pyochain as pc
 from duckdb import sqltypes
 from duckdb.sqltypes import DuckDBPyType
@@ -139,6 +140,9 @@ class DType:
     def from_duckdb(cls, dtype: DuckDBPyType) -> Self:
         return cls(str(dtype), dtype.id)
 
+    def to_duckdb(self) -> DuckDBPyType:
+        return duckdb.type(self.type_id)
+
 
 @dataclass(slots=True)
 class DecimalType(DType):
@@ -152,6 +156,9 @@ class DecimalType(DType):
         precision, scale = Cast.into_decimal(dtype.children)
         return cls(str(dtype), dtype.id, NamedInt(*precision), NamedInt(*scale))
 
+    def to_duckdb(self) -> DuckDBPyType:
+        return duckdb.decimal_type(self.precision.value, self.scale.value)
+
 
 @dataclass(slots=True)
 class EnumType(DType):
@@ -163,6 +170,9 @@ class EnumType(DType):
     def from_duckdb(cls, dtype: DuckDBPyType) -> Self:
         (inner,) = Cast.into_enum(dtype.children)
         return cls(str(dtype), dtype.id, NamedValues(*inner))
+
+    def to_duckdb(self) -> DuckDBPyType:
+        return duckdb.type(self.physical)
 
 
 @dataclass(slots=True)
@@ -177,6 +187,9 @@ class ListType(DType):
             str(dtype), dtype.id, Field.from_raw(*Cast.into_list(dtype.children))
         )
 
+    def to_duckdb(self) -> DuckDBPyType:
+        return duckdb.list_type(self.child.dtype.to_duckdb())
+
 
 @dataclass(slots=True)
 class ArrayType(DType):
@@ -189,6 +202,9 @@ class ArrayType(DType):
     def from_duckdb(cls, dtype: DuckDBPyType) -> Self:
         child, size = Cast.into_array(dtype.children)
         return cls(str(dtype), dtype.id, Field.from_raw(child), NamedInt(*size))
+
+    def to_duckdb(self) -> DuckDBPyType:
+        return duckdb.array_type(self.child.dtype.to_duckdb(), self.size.value)
 
 
 @dataclass(slots=True)
@@ -208,6 +224,13 @@ class StructType(DType):
             .collect(),
         )
 
+    def to_duckdb(self) -> DuckDBPyType:
+        return duckdb.struct_type(
+            self.fields.iter()
+            .map(lambda field: (field.name, field.dtype.to_duckdb()))
+            .collect(dict)
+        )
+
 
 @dataclass(slots=True)
 class MapType(DType):
@@ -220,6 +243,9 @@ class MapType(DType):
     def from_duckdb(cls, dtype: DuckDBPyType) -> Self:
         key, value = Cast.into_map(dtype.children)
         return cls(str(dtype), dtype.id, Field.from_raw(key), Field.from_raw(value))
+
+    def to_duckdb(self) -> DuckDBPyType:
+        return duckdb.map_type(self.key.dtype.to_duckdb(), self.value.dtype.to_duckdb())
 
 
 @dataclass(slots=True)
@@ -237,6 +263,13 @@ class UnionType(DType):
             .iter()
             .map(Field.from_raw)
             .collect(),
+        )
+
+    def to_duckdb(self) -> DuckDBPyType:
+        return duckdb.union_type(
+            self.fields.iter()
+            .map(lambda field: (field.name, field.dtype.to_duckdb()))
+            .collect(dict)
         )
 
 
