@@ -17,14 +17,14 @@ type RawUnionChildren = list[RawNamedType]
 type RawDecimalChildren = tuple[RawNamedInt, RawNamedInt]
 
 
-@dataclass(slots=True, frozen=True)
+@dataclass(slots=True)
 class ScalarType:
     """Leaf scalar DuckDB type (no nested children)."""
 
     duckdb_id: str
 
 
-@dataclass(slots=True, frozen=True)
+@dataclass(slots=True)
 class DecimalType:
     """DuckDB DECIMAL metadata."""
 
@@ -34,7 +34,7 @@ class DecimalType:
     scale: int
 
 
-@dataclass(slots=True, frozen=True)
+@dataclass(slots=True)
 class EnumType:
     """DuckDB ENUM values."""
 
@@ -42,14 +42,14 @@ class EnumType:
     values: tuple[str, ...]
 
 
-@dataclass(slots=True, frozen=True)
+@dataclass(slots=True)
 class ListType:
     """DuckDB LIST type."""
 
     inner: DType
 
 
-@dataclass(slots=True, frozen=True)
+@dataclass(slots=True)
 class ArrayType:
     """DuckDB ARRAY type with fixed shape."""
 
@@ -59,7 +59,7 @@ class ArrayType:
     shape: tuple[int, ...]
 
 
-@dataclass(slots=True, frozen=True)
+@dataclass(slots=True)
 class StructField:
     """Named field of a DuckDB STRUCT."""
 
@@ -67,14 +67,14 @@ class StructField:
     dtype: DType
 
 
-@dataclass(slots=True, frozen=True)
+@dataclass(slots=True)
 class StructType:
     """DuckDB STRUCT type."""
 
     fields: tuple[StructField, ...]
 
 
-@dataclass(slots=True, frozen=True)
+@dataclass(slots=True)
 class MapType:
     """DuckDB MAP type."""
 
@@ -84,7 +84,7 @@ class MapType:
     value: DType
 
 
-@dataclass(slots=True, frozen=True)
+@dataclass(slots=True)
 class UnionMember:
     """Named member of a DuckDB UNION."""
 
@@ -92,7 +92,7 @@ class UnionMember:
     dtype: DType
 
 
-@dataclass(slots=True, frozen=True)
+@dataclass(slots=True)
 class UnionType:
     """DuckDB UNION type with tag and members."""
 
@@ -101,7 +101,7 @@ class UnionType:
     members: tuple[UnionMember, ...]
 
 
-@dataclass(slots=True, frozen=True)
+@dataclass(slots=True)
 class UnknownType:
     """Fallback for unhandled DuckDB type ids."""
 
@@ -121,7 +121,7 @@ type DType = (
 )
 
 
-@dataclass(slots=True, frozen=True)
+@dataclass(slots=True)
 class _ArrayLevel:
     child_name: str
     child_dtype: DuckDBPyType
@@ -129,7 +129,7 @@ class _ArrayLevel:
     size: int
 
 
-def _parse_array_dtype(dtype: DuckDBPyType) -> ArrayType:
+def _into_array(dtype: DuckDBPyType) -> ArrayType:
 
     def _as_array_level(raw_children: RawArrayChildren) -> _ArrayLevel:
         (child_name, child_dtype), (size_name, size) = raw_children
@@ -153,7 +153,7 @@ def _parse_array_dtype(dtype: DuckDBPyType) -> ArrayType:
     )
 
 
-def _parse_struct_dtype(dtype: DuckDBPyType) -> StructType:
+def _into_struct(dtype: DuckDBPyType) -> StructType:
     fields = (
         pc.Vec.from_ref(cast(RawStructChildren, dtype.children))
         .iter()
@@ -167,7 +167,7 @@ def _parse_struct_dtype(dtype: DuckDBPyType) -> StructType:
     return StructType(fields)
 
 
-def _parse_map_dtype(dtype: DuckDBPyType) -> MapType:
+def _into_map(dtype: DuckDBPyType) -> MapType:
     (key_name, key_dtype), (value_name, value_dtype) = cast(
         RawMapChildren, dtype.children
     )
@@ -179,12 +179,12 @@ def _parse_map_dtype(dtype: DuckDBPyType) -> MapType:
     )
 
 
-def _parse_enum_dtype(dtype: DuckDBPyType) -> EnumType:
+def _into_enum(dtype: DuckDBPyType) -> EnumType:
     values_name, values = cast(RawEnumChildren, dtype.children)[0]
     return EnumType(values_name=values_name, values=pc.Iter(values).collect(tuple))
 
 
-def _parse_union_dtype(dtype: DuckDBPyType) -> UnionType:
+def _into_union(dtype: DuckDBPyType) -> UnionType:
     tag_name, tag_dtype = cast(RawUnionChildren, dtype.children)[0]
     members = (
         pc.Vec.from_ref(cast(RawUnionChildren, dtype.children))
@@ -200,7 +200,7 @@ def _parse_union_dtype(dtype: DuckDBPyType) -> UnionType:
     return UnionType(tag_name, parse_duckdb_type(tag_dtype), members)
 
 
-def _parse_decimal_dtype(dtype: DuckDBPyType) -> DecimalType:
+def _into_decimal(dtype: DuckDBPyType) -> DecimalType:
     (precision_name, precision), (scale_name, scale) = cast(
         RawDecimalChildren, dtype.children
     )
@@ -219,17 +219,17 @@ def parse_duckdb_type(dtype: DuckDBPyType) -> DType:  # noqa: PLR0911
         case "list":
             return ListType(parse_duckdb_type(dtype.child))
         case "array":
-            return _parse_array_dtype(dtype)
+            return _into_array(dtype)
         case "struct":
-            return _parse_struct_dtype(dtype)
+            return _into_struct(dtype)
         case "map":
-            return _parse_map_dtype(dtype)
+            return _into_map(dtype)
         case "union":
-            return _parse_union_dtype(dtype)
+            return _into_union(dtype)
         case "enum":
-            return _parse_enum_dtype(dtype)
+            return _into_enum(dtype)
         case "decimal":
-            return _parse_decimal_dtype(dtype)
+            return _into_decimal(dtype)
         case duckdb_id:
             match _children_or_none(dtype):
                 case pc.Some(children) if len(children) > 0:
