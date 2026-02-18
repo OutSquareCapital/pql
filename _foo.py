@@ -23,6 +23,7 @@ class RawTypes(StrEnum):
     MAP = auto()
     DECIMAL = auto()
     UNION = auto()
+    JSON = auto()
     HUGEINT = sqltypes.HUGEINT.id
     BIGINT = sqltypes.BIGINT.id
     INTEGER = sqltypes.INTEGER.id
@@ -45,7 +46,11 @@ class RawTypes(StrEnum):
     BOOLEAN = sqltypes.BOOLEAN.id
     INTERVAL = sqltypes.INTERVAL.id
     TIME = sqltypes.TIME.id
+    TIME_TZ = sqltypes.TIME_TZ.id
     BLOB = sqltypes.BLOB.id
+    BIT = sqltypes.BIT.id
+    UUID = sqltypes.UUID.id
+    BIGNUM = auto()
 
 
 # Raw type aliases for the unparsed children of each DuckDB type, used in the Cast namespace to convert from the raw DuckDBPyType.children to more specific structures for each type.
@@ -119,7 +124,7 @@ class Field:
     dtype: DType
 
     @classmethod
-    def from_duckdb(cls, raw: RawNamedType) -> Self:
+    def from_raw(cls, raw: RawNamedType) -> Self:
         name, dtype = raw
         return cls(name, parse(dtype))
 
@@ -128,20 +133,27 @@ class Field:
 class DType:
     """Base class for all parsed DuckDB types."""
 
+    physical: str
+    type_id: str
+
     @classmethod
     def from_duckdb(cls, dtype: DuckDBPyType) -> Self:
-        raise NotImplementedError
+        return cls(str(dtype), dtype.id)
 
 
 @dataclass(slots=True)
-class ScalarType(DType):
-    """Leaf scalar DuckDB type (no nested children)."""
+class VarcharType(DType):
+    """DuckDB `VARCHAR` dtype, which can also represent `JSON` when the physical type is `VARCHAR` but the logical type is `JSON`."""
 
-    duckdb_id: str
+    logical: str
 
     @classmethod
     def from_duckdb(cls, dtype: DuckDBPyType) -> Self:
-        return cls(dtype.id)
+        match str(dtype):
+            case RawTypes.JSON:
+                return cls(str(dtype), dtype.id, RawTypes.JSON)
+            case _:
+                return cls(str(dtype), dtype.id, dtype.id)
 
 
 @dataclass(slots=True)
@@ -154,7 +166,7 @@ class DecimalType(DType):
     @classmethod
     def from_duckdb(cls, dtype: DuckDBPyType) -> Self:
         precision, scale = Cast.into_decimal(dtype.children)
-        return cls(NamedInt(*precision), NamedInt(*scale))
+        return cls(str(dtype), dtype.id, NamedInt(*precision), NamedInt(*scale))
 
 
 @dataclass(slots=True)
@@ -166,7 +178,7 @@ class EnumType(DType):
     @classmethod
     def from_duckdb(cls, dtype: DuckDBPyType) -> Self:
         (inner,) = Cast.into_enum(dtype.children)
-        return cls(NamedValues(*inner))
+        return cls(str(dtype), dtype.id, NamedValues(*inner))
 
 
 @dataclass(slots=True)
@@ -177,7 +189,9 @@ class ListType(DType):
 
     @classmethod
     def from_duckdb(cls, dtype: DuckDBPyType) -> Self:
-        return cls(Field.from_duckdb(*Cast.into_list(dtype.children)))
+        return cls(
+            str(dtype), dtype.id, Field.from_raw(*Cast.into_list(dtype.children))
+        )
 
 
 @dataclass(slots=True)
@@ -189,8 +203,8 @@ class ArrayType(DType):
 
     @classmethod
     def from_duckdb(cls, dtype: DuckDBPyType) -> Self:
-        (child), (size) = Cast.into_array(dtype.children)
-        return cls(Field.from_duckdb(child), NamedInt(*size))
+        child, size = Cast.into_array(dtype.children)
+        return cls(str(dtype), dtype.id, Field.from_raw(child), NamedInt(*size))
 
 
 @dataclass(slots=True)
@@ -202,10 +216,12 @@ class StructType(DType):
     @classmethod
     def from_duckdb(cls, dtype: DuckDBPyType) -> Self:
         return cls(
+            str(dtype),
+            dtype.id,
             pc.Vec.from_ref(Cast.into_struct(dtype.children))
             .iter()
-            .map(Field.from_duckdb)
-            .collect(tuple)
+            .map(Field.from_raw)
+            .collect(tuple),
         )
 
 
@@ -219,7 +235,7 @@ class MapType(DType):
     @classmethod
     def from_duckdb(cls, dtype: DuckDBPyType) -> Self:
         key, value = Cast.into_map(dtype.children)
-        return cls(Field.from_duckdb(key), Field.from_duckdb(value))
+        return cls(str(dtype), dtype.id, Field.from_raw(key), Field.from_raw(value))
 
 
 @dataclass(slots=True)
@@ -231,14 +247,22 @@ class UnionType(DType):
     @classmethod
     def from_duckdb(cls, dtype: DuckDBPyType) -> Self:
         return cls(
+            str(dtype),
+            dtype.id,
             pc.Vec.from_ref(Cast.into_union(dtype.children))
             .iter()
-            .map(Field.from_duckdb)
-            .collect(tuple)
+            .map(Field.from_raw)
+            .collect(tuple),
         )
 
 
-DTYPE_MAP: pc.Dict[str, type[DType]] = pc.Dict.from_ref(
+type NestedType = ListType | ArrayType | StructType | UnionType
+"""Types who can have nested children, and thus require recursive parsing logic."""
+type ConfiguredType = DecimalType | EnumType | VarcharType
+"""Types who are not nested, but have additional configuration parameters (like precision/scale for `Decimal`, or logical type for `Varchar`)."""
+type ParsedType = NestedType | ConfiguredType | DType
+"""All possible parsed types, including simple scalar types which are represented as the base `DType`."""
+DTYPE_MAP: pc.Dict[str, type[ParsedType]] = pc.Dict.from_ref(
     {
         RawTypes.LIST: ListType,
         RawTypes.ARRAY: ArrayType,
@@ -247,31 +271,71 @@ DTYPE_MAP: pc.Dict[str, type[DType]] = pc.Dict.from_ref(
         RawTypes.UNION: UnionType,
         RawTypes.ENUM: EnumType,
         RawTypes.DECIMAL: DecimalType,
+        RawTypes.VARCHAR: VarcharType,
     }
 )
-"""Mapping of parsing strategies for each raw DuckDB type id.
+"""Mapping of parsing strategies for each raw `DuckDB` type id.
 
-If a type id is not present in this map, it will be parsed as a simple ScalarType."""
+If a type id is not present in this map, it will be parsed as a simple `DType`."""
 
 
-def parse(dtype: DuckDBPyType) -> DType:
-    """Main entry point to convert a raw DuckDBPyType into a parsed DType.
+def parse(dtype: DuckDBPyType) -> ParsedType:
+    """Main entry point to convert a raw DuckDBPyType into a parsed `DType`.
 
     Recursively matches the raw type id to the appropriate parsing logic.
     """
-    return DTYPE_MAP.get_item(dtype.id).unwrap_or(ScalarType).from_duckdb(dtype)
+    return DTYPE_MAP.get_item(dtype.id).unwrap_or(DType).from_duckdb(dtype)
 
 
 def _relation_types() -> duckdb.DuckDBPyRelation:
     qry = """--sql
     SELECT
-        [1, 2]::INTEGER[] AS list_col,
-        [[1, 2, 3], [4, 5, 6]]::INTEGER[2][3] AS array_col,
-        {'name': 'alice', 'flags': [true, false], 'status': 'on'::ENUM('on', 'off')} AS struct_col,
-        MAP([1, 2], ['x', 'y']) AS map_col,
-        union_value(num := 2)::UNION(num INTEGER, txt VARCHAR) AS union_col,
-        'on'::ENUM('on', 'off') AS enum_col,
-        12.34::DECIMAL(10, 2) AS decimal_col
+        -- Scalar types
+        true::BOOLEAN AS bool_col,
+        127::TINYINT AS tinyint_col,
+        32767::SMALLINT AS smallint_col,
+        2147483647::INTEGER AS int_col,
+        9223372036854775807::BIGINT AS bigint_col,
+        170141183460469231731687303715884105727::HUGEINT AS hugeint_col,
+        255::UTINYINT AS utinyint_col,
+        65535::USMALLINT AS usmallint_col,
+        4294967295::UINTEGER AS uinteger_col,
+        18446744073709551615::UBIGINT AS ubigint_col,
+        340282366920938463463374607431768211455::UHUGEINT AS uhugeint_col,
+        3.14::FLOAT AS float_col,
+        2.718281828::DOUBLE AS double_col,
+        'hello world'::VARCHAR AS varchar_col,
+        '2025-02-18'::DATE AS date_col,
+        '14:30:45'::TIME AS time_col,
+        '2025-02-18 14:30:45'::TIMESTAMP AS timestamp_col,
+        '2025-02-18T14:30:45'::TIMESTAMP_S AS timestamp_s_col,
+        '2025-02-18T14:30:45.123'::TIMESTAMP_MS AS timestamp_ms_col,
+        '2025-02-18T14:30:45.123456789'::TIMESTAMP_NS AS timestamp_ns_col,
+        '2025-02-18 14:30:45-05:00'::TIMESTAMPTZ AS timestamptz_col,
+        INTERVAL '1 days 2 hours 30 minutes' AS interval_col,
+        x'48656c6c6f'::BLOB AS blob_col,
+        -- Nested types
+        [1, 2, 3]::INTEGER[] AS list_int_col,
+        ['a', 'b', 'c']::VARCHAR[] AS list_varchar_col,
+        [[1, 2], [3, 4], [5, 6]]::INTEGER[3][2] AS array_2d_col,
+        [['x', 'y'], ['z', 'w']]::VARCHAR[2][2] AS array_varchar_col,
+        {'id': 1, 'name': 'alice', 'active': true} AS struct_simple_col,
+        {'name': 'bob', 'tags': ['rust', 'python'], 'score': 95.5} AS struct_nested_col,
+        MAP([1, 2, 3], ['one', 'two', 'three']) AS map_int_varchar_col,
+        MAP(['a', 'b'], [10, 20]) AS map_varchar_int_col,
+        union_value(num := 42)::UNION(num INTEGER, txt VARCHAR) AS union_num_col,
+        union_value(txt := 'hello')::UNION(num INTEGER, txt VARCHAR) AS union_txt_col,
+        'on'::ENUM('on', 'off', 'pending') AS enum_status_col,
+        'medium'::ENUM('small', 'medium', 'large') AS enum_size_col,
+        99.99::DECIMAL(10, 2) AS decimal_price_col,
+        123456789.123456::DECIMAL(15, 6) AS decimal_precision_col,
+        [{'x': 1}, {'x': 2}]::STRUCT(x INTEGER)[] AS list_struct_col,
+        {'coords': [1.5, 2.5, 3.5], 'metadata': {'type': 'point'}} AS struct_complex_col,
+        '101010'::BIT AS bit_col,
+        gen_random_uuid() AS uuid_col,
+        '14:30:45+05:00'::TIMETZ AS timetz_col,
+        123456789012345678901234567890::BIGNUM AS bignum_col,
+        '{"name": "alice", "age": 30}'::JSON AS json_col,
     """
     return duckdb.from_query(qry)
 
@@ -282,7 +346,13 @@ def main() -> None:
         pc.Vec.from_ref(rel.columns)
         .iter()
         .zip(cast(list[DuckDBPyType], rel.dtypes), strict=True)
-        .map_star(lambda col_name, duck_type: f"{col_name}: {parse(duck_type)}")
+        .map_star(lambda col_name, duck_type: (col_name, parse(duck_type)))
+        .map_star(
+            lambda col_name, parsed_type: {
+                "column": col_name,
+                "parsed_type": parsed_type,
+            }
+        )
         .for_each(print)
     )
 
