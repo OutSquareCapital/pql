@@ -187,8 +187,8 @@ class ListType(DType):
     inner: DType
 
     @classmethod
-    def from_duckdb(cls, dtype: DuckDBPyType) -> DType:
-        return parse(dtype.child)
+    def from_duckdb(cls, dtype: DuckDBPyType) -> Self:
+        return cls(parse(dtype.child))
 
 
 @dataclass(slots=True)
