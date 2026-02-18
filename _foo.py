@@ -49,21 +49,17 @@ class RawTypes(StrEnum):
 
 
 # Raw type aliases for the unparsed children of each DuckDB type, used in the Cast namespace to convert from the raw DuckDBPyType.children to more specific structures for each type.
+# Note that we type container of one element as tuples when they are in fact at runtime lists.
+# This makes the unpacking more convenient.
 type RawNamedType = tuple[str, DuckDBPyType]
 type RawNamedInt = tuple[str, int]
+type RawListChildren = tuple[RawNamedType]
 type RawArrayChildren = tuple[RawNamedType, RawNamedInt]
 type RawStructChildren = list[RawNamedType]
 type RawMapChildren = tuple[RawNamedType, RawNamedType]
-type RawEnumChildren = tuple[tuple[str, tuple[str, ...] | list[str]]]
+type RawEnumChildren = tuple[tuple[str, list[str]]]
 type RawUnionChildren = list[RawNamedType]
 type RawDecimalChildren = tuple[RawNamedInt, RawNamedInt]
-
-
-class NamedField(NamedTuple):
-    """Raw, unparsed named field from DuckDB type children, used for Array levels."""
-
-    name: str
-    dtype: DuckDBPyType
 
 
 class Cast:
@@ -71,6 +67,10 @@ class Cast:
 
     Note that these casts don't have any runtime effect, and solely act as a first step to convert the raw values more conviently to concrete types.
     """
+
+    @staticmethod
+    def into_list(dtype: object) -> RawListChildren:
+        return cast(RawListChildren, dtype)
 
     @staticmethod
     def into_array(dtype: object) -> RawArrayChildren:
@@ -104,6 +104,13 @@ class NamedInt(NamedTuple):
     value: int
 
 
+class NamedValues(NamedTuple):
+    """Named string list from DuckDB type children, used for enum values."""
+
+    name: str
+    values: list[str]
+
+
 @dataclass(slots=True)
 class Field:
     """Named parsed field."""
@@ -115,23 +122,6 @@ class Field:
     def from_duckdb(cls, raw: RawNamedType) -> Self:
         name, dtype = raw
         return cls(name, parse(dtype))
-
-
-@dataclass(slots=True)
-class _ArrayLevel:
-    child: NamedField
-    size: NamedInt
-
-    @classmethod
-    def from_duckdb(cls, raw_children: RawArrayChildren) -> Self:
-        (child), (size) = raw_children
-        return cls(NamedField(*child), NamedInt(*size))
-
-    @classmethod
-    def try_from_self(cls, level: Self) -> pc.Option[Self]:
-        if level.child.dtype.id == RawTypes.ARRAY:
-            return pc.Some(cls.from_duckdb(Cast.into_array(level.child.dtype.children)))
-        return pc.NONE
 
 
 @dataclass(slots=True)
@@ -171,56 +161,36 @@ class DecimalType(DType):
 class EnumType(DType):
     """DuckDB `ENUM` dtype."""
 
-    values_name: str
-    values: tuple[str, ...]
+    child: NamedValues
 
     @classmethod
     def from_duckdb(cls, dtype: DuckDBPyType) -> Self:
-        values_name, values = Cast.into_enum(dtype.children)[0]
-        return cls(values_name, pc.Iter(values).collect(tuple))
+        (inner,) = Cast.into_enum(dtype.children)
+        return cls(NamedValues(*inner))
 
 
 @dataclass(slots=True)
 class ListType(DType):
     """DuckDB `LIST` dtype."""
 
-    inner: DType
+    child: Field
 
     @classmethod
     def from_duckdb(cls, dtype: DuckDBPyType) -> Self:
-        return cls(parse(dtype.child))
+        return cls(Field.from_duckdb(*Cast.into_list(dtype.children)))
 
 
 @dataclass(slots=True)
 class ArrayType(DType):
-    """DuckDB `ARRAY` dtype with fixed shape."""
+    """DuckDB `ARRAY` dtype with fixed size."""
 
-    child_name: str
-    size_name: str
-    inner: DType
-    shape: tuple[int, ...]
+    child: Field
+    size: NamedInt
 
     @classmethod
     def from_duckdb(cls, dtype: DuckDBPyType) -> Self:
-
-        levels = pc.Iter.successors(
-            pc.Some(_ArrayLevel.from_duckdb(Cast.into_array(dtype.children))),
-            _ArrayLevel.try_from_self,
-        ).collect()
-        shape = (
-            levels.iter()
-            .map(lambda level: level.size.value)
-            .collect()
-            .rev()
-            .collect(tuple)
-        )
-        root = levels.first()
-        return cls(
-            root.child.name,
-            root.size.name,
-            parse(levels.last().child.dtype),
-            shape,
-        )
+        (child), (size) = Cast.into_array(dtype.children)
+        return cls(Field.from_duckdb(child), NamedInt(*size))
 
 
 @dataclass(slots=True)
@@ -231,13 +201,12 @@ class StructType(DType):
 
     @classmethod
     def from_duckdb(cls, dtype: DuckDBPyType) -> Self:
-        fields = (
+        return cls(
             pc.Vec.from_ref(Cast.into_struct(dtype.children))
             .iter()
             .map(Field.from_duckdb)
             .collect(tuple)
         )
-        return cls(fields)
 
 
 @dataclass(slots=True)
@@ -257,19 +226,16 @@ class MapType(DType):
 class UnionType(DType):
     """DuckDB `UNION` dtype."""
 
-    tag: Field
-    members: tuple[Field, ...]
+    fields: tuple[Field, ...]
 
     @classmethod
     def from_duckdb(cls, dtype: DuckDBPyType) -> Self:
-        members = (
+        return cls(
             pc.Vec.from_ref(Cast.into_union(dtype.children))
             .iter()
-            .skip(1)
             .map(Field.from_duckdb)
             .collect(tuple)
         )
-        return cls(Field.from_duckdb(Cast.into_union(dtype.children)[0]), members)
 
 
 DTYPE_MAP: pc.Dict[str, type[DType]] = pc.Dict.from_ref(
