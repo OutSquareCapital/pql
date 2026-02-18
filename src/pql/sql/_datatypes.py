@@ -195,7 +195,7 @@ class ArrayType(DType):
 class StructType(DType):
     """DuckDB `STRUCT` type."""
 
-    fields: tuple[Field, ...]
+    fields: pc.Seq[Field]
 
     @classmethod
     def from_duckdb(cls, dtype: DuckDBPyType) -> Self:
@@ -205,7 +205,7 @@ class StructType(DType):
             pc.Vec.from_ref(Cast.into_struct(dtype.children))
             .iter()
             .map(Field.from_raw)
-            .collect(tuple),
+            .collect(),
         )
 
 
@@ -226,7 +226,7 @@ class MapType(DType):
 class UnionType(DType):
     """DuckDB `UNION` dtype."""
 
-    fields: tuple[Field, ...]
+    fields: pc.Seq[Field]
 
     @classmethod
     def from_duckdb(cls, dtype: DuckDBPyType) -> Self:
@@ -236,7 +236,7 @@ class UnionType(DType):
             pc.Vec.from_ref(Cast.into_union(dtype.children))
             .iter()
             .map(Field.from_raw)
-            .collect(tuple),
+            .collect(),
         )
 
 
