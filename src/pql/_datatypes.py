@@ -4,8 +4,7 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from collections.abc import Callable, Iterable, Mapping
-from dataclasses import dataclass, field
-from datetime import timezone
+from dataclasses import dataclass
 from enum import Enum as PyEnum
 from functools import partial
 from typing import Literal
@@ -18,7 +17,6 @@ from duckdb.sqltypes import DuckDBPyType
 from .sql import (
     ArrayType,
     DecimalType,
-    DType,
     EnumType,
     ListType,
     RawTypes,
@@ -45,59 +43,34 @@ class DataType(ABC):
         raise NotImplementedError  # pragma: no cover
 
     @staticmethod
-    def from_duckdb(  # noqa: PLR0911
-        dtype: SqlType, deferred_time_zone: DeferredTimeZone
-    ) -> DataType:
+    def from_duckdb(dtype: SqlType) -> DataType:
         match dtype:
             case ListType():
-                return into_list(dtype, deferred_time_zone)
+                return List(DataType.from_duckdb(dtype.child.dtype))
             case StructType():
-                return into_struct(dtype, deferred_time_zone)
+                return (
+                    pc.Iter(dtype.fields)
+                    .map(
+                        lambda field: (
+                            field.name,
+                            DataType.from_duckdb(field.dtype),
+                        ),
+                    )
+                    .into(Struct)
+                )
             case ArrayType():
-                return into_array(dtype, deferred_time_zone)
+                return Array(DataType.from_duckdb(dtype.child.dtype), dtype.size.value)
+
             case EnumType():
-                return into_enum(dtype)
+                return Enum(dtype.child.values)
             case DecimalType():
-                return into_decimal(dtype)
-            case DType() if dtype.type_id == RawTypes.TIMESTAMP_TZ:
-                return Datetime(time_zone=deferred_time_zone.time_zone)
+                return Decimal(dtype.precision.value, dtype.scale.value)
             case _:
                 return (
                     NON_NESTED_MAP.get_item(dtype.type_id)
                     .map(lambda dt: dt())
                     .expect(f"Unsupported data type: {dtype}")
                 )
-
-
-def into_list(dtype: ListType, deferred_time_zone: DeferredTimeZone) -> List:
-    return List(DataType.from_duckdb(dtype.child.dtype, deferred_time_zone))
-
-
-def into_struct(dtype: StructType, deferred_time_zone: DeferredTimeZone) -> Struct:
-    return (
-        pc.Iter(dtype.fields)
-        .map(
-            lambda field: (
-                field.name,
-                DataType.from_duckdb(field.dtype, deferred_time_zone),
-            ),
-        )
-        .into(Struct)
-    )
-
-
-def into_array(dtype: ArrayType, deferred_time_zone: DeferredTimeZone) -> Array:
-    return Array(
-        DataType.from_duckdb(dtype.child.dtype, deferred_time_zone), dtype.size.value
-    )
-
-
-def into_enum(dtype: EnumType) -> Enum:
-    return Enum(dtype.child.values)
-
-
-def into_decimal(dtype: DecimalType) -> Decimal:
-    return Decimal(dtype.precision.value, dtype.scale.value)
 
 
 @dataclass(slots=True)
@@ -211,11 +184,14 @@ class UInt128(DataType):
 @dataclass(slots=True)
 class Datetime(DataType):
     time_unit: TimeUnit = "ns"
-    time_zone: str | timezone | None = None
 
     def sql(self) -> DuckDBPyType:
-        if self.time_zone is None:
-            return PRECISION_MAP.get(self.time_unit, sqltypes.TIMESTAMP)
+        return PRECISION_MAP.get(self.time_unit, sqltypes.TIMESTAMP)
+
+
+@dataclass(slots=True)
+class DatetimeTZ(DataType):
+    def sql(self) -> DuckDBPyType:
         return sqltypes.TIMESTAMP_TZ
 
 
@@ -279,40 +255,6 @@ class Enum(DataType):
         return DuckDBPyType(f"ENUM{self.categories.into(tuple)!r}")
 
 
-@dataclass(slots=True)
-class DeferredTimeZone:
-    """Object which gets passed between `native_to_narwhals_dtype` calls.
-
-    DuckDB stores the time zone in the connection, rather than in the dtypes, so
-    this ensures that when calculating the schema of a dataframe with multiple
-    timezone-aware columns, that the connection's time zone is only fetched once.
-
-    Note: we cannot make the time zone a cached `DuckDBLazyFrame` property because
-    the time zone can be modified after `DuckDBLazyFrame` creation:
-    """
-
-    _rel: duckdb.DuckDBPyRelation
-    _cached_time_zone: pc.Option[str] = field(default_factory=lambda: pc.NONE)
-
-    @property
-    def time_zone(self) -> str:
-        """Fetch relation time zone (if it wasn't calculated already)."""
-        if self._cached_time_zone.is_none():
-            self._cached_time_zone = pc.Some(_fetch_rel_time_zone(self._rel))
-        return self._cached_time_zone.unwrap()
-
-
-def _fetch_rel_time_zone(rel: duckdb.DuckDBPyRelation) -> str:
-    tbl = "duckdb_settings()"
-    qry = f"""--sql
-        SELECT value
-        FROM {tbl}
-        WHERE name = 'TimeZone'
-        """
-
-    return pc.Option(rel.query(tbl, qry).fetchone()).unwrap()[0]
-
-
 NON_NESTED_MAP: pc.Dict[str, Callable[[], DataType]] = pc.Dict.from_ref(
     {
         RawTypes.HUGEINT: Int128,
@@ -333,6 +275,7 @@ NON_NESTED_MAP: pc.Dict[str, Callable[[], DataType]] = pc.Dict.from_ref(
         RawTypes.TIMESTAMP_MS: partial(Datetime, "ms"),
         RawTypes.TIMESTAMP: partial(Datetime),
         RawTypes.TIMESTAMP_NS: partial(Datetime, "ns"),
+        RawTypes.TIMESTAMP_TZ: DatetimeTZ,
         RawTypes.BOOLEAN: Boolean,
         RawTypes.INTERVAL: Duration,
         RawTypes.TIME: Time,

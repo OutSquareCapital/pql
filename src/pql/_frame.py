@@ -10,7 +10,7 @@ import duckdb
 import pyochain as pc
 
 from . import sql
-from ._datatypes import DataType, DeferredTimeZone
+from ._datatypes import DataType
 from ._expr import Expr
 from .sql import (
     CoreHandler,
@@ -555,16 +555,12 @@ class LazyFrame(CoreHandler[Relation]):
 
     @property
     def schema(self) -> pc.Dict[str, DataType]:
-        deferred_time_zone = DeferredTimeZone(self.inner().inner())
         return (
             self.inner()
             .columns.iter()
             .zip(self.inner().dtypes, strict=True)
             .map_star(
-                lambda column_name, duckdb_dtype: (
-                    column_name,
-                    DataType.from_duckdb(parse_dtype(duckdb_dtype), deferred_time_zone),
-                )
+                lambda name, dtype: (name, DataType.from_duckdb(parse_dtype(dtype)))
             )
             .collect(pc.Dict)
         )

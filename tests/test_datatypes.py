@@ -52,7 +52,7 @@ def test_expr_cast_numeric_and_string_schema() -> None:
         pql.col("x").cast(pql.String()).alias("s"),
         pql.col("time").cast(pql.Time()).alias("time"),
         pql.col("dates").cast(pql.Date()).alias("dates"),
-        pql.col("hours").cast(pql.Datetime(time_zone="UTC")).alias("hours"),
+        pql.col("hours").cast(pql.DatetimeTZ()).alias("hours"),
         pql.col("nanoseconds").cast(pql.Datetime(time_unit="ns")).alias("nanoseconds"),
         pql.col("1d").cast(pql.List(pql.UInt16())).alias("lst"),
         pql.col("1d").cast(pql.Array(pql.UInt16(), shape=2)).alias("arr_1d"),
@@ -87,7 +87,7 @@ def test_expr_cast_numeric_and_string_schema() -> None:
     assert isinstance(schema["lst"], pql.List)
     assert isinstance(schema["lst"].inner, pql.UInt16)  # pyright: ignore[reportAttributeAccessIssue, reportUnknownMemberType]
     assert isinstance(schema["dates"], pql.Date)
-    assert isinstance(schema["hours"], pql.Datetime)
+    assert isinstance(schema["hours"], pql.DatetimeTZ)
     assert schema["nanoseconds"].time_unit == "ns"  # pyright: ignore[reportUnknownMemberType, reportAttributeAccessIssue]
     assert isinstance(schema["blobs"], pql.Binary)
     assert isinstance(schema["duration"], pql.Duration)
