@@ -20,6 +20,7 @@ from ._datatypes import (
     Int64,
     Int128,
     List,
+    Map,
     String,
     Struct,
     Time,
@@ -28,6 +29,7 @@ from ._datatypes import (
     UInt32,
     UInt64,
     UInt128,
+    Union,
 )
 from ._expr import Expr, all, col
 from ._frame import LazyFrame
@@ -53,6 +55,7 @@ __all__ = [
     "Int128",
     "LazyFrame",
     "List",
+    "Map",
     "String",
     "Struct",
     "Time",
@@ -61,6 +64,7 @@ __all__ = [
     "UInt32",
     "UInt64",
     "UInt128",
+    "Union",
     "all",
     "col",
     "sql",

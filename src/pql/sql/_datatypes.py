@@ -261,6 +261,7 @@ class UnionType(DType):
             dtype.id,
             pc.Vec.from_ref(Cast.into_union(dtype.children))
             .iter()
+            .skip(1)  # First dtype is the tag of the union itself
             .map(Field.from_raw)
             .collect(),
         )

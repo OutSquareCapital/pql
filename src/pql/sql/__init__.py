@@ -29,7 +29,6 @@ from ._expr import (
     unnest,
     when,
 )
-from ._raw import Kword, QueryHolder
 from ._typing import FrameInit, IntoExpr, IntoExprColumn
 
 __all__ = [
@@ -41,10 +40,8 @@ __all__ = [
     "FrameInit",
     "IntoExpr",
     "IntoExprColumn",
-    "Kword",
     "ListType",
     "MapType",
-    "QueryHolder",
     "RawTypes",
     "Relation",
     "SqlExpr",

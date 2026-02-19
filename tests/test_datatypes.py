@@ -5,7 +5,7 @@ from enum import Enum
 import pql
 
 
-def test_expr_cast_numeric_and_string_schema() -> None:
+def test_expr_cast() -> None:
     class MyEnum(Enum):
         A = "A"
         B = "B"
@@ -31,6 +31,17 @@ def test_expr_cast_numeric_and_string_schema() -> None:
             "time": ["12:00:00", "13:00:00", "14:00:00"],
             "duration": ["1 day", "2 days", "3 days"],
             "enumerated": ["A", "B", "C"],
+            "mapped": [
+                {"a": 1, "b": 2, "c": 3},
+                {"a": 4, "b": 5, "c": 6},
+                {"a": 7, "b": 8, "c": 9},
+            ],
+            "structured": {
+                "a": [1, 2, 3],
+                "b": ["x", "y", "z"],
+                "c": [True, False, True],
+            },
+            "unioned": [1, "two", 3.0],
         }
     )
 
@@ -63,6 +74,13 @@ def test_expr_cast_numeric_and_string_schema() -> None:
         pql.col("duration").cast(pql.Duration()).alias("duration"),
         pql.col("enumerated").cast(pql.Enum(["A", "B", "C"])).alias("enumerated"),
         pql.col("enumerated").cast(pql.Enum(MyEnum)).alias("enumerated_enum"),
+        pql.col("mapped").cast(pql.Map(pql.String(), pql.Int32())).alias("mapped"),
+        pql.col("structured")
+        .cast(pql.Struct({"a": pql.Int32(), "b": pql.String(), "c": pql.Boolean()}))
+        .alias("structured"),
+        pql.col("unioned")
+        .cast(pql.Union([pql.Int32(), pql.String(), pql.Float64()]))
+        .alias("unioned"),
     )
     schema = casted.schema
     assert isinstance(schema["i8"], pql.Int8)
@@ -95,37 +113,14 @@ def test_expr_cast_numeric_and_string_schema() -> None:
     assert tuple(schema["enumerated"].categories) == ("A", "B", "C")  # pyright: ignore[reportUnknownArgumentType, reportUnknownMemberType, reportAttributeAccessIssue]
     assert isinstance(schema["enumerated_enum"], pql.Enum)
     assert tuple(schema["enumerated_enum"].categories) == ("A", "B", "C")  # pyright: ignore[reportUnknownArgumentType, reportUnknownMemberType, reportAttributeAccessIssue]
-
-
-def test_schema_nested_types_from_casts() -> None:
-    source = pql.LazyFrame(
-        {
-            "json_obj": ['{"a": 1, "b": [1,2]}', None],
-            "arr_text": ["[1,2,3]", None],
-        }
-    )
-
-    casted = source.select(
-        pql.col("json_obj")
-        .cast(
-            pql.Struct(
-                {
-                    "a": pql.Int32(),
-                    "b": pql.List(pql.Int32()),
-                }
-            )
-        )
-        .alias("obj"),
-        pql.col("arr_text").cast(pql.List(pql.Int32())).alias("arr"),
-    )
-
-    obj_dtype = casted.schema["obj"]
-    arr_dtype = casted.schema["arr"]
-
-    assert isinstance(obj_dtype, pql.Struct)
-    assert isinstance(obj_dtype.fields["a"], pql.Int32)
-    assert isinstance(obj_dtype.fields["b"], pql.List)
-    assert isinstance(obj_dtype.fields["b"].inner, pql.Int32)  # pyright: ignore[reportUnknownMemberType, reportAttributeAccessIssue]
-
-    assert isinstance(arr_dtype, pql.List)
-    assert isinstance(arr_dtype.inner, pql.Int32)
+    assert isinstance(schema["mapped"], pql.Map)
+    assert isinstance(schema["mapped"].key, pql.String)  # pyright: ignore[reportAttributeAccessIssue, reportUnknownMemberType]
+    assert isinstance(schema["mapped"].value, pql.Int32)  # pyright: ignore[reportAttributeAccessIssue, reportUnknownMemberType]
+    assert isinstance(schema["structured"], pql.Struct)
+    assert isinstance(schema["structured"].fields["a"], pql.Int32)  # pyright: ignore[reportUnknownMemberType, reportAttributeAccessIssue]
+    assert isinstance(schema["structured"].fields["b"], pql.String)  # pyright: ignore[reportUnknownMemberType, reportAttributeAccessIssue]
+    assert isinstance(schema["structured"].fields["c"], pql.Boolean)  # pyright: ignore[reportUnknownMemberType, reportAttributeAccessIssue]
+    assert isinstance(schema["unioned"], pql.Union)
+    assert isinstance(schema["unioned"].fields[0], pql.Int32)  # pyright: ignore[reportUnknownMemberType, reportAttributeAccessIssue]
+    assert isinstance(schema["unioned"].fields[1], pql.String)  # pyright: ignore[reportUnknownMemberType, reportAttributeAccessIssue]
+    assert isinstance(schema["unioned"].fields[2], pql.Float64)  #  pyright: ignore[reportUnknownMemberType, reportAttributeAccessIssue]

@@ -19,9 +19,11 @@ from .sql import (
     DecimalType,
     EnumType,
     ListType,
+    MapType,
     RawTypes,
     SqlType,
     StructType,
+    UnionType,
 )
 
 TimeUnit = Literal["s", "ms", "us", "ns"]
@@ -43,7 +45,7 @@ class DataType(ABC):
         raise NotImplementedError  # pragma: no cover
 
     @staticmethod
-    def from_duckdb(dtype: SqlType) -> DataType:
+    def from_duckdb(dtype: SqlType) -> DataType:  # noqa: PLR0911
         match dtype:
             case ListType():
                 return List(DataType.from_duckdb(dtype.child.dtype))
@@ -57,6 +59,17 @@ class DataType(ABC):
                         ),
                     )
                     .into(Struct)
+                )
+            case MapType():
+                return Map(
+                    DataType.from_duckdb(dtype.key.dtype),
+                    DataType.from_duckdb(dtype.value.dtype),
+                )
+            case UnionType():
+                return Union(
+                    dtype.fields.iter()
+                    .map(lambda child: DataType.from_duckdb(child.dtype))
+                    .collect()
                 )
             case ArrayType():
                 return Array(DataType.from_duckdb(dtype.child.dtype), dtype.size.value)
@@ -179,6 +192,28 @@ class UInt64(DataType):
 class UInt128(DataType):
     def sql(self) -> DuckDBPyType:
         return sqltypes.UHUGEINT
+
+
+@dataclass(slots=True)
+class Union(DataType):
+    fields: pc.Seq[DataType]
+
+    def __init__(self, fields: Iterable[DataType]) -> None:
+        self.fields = pc.Seq(fields)
+
+    def sql(self) -> DuckDBPyType:
+        return duckdb.union_type(
+            self.fields.iter().map(lambda f: f.sql()).collect(list)
+        )
+
+
+@dataclass(slots=True)
+class Map(DataType):
+    key: DataType
+    value: DataType
+
+    def sql(self) -> DuckDBPyType:
+        return duckdb.map_type(self.key.sql(), self.value.sql())
 
 
 @dataclass(slots=True)
