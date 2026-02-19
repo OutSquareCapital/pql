@@ -14,7 +14,6 @@ from ._datatypes import DataType
 from ._expr import Expr
 from .sql import (
     CoreHandler,
-    QueryHolder,
     Relation,
     SqlExpr,
     args_into_exprs,
@@ -452,7 +451,11 @@ class LazyFrame(CoreHandler[Relation]):
 
     def explain(self) -> str:
         """Generate SQL string."""
-        return QueryHolder.from_query(self.inner().sql_query()).prettify()
+        import sqlparse as sp
+
+        qry = self.inner().sql_query()
+
+        return sp.format(qry, reindent_aligned=True, keyword_case="upper")
 
     def first(self) -> Self:
         """Get the first row."""
