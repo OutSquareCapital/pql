@@ -7,7 +7,7 @@ from collections.abc import Callable, Iterable, Mapping
 from dataclasses import dataclass
 from enum import Enum as PyEnum
 from functools import partial
-from typing import Literal
+from typing import Literal, Self
 
 import duckdb
 import pyochain as pc
@@ -208,6 +208,10 @@ class Decimal(DataType):
 class Array(DataType):
     inner: DataType
     shape: int
+
+    def with_dim(self, shape: int) -> Self:
+        """Add another level of nesting to the array."""
+        return self.__class__(self.inner, shape)
 
     def sql(self) -> DuckDBPyType:
         return duckdb.array_type(self.inner.sql(), self.shape)

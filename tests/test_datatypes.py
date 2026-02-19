@@ -57,7 +57,7 @@ def test_expr_cast_numeric_and_string_schema() -> None:
         pql.col("1d").cast(pql.List(pql.UInt16())).alias("lst"),
         pql.col("1d").cast(pql.Array(pql.UInt16(), shape=2)).alias("arr_1d"),
         pql.col("2d")
-        .cast(pql.Array(pql.Array(pql.UInt16(), shape=2), shape=2))
+        .cast(pql.Array(pql.UInt16(), shape=2).with_dim(2))
         .alias("arr_2d"),
         pql.col("blobs").cast(pql.Binary()).alias("blobs"),
         pql.col("duration").cast(pql.Duration()).alias("duration"),
