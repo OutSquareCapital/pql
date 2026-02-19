@@ -8,6 +8,7 @@ This report shows the API coverage of pql compared to Polars.
 | ----------- | -------------------- | ----- | ------- | ------- | ---------- | ----- | ----------------- |
 | LazyFrame   | 68.1%                | 47    | 32      | 2       | 13         | 1     | 21                |
 | Expr        | 82.1%                | 106   | 87      | 7       | 12         | 2     | 36                |
+| LazyGroupBy | 100.0%               | 1     | 1       | 0       | 0          | 0     | 0                 |
 | Expr.str    | 92.6%                | 27    | 25      | 2       | 0          | 2     | 8                 |
 | Expr.list   | 100.0%               | 10    | 10      | 0       | 0          | 2     | 0                 |
 | Expr.struct | 100.0%               | 1     | 1       | 0       | 0          | 2     | 0                 |
@@ -133,6 +134,8 @@ This report shows the API coverage of pql compared to Polars.
 
 - `expr`
 - `inner`
+
+## LazyGroupBy
 
 ## Expr.str
 

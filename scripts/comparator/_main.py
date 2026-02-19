@@ -3,8 +3,11 @@
 import narwhals as nw
 import polars as pl
 import pyochain as pc
+from narwhals.group_by import LazyGroupBy as nwLazyGroupBy
+from polars.lazyframe.group_by import LazyGroupBy as plLazyGroupBy
 
 import pql
+from pql._frame import LazyGroupBy as pqlLazyGroupBy
 
 from ._text import ClassComparison, header, render_summary_table
 
@@ -15,6 +18,7 @@ def get_comparisons() -> str:
             (
                 ClassComparison(nw.LazyFrame, pl.LazyFrame, pql.LazyFrame),
                 ClassComparison(nw.Expr, pl.Expr, pql.Expr),
+                ClassComparison(nwLazyGroupBy, plLazyGroupBy, pqlLazyGroupBy),
                 ClassComparison(
                     nw.col("x").str.__class__,
                     pl.col("x").str.__class__,
