@@ -1,14 +1,16 @@
 from __future__ import annotations
 
-from collections.abc import Callable, Iterable
+from collections.abc import Callable, Iterable, Mapping
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Concatenate, Self
 
 import duckdb
-import polars as pl
+import narwhals as nw
 import pyochain as pc
 
 if TYPE_CHECKING:
+    from narwhals.typing import IntoFrame
+
     from ._typing import FrameInit
 
 
@@ -86,6 +88,67 @@ class CoreHandler[T]:
         return self._inner
 
 
+class DuckHandler(CoreHandler[duckdb.Expression]):
+    """A wrapper for DuckDB expressions."""
+
+    __slots__ = ()
+
+    @staticmethod
+    def into_duckdb(expr: DuckHandler | duckdb.Expression) -> duckdb.Expression:
+        """Recursively convert an expression wrapper into a DuckDB expression."""
+        match expr:
+            case DuckHandler():
+                return expr.inner()
+            case _:
+                return expr
+
+
+def df_into_duckdb(data: IntoFrame) -> duckdb.DuckDBPyRelation:
+    match nw.from_native(data):
+        case nw.DataFrame() as df:
+            return df.lazy(backend="duckdb").to_native()
+        case nw.LazyFrame() as lf:
+            return duckdb.from_arrow(lf.collect("pyarrow"))
+
+
+def str_into_duckdb(data: str) -> duckdb.DuckDBPyRelation:
+    match data:
+        case qry if qry.strip().lower().startswith("select"):
+            return duckdb.from_query(data)
+        case fn if data.endswith("()"):
+            return duckdb.table_function(fn)
+        case _:
+            return duckdb.table(data)
+
+
+def mapping_into_duckdb(data: Mapping[str, Any]) -> duckdb.DuckDBPyRelation:
+    def _is_unnestable(value: object) -> bool:
+        match value:
+            case str() | bytes() | bytearray() | memoryview() | Mapping():
+                return False
+            case Iterable():
+                return True
+            case _:
+                return False
+
+    def _to_col(k: str, v: Any) -> duckdb.Expression:  # noqa: ANN401
+        expr = duckdb.ConstantExpression(v)
+        match _is_unnestable(v):
+            case True:
+                return duckdb.FunctionExpression("unnest", expr).alias(k)
+            case False:
+                return expr.alias(k)
+
+    return pc.Dict(data).into(
+        lambda mapped: duckdb.values(
+            mapped.items()
+            .iter()
+            .map_star(lambda k, v: duckdb.ConstantExpression(v).alias(k))
+            .collect(tuple)
+        ).select(*mapped.items().iter().map_star(_to_col))
+    )
+
+
 class RelHandler(CoreHandler[duckdb.DuckDBPyRelation]):
     """A wrapper for DuckDB relations."""
 
@@ -95,26 +158,16 @@ class RelHandler(CoreHandler[duckdb.DuckDBPyRelation]):
         match data:
             case duckdb.DuckDBPyRelation():
                 self._inner = data
-            case pl.DataFrame():
-                self._inner = duckdb.from_arrow(data)
-            case pl.LazyFrame():
-                _ = data
-                qry = """SELECT * FROM _"""
-                self._inner = duckdb.from_query(qry)
-            case str() as tbl:
-                match tbl:
-                    case fn if tbl.endswith("()"):
-                        self._inner = duckdb.table_function(fn)
-                    case _:
-                        self._inner = duckdb.table(data)
+            case str():
+                self._inner = str_into_duckdb(data)
+            case DuckHandler():
+                self._inner = duckdb.values(DuckHandler.into_duckdb(data))
+            case list() | tuple():
+                self._inner = duckdb.values(data)
+            case Mapping():
+                self._inner = mapping_into_duckdb(data)
             case _:
-                self._inner = duckdb.from_arrow(pl.DataFrame(data))
-
-
-class DuckHandler(CoreHandler[duckdb.Expression]):
-    """A wrapper for DuckDB expressions."""
-
-    __slots__ = ()
+                self._inner = df_into_duckdb(data)
 
 
 @dataclass(slots=True)
