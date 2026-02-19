@@ -460,27 +460,27 @@ class LazyFrame(CoreHandler[Relation]):
 
     def count(self) -> Self:
         """Return the count of each column."""
-        return self._iter_agg(lambda c: c.count())
+        return self._iter_agg(SqlExpr.count)
 
     def sum(self) -> Self:
         """Aggregate the sum of each column."""
-        return self._iter_agg(lambda c: c.sum())
+        return self._iter_agg(SqlExpr.sum)
 
     def mean(self) -> Self:
         """Aggregate the mean of each column."""
-        return self._iter_agg(lambda c: c.avg())
+        return self._iter_agg(SqlExpr.avg)
 
     def median(self) -> Self:
         """Aggregate the median of each column."""
-        return self._iter_agg(lambda c: c.median())
+        return self._iter_agg(SqlExpr.median)
 
     def min(self) -> Self:
         """Aggregate the minimum of each column."""
-        return self._iter_agg(lambda c: c.min())
+        return self._iter_agg(SqlExpr.min)
 
     def max(self) -> Self:
         """Aggregate the maximum of each column."""
-        return self._iter_agg(lambda c: c.max())
+        return self._iter_agg(SqlExpr.max)
 
     def std(self, ddof: int = 1) -> Self:
         """Aggregate the standard deviation of each column."""
@@ -531,13 +531,8 @@ class LazyFrame(CoreHandler[Relation]):
         return (
             self.with_row_index(name=TEMP_NAME, order_by=self.columns)
             .filter(
-                sql.col(TEMP_NAME)
-                .ge(sql.lit(offset))
-                .and_(
-                    sql.col(TEMP_NAME)
-                    .sub(sql.lit(offset))
-                    .mod(sql.lit(n))
-                    .eq(sql.lit(0))
+                TEMP_COL.ge(sql.lit(offset)).and_(
+                    TEMP_COL.sub(sql.lit(offset)).mod(sql.lit(n)).eq(sql.lit(0))
                 )
             )
             .drop(TEMP_NAME)
@@ -556,8 +551,7 @@ class LazyFrame(CoreHandler[Relation]):
     @property
     def schema(self) -> pc.Dict[str, DataType]:
         return (
-            self.inner()
-            .columns.iter()
+            self.columns.iter()
             .zip(self.inner().dtypes, strict=True)
             .map_star(
                 lambda name, dtype: (name, DataType.from_duckdb(parse_dtype(dtype)))
@@ -607,11 +601,11 @@ class LazyFrame(CoreHandler[Relation]):
                 case (pc.NONE, pc.NONE, pc.NONE):
                     return pc.Ok(None)
                 case _:
-                    return pc.Err(
-                        ValueError(
-                            "Can not pass `left_on`, `right_on` or `on` keys for cross join"
-                        )
+                    msg = (
+                        "Can not pass `left_on`, `right_on` or `on` keys for cross join"
                     )
+
+                    return pc.Err(ValueError(msg))
 
         match how:
             case "cross":
@@ -646,13 +640,9 @@ class LazyFrame(CoreHandler[Relation]):
             col_in_lhs = name in self.columns
             is_join_key = name in right_on_set
             match (native_how == "outer", col_in_lhs, is_join_key):
-                case (True, False, _):
-                    return pc.Some(sql.col(f'rhs."{name}"'))
-                case (True, True, _):
-                    return pc.Some(sql.col(f'rhs."{name}"').alias(f"{name}{suffix}"))
                 case (False, _, True):
                     return pc.NONE
-                case (False, True, False):
+                case (False, True, False) | (True, True, _):
                     return pc.Some(sql.col(f'rhs."{name}"').alias(f"{name}{suffix}"))
                 case _:
                     return pc.Some(sql.col(f'rhs."{name}"'))
@@ -772,7 +762,7 @@ class LazyFrame(CoreHandler[Relation]):
                         sql.all(),
                         sql.row_number()
                         .over(
-                            partition_by=sql.col(TEMP_NAME),
+                            partition_by=TEMP_COL,
                             order_by=sql.col(asof_order)
                             .sub(sql.col(on_keys.left))
                             .abs(),
@@ -836,7 +826,7 @@ class LazyFrame(CoreHandler[Relation]):
 
         return (
             self.with_columns(marker.alias(TEMP_NAME))
-            .filter(sql.col(TEMP_NAME).eq(sql.lit(1)))
+            .filter(TEMP_COL.eq(sql.lit(1)))
             .drop(TEMP_NAME)
         )
 
