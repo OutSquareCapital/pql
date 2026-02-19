@@ -422,7 +422,7 @@ class LazyFrame(CoreHandler[Relation]):
                     return sql.col(name)
 
         def _proj(*, unnest: bool) -> pc.Iter[SqlExpr]:
-            replace = SqlExpr(sql.func("unnest", target)) if unnest else sql.lit(None)
+            replace = sql.unnest(target) if unnest else sql.lit(None)
             return self.columns.iter().map(
                 lambda name: _project_col(name, unnest=unnest, replace=replace)
             )
@@ -806,9 +806,7 @@ class LazyFrame(CoreHandler[Relation]):
 
         match keep:
             case "none":
-                marker = SqlExpr(sql.func("count", sql.all())).over(
-                    partition_by=subset_cols
-                )
+                marker = sql.all().count().over(partition_by=subset_cols)
             case "first":
                 marker = sql.row_number().over(
                     partition_by=subset_cols,

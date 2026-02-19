@@ -102,6 +102,7 @@ class FuncTypes(StrEnum):
     """Function types in DuckDB."""
 
     PRAGMA = auto()
+    """Settings-like functions."""
     TABLE = auto()
     TABLE_MACRO = auto()
     AGGREGATE = auto()

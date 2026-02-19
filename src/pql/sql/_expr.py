@@ -32,6 +32,40 @@ def row_number() -> SqlExpr:
     return SqlExpr(duckdb.FunctionExpression("row_number"))
 
 
+def unnest(
+    col: SqlExpr, max_depth: int | None = None, *, recursive: bool = False
+) -> SqlExpr:
+    """The unnest special function is used to unnest lists or structs by one level.
+
+    The function can be used as a regular scalar function, but only in the SELECT clause.
+
+    Invoking unnest with the recursive parameter will unnest lists and structs of multiple levels.
+
+    The depth of unnesting can be limited using the max_depth parameter (which assumes recursive unnesting by default).
+
+    Using `unnest` on a list emits one row per list entry.
+
+    Regular scalar expressions in the same `SELECT` clause are repeated for every emitted row.
+
+    When multiple lists are unnested in the same `SELECT` clause, the lists are unnested side-by-side.
+
+    If one list is longer than the other, the shorter list is padded with `NULL` values.
+
+    Empty and `NULL` lists both unnest to zero rows.
+
+    Args:
+        col (SqlExpr): The column to unnest.
+        max_depth (int | None): Maximum depth of recursive unnesting.
+        recursive (bool): Whether to recursively unnest lists and structs (default: `False`).  Note that lists *within* structs are not unnested.
+
+    Returns:
+        SqlExpr: An expression representing the unnesting operation.
+    """
+    rec = "recursive:=True" if recursive else None
+    depth = f"max_depth:={max_depth}" if max_depth is not None else None
+    return SqlExpr(func("unnest", col, depth, rec))
+
+
 def fn_once(lhs: Any, rhs: SqlExpr) -> SqlExpr:  # noqa: ANN401
     return SqlExpr(duckdb.LambdaExpression(lhs, rhs.inner()))
 

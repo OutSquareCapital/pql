@@ -22,11 +22,11 @@ from ._expr import (
     coalesce,
     col,
     fn_once,
-    func,
     into_expr,
     lit,
     raw,
     row_number,
+    unnest,
     when,
 )
 from ._raw import Kword, QueryHolder
@@ -56,7 +56,6 @@ __all__ = [
     "coalesce",
     "col",
     "fn_once",
-    "func",
     "into_expr",
     "lit",
     "parse_dtype",
@@ -64,5 +63,6 @@ __all__ = [
     "row_number",
     "try_flatten",
     "try_iter",
+    "unnest",
     "when",
 ]
