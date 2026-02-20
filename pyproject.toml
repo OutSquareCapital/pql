@@ -16,6 +16,7 @@
         "asttoolkit>=0.11.0",
         "matplotlib>=3.10.8",
         "narwhals>=2.15.0",
+        "numpy>=2.4.2",
         "pandas>=3.0.1",
         "polars>=1.37.1",
         "pyarrow-stubs>=20.0.0.20251215",
@@ -27,7 +28,7 @@
         "torch>=2.10.0",
         "typer>=0.21.1",
         "types-tensorflow>=2.18.0.20260121",
-    ]
+]
 [build-system]
     build-backend = "uv_build"
     requires      = ["uv_build>=0.8.15,<0.9.0"]
