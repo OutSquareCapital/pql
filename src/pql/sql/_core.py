@@ -1,17 +1,16 @@
 from __future__ import annotations
 
-from collections.abc import Callable, Iterable, Mapping
+from collections.abc import Callable, Iterable
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Concatenate, Self
 
 import duckdb
-import narwhals as nw
 import pyochain as pc
 
-if TYPE_CHECKING:
-    from narwhals.typing import IntoFrame
+from ._rel_conversions import frame_init_into_duckdb, qry_into_duckdb
 
-    from ._typing import FrameInit
+if TYPE_CHECKING:
+    from ._typing import IntoRel
 
 
 def try_iter[T](val: Iterable[T] | T) -> pc.Iter[T]:
@@ -103,59 +102,23 @@ class DuckHandler(CoreHandler[duckdb.Expression]):
                 return expr
 
 
-def df_into_duckdb(data: IntoFrame) -> duckdb.DuckDBPyRelation:
-    match nw.from_native(data):
-        case nw.DataFrame() as df:
-            return df.lazy(backend="duckdb").to_native()
-        case nw.LazyFrame() as lf:
-            return duckdb.from_arrow(lf.collect("pyarrow"))
-
-
-def mapping_into_duckdb(data: Mapping[str, Any]) -> duckdb.DuckDBPyRelation:
-    def _is_unnestable(value: object) -> bool:
-        match value:
-            case str() | bytes() | bytearray() | memoryview() | Mapping():
-                return False
-            case Iterable():
-                return True
-            case _:
-                return False
-
-    def _to_col(k: str, v: Any) -> duckdb.Expression:  # noqa: ANN401
-        expr = duckdb.ConstantExpression(v)
-        match _is_unnestable(v):
-            case True:
-                return duckdb.FunctionExpression("unnest", expr).alias(k)
-            case False:
-                return expr.alias(k)
-
-    return pc.Dict(data).into(
-        lambda mapped: duckdb.values(
-            mapped.items()
-            .iter()
-            .map_star(lambda k, v: duckdb.ConstantExpression(v).alias(k))
-            .collect(tuple)
-        ).select(*mapped.items().iter().map_star(_to_col))
-    )
-
-
 class RelHandler(CoreHandler[duckdb.DuckDBPyRelation]):
     """A wrapper for DuckDB relations."""
 
     __slots__ = ()
 
-    def __init__(self, data: FrameInit) -> None:
-        match data:
-            case duckdb.DuckDBPyRelation():
-                self._inner = data
-            case DuckHandler():
-                self._inner = duckdb.values(DuckHandler.into_duckdb(data))
-            case list() | tuple():
-                self._inner = duckdb.values(data)
-            case Mapping():
-                self._inner = mapping_into_duckdb(data)
-            case _:
-                self._inner = df_into_duckdb(data)
+    def __init__(self, data: IntoRel) -> None:
+        self._inner = frame_init_into_duckdb(data)
+
+    @classmethod
+    def from_query(cls, query: str, **relations: IntoRel) -> Self:
+        """Create a relation from a SQL query.
+
+        You can pass relations as keyword arguments, and reference them in the query using their names.
+        Any input that can be converted into a relation can be passed as an argument.
+        This allows you to avoid dummy variables in the outside scope.
+        """
+        return cls(pc.Dict.from_ref(relations).into(qry_into_duckdb, query))
 
     @classmethod
     def from_table(cls, table: str) -> Self:

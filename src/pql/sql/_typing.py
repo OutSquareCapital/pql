@@ -15,7 +15,7 @@ type ExprLike = SqlExpr | Expr
 """Types that are already expressions wrappers and can be used directly as expressions."""
 type IntoValues = DuckHandler | Mapping[str, Any] | list[Any] | tuple[duckdb.Expression]
 """Types that can be converted into a `values` relation (either an expression, a mapping, or a sequence)."""
-type FrameInit = duckdb.DuckDBPyRelation | IntoFrame | IntoValues
+type IntoRel = duckdb.DuckDBPyRelation | IntoFrame | IntoValues
 """Inputs that can initialize a `LazyFrame`."""
 type NumericLiteral = int | float | Decimal
 type TemporalLiteral = date | time | datetime | timedelta

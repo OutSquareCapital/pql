@@ -6,7 +6,6 @@ from collections.abc import Callable, Iterable, Mapping, Sequence
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Literal, NamedTuple, Self, TypeIs
 
-import duckdb
 import pyochain as pc
 
 from . import sql
@@ -26,7 +25,7 @@ from .sql import (
 if TYPE_CHECKING:
     import polars as pl
 
-    from .sql import FrameInit, IntoExpr, IntoExprColumn
+    from .sql import IntoExpr, IntoExprColumn, IntoRel
 
 JoinStrategy = Literal["inner", "left", "full", "cross", "semi", "anti"]
 AsofJoinStrategy = Literal["backward", "forward", "nearest"]
@@ -146,7 +145,7 @@ class LazyFrame(CoreHandler[Relation]):
 
     __slots__ = ()
 
-    def __init__(self, data: FrameInit) -> None:
+    def __init__(self, data: IntoRel) -> None:
         self._inner = Relation(data)
 
     def __repr__(self) -> str:
@@ -724,20 +723,19 @@ class LazyFrame(CoreHandler[Relation]):
         )
         lhs_key = sql.col(f'{lhs}."{on_keys.left}"')
         rhs_key = sql.col(f'{rhs}."{on_keys.right}"')
+        lhs_cols = lhs_select.chain(rhs_select).map(_expr_sql).join(", ")
 
         def _simple_asof_join(comparison: Callable[[SqlExpr], SqlExpr]) -> Self:
-            _lhs = self.inner().set_alias(lhs).inner()
-            _rhs = other.inner().set_alias(rhs).inner()
             return self.__from_lf__(
-                Relation(
-                    duckdb.from_query(
-                        f"""--sql
-                        SELECT {lhs_select.chain(rhs_select).map(_expr_sql).join(", ")}
+                Relation.from_query(
+                    f"""--sql
+                        SELECT {lhs_cols}
                         FROM _lhs
                         ASOF LEFT JOIN _rhs ON {by_cond.chain(pc.Iter.once(comparison(rhs_key))).reduce(SqlExpr.and_)}
-                        """
-                    )
-                )
+                        """,
+                    _lhs=self.inner().set_alias(lhs).inner(),
+                    _rhs=other.inner().set_alias(rhs).inner(),
+                ),
             )
 
         match strategy:
@@ -855,17 +853,14 @@ class LazyFrame(CoreHandler[Relation]):
             )
             .join(", ")
         )
-        _rel = self.inner().inner()
-
         return self.__from_lf__(
-            Relation(
-                duckdb.sql(
-                    f"""--sql
+            Relation.from_query(
+                f"""--sql
                     SELECT {index_cols.iter().chain((variable_name, value_name)).join(", ")}
                     FROM (UNPIVOT _rel ON {on_cols}
                     INTO NAME {variable_name} VALUE {value_name})
-                    """
-                )
+                    """,
+                _rel=self.inner().inner(),
             )
         )
 

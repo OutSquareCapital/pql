@@ -30,7 +30,7 @@ from ._expr import (
     unnest,
     when,
 )
-from ._typing import FrameInit, IntoExpr, IntoExprColumn
+from ._typing import IntoExpr, IntoExprColumn, IntoRel
 
 __all__ = [
     "ArrayType",
@@ -38,9 +38,9 @@ __all__ = [
     "DType",
     "DecimalType",
     "EnumType",
-    "FrameInit",
     "IntoExpr",
     "IntoExprColumn",
+    "IntoRel",
     "ListType",
     "MapType",
     "RawTypes",
