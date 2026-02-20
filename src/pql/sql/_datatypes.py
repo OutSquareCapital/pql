@@ -1,7 +1,8 @@
 from __future__ import annotations
 
+from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
-from enum import StrEnum, auto
+from enum import Enum, StrEnum, auto
 from typing import NamedTuple, Self, cast
 
 import duckdb
@@ -113,7 +114,13 @@ class NamedValues(NamedTuple):
     """Named string list from DuckDB type children, used for enum values."""
 
     name: str
-    values: list[str]
+    values: pc.Vec[str]
+
+    @classmethod
+    def from_raw(cls, raw: RawEnumChildren) -> Self:
+        (inner,) = raw
+        name, values = inner
+        return cls(name, pc.Vec.from_ref(values))
 
 
 @dataclass(slots=True)
@@ -152,6 +159,10 @@ class DecimalType(DType):
     scale: NamedInt
 
     @classmethod
+    def new(cls, precision: int, scale: int) -> Self:
+        return cls.from_duckdb(duckdb.decimal_type(precision, scale))
+
+    @classmethod
     def from_duckdb(cls, dtype: DuckDBPyType) -> Self:
         precision, scale = Cast.into_decimal(dtype.children)
         return cls(str(dtype), dtype.id, NamedInt(*precision), NamedInt(*scale))
@@ -167,9 +178,20 @@ class EnumType(DType):
     child: NamedValues
 
     @classmethod
+    def new(cls, categories: Iterable[str] | type[Enum]) -> Self:
+        match categories:
+            case type():
+                cats = pc.Iter(categories).map(lambda i: i.value)
+            case Iterable():
+                cats = pc.Iter(categories)
+        raw_sql = f"ENUM{cats.collect().into(tuple)!r}"
+        return cls.from_duckdb(DuckDBPyType(raw_sql))
+
+    @classmethod
     def from_duckdb(cls, dtype: DuckDBPyType) -> Self:
-        (inner,) = Cast.into_enum(dtype.children)
-        return cls(str(dtype), dtype.id, NamedValues(*inner))
+        return cls(
+            str(dtype), dtype.id, NamedValues.from_raw(Cast.into_enum(dtype.children))
+        )
 
     def to_duckdb(self) -> DuckDBPyType:
         return duckdb.type(self.physical)
@@ -180,6 +202,10 @@ class ListType(DType):
     """DuckDB `LIST` dtype."""
 
     child: Field
+
+    @classmethod
+    def new(cls, inner: DuckDBPyType) -> Self:
+        return cls.from_duckdb(duckdb.list_type(inner))
 
     @classmethod
     def from_duckdb(cls, dtype: DuckDBPyType) -> Self:
@@ -199,6 +225,10 @@ class ArrayType(DType):
     size: NamedInt
 
     @classmethod
+    def new(cls, child: DuckDBPyType, size: int) -> Self:
+        return cls.from_duckdb(duckdb.array_type(child, size))
+
+    @classmethod
     def from_duckdb(cls, dtype: DuckDBPyType) -> Self:
         child, size = Cast.into_array(dtype.children)
         return cls(str(dtype), dtype.id, Field.from_raw(child), NamedInt(*size))
@@ -212,6 +242,12 @@ class StructType(DType):
     """DuckDB `STRUCT` type."""
 
     fields: pc.Seq[Field]
+
+    @classmethod
+    def new(
+        cls, fields: Mapping[str, DuckDBPyType] | Iterable[tuple[str, DuckDBPyType]]
+    ) -> Self:
+        return cls.from_duckdb(duckdb.struct_type(dict(fields)))
 
     @classmethod
     def from_duckdb(cls, dtype: DuckDBPyType) -> Self:
@@ -240,6 +276,10 @@ class MapType(DType):
     value: Field
 
     @classmethod
+    def new(cls, key: DuckDBPyType, value: DuckDBPyType) -> Self:
+        return cls.from_duckdb(duckdb.map_type(key, value))
+
+    @classmethod
     def from_duckdb(cls, dtype: DuckDBPyType) -> Self:
         key, value = Cast.into_map(dtype.children)
         return cls(str(dtype), dtype.id, Field.from_raw(key), Field.from_raw(value))
@@ -253,6 +293,10 @@ class UnionType(DType):
     """DuckDB `UNION` dtype."""
 
     fields: pc.Seq[Field]
+
+    @classmethod
+    def new(cls, fields: Iterable[DuckDBPyType]) -> Self:
+        return cls.from_duckdb(duckdb.union_type(pc.Iter(fields).collect(list)))
 
     @classmethod
     def from_duckdb(cls, dtype: DuckDBPyType) -> Self:
@@ -294,6 +338,36 @@ DTYPE_MAP: pc.Dict[str, type[SqlType]] = pc.Dict.from_ref(
 """Mapping of parsing strategies for each raw `DuckDB` type id.
 
 If a type id is not present in this map, it will be parsed as a simple `DType`."""
+
+
+class ScalarType:
+    HUGEINT = DType(str(sqltypes.HUGEINT), sqltypes.HUGEINT.id)
+    BIGINT = DType(str(sqltypes.BIGINT), sqltypes.BIGINT.id)
+    INTEGER = DType(str(sqltypes.INTEGER), sqltypes.INTEGER.id)
+    SMALLINT = DType(str(sqltypes.SMALLINT), sqltypes.SMALLINT.id)
+    TINYINT = DType(str(sqltypes.TINYINT), sqltypes.TINYINT.id)
+    UHUGEINT = DType(str(sqltypes.UHUGEINT), sqltypes.UHUGEINT.id)
+    UBIGINT = DType(str(sqltypes.UBIGINT), sqltypes.UBIGINT.id)
+    UINTEGER = DType(str(sqltypes.UINTEGER), sqltypes.UINTEGER.id)
+    USMALLINT = DType(str(sqltypes.USMALLINT), sqltypes.USMALLINT.id)
+    UTINYINT = DType(str(sqltypes.UTINYINT), sqltypes.UTINYINT.id)
+    DOUBLE = DType(str(sqltypes.DOUBLE), sqltypes.DOUBLE.id)
+    FLOAT = DType(str(sqltypes.FLOAT), sqltypes.FLOAT.id)
+    VARCHAR = DType(str(sqltypes.VARCHAR), sqltypes.VARCHAR.id)
+    DATE = DType(str(sqltypes.DATE), sqltypes.DATE.id)
+    TIMESTAMP_S = DType(str(sqltypes.TIMESTAMP_S), sqltypes.TIMESTAMP_S.id)
+    TIMESTAMP_MS = DType(str(sqltypes.TIMESTAMP_MS), sqltypes.TIMESTAMP_MS.id)
+    TIMESTAMP = DType(str(sqltypes.TIMESTAMP), sqltypes.TIMESTAMP.id)
+    TIMESTAMP_NS = DType(str(sqltypes.TIMESTAMP_NS), sqltypes.TIMESTAMP_NS.id)
+    TIMESTAMP_TZ = DType(str(sqltypes.TIMESTAMP_TZ), sqltypes.TIMESTAMP_TZ.id)
+    BOOLEAN = DType(str(sqltypes.BOOLEAN), sqltypes.BOOLEAN.id)
+    INTERVAL = DType(str(sqltypes.INTERVAL), sqltypes.INTERVAL.id)
+    TIME = DType(str(sqltypes.TIME), sqltypes.TIME.id)
+    TIME_TZ = DType(str(sqltypes.TIME_TZ), sqltypes.TIME_TZ.id)
+    BLOB = DType(str(sqltypes.BLOB), sqltypes.BLOB.id)
+    BIT = DType(str(sqltypes.BIT), sqltypes.BIT.id)
+    UUID = DType(str(sqltypes.UUID), sqltypes.UUID.id)
+    BIGNUM = DType(str(RawTypes.BIGNUM), RawTypes.BIGNUM.value)
 
 
 def parse_dtype(dtype: DuckDBPyType) -> SqlType:

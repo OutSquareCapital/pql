@@ -557,7 +557,7 @@ class LazyFrame(CoreHandler[Relation]):
             self.columns.iter()
             .zip(self.inner().dtypes, strict=True)
             .map_star(
-                lambda name, dtype: (name, DataType.from_duckdb(parse_dtype(dtype)))
+                lambda name, dtype: (name, DataType.__from_sql__(parse_dtype(dtype)))
             )
             .collect(pc.Dict)
         )
@@ -730,11 +730,11 @@ class LazyFrame(CoreHandler[Relation]):
             _rhs = other.inner().set_alias(rhs).inner()
             return self.__from_lf__(
                 Relation(
-                    duckdb.sql(
+                    duckdb.from_query(
                         f"""--sql
                         SELECT {lhs_select.chain(rhs_select).map(_expr_sql).join(", ")}
-                        FROM _lhs ASOF
-                        LEFT JOIN _rhs ON {by_cond.chain(pc.Iter.once(comparison(rhs_key))).reduce(SqlExpr.and_)}
+                        FROM _lhs
+                        ASOF LEFT JOIN _rhs ON {by_cond.chain(pc.Iter.once(comparison(rhs_key))).reduce(SqlExpr.and_)}
                         """
                     )
                 )
@@ -861,8 +861,8 @@ class LazyFrame(CoreHandler[Relation]):
             Relation(
                 duckdb.sql(
                     f"""--sql
-                    SELECT {index_cols.iter().chain((variable_name, value_name)).join(", ")} FROM
-                    (UNPIVOT _rel ON {on_cols}
+                    SELECT {index_cols.iter().chain((variable_name, value_name)).join(", ")}
+                    FROM (UNPIVOT _rel ON {on_cols}
                     INTO NAME {variable_name} VALUE {value_name})
                     """
                 )
@@ -877,13 +877,13 @@ class LazyFrame(CoreHandler[Relation]):
     ) -> Self:
         """Insert row index based on order_by."""
         return self._select(
-            [
+            (
                 sql.row_number()
                 .over(order_by=try_iter(order_by).map(sql.col))
                 .sub(sql.lit(1))
                 .alias(name),
                 sql.all(),
-            ]
+            )
         )
 
     def top_k(
@@ -921,12 +921,18 @@ class LazyFrame(CoreHandler[Relation]):
                 return self._iter_slct(
                     lambda c: (
                         dtype_map.get_item(c)
-                        .map(lambda dtype: sql.col(c).cast(dtype.sql()).alias(c))
+                        .map(
+                            lambda dtype: (
+                                sql.col(c).cast(dtype.raw.to_duckdb()).alias(c)
+                            )
+                        )
                         .unwrap_or(sql.col(c))
                     )
                 )
             case _:
-                return self._iter_slct(lambda c: sql.col(c).cast(dtypes.sql()).alias(c))
+                return self._iter_slct(
+                    lambda c: sql.col(c).cast(dtypes.raw.to_duckdb()).alias(c)
+                )
 
     def sink_parquet(self, path: str | Path, *, compression: str = "zstd") -> None:
         """Write to Parquet file."""
