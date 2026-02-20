@@ -1,5 +1,7 @@
 """SQL expression functions and converters."""
 
+from duckdb import table as from_table, table_function as from_table_function
+
 from ._code_gen import Relation
 from ._core import CoreHandler, try_flatten, try_iter
 from ._datatypes import (
@@ -30,7 +32,14 @@ from ._expr import (
     unnest,
     when,
 )
-from ._typing import IntoExpr, IntoExprColumn, IntoRel
+from ._rel_conversions import (
+    from_df,
+    from_mapping,
+    from_numpy,
+    from_query,
+    from_sequence,
+)
+from ._typing import IntoExpr, IntoExprColumn, IntoRel, NPArrayLike, SeqIntoVals
 
 __all__ = [
     "ArrayType",
@@ -43,9 +52,11 @@ __all__ = [
     "IntoRel",
     "ListType",
     "MapType",
+    "NPArrayLike",
     "RawTypes",
     "Relation",
     "ScalarType",
+    "SeqIntoVals",
     "SqlExpr",
     "SqlType",
     "StructType",
@@ -55,6 +66,13 @@ __all__ = [
     "coalesce",
     "col",
     "fn_once",
+    "from_df",
+    "from_mapping",
+    "from_numpy",
+    "from_query",
+    "from_sequence",
+    "from_table",
+    "from_table_function",
     "into_expr",
     "lit",
     "parse_dtype",

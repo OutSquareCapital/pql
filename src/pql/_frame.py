@@ -24,8 +24,9 @@ from .sql import (
 
 if TYPE_CHECKING:
     import polars as pl
+    from narwhals.typing import IntoFrame
 
-    from .sql import IntoExpr, IntoExprColumn, IntoRel
+    from .sql import IntoExpr, IntoExprColumn, IntoRel, NPArrayLike, SeqIntoVals
 
 JoinStrategy = Literal["inner", "left", "full", "cross", "semi", "anti"]
 AsofJoinStrategy = Literal["backward", "forward", "nearest"]
@@ -147,6 +148,36 @@ class LazyFrame(CoreHandler[Relation]):
 
     def __init__(self, data: IntoRel) -> None:
         self._inner = Relation(data)
+
+    @classmethod
+    def from_query(cls, query: str, **relations: IntoRel) -> Self:
+        return cls(pc.Dict.from_ref(relations).into(sql.from_query, query))
+
+    @classmethod
+    def from_table(cls, table: str) -> Self:
+        return cls(sql.from_table(table))
+
+    @classmethod
+    def from_table_function(cls, function: str) -> Self:
+        return cls(sql.from_table_function(function))
+
+    @classmethod
+    def from_df(cls, df: IntoFrame) -> Self:
+        return cls(sql.from_df(df))
+
+    @classmethod
+    def from_numpy(cls, arr: NPArrayLike[Any, Any]) -> Self:
+        return cls(sql.from_numpy(arr))
+
+    @classmethod
+    def from_mapping(
+        cls, mapping: Mapping[str, Any] | Iterable[tuple[str, Any]]
+    ) -> Self:
+        return cls(sql.from_mapping(mapping))
+
+    @classmethod
+    def from_sequence(cls, data: SeqIntoVals) -> Self:
+        return cls(sql.from_sequence(data))
 
     def __repr__(self) -> str:
         return f"LazyFrame\n{self.inner()}\n"
@@ -726,16 +757,14 @@ class LazyFrame(CoreHandler[Relation]):
         lhs_cols = lhs_select.chain(rhs_select).map(_expr_sql).join(", ")
 
         def _simple_asof_join(comparison: Callable[[SqlExpr], SqlExpr]) -> Self:
-            return self.__from_lf__(
-                Relation.from_query(
-                    f"""--sql
+            return self.from_query(
+                f"""--sql
                         SELECT {lhs_cols}
                         FROM _lhs
                         ASOF LEFT JOIN _rhs ON {by_cond.chain(pc.Iter.once(comparison(rhs_key))).reduce(SqlExpr.and_)}
                         """,
-                    _lhs=self.inner().set_alias(lhs).inner(),
-                    _rhs=other.inner().set_alias(rhs).inner(),
-                ),
+                _lhs=self.inner().set_alias(lhs).inner(),
+                _rhs=other.inner().set_alias(rhs).inner(),
             )
 
         match strategy:
@@ -853,15 +882,13 @@ class LazyFrame(CoreHandler[Relation]):
             )
             .join(", ")
         )
-        return self.__from_lf__(
-            Relation.from_query(
-                f"""--sql
+        return self.from_query(
+            f"""--sql
                     SELECT {index_cols.iter().chain((variable_name, value_name)).join(", ")}
                     FROM (UNPIVOT _rel ON {on_cols}
                     INTO NAME {variable_name} VALUE {value_name})
                     """,
-                _rel=self.inner().inner(),
-            )
+            _rel=self.inner().inner(),
         )
 
     def with_row_index(

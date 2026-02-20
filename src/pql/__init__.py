@@ -31,7 +31,7 @@ from ._datatypes import (
     UInt128,
     Union,
 )
-from ._expr import Expr, all, col
+from ._expr import Expr, all, col, lit
 from ._frame import LazyFrame
 
 __all__ = [
@@ -67,5 +67,6 @@ __all__ = [
     "Union",
     "all",
     "col",
+    "lit",
     "sql",
 ]

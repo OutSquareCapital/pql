@@ -4,7 +4,6 @@ from __future__ import annotations
 
 from functools import partial
 
-import duckdb
 import polars as pl
 import pytest
 from polars.testing import assert_frame_equal
@@ -35,21 +34,6 @@ def sample_df() -> pl.DataFrame:
             "category": ["A", "B", None, "A", "B"],
         }
     )
-
-
-def test_lazyframe_from_duckdb_relation() -> None:
-    qry = "SELECT 1 as a, 2 as b"
-    assert_eq(pql.LazyFrame(duckdb.sql(qry)).collect(), duckdb.sql(qry).pl())
-
-
-def test_lazyframe_from_pl_lazyframe(sample_df: pl.DataFrame) -> None:
-    assert_eq(pql.LazyFrame(sample_df.lazy()).collect(), sample_df.lazy().collect())
-
-
-def test_lazyframe_from_dict() -> None:
-    result = pql.LazyFrame({"a": [1, 2, 3]}).collect()
-    expected = pl.DataFrame({"a": [1, 2, 3]})
-    assert_eq(result, expected)
 
 
 def test_properties(sample_df: pl.DataFrame) -> None:

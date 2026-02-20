@@ -31,6 +31,11 @@ class Col:
         return self.__call__(name)
 
 
+def lit(value: IntoExpr) -> Expr:
+    """Create a literal expression."""
+    return Expr(sql.lit(value))
+
+
 col: Col = Col()
 
 

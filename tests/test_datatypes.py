@@ -36,11 +36,23 @@ def test_expr_cast() -> None:
                 {"a": 4, "b": 5, "c": 6},
                 {"a": 7, "b": 8, "c": 9},
             ],
-            "structured": {
-                "a": [1, 2, 3],
-                "b": ["x", "y", "z"],
-                "c": [True, False, True],
-            },
+            "structured": [
+                {
+                    "a": [1, 2, 3],
+                    "b": ["x", "y", "z"],
+                    "c": [True, False, True],
+                },
+                {
+                    "a": [4, 5, 6],
+                    "b": ["x", "y", "z"],
+                    "c": [True, False, True],
+                },
+                {
+                    "a": [7, 8, 9],
+                    "b": ["x", "y", "z"],
+                    "c": [True, False, True],
+                },
+            ],
             "unioned": [1, "two", 3.0],
         }
     )

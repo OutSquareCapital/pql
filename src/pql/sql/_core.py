@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING, Any, Concatenate, Self
 import duckdb
 import pyochain as pc
 
-from ._rel_conversions import frame_init_into_duckdb, qry_into_duckdb
+from ._rel_conversions import frame_init_into_duckdb
 
 if TYPE_CHECKING:
     from ._typing import IntoRel
@@ -109,26 +109,6 @@ class RelHandler(CoreHandler[duckdb.DuckDBPyRelation]):
 
     def __init__(self, data: IntoRel) -> None:
         self._inner = frame_init_into_duckdb(data)
-
-    @classmethod
-    def from_query(cls, query: str, **relations: IntoRel) -> Self:
-        """Create a relation from a SQL query.
-
-        You can pass relations as keyword arguments, and reference them in the query using their names.
-        Any input that can be converted into a relation can be passed as an argument.
-        This allows you to avoid dummy variables in the outside scope.
-        """
-        return cls(pc.Dict.from_ref(relations).into(qry_into_duckdb, query))
-
-    @classmethod
-    def from_table(cls, table: str) -> Self:
-        """Create a relation from a table name."""
-        return cls(duckdb.table(table))
-
-    @classmethod
-    def from_function(cls, function: str) -> Self:
-        """Create a relation from a table function."""
-        return cls(duckdb.table_function(function))
 
 
 @dataclass(slots=True)
