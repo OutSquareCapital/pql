@@ -111,16 +111,6 @@ def df_into_duckdb(data: IntoFrame) -> duckdb.DuckDBPyRelation:
             return duckdb.from_arrow(lf.collect("pyarrow"))
 
 
-def str_into_duckdb(data: str) -> duckdb.DuckDBPyRelation:
-    match data:
-        case qry if qry.strip().lower().startswith("select"):
-            return duckdb.from_query(data)
-        case fn if data.endswith("()"):
-            return duckdb.table_function(fn)
-        case _:
-            return duckdb.table(data)
-
-
 def mapping_into_duckdb(data: Mapping[str, Any]) -> duckdb.DuckDBPyRelation:
     def _is_unnestable(value: object) -> bool:
         match value:
@@ -158,8 +148,6 @@ class RelHandler(CoreHandler[duckdb.DuckDBPyRelation]):
         match data:
             case duckdb.DuckDBPyRelation():
                 self._inner = data
-            case str():
-                self._inner = str_into_duckdb(data)
             case DuckHandler():
                 self._inner = duckdb.values(DuckHandler.into_duckdb(data))
             case list() | tuple():
@@ -168,6 +156,16 @@ class RelHandler(CoreHandler[duckdb.DuckDBPyRelation]):
                 self._inner = mapping_into_duckdb(data)
             case _:
                 self._inner = df_into_duckdb(data)
+
+    @classmethod
+    def from_table(cls, table: str) -> Self:
+        """Create a relation from a table name."""
+        return cls(duckdb.table(table))
+
+    @classmethod
+    def from_function(cls, function: str) -> Self:
+        """Create a relation from a table function."""
+        return cls(duckdb.table_function(function))
 
 
 @dataclass(slots=True)
