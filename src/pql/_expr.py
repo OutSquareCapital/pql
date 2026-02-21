@@ -44,6 +44,11 @@ def all() -> Expr:
     return Expr(sql.all())
 
 
+def element() -> Expr:
+    """Alias for an element being evaluated in a list context."""
+    return Expr(sql.col("_"))
+
+
 @dataclass(slots=True)
 class Expr(CoreHandler[SqlExpr]):
     """Expression wrapper providing Polars-like API over DuckDB expressions."""
@@ -509,9 +514,7 @@ class Expr(CoreHandler[SqlExpr]):
                 return self._new(adjusted.mul(factor), is_scalar_like=True)
 
     def quantile(
-        self,
-        quantile: float,
-        interpolation: RollingInterpolationMethod = "nearest",
+        self, quantile: float, interpolation: RollingInterpolationMethod = "nearest"
     ) -> Self:
         match interpolation:
             case "linear" | "midpoint":
@@ -1023,6 +1026,12 @@ class ExprStringNameSpace(CoreHandler[SqlExpr]):
 @dataclass(slots=True)
 class ExprListNameSpace(CoreHandler[sql.SqlExpr]):
     """List operations namespace (equivalent to pl.Expr.list)."""
+
+    # TODO: reduce, agg, filter
+
+    def eval(self, expr: Expr) -> Expr:
+        """Run an expression against each list element."""
+        return Expr(self.inner().list.transform(sql.fn_once("_", expr.inner())))
 
     def len(self) -> Expr:
         """Return the number of elements in each list."""

@@ -29,6 +29,16 @@ def sample_df() -> nw.LazyFrame[duckdb.DuckDBPyRelation]:
                     ],
                     "y": [1, 2, 5, 0],
                     "z": [7, 6, 5, 0],
+                    "str_vals": [
+                        [
+                            "g",
+                            "b",
+                            "c",
+                        ],
+                        ["a", "b"],
+                        ["c"],
+                        [],
+                    ],
                 },
             )
         )
@@ -171,4 +181,22 @@ def test_list_sort() -> None:
             .list.sort(descending=True, nulls_last=True)
             .alias("x_sorted_desc"),
         ),
+    )
+
+
+def test_list_eval_num() -> None:
+    assert_eq_pl(
+        pql.col("x").list.eval(pql.element().mul(2)).alias("x_eval"),
+        pl.col("x").list.eval(pl.element().mul(2)).alias("x_eval"),
+    )
+
+
+def test_list_eval_str() -> None:
+    assert_eq_pl(
+        pql.col("str_vals")
+        .list.eval(pql.element().str.to_uppercase())
+        .alias("x_eval_rank"),
+        pl.col("str_vals")
+        .list.eval(pl.element().str.to_uppercase())
+        .alias("x_eval_rank"),
     )

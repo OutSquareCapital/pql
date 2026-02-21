@@ -14,8 +14,6 @@ from enum import StrEnum
 
 
 class Kword(StrEnum):
-    PARTITION_BY = "PARTITION BY"
-    ORDER_BY = "ORDER BY"
     DESC = "DESC"
     ASC = "ASC"
     NULLS_LAST = "NULLS LAST"
@@ -36,11 +34,13 @@ class Kword(StrEnum):
 
     @classmethod
     def partition_by(cls, by: str) -> str:
-        return f"{cls.PARTITION_BY} {by}"
+        return f"""--sql
+        PARTITION BY {by}"""
 
     @classmethod
     def order_by(cls, by: str) -> str:
-        return f"{cls.ORDER_BY} {by}"
+        return f"""--sql
+        ORDER BY {by}"""
 
     @classmethod
     def sort_strat(cls, item: object, *, desc: bool, nulls_last: bool) -> str:
