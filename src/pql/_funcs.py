@@ -26,4 +26,4 @@ def all() -> Expr:
 
 def element() -> Expr:
     """Alias for an element being evaluated in a list context."""
-    return Expr(sql.col("_"))
+    return Expr(sql.element())

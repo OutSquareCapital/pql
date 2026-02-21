@@ -1,5 +1,5 @@
 from collections.abc import Iterable
-from typing import Any
+from functools import partial
 
 import duckdb
 import pyochain as pc
@@ -48,8 +48,18 @@ def unnest(
     return SqlExpr(func("unnest", col, depth, rec))
 
 
-def fn_once(lhs: Any, rhs: SqlExpr) -> SqlExpr:  # noqa: ANN401
-    return SqlExpr(duckdb.LambdaExpression(lhs, rhs.inner()))
+ELEM_NAME = "element"
+
+ELEMENT = SqlExpr(duckdb.ColumnExpression(ELEM_NAME))
+LAMBDA_EXPR = partial(duckdb.LambdaExpression, ELEM_NAME)
+
+
+def element() -> SqlExpr:
+    return ELEMENT
+
+
+def fn_once(rhs: SqlExpr) -> SqlExpr:
+    return SqlExpr(LAMBDA_EXPR(rhs.inner()))
 
 
 def all(*, exclude: Iterable[IntoExprColumn] | None = None) -> SqlExpr:

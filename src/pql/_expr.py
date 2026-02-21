@@ -760,7 +760,7 @@ class Expr(CoreHandler[SqlExpr]):
     def repeat_by(self, by: Expr | int) -> Self:
         """Repeat values by count, returning a list."""
         return self._new(
-            into_expr(by).list.range().list.transform(sql.fn_once("_", self.inner()))
+            into_expr(by).list.range().list.transform(sql.fn_once(self.inner()))
         )
 
     def is_duplicated(self) -> Self:
@@ -975,15 +975,18 @@ class ExprStringNameSpace(CoreHandler[SqlExpr]):
 
     def to_titlecase(self) -> Expr:
         """Convert to title case."""
-        elem = sql.col("_")
-        lambda_expr = sql.fn_once(
-            "_", elem.list.extract(1).str.upper().str.concat(elem.str.substring(2))
-        )
         return Expr(
             self.inner()
             .str.lower()
             .re.extract_all(sql.lit(r"[a-z]*[^a-z]*"))
-            .list.transform(lambda_expr)
+            .list.transform(
+                sql.fn_once(
+                    sql.element()
+                    .list.extract(1)
+                    .str.upper()
+                    .str.concat(sql.element().str.substring(2))
+                )
+            )
             .list.aggregate(sql.lit("string_agg"), sql.lit(""))
         )
 
@@ -996,7 +999,7 @@ class ExprListNameSpace(CoreHandler[sql.SqlExpr]):
 
     def eval(self, expr: Expr) -> Expr:
         """Run an expression against each list element."""
-        return Expr(self.inner().list.transform(sql.fn_once("_", expr.inner())))
+        return Expr(self.inner().list.transform(sql.fn_once(expr.inner())))
 
     def len(self) -> Expr:
         """Return the number of elements in each list."""
