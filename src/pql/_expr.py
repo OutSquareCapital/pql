@@ -5,7 +5,7 @@ from __future__ import annotations
 import re
 from collections.abc import Callable, Collection, Iterable
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Literal, Self
+from typing import TYPE_CHECKING, Any, Self
 
 import pyochain as pc
 
@@ -14,39 +14,14 @@ from .sql import CoreHandler, SqlExpr, into_expr, try_flatten, try_iter
 
 if TYPE_CHECKING:
     from ._datatypes import DataType
+    from ._typing import (
+        ClosedInterval,
+        FillNullStrategy,
+        RankMethod,
+        RollingInterpolationMethod,
+        RoundMode,
+    )
     from .sql import IntoExpr
-
-RoundMode = Literal["half_to_even", "half_away_from_zero"]
-ClosedInterval = Literal["both", "left", "right", "none"]
-RankMethod = Literal["average", "min", "max", "dense", "ordinal"]
-FillNullStrategy = Literal["forward", "backward", "min", "max", "mean", "zero", "one"]
-RollingInterpolationMethod = Literal["nearest", "higher", "lower", "midpoint", "linear"]
-
-
-class Col:
-    def __call__(self, name: str) -> Expr:
-        return Expr(sql.col(name))
-
-    def __getattr__(self, name: str) -> Expr:
-        return self.__call__(name)
-
-
-def lit(value: IntoExpr) -> Expr:
-    """Create a literal expression."""
-    return Expr(sql.lit(value))
-
-
-col: Col = Col()
-
-
-def all() -> Expr:
-    """Create an expression representing all columns (equivalent to pl.all())."""
-    return Expr(sql.all())
-
-
-def element() -> Expr:
-    """Alias for an element being evaluated in a list context."""
-    return Expr(sql.col("_"))
 
 
 @dataclass(slots=True)
@@ -133,11 +108,6 @@ class Expr(CoreHandler[SqlExpr]):
     def struct(self) -> ExprStructNameSpace:
         """Access struct operations."""
         return ExprStructNameSpace(self.inner())
-
-    @property
-    def expr(self) -> SqlExpr:  # pragma: no cover
-        """Get the underlying DuckDB expression."""
-        return self.inner()
 
     def __add__(self, other: IntoExpr) -> Self:
         return self.add(other)
@@ -300,9 +270,9 @@ class Expr(CoreHandler[SqlExpr]):
             case 0:
                 return self
             case n_val if n_val > 0:
-                expr = self.inner().lag(sql.lit(n_val))
+                expr = self.inner().lag(n_val)
             case _:
-                expr = self.inner().lead(sql.lit(-n))
+                expr = self.inner().lead(-n)
         return self._new_window(expr.over())
 
     def diff(self) -> Self:
@@ -413,8 +383,7 @@ class Expr(CoreHandler[SqlExpr]):
             case True:
                 return self._new(
                     sql.when(
-                        self.inner().isnan().and_(other_expr.isnan()),
-                        sql.lit(value=True),
+                        self.inner().isnan().and_(other_expr.isnan()), value=True
                     ).otherwise(close)
                 )
 
@@ -518,9 +487,9 @@ class Expr(CoreHandler[SqlExpr]):
     ) -> Self:
         match interpolation:
             case "linear" | "midpoint":
-                expr = self.inner().quantile_cont(sql.lit(quantile))
+                expr = self.inner().quantile_cont(quantile)
             case _:
-                expr = self.inner().quantile(sql.lit(quantile))
+                expr = self.inner().quantile(quantile)
         return self._new(expr, is_scalar_like=True)
 
     def all(self) -> Self:
@@ -637,7 +606,7 @@ class Expr(CoreHandler[SqlExpr]):
             case "half_to_even":
                 rounded = self.inner().round_even(sql.lit(decimals))
             case "half_away_from_zero":
-                rounded = self.inner().round(sql.lit(decimals))
+                rounded = self.inner().round(decimals)
         return self._new(rounded)
 
     def sqrt(self) -> Self:
@@ -650,7 +619,7 @@ class Expr(CoreHandler[SqlExpr]):
 
     def log(self, base: float = 2.718281828459045) -> Self:
         """Compute the logarithm."""
-        return self._new(self.inner().log(sql.lit(base)))
+        return self._new(self.inner().log(base))
 
     def log10(self) -> Self:
         """Compute the base 10 logarithm."""
@@ -771,9 +740,9 @@ class Expr(CoreHandler[SqlExpr]):
             case (_, pc.Some("mean")):
                 return self._new(sql.coalesce(self.inner(), self.inner().mean().over()))
             case (_, pc.Some("zero")):
-                return self._new(sql.coalesce(self.inner(), sql.lit(0)))
+                return self._new(sql.coalesce(self.inner(), 0))
             case (_, pc.Some("one")):
-                return self._new(sql.coalesce(self.inner(), sql.lit(1)))
+                return self._new(sql.coalesce(self.inner(), 1))
             case _:
                 msg = "must specify either a fill `value` or `strategy`"
                 raise ValueError(msg)
@@ -898,7 +867,7 @@ class ExprStringNameSpace(CoreHandler[SqlExpr]):
 
     def slice(self, offset: int, length: int | None = None) -> Expr:
         """Extract a substring."""
-        return Expr(self.inner().str.substring(sql.lit(offset + 1), length))
+        return Expr(self.inner().str.substring(offset + 1, length))
 
     def len_bytes(self) -> Expr:
         """Get the length in bytes."""
@@ -965,32 +934,31 @@ class ExprStringNameSpace(CoreHandler[SqlExpr]):
                     sql.when(
                         self.inner().str.ends_with(suffix_expr),
                         self.inner().str.substring(
-                            sql.lit(1),
-                            self.inner().str.length().sub(suffix_expr.str.length()),
+                            1, self.inner().str.length().sub(suffix_expr.str.length())
                         ),
                     ).otherwise(self.inner())
                 )
 
     def head(self, n: int) -> Expr:
         """Get first n characters."""
-        return Expr(self.inner().str.left(sql.lit(n)))
+        return Expr(self.inner().str.left(n))
 
     def tail(self, n: int) -> Expr:
         """Get last n characters."""
-        return Expr(self.inner().str.right(sql.lit(n)))
+        return Expr(self.inner().str.right(n))
 
     def reverse(self) -> Expr:
         """Reverse the string."""
         return Expr(self.inner().str.reverse())
 
     def pad_start(self, length: int, fill_char: str = " ") -> Expr:
-        return Expr(self.inner().str.lpad(sql.lit(length), sql.lit(fill_char)))
+        return Expr(self.inner().str.lpad(length, sql.lit(fill_char)))
 
     def pad_end(self, length: int, fill_char: str = " ") -> Expr:
-        return Expr(self.inner().str.rpad(sql.lit(length), sql.lit(fill_char)))
+        return Expr(self.inner().str.rpad(length, sql.lit(fill_char)))
 
     def zfill(self, width: int) -> Expr:
-        return Expr(self.inner().str.lpad(sql.lit(width), sql.lit("0")))
+        return Expr(self.inner().str.lpad(width, sql.lit("0")))
 
     def replace_all(
         self, pattern: str, value: IntoExpr, *, literal: bool = False
@@ -1009,10 +977,7 @@ class ExprStringNameSpace(CoreHandler[SqlExpr]):
         """Convert to title case."""
         elem = sql.col("_")
         lambda_expr = sql.fn_once(
-            "_",
-            elem.list.extract(sql.lit(1))
-            .str.upper()
-            .str.concat(elem.str.substring(sql.lit(2))),
+            "_", elem.list.extract(1).str.upper().str.concat(elem.str.substring(2))
         )
         return Expr(
             self.inner()
@@ -1050,10 +1015,9 @@ class ExprListNameSpace(CoreHandler[sql.SqlExpr]):
                 sql.when(
                     item_expr.is_null(),
                     sql.coalesce(
-                        self.inner().list.position(sql.lit(None)).is_not_null(),
-                        sql.lit(value=False),
+                        self.inner().list.position(sql.lit(None)).is_not_null(), False
                     ),
-                ).otherwise(sql.coalesce(contains_expr, sql.lit(value=False)))
+                ).otherwise(sql.coalesce(contains_expr, False))
             )
         return Expr(contains_expr)
 

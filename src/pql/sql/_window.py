@@ -18,7 +18,6 @@ class Kword(StrEnum):
     ASC = "ASC"
     NULLS_LAST = "NULLS LAST"
     NULLS_FIRST = "NULLS FIRST"
-    OVER = "OVER"
 
     @classmethod
     def rows_clause(cls, row_start: pc.Option[int], row_end: pc.Option[int]) -> str:
@@ -58,22 +57,20 @@ def over_expr(  # noqa: PLR0913
     nulls_last: Iterable[bool] | bool = False,
     ignore_nulls: bool = False,
 ) -> duckdb.Expression:
-    return _build_over(
-        handle_nulls(expr, ignore_nulls=ignore_nulls),
-        partition_by.map(lambda x: try_iter(x).collect()).into(get_partition_by),
-        order_by.map(lambda x: try_iter(x).collect()).into(
-            get_order_by, descending=descending, nulls_last=nulls_last
-        ),
-        Kword.rows_clause(row_start=rows_start, row_end=rows_end),
-    )
-
-
-def _build_over(
-    expr: str, partition_by: str, order_by: str, row_between: str
-) -> duckdb.Expression:
     return duckdb.SQLExpression(
-        f"{expr} {Kword.OVER} ({partition_by} {order_by} {row_between})"
+        _build_over(
+            handle_nulls(expr, ignore_nulls=ignore_nulls),
+            partition_by.map(lambda x: try_iter(x).collect()).into(get_partition_by),
+            order_by.map(lambda x: try_iter(x).collect()).into(
+                get_order_by, descending=descending, nulls_last=nulls_last
+            ),
+            Kword.rows_clause(row_start=rows_start, row_end=rows_end),
+        )
     )
+
+
+def _build_over(expr: str, partition_by: str, order_by: str, row_between: str) -> str:
+    return f"{expr} OVER ({partition_by} {order_by} {row_between})"
 
 
 def get_partition_by(partition_by: pc.Option[pc.Seq[SqlExpr]]) -> str:

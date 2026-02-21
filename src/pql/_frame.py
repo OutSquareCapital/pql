@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Callable, Iterable, Mapping, Sequence
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Literal, NamedTuple, Self, TypeIs
+from typing import TYPE_CHECKING, Any, NamedTuple, Self, TypeIs
 
 import pyochain as pc
 
@@ -26,16 +26,17 @@ if TYPE_CHECKING:
     import polars as pl
     from narwhals.typing import IntoFrame
 
+    from ._typing import (
+        AsofJoinStrategy,
+        JoinKeysRes,
+        JoinStrategy,
+        OptIter,
+        UniqueKeepStrategy,
+    )
     from .sql import IntoExpr, IntoExprColumn, IntoRel, NPArrayLike, SeqIntoVals
 
-JoinStrategy = Literal["inner", "left", "full", "cross", "semi", "anti"]
-AsofJoinStrategy = Literal["backward", "forward", "nearest"]
-UniqueKeepStrategy = Literal["any", "none", "first", "last"]
 TEMP_NAME = "__pql_temp__"
 TEMP_COL = sql.col(TEMP_NAME)
-
-type JoinKeysRes[T: pc.Seq[str] | str] = pc.Result[JoinKeys[T], ValueError]
-type OptIter[T] = pc.Option[T | Iterable[T]]
 
 
 class JoinKeys[T: pc.Seq[str] | str](NamedTuple):

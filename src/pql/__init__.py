@@ -31,8 +31,9 @@ from ._datatypes import (
     UInt128,
     Union,
 )
-from ._expr import Expr, all, col, element, lit
+from ._expr import Expr
 from ._frame import LazyFrame
+from ._funcs import all, col, element, lit
 
 __all__ = [
     "Array",

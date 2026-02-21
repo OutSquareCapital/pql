@@ -18,8 +18,8 @@ from ._datatypes import (
     UnionType,
     parse_dtype,
 )
-from ._expr import (
-    SqlExpr,
+from ._expr import SqlExpr
+from ._funcs import (
     all,
     args_into_exprs,
     coalesce,
@@ -27,7 +27,6 @@ from ._expr import (
     fn_once,
     into_expr,
     lit,
-    raw,
     row_number,
     unnest,
     when,
@@ -76,7 +75,6 @@ __all__ = [
     "into_expr",
     "lit",
     "parse_dtype",
-    "raw",
     "row_number",
     "try_flatten",
     "try_iter",
