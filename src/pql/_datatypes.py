@@ -6,16 +6,15 @@ from abc import ABC
 from collections.abc import Iterable
 from dataclasses import MISSING, Field, dataclass, field, fields
 from enum import Enum as PyEnum
-from typing import TYPE_CHECKING, Any, Literal, Self
+from typing import TYPE_CHECKING, Any, Self
 
 import pyochain as pc
 
 from . import sql
 
 if TYPE_CHECKING:
+    from ._typing import TimeUnit
     from .sql.typing import IntoDict
-
-TimeUnit = Literal["s", "ms", "us", "ns"]
 
 
 class DataType(ABC):
@@ -232,12 +231,12 @@ class Decimal(ComplexDataType[sql.DecimalType]):
 class Array(ComplexDataType[sql.ArrayType]):
     _inner: pc.Option[DataType] = field(default_factory=lambda: pc.NONE)
 
-    def __init__(self, inner: DataType, shape: int = 1) -> None:
-        self.raw = sql.ArrayType.new(inner.raw.to_duckdb(), shape)
+    def __init__(self, inner: DataType, size: int = 1) -> None:
+        self.raw = sql.ArrayType.new(inner.raw.to_duckdb(), size)
 
-    def with_dim(self, shape: int) -> Self:
+    def with_dim(self, size: int) -> Self:
         """Add another level of nesting to the array."""
-        return self.__class__(self, shape)
+        return self.__class__(self, size)
 
     @property
     def inner(self) -> DataType:
@@ -252,16 +251,22 @@ class Array(ComplexDataType[sql.ArrayType]):
 
 @dataclass(slots=True, init=False)
 class List(ComplexDataType[sql.ListType]):
+    _inner: pc.Option[DataType] = field(default_factory=lambda: pc.NONE)
+
     def __init__(self, inner: DataType) -> None:
         self.raw = sql.ListType.new(inner.raw.to_duckdb())
 
     @property
     def inner(self) -> DataType:
-        return DataType.__from_sql__(self.raw.child.dtype)
+        if self._inner.is_none():
+            self._inner = pc.Some(DataType.__from_sql__(self.raw.child.dtype))
+        return self._inner.unwrap()
 
 
 @dataclass(slots=True, init=False)
 class Struct(ComplexDataType[sql.StructType]):
+    _fields: pc.Option[pc.Dict[str, DataType]] = field(default_factory=lambda: pc.NONE)
+
     def __init__(self, fields: IntoDict[str, DataType]) -> None:
         self.raw = sql.StructType.new(
             pc.Dict(fields)
@@ -272,11 +277,13 @@ class Struct(ComplexDataType[sql.StructType]):
 
     @property
     def fields(self) -> pc.Dict[str, DataType]:
-        return (
-            self.raw.fields.iter()
-            .map(lambda field: (field.name, DataType.__from_sql__(field.dtype)))
-            .collect(pc.Dict)
-        )
+        if self._fields.is_none():
+            self._fields = pc.Some(
+                self.raw.fields.iter()
+                .map(lambda field: (field.name, DataType.__from_sql__(field.dtype)))
+                .collect(pc.Dict)
+            )
+        return self._fields.unwrap()
 
 
 @dataclass(slots=True, init=False)
@@ -291,10 +298,10 @@ class Enum(ComplexDataType[sql.EnumType]):
 
 PRECISION_MAP: pc.Dict[TimeUnit, sql.DType] = pc.Dict.from_ref(
     {
-        "s": sql.DType(str(sql.RawTypes.TIMESTAMP_S), sql.RawTypes.TIMESTAMP_S),
-        "ms": sql.DType(str(sql.RawTypes.TIMESTAMP_MS), sql.RawTypes.TIMESTAMP_MS),
-        "us": sql.DType(str(sql.RawTypes.TIMESTAMP), sql.RawTypes.TIMESTAMP),
-        "ns": sql.DType(str(sql.RawTypes.TIMESTAMP_NS), sql.RawTypes.TIMESTAMP_NS),
+        "s": sql.ScalarType.TIMESTAMP_S,
+        "ms": sql.ScalarType.TIMESTAMP_MS,
+        "us": sql.ScalarType.TIMESTAMP,
+        "ns": sql.ScalarType.TIMESTAMP_NS,
     }
 )
 
