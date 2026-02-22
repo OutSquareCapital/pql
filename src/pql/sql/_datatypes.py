@@ -368,6 +368,7 @@ class ScalarType:
     BLOB = DType.from_duckdb(sqltypes.BLOB)
     BIT = DType.from_duckdb(sqltypes.BIT)
     UUID = DType.from_duckdb(sqltypes.UUID)
+    JSON = DType(RawTypes.JSON.value, RawTypes.JSON.value)
     BIGNUM = DType(RawTypes.BIGNUM.value, RawTypes.BIGNUM.value)
 
 

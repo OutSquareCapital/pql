@@ -41,7 +41,23 @@ def sample_data() -> pql.LazyFrame:
                 "2021-01-01 01:00:00.000000000",
                 "2021-01-01 02:00:00.000000000",
             ],
+            "seconds": [
+                "2021-01-01 00:00:00",
+                "2021-01-01 01:00:00",
+                "2021-01-01 02:00:00",
+            ],
+            "millis": [
+                "2021-01-01 00:00:00.000",
+                "2021-01-01 01:00:00.000",
+                "2021-01-01 02:00:00.000",
+            ],
+            "micros": [
+                "2021-01-01 00:00:00.000000",
+                "2021-01-01 01:00:00.000000",
+                "2021-01-01 02:00:00.000000",
+            ],
             "time": ["12:00:00", "13:00:00", "14:00:00"],
+            "time_tz": ["12:00:00+00", "13:00:00+00", "14:00:00+00"],
             "duration": ["1 day", "2 days", "3 days"],
             "enumerated": ["A", "B", "C"],
             "mapped": [
@@ -67,6 +83,12 @@ def sample_data() -> pql.LazyFrame:
                 },
             ],
             "unioned": [1, "two", 3.0],
+            "bits": [b"\x01", b"\x02", b"\x03"],
+            "uuid_data": [
+                "550e8400-e29b-41d4-a716-446655440000",
+                "550e8400-e29b-41d4-a716-446655440001",
+                "550e8400-e29b-41d4-a716-446655440002",
+            ],
         }
     )
 
@@ -89,10 +111,15 @@ def _exprs() -> tuple[pql.Expr, ...]:
         numeric.cast(pql.Boolean()).alias("bool"),
         numeric.cast(pql.Decimal(10, 2)).alias("dec"),
         numeric.cast(pql.String()).alias("s"),
+        numeric.cast(pql.Number()).alias("num"),
         pql.col("time").cast(pql.Time()).alias("time"),
+        pql.col("time_tz").cast(pql.TimeTZ()).alias("time_tz"),
         pql.col("dates").cast(pql.Date()).alias("dates"),
         pql.col("hours").cast(pql.DatetimeTZ()).alias("hours"),
-        pql.col("nanoseconds").cast(pql.Datetime(time_unit="ns")).alias("nanoseconds"),
+        pql.col("seconds").cast(pql.Datetime(time_unit="s")).alias("datetime_s"),
+        pql.col("millis").cast(pql.Datetime(time_unit="ms")).alias("datetime_ms"),
+        pql.col("micros").cast(pql.Datetime(time_unit="us")).alias("datetime_us"),
+        pql.col("nanoseconds").cast(pql.Datetime(time_unit="ns")).alias("datetime_ns"),
         pql.col("1d").cast(pql.List(pql.UInt16())).alias("lst"),
         pql.col("1d").cast(pql.Array(pql.UInt16(), size=2)).alias("arr_1d"),
         pql.col("2d").cast(pql.Array(pql.UInt16(), size=2).with_dim(2)).alias("arr_2d"),
@@ -107,6 +134,8 @@ def _exprs() -> tuple[pql.Expr, ...]:
         pql.col("unioned")
         .cast(pql.Union([pql.Int32(), pql.String(), pql.Float64()]))
         .alias("unioned"),
+        pql.col("bits").cast(pql.BitString()).alias("bits"),
+        pql.col("uuid_data").cast(pql.UUID()).alias("uuid_data"),
     )
 
 
@@ -157,9 +186,6 @@ def test_temporal_casts(cast_schema: pc.Dict[str, pql.DataType]) -> None:
     assert isinstance(cast_schema["hours"], pql.DatetimeTZ)
     assert isinstance(cast_schema["time"], pql.Time)
     assert isinstance(cast_schema["duration"], pql.Duration)
-
-    nanoseconds: pql.Datetime = cast_schema["nanoseconds"]  # pyright: ignore[reportAssignmentType]
-    assert isinstance(nanoseconds, pql.Datetime)
 
 
 def test_list_cast(cast_schema: pc.Dict[str, pql.DataType]) -> None:
@@ -214,3 +240,37 @@ def test_union_cast(cast_schema: pc.Dict[str, pql.DataType]) -> None:
     assert isinstance(unioned.fields[0], pql.Int32)
     assert isinstance(unioned.fields[1], pql.String)
     assert isinstance(unioned.fields[2], pql.Float64)
+
+
+def test_time_tz_cast(cast_schema: pc.Dict[str, pql.DataType]) -> None:
+    assert isinstance(cast_schema["time_tz"], pql.TimeTZ)
+
+
+def test_datetime_casts_all_time_units(cast_schema: pc.Dict[str, pql.DataType]) -> None:
+    datetime_s: pql.Datetime = cast_schema["datetime_s"]  # pyright: ignore[reportAssignmentType]
+    assert isinstance(datetime_s, pql.Datetime)
+    assert datetime_s.time_unit == "s"
+
+    datetime_ms: pql.Datetime = cast_schema["datetime_ms"]  # pyright: ignore[reportAssignmentType]
+    assert isinstance(datetime_ms, pql.Datetime)
+    assert datetime_ms.time_unit == "ms"
+
+    datetime_us: pql.Datetime = cast_schema["datetime_us"]  # pyright: ignore[reportAssignmentType]
+    assert isinstance(datetime_us, pql.Datetime)
+    assert datetime_us.time_unit in ("us", "ns")
+
+    datetime_ns: pql.Datetime = cast_schema["datetime_ns"]  # pyright: ignore[reportAssignmentType]
+    assert isinstance(datetime_ns, pql.Datetime)
+    assert datetime_ns.time_unit == "ns"
+
+
+def test_bitstring_cast(cast_schema: pc.Dict[str, pql.DataType]) -> None:
+    assert isinstance(cast_schema["bits"], pql.BitString)
+
+
+def test_uuid_cast(cast_schema: pc.Dict[str, pql.DataType]) -> None:
+    assert isinstance(cast_schema["uuid_data"], pql.UUID)
+
+
+def test_number_cast(cast_schema: pc.Dict[str, pql.DataType]) -> None:
+    assert isinstance(cast_schema["num"], pql.Number)

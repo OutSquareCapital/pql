@@ -2,8 +2,10 @@
 
 from . import sql
 from ._datatypes import (
+    UUID,
     Array,
     Binary,
+    BitString,
     Boolean,
     DataType,
     Date,
@@ -19,11 +21,14 @@ from ._datatypes import (
     Int32,
     Int64,
     Int128,
+    Json,
     List,
     Map,
+    Number,
     String,
     Struct,
     Time,
+    TimeTZ,
     UInt8,
     UInt16,
     UInt32,
@@ -37,8 +42,10 @@ from ._funcs import all, col, element, lit
 from ._when import when
 
 __all__ = [
+    "UUID",
     "Array",
     "Binary",
+    "BitString",
     "Boolean",
     "DataType",
     "Date",
@@ -55,12 +62,15 @@ __all__ = [
     "Int32",
     "Int64",
     "Int128",
+    "Json",
     "LazyFrame",
     "List",
     "Map",
+    "Number",
     "String",
     "Struct",
     "Time",
+    "TimeTZ",
     "UInt8",
     "UInt16",
     "UInt32",

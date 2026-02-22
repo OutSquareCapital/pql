@@ -47,6 +47,11 @@ class Time(DataType):
 
 
 @dataclass(slots=True)
+class TimeTZ(DataType):
+    raw = sql.ScalarType.TIME_TZ
+
+
+@dataclass(slots=True)
 class Duration(DataType):
     raw = sql.ScalarType.INTERVAL
 
@@ -64,6 +69,11 @@ class String(DataType):
 @dataclass(slots=True)
 class Date(DataType):
     raw = sql.ScalarType.DATE
+
+
+@dataclass(slots=True)
+class DatetimeTZ(DataType):
+    raw = sql.ScalarType.TIMESTAMP_TZ
 
 
 @dataclass(slots=True)
@@ -127,8 +137,23 @@ class UInt128(DataType):
 
 
 @dataclass(slots=True)
-class DatetimeTZ(DataType):
-    raw = sql.ScalarType.TIMESTAMP_TZ
+class Json(DataType):
+    raw = sql.ScalarType.JSON
+
+
+@dataclass(slots=True)
+class BitString(DataType):
+    raw = sql.ScalarType.BIT
+
+
+@dataclass(slots=True)
+class Number(DataType):
+    raw = sql.ScalarType.BIGNUM
+
+
+@dataclass(slots=True)
+class UUID(DataType):
+    raw = sql.ScalarType.UUID
 
 
 @dataclass(slots=True, init=False)
@@ -340,6 +365,11 @@ NON_NESTED_MAP: pc.Dict[str, DataType] = pc.Dict.from_ref(
         sql.RawTypes.BOOLEAN: Boolean(),
         sql.RawTypes.INTERVAL: Duration(),
         sql.RawTypes.TIME: Time(),
+        sql.RawTypes.TIME_TZ: TimeTZ(),
         sql.RawTypes.BLOB: Binary(),
+        sql.RawTypes.JSON: Json(),
+        sql.RawTypes.BIT: BitString(),
+        sql.RawTypes.BIGNUM: Number(),
+        sql.RawTypes.UUID: UUID(),
     }
 )
