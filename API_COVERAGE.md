@@ -6,11 +6,11 @@ This report shows the API coverage of pql compared to Polars.
 
 | Class       | Coverage vs Narwhals | Total | Matched | Missing | Mismatched | Extra | Extra vs Narwhals |
 | ----------- | -------------------- | ----- | ------- | ------- | ---------- | ----- | ----------------- |
-| LazyFrame   | 68.1%                | 47    | 32      | 2       | 13         | 1     | 21                |
-| Expr        | 82.1%                | 106   | 87      | 7       | 12         | 2     | 36                |
+| LazyFrame   | 68.1%                | 47    | 32      | 2       | 13         | 8     | 21                |
+| Expr        | 82.1%                | 106   | 87      | 7       | 12         | 1     | 36                |
 | LazyGroupBy | 100.0%               | 1     | 1       | 0       | 0          | 0     | 0                 |
 | Expr.str    | 92.6%                | 27    | 25      | 2       | 0          | 2     | 8                 |
-| Expr.list   | 100.0%               | 10    | 10      | 0       | 0          | 2     | 0                 |
+| Expr.list   | 90.9%                | 11    | 10      | 0       | 1          | 2     | 1                 |
 | Expr.struct | 100.0%               | 1     | 1       | 0       | 0          | 2     | 0                 |
 
 ## LazyFrame
@@ -69,8 +69,15 @@ This report shows the API coverage of pql compared to Polars.
   - Polars: (`path: str | Path | IO[bytes] | PartitionBy`, compression: str, `compression_level: int | None`, `statistics: bool | str | dict[str, bool]`, `row_group_size: int | None`, `data_page_size: int | None`, `maintain_order: bool`, `storage_options: StorageOptionsDict | None`, `credential_provider: CredentialProviderFunction | Literal['auto'] | None`, `retries: int | None`, `sync_on_close: SyncOnCloseMethod | None`, `metadata: ParquetMetadata | None`, `arrow_schema: ArrowSchemaExportable | None`, `mkdir: bool`, `lazy: bool`, `engine: EngineType`, `optimizations: QueryOptFlags`) -> LazyFrame | None
   - pql: (`path: str | Path`, `compression: str`) -> None
 
-### [+] Extra Methods (pql-only) (1)
+### [+] Extra Methods (pql-only) (8)
 
+- `from_df`
+- `from_mapping`
+- `from_numpy`
+- `from_query`
+- `from_sequence`
+- `from_table`
+- `from_table_function`
 - `inner`
 
 ## Expr
@@ -130,9 +137,8 @@ This report shows the API coverage of pql compared to Polars.
   - Polars: (`old: IntoExpr | Sequence[Any] | Mapping[Any, Any]`, `new: IntoExpr | Sequence[Any] | NoDefault`, `default: IntoExpr | NoDefault`, `return_dtype: PolarsDataType | None`) -> Expr
   - pql: (`old: IntoExpr`, `new: IntoExpr`) -> Self
 
-### [+] Extra Methods (pql-only) (2)
+### [+] Extra Methods (pql-only) (1)
 
-- `expr`
 - `inner`
 
 ## LazyGroupBy
@@ -150,6 +156,12 @@ This report shows the API coverage of pql compared to Polars.
 - `pipe`
 
 ## Expr.list
+
+### [!] Signature Mismatches (1)
+
+- `eval` (pl)
+  - Polars: (expr: Expr, `parallel: bool`) -> Expr
+  - pql: (expr: Expr) -> Expr
 
 ### [+] Extra Methods (pql-only) (2)
 
