@@ -297,7 +297,7 @@ class UnionType(DType):
 
     @classmethod
     def new(cls, fields: Iterable[DuckDBPyType]) -> Self:
-        return cls.from_duckdb(duckdb.union_type(pc.Iter(fields).collect(list)))
+        return cls.from_duckdb(duckdb.union_type(list(fields)))
 
     @classmethod
     def from_duckdb(cls, dtype: DuckDBPyType) -> Self:
@@ -342,32 +342,32 @@ If a type id is not present in this map, it will be parsed as a simple `DType`."
 
 
 class ScalarType:
-    HUGEINT = DType(str(sqltypes.HUGEINT), sqltypes.HUGEINT.id)
-    BIGINT = DType(str(sqltypes.BIGINT), sqltypes.BIGINT.id)
-    INTEGER = DType(str(sqltypes.INTEGER), sqltypes.INTEGER.id)
-    SMALLINT = DType(str(sqltypes.SMALLINT), sqltypes.SMALLINT.id)
-    TINYINT = DType(str(sqltypes.TINYINT), sqltypes.TINYINT.id)
-    UHUGEINT = DType(str(sqltypes.UHUGEINT), sqltypes.UHUGEINT.id)
-    UBIGINT = DType(str(sqltypes.UBIGINT), sqltypes.UBIGINT.id)
-    UINTEGER = DType(str(sqltypes.UINTEGER), sqltypes.UINTEGER.id)
-    USMALLINT = DType(str(sqltypes.USMALLINT), sqltypes.USMALLINT.id)
-    UTINYINT = DType(str(sqltypes.UTINYINT), sqltypes.UTINYINT.id)
-    DOUBLE = DType(str(sqltypes.DOUBLE), sqltypes.DOUBLE.id)
-    FLOAT = DType(str(sqltypes.FLOAT), sqltypes.FLOAT.id)
-    VARCHAR = DType(str(sqltypes.VARCHAR), sqltypes.VARCHAR.id)
-    DATE = DType(str(sqltypes.DATE), sqltypes.DATE.id)
-    TIMESTAMP_S = DType(str(sqltypes.TIMESTAMP_S), sqltypes.TIMESTAMP_S.id)
-    TIMESTAMP_MS = DType(str(sqltypes.TIMESTAMP_MS), sqltypes.TIMESTAMP_MS.id)
-    TIMESTAMP = DType(str(sqltypes.TIMESTAMP), sqltypes.TIMESTAMP.id)
-    TIMESTAMP_NS = DType(str(sqltypes.TIMESTAMP_NS), sqltypes.TIMESTAMP_NS.id)
-    TIMESTAMP_TZ = DType(str(sqltypes.TIMESTAMP_TZ), sqltypes.TIMESTAMP_TZ.id)
-    BOOLEAN = DType(str(sqltypes.BOOLEAN), sqltypes.BOOLEAN.id)
-    INTERVAL = DType(str(sqltypes.INTERVAL), sqltypes.INTERVAL.id)
-    TIME = DType(str(sqltypes.TIME), sqltypes.TIME.id)
-    TIME_TZ = DType(str(sqltypes.TIME_TZ), sqltypes.TIME_TZ.id)
-    BLOB = DType(str(sqltypes.BLOB), sqltypes.BLOB.id)
-    BIT = DType(str(sqltypes.BIT), sqltypes.BIT.id)
-    UUID = DType(str(sqltypes.UUID), sqltypes.UUID.id)
+    HUGEINT = DType.from_duckdb(sqltypes.HUGEINT)
+    BIGINT = DType.from_duckdb(sqltypes.BIGINT)
+    INTEGER = DType.from_duckdb(sqltypes.INTEGER)
+    SMALLINT = DType.from_duckdb(sqltypes.SMALLINT)
+    TINYINT = DType.from_duckdb(sqltypes.TINYINT)
+    UHUGEINT = DType.from_duckdb(sqltypes.UHUGEINT)
+    UBIGINT = DType.from_duckdb(sqltypes.UBIGINT)
+    UINTEGER = DType.from_duckdb(sqltypes.UINTEGER)
+    USMALLINT = DType.from_duckdb(sqltypes.USMALLINT)
+    UTINYINT = DType.from_duckdb(sqltypes.UTINYINT)
+    DOUBLE = DType.from_duckdb(sqltypes.DOUBLE)
+    FLOAT = DType.from_duckdb(sqltypes.FLOAT)
+    VARCHAR = DType.from_duckdb(sqltypes.VARCHAR)
+    DATE = DType.from_duckdb(sqltypes.DATE)
+    TIMESTAMP_S = DType.from_duckdb(sqltypes.TIMESTAMP_S)
+    TIMESTAMP_MS = DType.from_duckdb(sqltypes.TIMESTAMP_MS)
+    TIMESTAMP = DType.from_duckdb(sqltypes.TIMESTAMP)
+    TIMESTAMP_NS = DType.from_duckdb(sqltypes.TIMESTAMP_NS)
+    TIMESTAMP_TZ = DType.from_duckdb(sqltypes.TIMESTAMP_TZ)
+    BOOLEAN = DType.from_duckdb(sqltypes.BOOLEAN)
+    INTERVAL = DType.from_duckdb(sqltypes.INTERVAL)
+    TIME = DType.from_duckdb(sqltypes.TIME)
+    TIME_TZ = DType.from_duckdb(sqltypes.TIME_TZ)
+    BLOB = DType.from_duckdb(sqltypes.BLOB)
+    BIT = DType.from_duckdb(sqltypes.BIT)
+    UUID = DType.from_duckdb(sqltypes.UUID)
     BIGNUM = DType(str(RawTypes.BIGNUM), RawTypes.BIGNUM.value)
 
 
