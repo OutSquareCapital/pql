@@ -1,4 +1,6 @@
-from collections.abc import Iterator, Mapping, Sequence
+"""Typing definitions for the SQL module."""
+
+from collections.abc import Iterable, Iterator, Mapping, Sequence
 from datetime import date, datetime, time, timedelta
 from decimal import Decimal
 from typing import TYPE_CHECKING, Any, Protocol, runtime_checkable
@@ -17,32 +19,33 @@ class FrameLike(Protocol):
     """Protocol to check if a type is indeed a narwhals `IntoFrame`."""
 
     @property
-    def columns(self) -> Any: ...  # noqa: ANN401
+    def columns(self) -> Any: ...  # noqa: ANN401, D102
 
 
 @runtime_checkable
 class NPArrayLike[S, D](Protocol):
     """Protocol for `numpy` ndarrays."""
 
-    def __len__(self) -> int: ...
-    def __contains__(self, value: object, /) -> bool: ...
+    def __len__(self) -> int: ...  # noqa: D105
+    def __contains__(self, value: object, /) -> bool: ...  # noqa: D105
 
-    def __iter__(self) -> Iterator[D]: ...
-    def __array__(self, *args: Any, **kwargs: Any) -> Any: ...  # noqa: ANN401
-    def __array_finalize__(self, *args: Any, **kwargs: Any) -> None: ...  # noqa: ANN401
-    def __array_wrap__(self, *args: Any, **kwargs: Any) -> Any: ...  # noqa: ANN401
-    def __getitem__(self, *args: Any, **kwargs: Any) -> Any: ...  # noqa: ANN401
-    def __setitem__(self, *args: Any, **kwargs: Any) -> None: ...  # noqa: ANN401
+    def __iter__(self) -> Iterator[D]: ...  # noqa: D105
+    def __array__(self, *args: Any, **kwargs: Any) -> Any: ...  # noqa: ANN401, D105
+    def __array_finalize__(self, *args: Any, **kwargs: Any) -> None: ...  # noqa: ANN401, D105
+    def __array_wrap__(self, *args: Any, **kwargs: Any) -> Any: ...  # noqa: ANN401, D105
+    def __getitem__(self, *args: Any, **kwargs: Any) -> Any: ...  # noqa: ANN401, D105
+    def __setitem__(self, *args: Any, **kwargs: Any) -> None: ...  # noqa: ANN401, D105
     @property
-    def shape(self) -> S: ...
+    def shape(self) -> S: ...  # noqa: D102
     @property
-    def dtype(self) -> Any: ...  # noqa: ANN401
+    def dtype(self) -> Any: ...  # noqa: ANN401, D102
     @property
-    def ndim(self) -> int: ...
+    def ndim(self) -> int: ...  # noqa: D102
     @property
-    def size(self) -> int: ...
+    def size(self) -> int: ...  # noqa: D102
 
 
+type IntoDict[K, V] = Mapping[K, V] | Iterable[tuple[K, V]]
 type ExprLike = SqlExpr | Expr
 """Types that are already expressions wrappers and can be used directly as expressions."""
 type ExprIntoVals = DuckHandler | duckdb.Expression

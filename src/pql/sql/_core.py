@@ -10,7 +10,7 @@ import pyochain as pc
 from ._rel_conversions import frame_init_into_duckdb
 
 if TYPE_CHECKING:
-    from ._typing import IntoRel
+    from .typing import IntoRel
 
 
 def try_iter[T](val: Iterable[T] | T) -> pc.Iter[T]:

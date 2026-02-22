@@ -1,14 +1,17 @@
 from __future__ import annotations
 
-from collections.abc import Iterable, Mapping
+from collections.abc import Iterable
 from dataclasses import dataclass
 from enum import Enum, StrEnum, auto
-from typing import NamedTuple, Self, cast
+from typing import TYPE_CHECKING, NamedTuple, Self, cast
 
 import duckdb
 import pyochain as pc
 from duckdb import sqltypes
 from duckdb.sqltypes import DuckDBPyType
+
+if TYPE_CHECKING:
+    from .typing import IntoDict
 
 
 class RawTypes(StrEnum):
@@ -244,9 +247,7 @@ class StructType(DType):
     fields: pc.Seq[Field]
 
     @classmethod
-    def new(
-        cls, fields: Mapping[str, DuckDBPyType] | Iterable[tuple[str, DuckDBPyType]]
-    ) -> Self:
+    def new(cls, fields: IntoDict[str, DuckDBPyType]) -> Self:
         return cls.from_duckdb(duckdb.struct_type(dict(fields)))
 
     @classmethod

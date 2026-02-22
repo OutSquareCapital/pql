@@ -6,7 +6,7 @@ import pyochain as pc
 
 from ._core import func, into_duckdb, try_flatten, try_iter
 from ._expr import SqlExpr
-from ._typing import IntoExpr, IntoExprColumn
+from .typing import IntoExpr, IntoExprColumn
 
 
 def row_number() -> SqlExpr:

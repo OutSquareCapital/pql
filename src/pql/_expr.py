@@ -10,7 +10,6 @@ from typing import TYPE_CHECKING, Any, Self
 import pyochain as pc
 
 from . import sql
-from .sql import CoreHandler, SqlExpr, into_expr, try_flatten, try_iter
 
 if TYPE_CHECKING:
     from ._datatypes import DataType
@@ -21,11 +20,11 @@ if TYPE_CHECKING:
         RollingInterpolationMethod,
         RoundMode,
     )
-    from .sql import IntoExpr
+    from .sql.typing import IntoExpr
 
 
 @dataclass(slots=True)
-class Expr(CoreHandler[SqlExpr]):
+class Expr(sql.CoreHandler[sql.SqlExpr]):
     """Expression wrapper providing Polars-like API over DuckDB expressions."""
 
     _is_scalar_like: bool = False
@@ -34,7 +33,7 @@ class Expr(CoreHandler[SqlExpr]):
 
     def _new(
         self,
-        value: SqlExpr,
+        value: sql.SqlExpr,
         *,
         is_scalar_like: bool | None = None,
         is_unique_projection: bool | None = None,
@@ -48,7 +47,9 @@ class Expr(CoreHandler[SqlExpr]):
             ),
         )
 
-    def _new_window(self, expr: SqlExpr, *, is_scalar_like: bool | None = None) -> Self:
+    def _new_window(
+        self, expr: sql.SqlExpr, *, is_scalar_like: bool | None = None
+    ) -> Self:
         return self.__class__(
             expr,
             pc.Option(is_scalar_like).unwrap_or(self._is_scalar_like),
@@ -56,7 +57,7 @@ class Expr(CoreHandler[SqlExpr]):
             _is_unique_projection=self._is_unique_projection,
         )
 
-    def _reversed(self, expr: SqlExpr, *, reverse: bool = False) -> Self:
+    def _reversed(self, expr: sql.SqlExpr, *, reverse: bool = False) -> Self:
         match reverse:
             case True:
                 return self._new_window(expr.over(rows_start=0))
@@ -65,7 +66,7 @@ class Expr(CoreHandler[SqlExpr]):
 
     def _rolling_agg(
         self,
-        agg: Callable[[SqlExpr], SqlExpr],
+        agg: Callable[[sql.SqlExpr], sql.SqlExpr],
         window_size: int,
         min_samples: int | None,
         *,
@@ -113,43 +114,43 @@ class Expr(CoreHandler[SqlExpr]):
         return self.add(other)
 
     def __radd__(self, other: IntoExpr) -> Self:
-        return self._new(into_expr(other).radd(self.inner()))
+        return self._new(sql.into_expr(other).radd(self.inner()))
 
     def __sub__(self, other: IntoExpr) -> Self:
         return self.sub(other)
 
     def __rsub__(self, other: IntoExpr) -> Self:
-        return self._new(self.inner().rsub(into_expr(other)))
+        return self._new(self.inner().rsub(sql.into_expr(other)))
 
     def __mul__(self, other: IntoExpr) -> Self:
         return self.mul(other)
 
     def __rmul__(self, other: IntoExpr) -> Self:
-        return self._new(into_expr(other).rmul(self.inner()))
+        return self._new(sql.into_expr(other).rmul(self.inner()))
 
     def __truediv__(self, other: IntoExpr) -> Self:
         return self.truediv(other)
 
     def __rtruediv__(self, other: IntoExpr) -> Self:
-        return self._new(self.inner().rtruediv(into_expr(other)))
+        return self._new(self.inner().rtruediv(sql.into_expr(other)))
 
     def __floordiv__(self, other: IntoExpr) -> Self:
         return self.floordiv(other)
 
     def __rfloordiv__(self, other: IntoExpr) -> Self:
-        return self._new(self.inner().rfloordiv(into_expr(other)))
+        return self._new(self.inner().rfloordiv(sql.into_expr(other)))
 
     def __mod__(self, other: IntoExpr) -> Self:
         return self.mod(other)
 
     def __rmod__(self, other: IntoExpr) -> Self:
-        return self._new(self.inner().rmod(into_expr(other)))
+        return self._new(self.inner().rmod(sql.into_expr(other)))
 
     def __pow__(self, other: IntoExpr) -> Self:
         return self.pow(other)
 
     def __rpow__(self, other: IntoExpr) -> Self:
-        return self._new(self.inner().rpow(into_expr(other)))
+        return self._new(self.inner().rpow(sql.into_expr(other)))
 
     def __neg__(self) -> Self:
         return self.neg()
@@ -176,13 +177,13 @@ class Expr(CoreHandler[SqlExpr]):
         return self.and_(other)
 
     def __rand__(self, other: IntoExpr) -> Self:
-        return self._new(into_expr(other).rand(self.inner()))
+        return self._new(sql.into_expr(other).rand(self.inner()))
 
     def __or__(self, other: IntoExpr) -> Self:
         return self.or_(other)
 
     def __ror__(self, other: IntoExpr) -> Self:
-        return self._new(into_expr(other).ror(self.inner()))
+        return self._new(sql.into_expr(other).ror(self.inner()))
 
     def __invert__(self) -> Self:
         return self.not_()
@@ -192,25 +193,25 @@ class Expr(CoreHandler[SqlExpr]):
 
     def add(self, other: Any) -> Self:  # noqa: ANN401
         """Add another expression or value."""
-        return self._new(self.inner().add(into_expr(other)))
+        return self._new(self.inner().add(sql.into_expr(other)))
 
     def sub(self, other: Any) -> Self:  # noqa: ANN401
-        return self._new(self.inner().sub(into_expr(other)))
+        return self._new(self.inner().sub(sql.into_expr(other)))
 
     def mul(self, other: Any) -> Self:  # noqa: ANN401
-        return self._new(self.inner().mul(into_expr(other)))
+        return self._new(self.inner().mul(sql.into_expr(other)))
 
     def truediv(self, other: Any) -> Self:  # noqa: ANN401
-        return self._new(self.inner().truediv(into_expr(other)))
+        return self._new(self.inner().truediv(sql.into_expr(other)))
 
     def floordiv(self, other: Any) -> Self:  # noqa: ANN401
-        return self._new(self.inner().floordiv(into_expr(other)))
+        return self._new(self.inner().floordiv(sql.into_expr(other)))
 
     def mod(self, other: Any) -> Self:  # noqa: ANN401
-        return self._new(self.inner().mod(into_expr(other)))
+        return self._new(self.inner().mod(sql.into_expr(other)))
 
     def pow(self, other: Any) -> Self:  # noqa: ANN401
-        return self._new(self.inner().pow(into_expr(other)))
+        return self._new(self.inner().pow(sql.into_expr(other)))
 
     def neg(self) -> Self:
         return self._new(self.inner().neg())
@@ -219,28 +220,28 @@ class Expr(CoreHandler[SqlExpr]):
         return self._new(self.inner().abs())
 
     def eq(self, other: Any) -> Self:  # noqa: ANN401
-        return self._new(self.inner().eq(into_expr(other)))
+        return self._new(self.inner().eq(sql.into_expr(other)))
 
     def ne(self, other: Any) -> Self:  # noqa: ANN401
-        return self._new(self.inner().ne(into_expr(other)))
+        return self._new(self.inner().ne(sql.into_expr(other)))
 
     def lt(self, other: Any) -> Self:  # noqa: ANN401
-        return self._new(self.inner().lt(into_expr(other)))
+        return self._new(self.inner().lt(sql.into_expr(other)))
 
     def le(self, other: Any) -> Self:  # noqa: ANN401
-        return self._new(self.inner().le(into_expr(other)))
+        return self._new(self.inner().le(sql.into_expr(other)))
 
     def gt(self, other: Any) -> Self:  # noqa: ANN401
-        return self._new(self.inner().gt(into_expr(other)))
+        return self._new(self.inner().gt(sql.into_expr(other)))
 
     def ge(self, other: Any) -> Self:  # noqa: ANN401
-        return self._new(self.inner().ge(into_expr(other)))
+        return self._new(self.inner().ge(sql.into_expr(other)))
 
     def and_(self, others: Any) -> Self:  # noqa: ANN401
-        return self._new(self.inner().and_(into_expr(others)))
+        return self._new(self.inner().and_(sql.into_expr(others)))
 
     def or_(self, others: Any) -> Self:  # noqa: ANN401
-        return self._new(self.inner().or_(into_expr(others)))
+        return self._new(self.inner().or_(sql.into_expr(others)))
 
     def not_(self) -> Self:
         return self._new(self.inner().not_())
@@ -263,7 +264,7 @@ class Expr(CoreHandler[SqlExpr]):
 
     def is_in(self, other: Collection[IntoExpr] | IntoExpr) -> Self:
         """Check if value is in an iterable of values."""
-        return self._new(self.inner().is_in(*try_iter(other).map(into_expr)))
+        return self._new(self.inner().is_in(*sql.try_iter(other).map(sql.into_expr)))
 
     def shift(self, n: int = 1) -> Self:
         match n:
@@ -284,8 +285,8 @@ class Expr(CoreHandler[SqlExpr]):
         upper_bound: IntoExpr,
         closed: ClosedInterval = "both",
     ) -> Self:
-        lower_expr = into_expr(lower_bound)
-        upper_expr = into_expr(upper_bound)
+        lower_expr = sql.into_expr(lower_bound)
+        upper_expr = sql.into_expr(upper_bound)
         match closed:
             case "both":
                 return self.ge(lower_expr).and_(self.le(upper_expr))
@@ -303,12 +304,14 @@ class Expr(CoreHandler[SqlExpr]):
             case (None, None):
                 return self
             case (None, upper):
-                return self._new(self.inner().least(into_expr(upper)))
+                return self._new(self.inner().least(sql.into_expr(upper)))
             case (lower, None):
-                return self._new(self.inner().greatest(into_expr(lower)))
+                return self._new(self.inner().greatest(sql.into_expr(lower)))
             case (lower, upper):
                 return self._new(
-                    self.inner().greatest(into_expr(lower)).least(into_expr(upper))
+                    self.inner()
+                    .greatest(sql.into_expr(lower))
+                    .least(sql.into_expr(upper))
                 )
 
     def count(self) -> Self:
@@ -374,7 +377,7 @@ class Expr(CoreHandler[SqlExpr]):
         nans_equal: bool = False,
     ) -> Self:
         """Check if two floating point values are close."""
-        other_expr = into_expr(other)
+        other_expr = sql.into_expr(other)
         threshold = sql.lit(abs_tol).add(sql.lit(rel_tol).mul(other_expr.abs()))
         close = self.inner().sub(other_expr).abs().le(threshold)
         match nans_equal:
@@ -565,15 +568,17 @@ class Expr(CoreHandler[SqlExpr]):
         order_by: IntoExpr | Iterable[IntoExpr] | None = None,
     ) -> Self:
         partition_exprs = (
-            try_iter(partition_by)
+            sql.try_iter(partition_by)
             .chain(more_exprs)
-            .map(lambda x: into_expr(x, as_col=True))
+            .map(lambda x: sql.into_expr(x, as_col=True))
         )
         expr = (
             pc.Option(order_by)
             .map(
                 lambda value: (
-                    try_iter(value).map(lambda x: into_expr(x, as_col=True)).collect()
+                    sql.try_iter(value)
+                    .map(lambda x: sql.into_expr(x, as_col=True))
+                    .collect()
                 )
             )
             .map(lambda x: self.inner().over(partition_exprs, x))
@@ -583,8 +588,8 @@ class Expr(CoreHandler[SqlExpr]):
 
     def filter(self, *predicates: Any) -> Self:  # noqa: ANN401
         cond = (
-            try_flatten(predicates)
-            .map(lambda v: into_expr(v, as_col=True))
+            sql.try_flatten(predicates)
+            .map(lambda v: sql.into_expr(v, as_col=True))
             .fold(sql.lit(value=True), lambda acc, pred: acc.and_(pred))
         )
         return self._new(sql.when(cond, self.inner()).otherwise(sql.lit(None)))
@@ -754,13 +759,13 @@ class Expr(CoreHandler[SqlExpr]):
     def replace(self, old: IntoExpr, new: IntoExpr) -> Self:
         """Replace values."""
         return self._new(
-            sql.when(self.inner().eq(into_expr(old)), new).otherwise(self.inner())
+            sql.when(self.inner().eq(sql.into_expr(old)), new).otherwise(self.inner())
         )
 
     def repeat_by(self, by: Expr | int) -> Self:
         """Repeat values by count, returning a list."""
         return self._new(
-            into_expr(by).list.range().list.transform(sql.fn_once(self.inner()))
+            sql.into_expr(by).list.range().list.transform(sql.fn_once(self.inner()))
         )
 
     def is_duplicated(self) -> Self:
@@ -786,7 +791,7 @@ class Expr(CoreHandler[SqlExpr]):
 
 
 @dataclass(slots=True)
-class ExprStringNameSpace(CoreHandler[SqlExpr]):
+class ExprStringNameSpace(sql.CoreHandler[sql.SqlExpr]):
     """String operations namespace (equivalent to pl.Expr.str)."""
 
     def to_uppercase(self) -> Expr:
@@ -821,10 +826,10 @@ class ExprStringNameSpace(CoreHandler[SqlExpr]):
         self, pattern: str, value: str | IntoExpr, *, literal: bool = False, n: int = 1
     ) -> Expr:
         """Replace first matching substring with a new string value."""
-        value_expr = into_expr(value)
+        value_expr = sql.into_expr(value)
         pattern_expr = sql.lit(re.escape(pattern) if literal else pattern)
 
-        def _replace_once(expr: SqlExpr) -> SqlExpr:
+        def _replace_once(expr: sql.SqlExpr) -> sql.SqlExpr:
             return expr.str.replace(pattern_expr, value_expr)
 
         match n:
@@ -855,7 +860,7 @@ class ExprStringNameSpace(CoreHandler[SqlExpr]):
             case None:
                 return Expr(self.inner().str.ltrim())
             case _:
-                return Expr(self.inner().str.ltrim(into_expr(characters)))
+                return Expr(self.inner().str.ltrim(sql.into_expr(characters)))
 
     def strip_chars_end(self, characters: IntoExpr = None) -> Expr:
         """Strip trailing characters."""
@@ -863,7 +868,7 @@ class ExprStringNameSpace(CoreHandler[SqlExpr]):
             case None:
                 return Expr(self.inner().str.rtrim())
             case _:
-                return Expr(self.inner().str.rtrim(into_expr(characters)))
+                return Expr(self.inner().str.rtrim(sql.into_expr(characters)))
 
     def slice(self, offset: int, length: int | None = None) -> Expr:
         """Extract a substring."""
@@ -879,11 +884,11 @@ class ExprStringNameSpace(CoreHandler[SqlExpr]):
 
     def extract_all(self, pattern: str | Expr) -> Expr:
         """Extract all regex matches."""
-        return Expr(self.inner().re.extract_all(into_expr(pattern)))
+        return Expr(self.inner().re.extract_all(sql.into_expr(pattern)))
 
     def count_matches(self, pattern: str | Expr, *, literal: bool = False) -> Expr:
         """Count pattern matches."""
-        pattern_expr = into_expr(pattern)
+        pattern_expr = sql.into_expr(pattern)
         match literal:
             case False:
                 return Expr(
@@ -909,7 +914,7 @@ class ExprStringNameSpace(CoreHandler[SqlExpr]):
                     )
                 )
             case _:
-                prefix_expr = into_expr(prefix)
+                prefix_expr = sql.into_expr(prefix)
                 return Expr(
                     sql.when(
                         self.inner().str.starts_with(prefix_expr),
@@ -929,7 +934,7 @@ class ExprStringNameSpace(CoreHandler[SqlExpr]):
                     )
                 )
             case _:
-                suffix_expr = into_expr(suffix)
+                suffix_expr = sql.into_expr(suffix)
                 return Expr(
                     sql.when(
                         self.inner().str.ends_with(suffix_expr),
@@ -964,7 +969,7 @@ class ExprStringNameSpace(CoreHandler[SqlExpr]):
         self, pattern: str, value: IntoExpr, *, literal: bool = False
     ) -> Expr:
         """Replace all occurrences."""
-        value_expr = into_expr(value)
+        value_expr = sql.into_expr(value)
         match literal:
             case True:
                 return Expr(self.inner().str.replace(sql.lit(pattern), value_expr))
@@ -992,7 +997,7 @@ class ExprStringNameSpace(CoreHandler[SqlExpr]):
 
 
 @dataclass(slots=True)
-class ExprListNameSpace(CoreHandler[sql.SqlExpr]):
+class ExprListNameSpace(sql.CoreHandler[sql.SqlExpr]):
     """List operations namespace (equivalent to pl.Expr.list)."""
 
     # TODO: reduce, agg, filter
@@ -1011,7 +1016,7 @@ class ExprListNameSpace(CoreHandler[sql.SqlExpr]):
 
     def contains(self, item: IntoExpr, *, nulls_equal: bool = True) -> Expr:
         """Check if sublists contain the given item."""
-        item_expr = into_expr(item)
+        item_expr = sql.into_expr(item)
         contains_expr = self.inner().list.contains(item_expr)
         if nulls_equal:
             return Expr(
@@ -1062,7 +1067,7 @@ class ExprListNameSpace(CoreHandler[sql.SqlExpr]):
 
 
 @dataclass(slots=True)
-class ExprStructNameSpace(CoreHandler[sql.SqlExpr]):
+class ExprStructNameSpace(sql.CoreHandler[sql.SqlExpr]):
     """Struct operations namespace (equivalent to pl.Expr.struct)."""
 
     def field(self, name: str) -> Expr:

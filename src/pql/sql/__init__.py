@@ -2,6 +2,7 @@
 
 from duckdb import table as from_table, table_function as from_table_function
 
+from . import typing
 from ._code_gen import Relation
 from ._core import CoreHandler, try_flatten, try_iter
 from ._datatypes import (
@@ -39,7 +40,6 @@ from ._rel_conversions import (
     from_query,
     from_sequence,
 )
-from ._typing import IntoExpr, IntoExprColumn, IntoRel, NPArrayLike, SeqIntoVals
 
 __all__ = [
     "ArrayType",
@@ -47,16 +47,11 @@ __all__ = [
     "DType",
     "DecimalType",
     "EnumType",
-    "IntoExpr",
-    "IntoExprColumn",
-    "IntoRel",
     "ListType",
     "MapType",
-    "NPArrayLike",
     "RawTypes",
     "Relation",
     "ScalarType",
-    "SeqIntoVals",
     "SqlExpr",
     "SqlType",
     "StructType",
@@ -80,6 +75,7 @@ __all__ = [
     "row_number",
     "try_flatten",
     "try_iter",
+    "typing",
     "unnest",
     "when",
 ]

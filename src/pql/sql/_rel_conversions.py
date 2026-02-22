@@ -1,4 +1,4 @@
-from collections.abc import Iterable, Mapping, Sequence
+from collections.abc import Mapping, Sequence
 from typing import Any, cast
 
 import duckdb
@@ -6,7 +6,7 @@ import narwhals as nw
 import pyochain as pc
 from narwhals.typing import IntoFrame
 
-from ._typing import FrameLike, IntoRel, NPArrayLike, SeqIntoVals
+from .typing import FrameLike, IntoDict, IntoRel, NPArrayLike, SeqIntoVals
 
 
 def _unnest(k: str) -> duckdb.Expression:
@@ -37,7 +37,7 @@ def from_query(relations: pc.Dict[str, IntoRel], query: str) -> duckdb.DuckDBPyR
     """Create a relation from a SQL query."""
 
     def _as_namespace(
-        rels: Iterable[tuple[str, duckdb.DuckDBPyRelation]],
+        rels: IntoDict[str, duckdb.DuckDBPyRelation],
     ) -> duckdb.DuckDBPyRelation:
         namespace = {"dk": duckdb, "qry": query, **dict(rels)}
         py_code = "relation = dk.from_query(qry)"
@@ -95,9 +95,7 @@ def from_df(data: IntoFrame) -> duckdb.DuckDBPyRelation:
             return duckdb.from_arrow(lf.collect())
 
 
-def from_mapping(
-    data: Mapping[str, Any] | Iterable[tuple[str, Any]],
-) -> duckdb.DuckDBPyRelation:
+def from_mapping(data: IntoDict[str, Any]) -> duckdb.DuckDBPyRelation:
     data = pc.Dict(data)
 
     raw_vals = (

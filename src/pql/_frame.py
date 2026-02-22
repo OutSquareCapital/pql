@@ -11,16 +11,6 @@ import pyochain as pc
 from . import sql
 from ._datatypes import DataType
 from ._expr import Expr
-from .sql import (
-    CoreHandler,
-    Relation,
-    SqlExpr,
-    args_into_exprs,
-    into_expr,
-    parse_dtype,
-    try_flatten,
-    try_iter,
-)
 
 if TYPE_CHECKING:
     import polars as pl
@@ -33,7 +23,14 @@ if TYPE_CHECKING:
         OptIter,
         UniqueKeepStrategy,
     )
-    from .sql import IntoExpr, IntoExprColumn, IntoRel, NPArrayLike, SeqIntoVals
+    from .sql.typing import (
+        IntoDict,
+        IntoExpr,
+        IntoExprColumn,
+        IntoRel,
+        NPArrayLike,
+        SeqIntoVals,
+    )
 
 TEMP_NAME = "__pql_temp__"
 TEMP_COL = sql.col(TEMP_NAME)
@@ -71,11 +68,11 @@ class JoinKeys[T: pc.Seq[str] | str](NamedTuple):
     ) -> JoinKeysRes[pc.Seq[str]]:
         match (by, by_left, by_right):
             case (pc.Some(by_key), pc.NONE, pc.NONE):
-                vals = try_iter(by_key).collect()
+                vals = sql.try_iter(by_key).collect()
                 return pc.Ok(JoinKeys(vals, vals))
             case (pc.NONE, pc.Some(bl), pc.Some(br)):
-                left_vals = try_iter(bl).collect()
-                right_vals = try_iter(br).collect()
+                left_vals = sql.try_iter(bl).collect()
+                right_vals = sql.try_iter(br).collect()
                 return (
                     pc.Ok(JoinKeys(left_vals, right_vals))
                     if left_vals.length() == right_vals.length()
@@ -123,7 +120,7 @@ class LazyGroupBy:
     def __init__(
         self,
         frame: LazyFrame,
-        keys: pc.Seq[SqlExpr],
+        keys: pc.Seq[sql.SqlExpr],
     ) -> None:
         self._frame = frame
         self._keys = keys
@@ -136,19 +133,19 @@ class LazyGroupBy:
     ) -> LazyFrame:
         return self._frame.__from_lf__(
             self._frame.inner().aggregate(
-                self._keys.iter().chain(args_into_exprs(aggs, named_aggs)),
+                self._keys.iter().chain(sql.args_into_exprs(aggs, named_aggs)),
                 self._group_expr,
             )
         )
 
 
-class LazyFrame(CoreHandler[Relation]):
+class LazyFrame(sql.CoreHandler[sql.Relation]):
     """LazyFrame providing Polars-like API over DuckDB relations."""
 
     __slots__ = ()
 
     def __init__(self, data: IntoRel) -> None:
-        self._inner = Relation(data)
+        self._inner = sql.Relation(data)
 
     @classmethod
     def from_query(cls, query: str, **relations: IntoRel) -> Self:
@@ -171,9 +168,7 @@ class LazyFrame(CoreHandler[Relation]):
         return cls(sql.from_numpy(arr))
 
     @classmethod
-    def from_mapping(
-        cls, mapping: Mapping[str, Any] | Iterable[tuple[str, Any]]
-    ) -> Self:
+    def from_mapping(cls, mapping: IntoDict[str, Any]) -> Self:
         return cls(sql.from_mapping(mapping))
 
     @classmethod
@@ -183,7 +178,7 @@ class LazyFrame(CoreHandler[Relation]):
     def __repr__(self) -> str:
         return f"LazyFrame\n{self.inner()}\n"
 
-    def __from_lf__(self, rel: Relation) -> Self:
+    def __from_lf__(self, rel: sql.Relation) -> Self:
         instance = self.__class__.__new__(self.__class__)
         instance._inner = rel
         return instance
@@ -193,17 +188,17 @@ class LazyFrame(CoreHandler[Relation]):
     ) -> Self:
         return self.__from_lf__(
             self.inner().select(
-                *try_flatten(exprs).map(lambda v: into_expr(v, as_col=True)),
+                *sql.try_flatten(exprs).map(lambda v: sql.into_expr(v, as_col=True)),
                 groups=groups,
             )
         )
 
     def _filter(self, predicates: IntoExprColumn | Iterable[IntoExprColumn]) -> Self:
-        return try_iter(predicates).fold(
+        return sql.try_iter(predicates).fold(
             self,
             lambda lf, p: (
-                try_flatten(p)
-                .map(lambda v: into_expr(v, as_col=True))
+                sql.try_flatten(p)
+                .map(lambda v: sql.into_expr(v, as_col=True))
                 .fold(
                     lf,
                     lambda inner_lf, pred: inner_lf.__from_lf__(
@@ -216,18 +211,19 @@ class LazyFrame(CoreHandler[Relation]):
     def _agg(
         self,
         exprs: IntoExprColumn | Iterable[IntoExprColumn],
-        group_expr: SqlExpr | str = "",
+        group_expr: sql.SqlExpr | str = "",
     ) -> Self:
         return self.__from_lf__(
             self.inner().aggregate(
-                try_flatten(exprs).map(lambda v: into_expr(v, as_col=True)), group_expr
+                sql.try_flatten(exprs).map(lambda v: sql.into_expr(v, as_col=True)),
+                group_expr,
             )
         )
 
-    def _iter_slct(self, func: Callable[[str], SqlExpr]) -> Self:
+    def _iter_slct(self, func: Callable[[str], sql.SqlExpr]) -> Self:
         return self.columns.iter().map(func).into(self._select)
 
-    def _iter_agg(self, func: Callable[[SqlExpr], SqlExpr]) -> Self:
+    def _iter_agg(self, func: Callable[[sql.SqlExpr], sql.SqlExpr]) -> Self:
         return (
             self.columns.iter().map(lambda c: func(sql.col(c)).alias(c)).into(self._agg)
         )
@@ -244,7 +240,7 @@ class LazyFrame(CoreHandler[Relation]):
         self, *exprs: IntoExpr | Iterable[IntoExpr], **named_exprs: IntoExpr
     ) -> Self:
         """Select columns or expressions."""
-        flat = try_iter(exprs).flat_map(try_iter).collect()
+        flat = sql.try_iter(exprs).flat_map(sql.try_iter).collect()
 
         def _is_expr(val: object) -> TypeIs[Expr]:
             return isinstance(val, Expr)
@@ -272,7 +268,7 @@ class LazyFrame(CoreHandler[Relation]):
                             .iter()
                             .map_star(
                                 lambda name, expr: (
-                                    f"{into_expr(expr).inner()} AS {name}"
+                                    f"{sql.into_expr(expr).inner()} AS {name}"
                                 )
                             )
                         )
@@ -308,15 +304,15 @@ class LazyFrame(CoreHandler[Relation]):
             case _:
                 pass
         if _is_scalar_select():
-            return args_into_exprs(exprs, named_exprs).into(self._agg)
-        return args_into_exprs(exprs, named_exprs).into(self._select)
+            return sql.args_into_exprs(exprs, named_exprs).into(self._agg)
+        return sql.args_into_exprs(exprs, named_exprs).into(self._select)
 
     def with_columns(
         self, *exprs: IntoExpr | Iterable[IntoExpr], **named_exprs: IntoExpr
     ) -> Self:
         """Add or replace columns."""
         return (
-            args_into_exprs(exprs, named_exprs=named_exprs)
+            sql.args_into_exprs(exprs, named_exprs=named_exprs)
             .insert(sql.all())
             .into(self._select)
         )
@@ -328,12 +324,12 @@ class LazyFrame(CoreHandler[Relation]):
     ) -> Self:
         """Filter rows based on predicates and equality constraints."""
         return (
-            args_into_exprs(predicates)
+            sql.args_into_exprs(predicates)
             .chain(
                 pc.Dict.from_ref(constraints)
                 .items()
                 .iter()
-                .map_star(lambda name, value: sql.col(name).eq(into_expr(value)))
+                .map_star(lambda name, value: sql.col(name).eq(sql.into_expr(value)))
             )
             .into(self._filter)
         )
@@ -348,7 +344,7 @@ class LazyFrame(CoreHandler[Relation]):
         """Sort by columns."""
 
         def _args_iter(
-            sort_exprs: pc.Seq[SqlExpr], name: str, *, arg: bool | Sequence[bool]
+            sort_exprs: pc.Seq[sql.SqlExpr], name: str, *, arg: bool | Sequence[bool]
         ) -> pc.Result[pc.Iter[bool], ValueError]:
             match arg:
                 case bool():
@@ -359,7 +355,7 @@ class LazyFrame(CoreHandler[Relation]):
                         return pc.Err(ValueError(msg))
                     return pc.Ok(pc.Iter(arg))
 
-        def _make_order(col: SqlExpr, desc: bool, nl: bool) -> SqlExpr:  # noqa: FBT001
+        def _make_order(col: sql.SqlExpr, desc: bool, nl: bool) -> sql.SqlExpr:  # noqa: FBT001
             match (desc, nl):
                 case (True, True):
                     return col.desc().nulls_last()
@@ -371,9 +367,9 @@ class LazyFrame(CoreHandler[Relation]):
                     return col.asc()
 
         sort_exprs = (
-            try_iter(by)
+            sql.try_iter(by)
             .chain(more_by)
-            .map(lambda v: into_expr(v, as_col=True))
+            .map(lambda v: sql.into_expr(v, as_col=True))
             .collect()
         )
 
@@ -404,7 +400,7 @@ class LazyFrame(CoreHandler[Relation]):
         """Drop rows that contain null values."""
         return (
             pc.Option(subset)
-            .map(try_iter)
+            .map(sql.try_iter)
             .unwrap_or_else(self.columns.iter)
             .map(lambda name: sql.col(name).is_not_null())
             .into(self._filter)
@@ -412,7 +408,7 @@ class LazyFrame(CoreHandler[Relation]):
 
     def explode(self, columns: str | Sequence[str], *more_columns: str) -> Self:
         """Explode list-like columns."""
-        to_explode_names = try_iter(columns).chain(more_columns).collect()
+        to_explode_names = sql.try_iter(columns).chain(more_columns).collect()
         to_explode = to_explode_names.iter().map(sql.col).collect()
         target = (
             to_explode.first()
@@ -433,7 +429,7 @@ class LazyFrame(CoreHandler[Relation]):
         )
         is_single_explode = to_explode.length() == 1
 
-        def _explode_expr(name: str, replace: SqlExpr) -> SqlExpr:
+        def _explode_expr(name: str, replace: sql.SqlExpr) -> sql.SqlExpr:
             match is_single_explode:
                 case True:
                     return replace.alias(name)
@@ -442,7 +438,9 @@ class LazyFrame(CoreHandler[Relation]):
                         sql.lit(zipped_index.get_item(name).unwrap()),
                     ).alias(name)
 
-        def _project_col(name: str, *, unnest: bool, replace: SqlExpr) -> SqlExpr:
+        def _project_col(
+            name: str, *, unnest: bool, replace: sql.SqlExpr
+        ) -> sql.SqlExpr:
             match (unnest, name in to_explode_names):
                 case (True, True):
                     return _explode_expr(name, replace)
@@ -451,7 +449,7 @@ class LazyFrame(CoreHandler[Relation]):
                 case _:
                     return sql.col(name)
 
-        def _proj(*, unnest: bool) -> pc.Iter[SqlExpr]:
+        def _proj(*, unnest: bool) -> pc.Iter[sql.SqlExpr]:
             replace = sql.unnest(target) if unnest else sql.lit(None)
             return self.columns.iter().map(
                 lambda name: _project_col(name, unnest=unnest, replace=replace)
@@ -494,35 +492,39 @@ class LazyFrame(CoreHandler[Relation]):
 
     def count(self) -> Self:
         """Return the count of each column."""
-        return self._iter_agg(SqlExpr.count)
+        return self._iter_agg(sql.SqlExpr.count)
 
     def sum(self) -> Self:
         """Aggregate the sum of each column."""
-        return self._iter_agg(SqlExpr.sum)
+        return self._iter_agg(sql.SqlExpr.sum)
 
     def mean(self) -> Self:
         """Aggregate the mean of each column."""
-        return self._iter_agg(SqlExpr.avg)
+        return self._iter_agg(sql.SqlExpr.avg)
 
     def median(self) -> Self:
         """Aggregate the median of each column."""
-        return self._iter_agg(SqlExpr.median)
+        return self._iter_agg(sql.SqlExpr.median)
 
     def min(self) -> Self:
         """Aggregate the minimum of each column."""
-        return self._iter_agg(SqlExpr.min)
+        return self._iter_agg(sql.SqlExpr.min)
 
     def max(self) -> Self:
         """Aggregate the maximum of each column."""
-        return self._iter_agg(SqlExpr.max)
+        return self._iter_agg(sql.SqlExpr.max)
 
     def std(self, ddof: int = 1) -> Self:
         """Aggregate the standard deviation of each column."""
-        return self._iter_agg(SqlExpr.stddev_samp if ddof == 1 else SqlExpr.stddev_pop)
+        return self._iter_agg(
+            sql.SqlExpr.stddev_samp if ddof == 1 else sql.SqlExpr.stddev_pop
+        )
 
     def var(self, ddof: int = 1) -> Self:
         """Aggregate the variance of each column."""
-        return self._iter_agg(SqlExpr.var_samp if ddof == 1 else SqlExpr.var_pop)
+        return self._iter_agg(
+            sql.SqlExpr.var_samp if ddof == 1 else sql.SqlExpr.var_pop
+        )
 
     def null_count(self) -> Self:
         """Return the null count of each column."""
@@ -532,7 +534,7 @@ class LazyFrame(CoreHandler[Relation]):
         """Fill NaN values."""
         return self._iter_slct(
             lambda c: (
-                sql.when(sql.col(c).isnan(), into_expr(value, as_col=True))
+                sql.when(sql.col(c).isnan(), sql.into_expr(value, as_col=True))
                 .otherwise(sql.col(c))
                 .alias(c)
             )
@@ -544,16 +546,18 @@ class LazyFrame(CoreHandler[Relation]):
         match n:
             case n_val if n_val < 0:
 
-                def _shift_fn(c: str) -> SqlExpr:
+                def _shift_fn(c: str) -> sql.SqlExpr:
                     return sql.col(c).lead(sql.lit(abs_n)).alias(c)
 
             case _:
 
-                def _shift_fn(c: str) -> SqlExpr:
+                def _shift_fn(c: str) -> sql.SqlExpr:
                     return sql.col(c).lag(sql.lit(abs_n)).alias(c)
 
         return self._iter_slct(
-            lambda c: sql.coalesce(_shift_fn(c).over(), into_expr(fill_value)).alias(c)
+            lambda c: sql.coalesce(
+                _shift_fn(c).over(), sql.into_expr(fill_value)
+            ).alias(c)
         )
 
     def clone(self) -> Self:
@@ -588,7 +592,10 @@ class LazyFrame(CoreHandler[Relation]):
             self.columns.iter()
             .zip(self.inner().dtypes, strict=True)
             .map_star(
-                lambda name, dtype: (name, DataType.__from_sql__(parse_dtype(dtype)))
+                lambda name, dtype: (
+                    name,
+                    DataType.__from_sql__(sql.parse_dtype(dtype)),
+                )
             )
             .collect(pc.Dict)
         )
@@ -602,9 +609,9 @@ class LazyFrame(CoreHandler[Relation]):
     ) -> LazyGroupBy:
         """Start a group by operation."""
         key_exprs = (
-            try_iter(keys)
-            .flat_map(try_iter)
-            .map(lambda key: into_expr(key, as_col=True))
+            sql.try_iter(keys)
+            .flat_map(sql.try_iter)
+            .map(lambda key: sql.into_expr(key, as_col=True))
             .collect()
         )
         grouped_frame = (
@@ -625,9 +632,13 @@ class LazyFrame(CoreHandler[Relation]):
         suffix: str = "_right",
     ) -> Self:
         """Join with another LazyFrame."""
-        on_opt = pc.Option(on).map(lambda value: try_iter(value).collect())
-        left_on_opt = pc.Option(left_on).map(lambda value: try_iter(value).collect())
-        right_on_opt = pc.Option(right_on).map(lambda value: try_iter(value).collect())
+        on_opt = pc.Option(on).map(lambda value: sql.try_iter(value).collect())
+        left_on_opt = pc.Option(left_on).map(
+            lambda value: sql.try_iter(value).collect()
+        )
+        right_on_opt = pc.Option(right_on).map(
+            lambda value: sql.try_iter(value).collect()
+        )
         native_how = "outer" if how == "full" else how
 
         def _validate_cross() -> pc.Result[None, ValueError]:
@@ -665,12 +676,12 @@ class LazyFrame(CoreHandler[Relation]):
                                 sql.col(f'rhs."{right}"')
                             )
                         )
-                        .reduce(SqlExpr.and_),
+                        .reduce(sql.SqlExpr.and_),
                         how=native_how,
                     )
                 )
 
-        def _rhs_expr(name: str) -> pc.Option[SqlExpr]:
+        def _rhs_expr(name: str) -> pc.Option[sql.SqlExpr]:
             col_in_lhs = name in self.columns
             is_join_key = name in right_on_set
             match (native_how == "outer", col_in_lhs, is_join_key):
@@ -727,7 +738,7 @@ class LazyFrame(CoreHandler[Relation]):
         if on is not None:
             drop_keys.add(on_keys.right)
 
-        def _rhs_expr(name: str) -> pc.Option[SqlExpr]:
+        def _rhs_expr(name: str) -> pc.Option[sql.SqlExpr]:
             match (name in drop_keys, name in left_columns):
                 case (True, _):
                     return pc.NONE
@@ -739,7 +750,7 @@ class LazyFrame(CoreHandler[Relation]):
         lhs_select = self.columns.iter().map(lambda c: sql.col(f'{lhs}."{c}"'))
         rhs_select = other.columns.iter().map(_rhs_expr).filter_map(lambda x: x)
 
-        def _expr_sql(expr: SqlExpr) -> str:
+        def _expr_sql(expr: sql.SqlExpr) -> str:
             base_sql = str(expr)
             alias_name = expr.inner().get_name()
             return base_sql if alias_name == base_sql else f"{base_sql} AS {alias_name}"
@@ -757,12 +768,12 @@ class LazyFrame(CoreHandler[Relation]):
         rhs_key = sql.col(f'{rhs}."{on_keys.right}"')
         lhs_cols = lhs_select.chain(rhs_select).map(_expr_sql).join(", ")
 
-        def _simple_asof_join(comparison: Callable[[SqlExpr], SqlExpr]) -> Self:
+        def _simple_asof_join(comparison: Callable[[sql.SqlExpr], sql.SqlExpr]) -> Self:
             return self.from_query(
                 f"""--sql
                         SELECT {lhs_cols}
                         FROM _lhs
-                        ASOF LEFT JOIN _rhs ON {by_cond.chain(pc.Iter.once(comparison(rhs_key))).reduce(SqlExpr.and_)}
+                        ASOF LEFT JOIN _rhs ON {by_cond.chain(pc.Iter.once(comparison(rhs_key))).reduce(sql.SqlExpr.and_)}
                         """,
                 _lhs=self.inner().set_alias(lhs).inner(),
                 _rhs=other.inner().set_alias(rhs).inner(),
@@ -777,7 +788,7 @@ class LazyFrame(CoreHandler[Relation]):
                 asof_order = "__pql_asof_order__"
                 asof_rank = "__pql_asof_rank__"
                 condition = by_cond.chain(pc.Iter.once(lhs_key.ge(rhs_key))).reduce(
-                    SqlExpr.and_
+                    sql.SqlExpr.and_
                 )
 
                 return self.__from_lf__(
@@ -816,7 +827,9 @@ class LazyFrame(CoreHandler[Relation]):
         order_by: str | Sequence[str] | None = None,
     ) -> Self:
         """Drop duplicate rows from this LazyFrame."""
-        order_by_opt = pc.Option(order_by).map(lambda value: try_iter(value).collect())
+        order_by_opt = pc.Option(order_by).map(
+            lambda value: sql.try_iter(value).collect()
+        )
         (
             pc.Err(
                 ValueError(
@@ -830,7 +843,7 @@ class LazyFrame(CoreHandler[Relation]):
 
         subset_cols = (
             pc.Option(subset)
-            .map(lambda value: try_iter(value).map(sql.col))
+            .map(lambda value: sql.try_iter(value).map(sql.col))
             .unwrap_or(self.columns.iter().map(sql.col))
         )
         order_cols_opt = order_by_opt.map(lambda cols: cols.iter().map(sql.col))
@@ -870,12 +883,12 @@ class LazyFrame(CoreHandler[Relation]):
         """Unpivot from wide to long format."""
         index_cols = (
             pc.Option(index)
-            .map(lambda value: try_iter(value).collect())
+            .map(lambda value: sql.try_iter(value).collect())
             .unwrap_or(pc.Seq[str].new())
         )
         on_cols = (
             pc.Option(on)
-            .map(lambda value: try_iter(value).collect())
+            .map(lambda value: sql.try_iter(value).collect())
             .unwrap_or(
                 self.columns.iter()
                 .filter(lambda name: name not in index_cols)
@@ -902,7 +915,7 @@ class LazyFrame(CoreHandler[Relation]):
         return self._select(
             (
                 sql.row_number()
-                .over(order_by=try_iter(order_by).map(sql.col))
+                .over(order_by=sql.try_iter(order_by).map(sql.col))
                 .sub(sql.lit(1))
                 .alias(name),
                 sql.all(),

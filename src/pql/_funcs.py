@@ -2,7 +2,7 @@ from collections.abc import Iterable
 
 from . import sql
 from ._expr import Expr
-from .sql._typing import IntoExpr, IntoExprColumn
+from .sql.typing import IntoExpr, IntoExprColumn
 
 
 class Col:

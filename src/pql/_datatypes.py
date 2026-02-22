@@ -3,26 +3,17 @@
 from __future__ import annotations
 
 from abc import ABC
-from collections.abc import Iterable, Mapping
+from collections.abc import Iterable
 from dataclasses import MISSING, Field, dataclass, field, fields
 from enum import Enum as PyEnum
-from typing import Any, Literal, Self
+from typing import TYPE_CHECKING, Any, Literal, Self
 
 import pyochain as pc
 
-from .sql import (
-    ArrayType,
-    DecimalType,
-    DType,
-    EnumType,
-    ListType,
-    MapType,
-    RawTypes,
-    ScalarType,
-    SqlType,
-    StructType,
-    UnionType,
-)
+from . import sql
+
+if TYPE_CHECKING:
+    from .sql.typing import IntoDict
 
 TimeUnit = Literal["s", "ms", "us", "ns"]
 
@@ -30,11 +21,11 @@ TimeUnit = Literal["s", "ms", "us", "ns"]
 class DataType(ABC):
     """Base class for data types."""
 
-    raw: SqlType
+    raw: sql.SqlType
     __slots__ = ()
 
     @staticmethod
-    def __from_sql__(dtype: SqlType) -> DataType:
+    def __from_sql__(dtype: sql.SqlType) -> DataType:
         """Recursively convert a raw SQL type to a PQL DataType using the strategy pattern.
 
         This is not meant to be called directly by the user, and is only used internally by the schema property in `LazyFrame`.
@@ -48,102 +39,102 @@ class DataType(ABC):
 
 @dataclass(slots=True)
 class Binary(DataType):
-    raw = ScalarType.BLOB
+    raw = sql.ScalarType.BLOB
 
 
 @dataclass(slots=True)
 class Time(DataType):
-    raw = ScalarType.TIME
+    raw = sql.ScalarType.TIME
 
 
 @dataclass(slots=True)
 class Duration(DataType):
-    raw = ScalarType.INTERVAL
+    raw = sql.ScalarType.INTERVAL
 
 
 @dataclass(slots=True)
 class Boolean(DataType):
-    raw = ScalarType.BOOLEAN
+    raw = sql.ScalarType.BOOLEAN
 
 
 @dataclass(slots=True)
 class String(DataType):
-    raw = ScalarType.VARCHAR
+    raw = sql.ScalarType.VARCHAR
 
 
 @dataclass(slots=True)
 class Date(DataType):
-    raw = ScalarType.DATE
+    raw = sql.ScalarType.DATE
 
 
 @dataclass(slots=True)
 class Float32(DataType):
-    raw = ScalarType.FLOAT
+    raw = sql.ScalarType.FLOAT
 
 
 @dataclass(slots=True)
 class Float64(DataType):
-    raw = ScalarType.DOUBLE
+    raw = sql.ScalarType.DOUBLE
 
 
 @dataclass(slots=True)
 class Int8(DataType):
-    raw = ScalarType.TINYINT
+    raw = sql.ScalarType.TINYINT
 
 
 @dataclass(slots=True)
 class Int16(DataType):
-    raw = ScalarType.SMALLINT
+    raw = sql.ScalarType.SMALLINT
 
 
 @dataclass(slots=True)
 class Int32(DataType):
-    raw = ScalarType.INTEGER
+    raw = sql.ScalarType.INTEGER
 
 
 @dataclass(slots=True)
 class Int64(DataType):
-    raw = ScalarType.BIGINT
+    raw = sql.ScalarType.BIGINT
 
 
 @dataclass(slots=True)
 class Int128(DataType):
-    raw = ScalarType.HUGEINT
+    raw = sql.ScalarType.HUGEINT
 
 
 @dataclass(slots=True)
 class UInt8(DataType):
-    raw = ScalarType.UTINYINT
+    raw = sql.ScalarType.UTINYINT
 
 
 @dataclass(slots=True)
 class UInt16(DataType):
-    raw = ScalarType.USMALLINT
+    raw = sql.ScalarType.USMALLINT
 
 
 @dataclass(slots=True)
 class UInt32(DataType):
-    raw = ScalarType.UINTEGER
+    raw = sql.ScalarType.UINTEGER
 
 
 @dataclass(slots=True)
 class UInt64(DataType):
-    raw = ScalarType.UBIGINT
+    raw = sql.ScalarType.UBIGINT
 
 
 @dataclass(slots=True)
 class UInt128(DataType):
-    raw = ScalarType.UHUGEINT
+    raw = sql.ScalarType.UHUGEINT
 
 
 @dataclass(slots=True)
 class DatetimeTZ(DataType):
-    raw = ScalarType.TIMESTAMP_TZ
+    raw = sql.ScalarType.TIMESTAMP_TZ
 
 
 @dataclass(slots=True, init=False)
 class Datetime(DataType):
-    raw: DType
+    raw: sql.DType
     time_unit: TimeUnit
 
     def __init__(self, time_unit: TimeUnit = "ns") -> None:
@@ -154,7 +145,7 @@ class Datetime(DataType):
 
 
 @dataclass(slots=True, init=False)
-class ComplexDataType[T: SqlType](DataType):
+class ComplexDataType[T: sql.SqlType](DataType):
     """Base class for complex data types."""
 
     raw: T
@@ -183,11 +174,11 @@ class ComplexDataType[T: SqlType](DataType):
 
 
 @dataclass(slots=True, init=False)
-class Union(ComplexDataType[UnionType]):
+class Union(ComplexDataType[sql.UnionType]):
     _fields: pc.Option[pc.Seq[DataType]] = field(default_factory=lambda: pc.NONE)
 
     def __init__(self, fields: Iterable[DataType]) -> None:
-        self.raw = UnionType.new(
+        self.raw = sql.UnionType.new(
             pc.Iter(fields).iter().map(lambda f: f.raw.to_duckdb())
         )
 
@@ -203,12 +194,12 @@ class Union(ComplexDataType[UnionType]):
 
 
 @dataclass(slots=True, init=False)
-class Map(ComplexDataType[MapType]):
+class Map(ComplexDataType[sql.MapType]):
     _key: pc.Option[DataType] = field(default_factory=lambda: pc.NONE)
     _value: pc.Option[DataType] = field(default_factory=lambda: pc.NONE)
 
     def __init__(self, key: DataType, value: DataType) -> None:
-        self.raw = MapType.new(key.raw.to_duckdb(), value.raw.to_duckdb())
+        self.raw = sql.MapType.new(key.raw.to_duckdb(), value.raw.to_duckdb())
 
     @property
     def key(self) -> DataType:
@@ -224,9 +215,9 @@ class Map(ComplexDataType[MapType]):
 
 
 @dataclass(slots=True, init=False)
-class Decimal(ComplexDataType[DecimalType]):
+class Decimal(ComplexDataType[sql.DecimalType]):
     def __init__(self, precision: int = 18, scale: int = 0) -> None:
-        self.raw = DecimalType.new(precision, scale)
+        self.raw = sql.DecimalType.new(precision, scale)
 
     @property
     def precision(self) -> int:
@@ -238,11 +229,11 @@ class Decimal(ComplexDataType[DecimalType]):
 
 
 @dataclass(slots=True, init=False)
-class Array(ComplexDataType[ArrayType]):
+class Array(ComplexDataType[sql.ArrayType]):
     _inner: pc.Option[DataType] = field(default_factory=lambda: pc.NONE)
 
     def __init__(self, inner: DataType, shape: int = 1) -> None:
-        self.raw = ArrayType.new(inner.raw.to_duckdb(), shape)
+        self.raw = sql.ArrayType.new(inner.raw.to_duckdb(), shape)
 
     def with_dim(self, shape: int) -> Self:
         """Add another level of nesting to the array."""
@@ -260,9 +251,9 @@ class Array(ComplexDataType[ArrayType]):
 
 
 @dataclass(slots=True, init=False)
-class List(ComplexDataType[ListType]):
+class List(ComplexDataType[sql.ListType]):
     def __init__(self, inner: DataType) -> None:
-        self.raw = ListType.new(inner.raw.to_duckdb())
+        self.raw = sql.ListType.new(inner.raw.to_duckdb())
 
     @property
     def inner(self) -> DataType:
@@ -270,11 +261,9 @@ class List(ComplexDataType[ListType]):
 
 
 @dataclass(slots=True, init=False)
-class Struct(ComplexDataType[StructType]):
-    def __init__(
-        self, fields: Mapping[str, DataType] | Iterable[tuple[str, DataType]]
-    ) -> None:
-        self.raw = StructType.new(
+class Struct(ComplexDataType[sql.StructType]):
+    def __init__(self, fields: IntoDict[str, DataType]) -> None:
+        self.raw = sql.StructType.new(
             pc.Dict(fields)
             .items()
             .iter()
@@ -291,61 +280,61 @@ class Struct(ComplexDataType[StructType]):
 
 
 @dataclass(slots=True, init=False)
-class Enum(ComplexDataType[EnumType]):
+class Enum(ComplexDataType[sql.EnumType]):
     def __init__(self, categories: Iterable[str] | type[PyEnum]) -> None:
-        self.raw = EnumType.new(categories)
+        self.raw = sql.EnumType.new(categories)
 
     @property
     def categories(self) -> pc.Vec[str]:
         return self.raw.child.values
 
 
-PRECISION_MAP: pc.Dict[TimeUnit, DType] = pc.Dict.from_ref(
+PRECISION_MAP: pc.Dict[TimeUnit, sql.DType] = pc.Dict.from_ref(
     {
-        "s": DType(str(RawTypes.TIMESTAMP_S), RawTypes.TIMESTAMP_S),
-        "ms": DType(str(RawTypes.TIMESTAMP_MS), RawTypes.TIMESTAMP_MS),
-        "us": DType(str(RawTypes.TIMESTAMP), RawTypes.TIMESTAMP),
-        "ns": DType(str(RawTypes.TIMESTAMP_NS), RawTypes.TIMESTAMP_NS),
+        "s": sql.DType(str(sql.RawTypes.TIMESTAMP_S), sql.RawTypes.TIMESTAMP_S),
+        "ms": sql.DType(str(sql.RawTypes.TIMESTAMP_MS), sql.RawTypes.TIMESTAMP_MS),
+        "us": sql.DType(str(sql.RawTypes.TIMESTAMP), sql.RawTypes.TIMESTAMP),
+        "ns": sql.DType(str(sql.RawTypes.TIMESTAMP_NS), sql.RawTypes.TIMESTAMP_NS),
     }
 )
 
 
 NESTED_MAP: pc.Dict[str, type[ComplexDataType[Any]]] = pc.Dict.from_ref(
     {
-        RawTypes.LIST: List,
-        RawTypes.STRUCT: Struct,
-        RawTypes.MAP: Map,
-        RawTypes.UNION: Union,
-        RawTypes.ARRAY: Array,
-        RawTypes.ENUM: Enum,
-        RawTypes.DECIMAL: Decimal,
+        sql.RawTypes.LIST: List,
+        sql.RawTypes.STRUCT: Struct,
+        sql.RawTypes.MAP: Map,
+        sql.RawTypes.UNION: Union,
+        sql.RawTypes.ARRAY: Array,
+        sql.RawTypes.ENUM: Enum,
+        sql.RawTypes.DECIMAL: Decimal,
     }
 )
 
 NON_NESTED_MAP: pc.Dict[str, DataType] = pc.Dict.from_ref(
     {
-        RawTypes.HUGEINT: Int128(),
-        RawTypes.BIGINT: Int64(),
-        RawTypes.INTEGER: Int32(),
-        RawTypes.SMALLINT: Int16(),
-        RawTypes.TINYINT: Int8(),
-        RawTypes.UHUGEINT: UInt128(),
-        RawTypes.UBIGINT: UInt64(),
-        RawTypes.UINTEGER: UInt32(),
-        RawTypes.USMALLINT: UInt16(),
-        RawTypes.UTINYINT: UInt8(),
-        RawTypes.DOUBLE: Float64(),
-        RawTypes.FLOAT: Float32(),
-        RawTypes.VARCHAR: String(),
-        RawTypes.DATE: Date(),
-        RawTypes.TIMESTAMP_S: Datetime("s"),
-        RawTypes.TIMESTAMP_MS: Datetime("ms"),
-        RawTypes.TIMESTAMP: Datetime(),
-        RawTypes.TIMESTAMP_NS: Datetime("ns"),
-        RawTypes.TIMESTAMP_TZ: DatetimeTZ(),
-        RawTypes.BOOLEAN: Boolean(),
-        RawTypes.INTERVAL: Duration(),
-        RawTypes.TIME: Time(),
-        RawTypes.BLOB: Binary(),
+        sql.RawTypes.HUGEINT: Int128(),
+        sql.RawTypes.BIGINT: Int64(),
+        sql.RawTypes.INTEGER: Int32(),
+        sql.RawTypes.SMALLINT: Int16(),
+        sql.RawTypes.TINYINT: Int8(),
+        sql.RawTypes.UHUGEINT: UInt128(),
+        sql.RawTypes.UBIGINT: UInt64(),
+        sql.RawTypes.UINTEGER: UInt32(),
+        sql.RawTypes.USMALLINT: UInt16(),
+        sql.RawTypes.UTINYINT: UInt8(),
+        sql.RawTypes.DOUBLE: Float64(),
+        sql.RawTypes.FLOAT: Float32(),
+        sql.RawTypes.VARCHAR: String(),
+        sql.RawTypes.DATE: Date(),
+        sql.RawTypes.TIMESTAMP_S: Datetime("s"),
+        sql.RawTypes.TIMESTAMP_MS: Datetime("ms"),
+        sql.RawTypes.TIMESTAMP: Datetime(),
+        sql.RawTypes.TIMESTAMP_NS: Datetime("ns"),
+        sql.RawTypes.TIMESTAMP_TZ: DatetimeTZ(),
+        sql.RawTypes.BOOLEAN: Boolean(),
+        sql.RawTypes.INTERVAL: Duration(),
+        sql.RawTypes.TIME: Time(),
+        sql.RawTypes.BLOB: Binary(),
     }
 )
