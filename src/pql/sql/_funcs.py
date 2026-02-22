@@ -62,7 +62,7 @@ def fn_once(rhs: SqlExpr) -> SqlExpr:
     return SqlExpr(LAMBDA_EXPR(rhs.inner()))
 
 
-def all(*, exclude: Iterable[IntoExprColumn] | None = None) -> SqlExpr:
+def all(exclude: Iterable[IntoExprColumn] | None = None) -> SqlExpr:
     return (
         pc.Option(exclude)
         .map(lambda x: pc.Iter(x).map(lambda e: into_expr(e, as_col=True).inner()))
