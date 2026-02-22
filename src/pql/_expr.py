@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import re
 from collections.abc import Callable, Collection, Iterable
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any, Self
 
 import pyochain as pc
@@ -21,28 +21,46 @@ if TYPE_CHECKING:
         RoundMode,
     )
     from .sql.typing import IntoExpr
+TRUE = pc.Some(value=True)
 
 
 @dataclass(slots=True)
 class Expr(sql.CoreHandler[sql.SqlExpr]):
     """Expression wrapper providing Polars-like API over DuckDB expressions."""
 
+    _root_name: pc.Option[str] = field(default_factory=lambda: pc.NONE)
+    _alias_output_name: pc.Option[Callable[[str], str]] = field(
+        default_factory=lambda: pc.NONE
+    )
+
     _is_scalar_like: bool = False
     _has_window: bool = False
     _is_unique_projection: bool = False
 
-    def _new(
+    def __post_init__(self) -> None:
+        self._root_name = self._root_name.or_else(
+            lambda: pc.Some(self.inner().inner().get_name()).filter(
+                lambda name: name != "*"
+            )
+        )
+
+    def _new(  # noqa: PLR0913
         self,
         value: sql.SqlExpr,
+        root_name: pc.Option[str] = pc.NONE,
+        alias_output_name: pc.Option[Callable[[str], str]] = pc.NONE,
         *,
-        is_scalar_like: bool | None = None,
-        is_unique_projection: bool | None = None,
+        is_scalar_like: pc.Option[bool] = pc.NONE,
+        is_unique_projection: pc.Option[bool] = pc.NONE,
+        keep_alias_output_name: bool = True,
     ) -> Self:
         return self.__class__(
             value,
-            pc.Option(is_scalar_like).unwrap_or(self._is_scalar_like),
+            root_name.or_else(lambda: self._root_name),
+            self._alias_output_name if keep_alias_output_name else alias_output_name,
+            is_scalar_like.unwrap_or(self._is_scalar_like),
             _has_window=self._has_window,
-            _is_unique_projection=pc.Option(is_unique_projection).unwrap_or(
+            _is_unique_projection=is_unique_projection.unwrap_or(
                 self._is_unique_projection
             ),
         )
@@ -52,6 +70,8 @@ class Expr(sql.CoreHandler[sql.SqlExpr]):
     ) -> Self:
         return self.__class__(
             expr,
+            self._root_name,
+            self._alias_output_name,
             pc.Option(is_scalar_like).unwrap_or(self._is_scalar_like),
             _has_window=True,
             _is_unique_projection=self._is_unique_projection,
@@ -110,6 +130,11 @@ class Expr(sql.CoreHandler[sql.SqlExpr]):
     def struct(self) -> ExprStructNameSpace:
         """Access struct operations."""
         return ExprStructNameSpace(self.inner())
+
+    @property
+    def name(self) -> ExprNameNameSpace:
+        """Access name operations."""
+        return ExprNameNameSpace(self)
 
     def __add__(self, other: IntoExpr) -> Self:
         return self.add(other)
@@ -249,7 +274,45 @@ class Expr(sql.CoreHandler[sql.SqlExpr]):
 
     def alias(self, name: str) -> Self:
         """Rename the expression."""
-        return self._new(self.inner().alias(name))
+        return self._new(self.inner().alias(name), keep_alias_output_name=False)
+
+    def _with_alias_output_name(self, alias_name: Callable[[str], str]) -> Self:
+        def _compose_alias() -> Callable[[str], str]:
+            match self._alias_output_name:
+                case pc.Some(current):
+                    return lambda name: alias_name(current(name))
+                case _:
+                    return alias_name
+
+        return self._new(
+            self.inner(),
+            alias_output_name=pc.Some(_compose_alias()),
+            keep_alias_output_name=False,
+        )
+
+    def _output_name(self) -> str:
+        current_name = self.inner().inner().get_name()
+        return self._alias_output_name.map(
+            lambda alias_name: alias_name(self._root_name.unwrap_or(current_name))
+        ).unwrap_or(current_name)
+
+    def _into_output_exprs(self, columns: pc.Seq[str]) -> pc.Iter[sql.SqlExpr]:
+        match self._alias_output_name:
+            case pc.Some(alias_name) if str(self.inner()).strip() == "*":
+                return columns.iter().map(
+                    lambda name: sql.col(name).alias(alias_name(name))
+                )
+            case pc.Some(_):
+                return pc.Iter[sql.SqlExpr].once(
+                    self.inner().alias(self._output_name())
+                )
+            case _:
+                return pc.Iter[sql.SqlExpr].once(self.inner())
+
+    def _unique_sql(self) -> str:
+        base_sql = str(self.inner())
+        alias_name = self._output_name()
+        return base_sql if alias_name == base_sql else f"{base_sql} AS {alias_name}"
 
     def is_null(self) -> Self:
         """Check if the expression is NULL."""
@@ -317,57 +380,58 @@ class Expr(sql.CoreHandler[sql.SqlExpr]):
 
     def count(self) -> Self:
         """Count the number of values."""
-        return self._new(self.inner().count(), is_scalar_like=True)
+        return self._new(self.inner().count(), is_scalar_like=TRUE)
 
     def len(self) -> Self:
         """Get the number of rows in context (including nulls)."""
-        return self._new(self.inner().is_null().count(), is_scalar_like=True)
+        return self._new(self.inner().is_null().count(), is_scalar_like=TRUE)
 
     def sum(self) -> Self:
         """Compute the sum."""
-        return self._new(self.inner().sum(), is_scalar_like=True)
+        return self._new(self.inner().sum(), is_scalar_like=TRUE)
 
     def mean(self) -> Self:
         """Compute the mean."""
-        return self._new(self.inner().mean(), is_scalar_like=True)
+        return self._new(self.inner().mean(), is_scalar_like=TRUE)
 
     def median(self) -> Self:
         """Compute the median."""
-        return self._new(self.inner().median(), is_scalar_like=True)
+        return self._new(self.inner().median(), is_scalar_like=TRUE)
 
     def min(self) -> Self:
         """Compute the minimum."""
-        return self._new(self.inner().min(), is_scalar_like=True)
+        return self._new(self.inner().min(), is_scalar_like=TRUE)
 
     def max(self) -> Self:
         """Compute the maximum."""
-        return self._new(self.inner().max(), is_scalar_like=True)
+        return self._new(self.inner().max(), is_scalar_like=TRUE)
 
     def first(self, *, ignore_nulls: bool = False) -> Self:
         """Get first value."""
         match ignore_nulls:
             case True:
-                return self._new(self.inner().any_value(), is_scalar_like=True)
+                return self._new(self.inner().any_value(), is_scalar_like=TRUE)
             case False:
-                return self._new(self.inner().first(), is_scalar_like=True)
+                return self._new(self.inner().first(), is_scalar_like=TRUE)
 
     def last(self, *, ignore_nulls: bool = False) -> Self:
         """Get last value."""
         match ignore_nulls:
             case True:
                 return self._new(
-                    self.filter(self.is_not_null()).inner().last(), is_scalar_like=True
+                    self.filter(self.is_not_null()).inner().last(),
+                    is_scalar_like=TRUE,
                 )
             case False:
-                return self._new(self.inner().last(), is_scalar_like=True)
+                return self._new(self.inner().last(), is_scalar_like=TRUE)
 
     def mode(self) -> Self:
         """Compute mode."""
-        return self._new(self.inner().mode(), is_scalar_like=True)
+        return self._new(self.inner().mode(), is_scalar_like=TRUE)
 
     def unique(self) -> Self:
         """Get unique values."""
-        return self._new(self.inner(), is_unique_projection=True)
+        return self._new(self.inner(), is_unique_projection=TRUE)
 
     def is_close(
         self,
@@ -457,7 +521,7 @@ class Expr(sql.CoreHandler[sql.SqlExpr]):
                 expr = self.inner().stddev_pop()
             case _:
                 expr = self.inner().stddev_samp()
-        return self._new(expr, is_scalar_like=True)
+        return self._new(expr, is_scalar_like=TRUE)
 
     def var(self, ddof: int = 1) -> Self:
         """Compute the variance."""
@@ -466,25 +530,25 @@ class Expr(sql.CoreHandler[sql.SqlExpr]):
                 expr = self.inner().var_pop()
             case _:
                 expr = self.inner().var_samp()
-        return self._new(expr, is_scalar_like=True)
+        return self._new(expr, is_scalar_like=TRUE)
 
     def kurtosis(self, *, fisher: bool = True, bias: bool = True) -> Self:
         base = self.inner().kurtosis_pop() if bias else self.inner().kurtosis()
         match fisher:
             case True:
-                return self._new(base, is_scalar_like=True)
+                return self._new(base, is_scalar_like=TRUE)
             case False:
-                return self._new(base.add(sql.lit(3)), is_scalar_like=True)
+                return self._new(base.add(sql.lit(3)), is_scalar_like=TRUE)
 
     def skew(self, *, bias: bool = True) -> Self:
         adjusted = self.inner().skewness()
         match bias:
             case False:
-                return self._new(adjusted, is_scalar_like=True)
+                return self._new(adjusted, is_scalar_like=TRUE)
             case True:
                 n = self.inner().count()
                 factor = n.sub(sql.lit(2)).truediv(n.mul(n.sub(sql.lit(1))).sqrt())
-                return self._new(adjusted.mul(factor), is_scalar_like=True)
+                return self._new(adjusted.mul(factor), is_scalar_like=TRUE)
 
     def quantile(
         self, quantile: float, interpolation: RollingInterpolationMethod = "nearest"
@@ -494,20 +558,20 @@ class Expr(sql.CoreHandler[sql.SqlExpr]):
                 expr = self.inner().quantile_cont(quantile)
             case _:
                 expr = self.inner().quantile(quantile)
-        return self._new(expr, is_scalar_like=True)
+        return self._new(expr, is_scalar_like=TRUE)
 
     def all(self) -> Self:
         """Return whether all values are true."""
-        return self._new(self.inner().bool_and(), is_scalar_like=True)
+        return self._new(self.inner().bool_and(), is_scalar_like=TRUE)
 
     def any(self) -> Self:
         """Return whether any value is true."""
-        return self._new(self.inner().bool_or(), is_scalar_like=True)
+        return self._new(self.inner().bool_or(), is_scalar_like=TRUE)
 
     def n_unique(self) -> Self:
         """Count distinct values."""
         return self._new(
-            self.inner().implode().list.distinct().list.length(), is_scalar_like=True
+            self.inner().implode().list.distinct().list.length(), is_scalar_like=TRUE
         )
 
     def null_count(self) -> Self:
@@ -1085,3 +1149,39 @@ class ExprStructNameSpace(sql.CoreHandler[sql.SqlExpr]):
     def field(self, name: str) -> Expr:
         """Retrieve a struct field by name."""
         return Expr(self.inner().struct.extract(sql.lit(name)))
+
+
+@dataclass(slots=True)
+class ExprNameNameSpace:
+    """Name operations namespace (equivalent to pl.Expr.name)."""
+
+    _parent: Expr
+
+    def _with_mapper(self, mapper: Callable[[str], str]) -> Expr:
+        return self._parent._with_alias_output_name(mapper)  # pyright: ignore[reportPrivateUsage]
+
+    def keep(self) -> Expr:
+        return self._with_mapper(lambda name: name)
+
+    def map(self, function: Callable[[str], str]) -> Expr:
+        return self._with_mapper(function)
+
+    def prefix(self, prefix: str) -> Expr:
+        return self._with_mapper(lambda name: f"{prefix}{name}")
+
+    def suffix(self, suffix: str) -> Expr:
+        return self._with_mapper(lambda name: f"{name}{suffix}")
+
+    def to_lowercase(self) -> Expr:
+        return self._with_mapper(str.lower)
+
+    def to_uppercase(self) -> Expr:
+        return self._with_mapper(str.upper)
+
+    def replace(self, pattern: str, value: str, *, literal: bool = False) -> Expr:
+        match literal:
+            case True:
+                return self._with_mapper(lambda name: name.replace(pattern, value))
+            case False:
+                regex = re.compile(pattern)
+                return self._with_mapper(lambda name: regex.sub(value, name))

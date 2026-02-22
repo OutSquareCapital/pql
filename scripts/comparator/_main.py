@@ -37,6 +37,12 @@ def get_comparisons() -> str:
                     pql.col("x").struct.__class__,
                     name="Expr.struct",
                 ),
+                ClassComparison(
+                    nw.col("x").name.__class__,
+                    pl.col("x").name.__class__,
+                    pql.col("x").name.__class__,
+                    name="Expr.name",
+                ),
             )
         )
         .map(lambda comp: comp.to_report())

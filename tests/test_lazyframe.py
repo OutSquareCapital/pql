@@ -103,6 +103,41 @@ def test_select_single_column(sample_df: pl.DataFrame) -> None:
     )
 
 
+def test_with_columns_name_prefix(sample_df: pl.DataFrame) -> None:
+    assert_eq(
+        pql.LazyFrame(sample_df)
+        .with_columns(pql.col("name").name.prefix("new_"))
+        .collect(),
+        sample_df.lazy().with_columns(pl.col("name").name.prefix("new_")).collect(),
+    )
+
+
+def test_lazyframe_group_by_name_prefix(sample_df: pl.DataFrame) -> None:
+    assert_eq(
+        pql.LazyFrame(sample_df)
+        .group_by("department")
+        .agg(pql.col("salary").mean().name.prefix("avg_"))
+        .sort("department")
+        .collect(),
+        sample_df.lazy()
+        .group_by("department")
+        .agg(pl.col("salary").mean().name.prefix("avg_"))
+        .sort("department")
+        .collect(),
+    )
+
+
+def test_select_unique_name_prefix(sample_df: pl.DataFrame) -> None:
+    assert_eq(
+        pql.LazyFrame(sample_df)
+        .select(pql.col("department").unique().name.prefix("u_"))
+        .collect(),
+        sample_df.lazy()
+        .select(pl.col("department").unique().name.prefix("u_"))
+        .collect(),
+    )
+
+
 def test_sort(sample_df: pl.DataFrame) -> None:
     assert_eq(
         pql.LazyFrame(sample_df).sort("age").collect(),

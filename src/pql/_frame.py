@@ -36,6 +36,14 @@ TEMP_NAME = "__pql_temp__"
 TEMP_COL = sql.col(TEMP_NAME)
 
 
+def _into_output(value: IntoExpr, columns: pc.Seq[str]) -> pc.Iter[sql.SqlExpr]:
+    match value:
+        case Expr():
+            return value._into_output_exprs(columns)  # pyright: ignore[reportPrivateUsage]
+        case _:
+            return pc.Iter[sql.SqlExpr].once(sql.into_expr(value, as_col=True))
+
+
 class JoinKeys[T: pc.Seq[str] | str](NamedTuple):
     left: T
     right: T
@@ -133,7 +141,15 @@ class LazyGroupBy:
     ) -> LazyFrame:
         return self._frame.__from_lf__(
             self._frame.inner().aggregate(
-                self._keys.iter().chain(sql.args_into_exprs(aggs, named_aggs)),
+                self._keys.iter().chain(
+                    sql.try_iter(aggs)
+                    .flat_map(sql.try_iter)
+                    .flat_map(lambda value: _into_output(value, self._frame.columns))
+                    .into(
+                        sql.args_into_exprs,
+                        named_aggs,
+                    )
+                ),
                 self._group_expr,
             )
         )
@@ -261,7 +277,7 @@ class LazyFrame(sql.CoreHandler[sql.Relation]):
                     return pc.Some(
                         flat.iter()
                         .filter(_is_expr)
-                        .map(_unique_sql)
+                        .map(lambda expr: expr._unique_sql())  # pyright: ignore[reportPrivateUsage]
                         .chain(
                             pc.Dict.from_ref(named_exprs)
                             .items()
@@ -275,11 +291,6 @@ class LazyFrame(sql.CoreHandler[sql.Relation]):
                     )
                 case False:
                     return pc.NONE
-
-        def _unique_sql(expr: Expr) -> str:
-            base_sql = str(expr.inner())
-            alias_name = expr.inner().inner().get_name()
-            return base_sql if alias_name == base_sql else f"{base_sql} AS {alias_name}"
 
         def _is_scalar_select() -> bool:
             return (
@@ -298,21 +309,30 @@ class LazyFrame(sql.CoreHandler[sql.Relation]):
                 .unwrap_or(default=False)
             )
 
+        def _agg_or_select(exprs: pc.Iter[sql.SqlExpr]) -> Self:
+            if _is_scalar_select():
+                return sql.args_into_exprs(exprs, named_exprs).into(self._agg)
+            return sql.args_into_exprs(exprs, named_exprs).into(self._select)
+
         match _extract_unique_sql():
             case pc.Some(unique_sql):
                 return self.__from_lf__(self.inner().unique(unique_sql.join(", ")))
             case _:
-                pass
-        if _is_scalar_select():
-            return sql.args_into_exprs(exprs, named_exprs).into(self._agg)
-        return sql.args_into_exprs(exprs, named_exprs).into(self._select)
+                return (
+                    flat.iter()
+                    .flat_map(lambda value: _into_output(value, self.columns))
+                    .into(_agg_or_select)
+                )
 
     def with_columns(
         self, *exprs: IntoExpr | Iterable[IntoExpr], **named_exprs: IntoExpr
     ) -> Self:
         """Add or replace columns."""
         return (
-            sql.args_into_exprs(exprs, named_exprs=named_exprs)
+            sql.try_iter(exprs)
+            .flat_map(sql.try_iter)
+            .flat_map(lambda value: _into_output(value, self.columns))
+            .into(sql.args_into_exprs, named_exprs)
             .insert(sql.all())
             .into(self._select)
         )
