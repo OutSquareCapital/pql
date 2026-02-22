@@ -368,7 +368,7 @@ class ScalarType:
     BLOB = DType.from_duckdb(sqltypes.BLOB)
     BIT = DType.from_duckdb(sqltypes.BIT)
     UUID = DType.from_duckdb(sqltypes.UUID)
-    BIGNUM = DType(str(RawTypes.BIGNUM), RawTypes.BIGNUM.value)
+    BIGNUM = DType(RawTypes.BIGNUM.value, RawTypes.BIGNUM.value)
 
 
 def parse_dtype(dtype: DuckDBPyType) -> SqlType:
