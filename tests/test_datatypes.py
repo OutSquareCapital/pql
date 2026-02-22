@@ -110,9 +110,13 @@ def _exprs() -> tuple[pql.Expr, ...]:
     )
 
 
+def test_create_schema(sample_data: pql.LazyFrame) -> pc.Dict[str, pql.DataType]:
+    return sample_data.select(_exprs()).schema
+
+
 @pytest.fixture(scope="session")
 def cast_schema(sample_data: pql.LazyFrame) -> pc.Dict[str, pql.DataType]:
-    return sample_data.select(_exprs()).schema
+    return test_create_schema(sample_data)
 
 
 def test_signed_integer_casts(cast_schema: pc.Dict[str, pql.DataType]) -> None:
@@ -120,6 +124,7 @@ def test_signed_integer_casts(cast_schema: pc.Dict[str, pql.DataType]) -> None:
     assert isinstance(cast_schema["i16"], pql.Int16)
     assert isinstance(cast_schema["i32"], pql.Int32)
     assert isinstance(cast_schema["i64"], pql.Int64)
+    assert isinstance(cast_schema["i128"], pql.Int128)
 
 
 def test_unsigned_integer_casts(cast_schema: pc.Dict[str, pql.DataType]) -> None:
@@ -127,10 +132,6 @@ def test_unsigned_integer_casts(cast_schema: pc.Dict[str, pql.DataType]) -> None
     assert isinstance(cast_schema["u16"], pql.UInt16)
     assert isinstance(cast_schema["u32"], pql.UInt32)
     assert isinstance(cast_schema["u64"], pql.UInt64)
-
-
-def test_big_integer_casts(cast_schema: pc.Dict[str, pql.DataType]) -> None:
-    assert isinstance(cast_schema["i128"], pql.Int128)
     assert isinstance(cast_schema["u128"], pql.UInt128)
 
 
@@ -139,10 +140,16 @@ def test_float_casts(cast_schema: pc.Dict[str, pql.DataType]) -> None:
     assert isinstance(cast_schema["f64"], pql.Float64)
 
 
-def test_numeric_casts(cast_schema: pc.Dict[str, pql.DataType]) -> None:
+def test_bool_str_casts(cast_schema: pc.Dict[str, pql.DataType]) -> None:
     assert isinstance(cast_schema["bool"], pql.Boolean)
-    assert isinstance(cast_schema["dec"], pql.Decimal)
     assert isinstance(cast_schema["s"], pql.String)
+
+
+def test_decimal_cast(cast_schema: pc.Dict[str, pql.DataType]) -> None:
+    dec: pql.Decimal = cast_schema["dec"]  # pyright: ignore[reportAssignmentType]
+    assert isinstance(dec, pql.Decimal)
+    assert dec.precision == 10
+    assert dec.scale == 2
 
 
 def test_temporal_casts(cast_schema: pc.Dict[str, pql.DataType]) -> None:

@@ -159,9 +159,7 @@ class ComplexDataType[T: sql.SqlType](DataType):
         """
 
         def _set_attr(dataclass_field: Field[Any]) -> None:
-            if dataclass_field.default is not MISSING:
-                setattr(instance, dataclass_field.name, dataclass_field.default)
-            elif dataclass_field.default_factory is not MISSING:
+            if dataclass_field.default_factory is not MISSING:
                 setattr(
                     instance, dataclass_field.name, dataclass_field.default_factory()
                 )
