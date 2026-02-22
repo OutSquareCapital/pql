@@ -71,14 +71,6 @@ def all(exclude: Iterable[IntoExprColumn] | None = None) -> SqlExpr:
     )
 
 
-def when(condition: IntoExpr, value: IntoExpr) -> SqlExpr:
-    return SqlExpr(
-        duckdb.CaseExpression(
-            into_expr(condition).inner(), into_expr(value, as_col=True).inner()
-        )
-    )
-
-
 def col(name: str) -> SqlExpr:
     """Create a column expression."""
     return SqlExpr(duckdb.ColumnExpression(name))

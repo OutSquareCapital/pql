@@ -1463,29 +1463,6 @@ class Expression(DuckHandler):
         """Set the NULL order by modifier to NULLS LAST."""
         return self._new(self.inner().nulls_last())
 
-    def otherwise(self, value: Self) -> Self:
-        """Add an ELSE <value> clause to the CaseExpression.
-
-        Parameters:
-                value: The value to use if none of the WHEN conditions are met.
-
-        Returns:
-                CaseExpression: self with an ELSE clause.
-        """
-        return self._new(self.inner().otherwise(value.inner()))
-
     def show(self) -> None:
         """Print the stringified version of the expression."""
         return self.inner().show()
-
-    def when(self, condition: Self, value: Self) -> Self:
-        """Add an additional WHEN <condition> THEN <value> clause to the CaseExpression.
-
-        Parameters:
-                condition: The condition that must be met.
-                value: The value to use if the condition is met.
-
-        Returns:
-                CaseExpression: self with an additional WHEN clause.
-        """
-        return self._new(self.inner().when(condition.inner(), value.inner()))

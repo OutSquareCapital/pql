@@ -157,7 +157,7 @@ EXPR_TARGET = TargetSpec(
     wrapper_base=PyLit.DUCK_HANDLER,
     type_subs=EXPR_TYPE_SUBS,
     wrapped_return_type=PyLit.DUCK_EXPR,
-    skip_methods=pc.Set({"__init__"}),
+    skip_methods=pc.Set({"__init__", "when", "otherwise"}),
     method_renames=pc.Dict.from_kwargs(
         isnull="is_null", isin="is_in", isnotin="is_not_in", isnotnull="is_not_null"
     ),

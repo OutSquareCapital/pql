@@ -506,6 +506,40 @@ def test_drop_nulls() -> None:
     )
 
 
+def test_when_then_simple() -> None:
+    assert_eq_pl(
+        pql.when(pql.col("x").eq(5))
+        .then(pql.lit("equal_to_5"))
+        .otherwise(pql.lit("not_equal_to_5"))
+        .alias("bucket"),
+        pl.when(pl.col("x").eq(5))
+        .then(pl.lit("equal_to_5"))
+        .otherwise(pl.lit("not_equal_to_5"))
+        .alias("bucket"),
+    )
+
+
+def test_when_then_chained() -> None:
+    assert_eq_pl(
+        pql.when(pql.col("x") > 5)
+        .then(pql.lit("high"))
+        .when(pql.col("x") < 5)
+        .then(pql.lit("low"))
+        .when(pql.col("x") == 5)
+        .then(pql.lit("equal"))
+        .otherwise(pql.lit("mid"))
+        .alias("bucket"),
+        pl.when(pl.col("x") > 5)
+        .then(pl.lit("high"))
+        .when(pl.col("x") < 5)
+        .then(pl.lit("low"))
+        .when(pl.col("x") == 5)
+        .then(pl.lit("equal"))
+        .otherwise(pl.lit("mid"))
+        .alias("bucket"),
+    )
+
+
 def test_count() -> None:
     assert_eq(
         pql.col("x").count().alias("x_count"), nw.col("x").count().alias("x_count")

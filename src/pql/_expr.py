@@ -87,9 +87,10 @@ class Expr(sql.CoreHandler[sql.SqlExpr]):
                 self.inner()
                 .count()
                 .over(rows_start=rows_start, rows_end=rows_end)
-                .ge(sql.lit(pc.Option(min_samples).unwrap_or(window_size))),
-                agg(self.inner()).over(rows_start=rows_start, rows_end=rows_end),
-            ).otherwise(sql.lit(None))
+                .ge(sql.lit(pc.Option(min_samples).unwrap_or(window_size)))
+            )
+            .then(agg(self.inner()).over(rows_start=rows_start, rows_end=rows_end))
+            .otherwise(sql.lit(None))
         )
 
     def __repr__(self) -> str:
@@ -385,9 +386,9 @@ class Expr(sql.CoreHandler[sql.SqlExpr]):
                 return self._new(close)
             case True:
                 return self._new(
-                    sql.when(
-                        self.inner().isnan().and_(other_expr.isnan()), value=True
-                    ).otherwise(close)
+                    sql.when(self.inner().isnan().and_(other_expr.isnan()))
+                    .then(value=True)
+                    .otherwise(close)
                 )
 
     def rolling_mean(
@@ -592,7 +593,7 @@ class Expr(sql.CoreHandler[sql.SqlExpr]):
             .map(lambda v: sql.into_expr(v, as_col=True))
             .fold(sql.lit(value=True), lambda acc, pred: acc.and_(pred))
         )
-        return self._new(sql.when(cond, self.inner()).otherwise(sql.lit(None)))
+        return self._new(sql.when(cond).then(self.inner()).otherwise(sql.lit(None)))
 
     def drop_nulls(self) -> Self:
         return self.filter(self.is_not_null())
@@ -704,7 +705,9 @@ class Expr(sql.CoreHandler[sql.SqlExpr]):
 
     def fill_nan(self, value: float | Expr | None) -> Self:
         """Fill NaN values."""
-        return self._new(sql.when(self.inner().isnan(), value).otherwise(self.inner()))
+        return self._new(
+            sql.when(self.inner().isnan()).then(value).otherwise(self.inner())
+        )
 
     def fill_null(  # noqa: PLR0911,PLR0912,C901
         self,
@@ -759,7 +762,9 @@ class Expr(sql.CoreHandler[sql.SqlExpr]):
     def replace(self, old: IntoExpr, new: IntoExpr) -> Self:
         """Replace values."""
         return self._new(
-            sql.when(self.inner().eq(sql.into_expr(old)), new).otherwise(self.inner())
+            sql.when(self.inner().eq(sql.into_expr(old)))
+            .then(new)
+            .otherwise(self.inner())
         )
 
     def repeat_by(self, by: Expr | int) -> Self:
@@ -918,10 +923,13 @@ class ExprStringNameSpace(sql.CoreHandler[sql.SqlExpr]):
                 return Expr(
                     sql.when(
                         self.inner().str.starts_with(prefix_expr),
+                    )
+                    .then(
                         self.inner().str.substring(
                             prefix_expr.str.length().add(sql.lit(1))
-                        ),
-                    ).otherwise(self.inner())
+                        )
+                    )
+                    .otherwise(self.inner())
                 )
 
     def strip_suffix(self, suffix: IntoExpr) -> Expr:
@@ -938,10 +946,13 @@ class ExprStringNameSpace(sql.CoreHandler[sql.SqlExpr]):
                 return Expr(
                     sql.when(
                         self.inner().str.ends_with(suffix_expr),
+                    )
+                    .then(
                         self.inner().str.substring(
                             1, self.inner().str.length().sub(suffix_expr.str.length())
-                        ),
-                    ).otherwise(self.inner())
+                        )
+                    )
+                    .otherwise(self.inner())
                 )
 
     def head(self, n: int) -> Expr:
@@ -1020,12 +1031,13 @@ class ExprListNameSpace(sql.CoreHandler[sql.SqlExpr]):
         contains_expr = self.inner().list.contains(item_expr)
         if nulls_equal:
             return Expr(
-                sql.when(
-                    item_expr.is_null(),
+                sql.when(item_expr.is_null())
+                .then(
                     sql.coalesce(
                         self.inner().list.position(sql.lit(None)).is_not_null(), False
-                    ),
-                ).otherwise(sql.coalesce(contains_expr, False))
+                    )
+                )
+                .otherwise(sql.coalesce(contains_expr, False))
             )
         return Expr(contains_expr)
 

@@ -31,7 +31,6 @@ from ._funcs import (
     lit,
     row_number,
     unnest,
-    when,
 )
 from ._rel_conversions import (
     from_df,
@@ -40,9 +39,12 @@ from ._rel_conversions import (
     from_query,
     from_sequence,
 )
+from ._when import ChainedThen, ChainedWhen, Then, When, when
 
 __all__ = [
     "ArrayType",
+    "ChainedThen",
+    "ChainedWhen",
     "CoreHandler",
     "DType",
     "DecimalType",
@@ -55,7 +57,9 @@ __all__ = [
     "SqlExpr",
     "SqlType",
     "StructType",
+    "Then",
     "UnionType",
+    "When",
     "all",
     "args_into_exprs",
     "coalesce",

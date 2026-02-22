@@ -533,11 +533,7 @@ class LazyFrame(sql.CoreHandler[sql.Relation]):
     def fill_nan(self, value: float | Expr | None) -> Self:
         """Fill NaN values."""
         return self._iter_slct(
-            lambda c: (
-                sql.when(sql.col(c).isnan(), sql.into_expr(value, as_col=True))
-                .otherwise(sql.col(c))
-                .alias(c)
-            )
+            lambda c: sql.when(sql.col(c).isnan()).then(value).otherwise(c).alias(c)
         )
 
     def shift(self, n: int = 1, *, fill_value: IntoExpr | None = None) -> Self:

@@ -34,6 +34,7 @@ from ._datatypes import (
 from ._expr import Expr
 from ._frame import LazyFrame
 from ._funcs import all, col, element, lit
+from ._when import when
 
 __all__ = [
     "Array",
@@ -71,4 +72,5 @@ __all__ = [
     "element",
     "lit",
     "sql",
+    "when",
 ]
