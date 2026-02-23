@@ -119,17 +119,17 @@ class Expr(sql.CoreHandler[sql.SqlExpr]):
     @property
     def str(self) -> ExprStringNameSpace:
         """Access string operations."""
-        return ExprStringNameSpace(self.inner())
+        return ExprStringNameSpace(self)
 
     @property
     def list(self) -> ExprListNameSpace:
         """Access list operations."""
-        return ExprListNameSpace(self.inner())
+        return ExprListNameSpace(self)
 
     @property
     def struct(self) -> ExprStructNameSpace:
         """Access struct operations."""
-        return ExprStructNameSpace(self.inner())
+        return ExprStructNameSpace(self)
 
     @property
     def name(self) -> ExprNameNameSpace:
@@ -274,45 +274,11 @@ class Expr(sql.CoreHandler[sql.SqlExpr]):
 
     def alias(self, name: str) -> Self:
         """Rename the expression."""
-        return self._new(self.inner().alias(name), keep_alias_output_name=False)
-
-    def _with_alias_output_name(self, alias_name: Callable[[str], str]) -> Self:
-        def _compose_alias() -> Callable[[str], str]:
-            match self._alias_output_name:
-                case pc.Some(current):
-                    return lambda name: alias_name(current(name))
-                case _:
-                    return alias_name
-
         return self._new(
             self.inner(),
-            alias_output_name=pc.Some(_compose_alias()),
+            alias_output_name=pc.Some(lambda _: name),
             keep_alias_output_name=False,
         )
-
-    def _output_name(self) -> str:
-        current_name = self.inner().inner().get_name()
-        return self._alias_output_name.map(
-            lambda alias_name: alias_name(self._root_name.unwrap_or(current_name))
-        ).unwrap_or(current_name)
-
-    def _into_output_exprs(self, columns: pc.Seq[str]) -> pc.Iter[sql.SqlExpr]:
-        match self._alias_output_name:
-            case pc.Some(alias_name) if str(self.inner()).strip() == "*":
-                return columns.iter().map(
-                    lambda name: sql.col(name).alias(alias_name(name))
-                )
-            case pc.Some(_):
-                return pc.Iter[sql.SqlExpr].once(
-                    self.inner().alias(self._output_name())
-                )
-            case _:
-                return pc.Iter[sql.SqlExpr].once(self.inner())
-
-    def _unique_sql(self) -> str:
-        base_sql = str(self.inner())
-        alias_name = self._output_name()
-        return base_sql if alias_name == base_sql else f"{base_sql} AS {alias_name}"
 
     def is_null(self) -> Self:
         """Check if the expression is NULL."""
@@ -860,36 +826,73 @@ class Expr(sql.CoreHandler[sql.SqlExpr]):
 
 
 @dataclass(slots=True)
-class ExprStringNameSpace(sql.CoreHandler[sql.SqlExpr]):
+class ExprNameSpaceBase:
+    _parent: Expr
+
+    def inner(self) -> sql.SqlExpr:
+        return self._parent.inner()
+
+    def _new(self, expr: sql.SqlExpr) -> Expr:
+        return self._parent._new(expr)  # pyright: ignore[reportPrivateUsage]
+
+    def _with_alias_mapper(self, mapper: Callable[[str], str]) -> Expr:
+        def _compose_alias() -> Callable[[str], str]:
+            match self._parent._alias_output_name:  # pyright: ignore[reportPrivateUsage]
+                case pc.Some(current):
+                    return lambda name: mapper(current(name))
+                case _:
+                    return mapper
+
+        return self._parent._new(  # pyright: ignore[reportPrivateUsage]
+            self._parent.inner(),
+            alias_output_name=pc.Some(_compose_alias()),
+            keep_alias_output_name=False,
+        )
+
+    def _clear_alias_output_name(self) -> Expr:
+        return self._parent._new(  # pyright: ignore[reportPrivateUsage]
+            self._parent.inner(), keep_alias_output_name=False
+        )
+
+    @staticmethod
+    def _output_name(expr: Expr) -> str:
+        root_name = expr._root_name.unwrap_or(expr.inner().inner().get_name())  # pyright: ignore[reportPrivateUsage]
+        return expr._alias_output_name.map(  # pyright: ignore[reportPrivateUsage]
+            lambda alias_fn: alias_fn(root_name)
+        ).unwrap_or(root_name)
+
+
+@dataclass(slots=True)
+class ExprStringNameSpace(ExprNameSpaceBase):
     """String operations namespace (equivalent to pl.Expr.str)."""
 
     def to_uppercase(self) -> Expr:
         """Convert to uppercase."""
-        return Expr(self.inner().str.upper())
+        return self._new(self.inner().str.upper())
 
     def to_lowercase(self) -> Expr:
         """Convert to lowercase."""
-        return Expr(self.inner().str.lower())
+        return self._new(self.inner().str.lower())
 
     def len_chars(self) -> Expr:
         """Get the length in characters."""
-        return Expr(self.inner().str.length())
+        return self._new(self.inner().str.length())
 
     def contains(self, pattern: str, *, literal: bool = False) -> Expr:
         """Check if string contains a pattern."""
         match literal:
             case True:
-                return Expr(self.inner().str.contains(sql.lit(pattern)))
+                return self._new(self.inner().str.contains(sql.lit(pattern)))
             case False:
-                return Expr(self.inner().re.matches(sql.lit(pattern)))
+                return self._new(self.inner().re.matches(sql.lit(pattern)))
 
     def starts_with(self, prefix: str) -> Expr:
         """Check if string starts with prefix."""
-        return Expr(self.inner().str.starts_with(sql.lit(prefix)))
+        return self._new(self.inner().str.starts_with(sql.lit(prefix)))
 
     def ends_with(self, suffix: str) -> Expr:
         """Check if string ends with suffix."""
-        return Expr(self.inner().str.ends_with(sql.lit(suffix)))
+        return self._new(self.inner().str.ends_with(sql.lit(suffix)))
 
     def replace(
         self, pattern: str, value: str | IntoExpr, *, literal: bool = False, n: int = 1
@@ -903,64 +906,64 @@ class ExprStringNameSpace(sql.CoreHandler[sql.SqlExpr]):
 
         match n:
             case 0:
-                return Expr(self.inner())
+                return self._new(self.inner())
             case n_val if n_val < 0:
-                return Expr(
+                return self._new(
                     self.inner().re.replace(pattern_expr, value_expr, sql.lit("g"))
                 )
             case _:
                 return (
                     pc.Iter(range(n))
                     .fold(self.inner(), lambda acc, _: _replace_once(acc))
-                    .pipe(Expr)
+                    .pipe(self._new)
                 )
 
     def strip_chars(self, characters: str | None = None) -> Expr:
         """Strip leading and trailing characters."""
         match characters:
             case None:
-                return Expr(self.inner().str.trim())
+                return self._new(self.inner().str.trim())
             case _:
-                return Expr(self.inner().str.trim(sql.lit(characters)))
+                return self._new(self.inner().str.trim(sql.lit(characters)))
 
     def strip_chars_start(self, characters: IntoExpr = None) -> Expr:
         """Strip leading characters."""
         match characters:
             case None:
-                return Expr(self.inner().str.ltrim())
+                return self._new(self.inner().str.ltrim())
             case _:
-                return Expr(self.inner().str.ltrim(sql.into_expr(characters)))
+                return self._new(self.inner().str.ltrim(sql.into_expr(characters)))
 
     def strip_chars_end(self, characters: IntoExpr = None) -> Expr:
         """Strip trailing characters."""
         match characters:
             case None:
-                return Expr(self.inner().str.rtrim())
+                return self._new(self.inner().str.rtrim())
             case _:
-                return Expr(self.inner().str.rtrim(sql.into_expr(characters)))
+                return self._new(self.inner().str.rtrim(sql.into_expr(characters)))
 
     def slice(self, offset: int, length: int | None = None) -> Expr:
         """Extract a substring."""
-        return Expr(self.inner().str.substring(offset + 1, length))
+        return self._new(self.inner().str.substring(offset + 1, length))
 
     def len_bytes(self) -> Expr:
         """Get the length in bytes."""
-        return Expr(self.inner().encode().octet_length())
+        return self._new(self.inner().encode().octet_length())
 
     def split(self, by: str) -> Expr:
         """Split string by separator."""
-        return Expr(self.inner().str.split(sql.lit(by)))
+        return self._new(self.inner().str.split(sql.lit(by)))
 
     def extract_all(self, pattern: str | Expr) -> Expr:
         """Extract all regex matches."""
-        return Expr(self.inner().re.extract_all(sql.into_expr(pattern)))
+        return self._new(self.inner().re.extract_all(sql.into_expr(pattern)))
 
     def count_matches(self, pattern: str | Expr, *, literal: bool = False) -> Expr:
         """Count pattern matches."""
         pattern_expr = sql.into_expr(pattern)
         match literal:
             case False:
-                return Expr(self.inner().re.extract_all(pattern_expr).list.len())
+                return self._new(self.inner().re.extract_all(pattern_expr).list.len())
             case True:
                 return (
                     self.inner()
@@ -969,7 +972,7 @@ class ExprStringNameSpace(sql.CoreHandler[sql.SqlExpr]):
                         self.inner().str.replace(pattern_expr, sql.lit("")).str.length()
                     )
                     .truediv(pattern_expr.str.length())
-                    .pipe(Expr)
+                    .pipe(self._new)
                 )
 
     def strip_prefix(self, prefix: IntoExpr) -> Expr:
@@ -979,7 +982,7 @@ class ExprStringNameSpace(sql.CoreHandler[sql.SqlExpr]):
                 return (
                     self.inner()
                     .re.replace(sql.lit(f"^{re.escape(prefix_str)}"), sql.lit(""))
-                    .pipe(Expr)
+                    .pipe(self._new)
                 )
             case _:
                 return (
@@ -994,21 +997,21 @@ class ExprStringNameSpace(sql.CoreHandler[sql.SqlExpr]):
                         )
                     )
                     .otherwise(self.inner())
-                    .pipe(Expr)
+                    .pipe(self._new)
                 )
 
     def strip_suffix(self, suffix: IntoExpr) -> Expr:
         """Strip suffix from string."""
         match suffix:
             case str() as suffix_str:
-                return Expr(
+                return self._new(
                     self.inner().re.replace(
                         sql.lit(f"{re.escape(suffix_str)}$"), sql.lit("")
                     )
                 )
             case _:
                 suffix_expr = sql.into_expr(suffix)
-                return Expr(
+                return self._new(
                     sql.when(
                         self.inner().str.ends_with(suffix_expr),
                     )
@@ -1022,24 +1025,24 @@ class ExprStringNameSpace(sql.CoreHandler[sql.SqlExpr]):
 
     def head(self, n: int) -> Expr:
         """Get first n characters."""
-        return Expr(self.inner().str.left(n))
+        return self._new(self.inner().str.left(n))
 
     def tail(self, n: int) -> Expr:
         """Get last n characters."""
-        return Expr(self.inner().str.right(n))
+        return self._new(self.inner().str.right(n))
 
     def reverse(self) -> Expr:
         """Reverse the string."""
-        return Expr(self.inner().str.reverse())
+        return self._new(self.inner().str.reverse())
 
     def pad_start(self, length: int, fill_char: str = " ") -> Expr:
-        return Expr(self.inner().str.lpad(length, sql.lit(fill_char)))
+        return self._new(self.inner().str.lpad(length, sql.lit(fill_char)))
 
     def pad_end(self, length: int, fill_char: str = " ") -> Expr:
-        return Expr(self.inner().str.rpad(length, sql.lit(fill_char)))
+        return self._new(self.inner().str.rpad(length, sql.lit(fill_char)))
 
     def zfill(self, width: int) -> Expr:
-        return Expr(self.inner().str.lpad(width, sql.lit("0")))
+        return self._new(self.inner().str.lpad(width, sql.lit("0")))
 
     def replace_all(
         self, pattern: str, value: IntoExpr, *, literal: bool = False
@@ -1048,15 +1051,15 @@ class ExprStringNameSpace(sql.CoreHandler[sql.SqlExpr]):
         value_expr = sql.into_expr(value)
         match literal:
             case True:
-                return Expr(self.inner().str.replace(sql.lit(pattern), value_expr))
+                return self._new(self.inner().str.replace(sql.lit(pattern), value_expr))
             case False:
-                return Expr(
+                return self._new(
                     self.inner().re.replace(sql.lit(pattern), value_expr, sql.lit("g"))
                 )
 
     def to_titlecase(self) -> Expr:
         """Convert to title case."""
-        return Expr(
+        return self._new(
             self.inner()
             .str.lower()
             .re.extract_all(sql.lit(r"[a-z]*[^a-z]*"))
@@ -1073,29 +1076,29 @@ class ExprStringNameSpace(sql.CoreHandler[sql.SqlExpr]):
 
 
 @dataclass(slots=True)
-class ExprListNameSpace(sql.CoreHandler[sql.SqlExpr]):
+class ExprListNameSpace(ExprNameSpaceBase):
     """List operations namespace (equivalent to pl.Expr.list)."""
 
     # TODO: reduce, agg, filter
 
     def eval(self, expr: Expr) -> Expr:
         """Run an expression against each list element."""
-        return Expr(self.inner().list.transform(sql.fn_once(expr.inner())))
+        return self._new(self.inner().list.transform(sql.fn_once(expr.inner())))
 
     def len(self) -> Expr:
         """Return the number of elements in each list."""
-        return Expr(self.inner().list.length())
+        return self._new(self.inner().list.length())
 
     def unique(self) -> Expr:
         """Return unique values in each list."""
-        return Expr(self.inner().list.distinct())
+        return self._new(self.inner().list.distinct())
 
     def contains(self, item: IntoExpr, *, nulls_equal: bool = True) -> Expr:
         """Check if sublists contain the given item."""
         item_expr = sql.into_expr(item)
         contains_expr = self.inner().list.contains(item_expr)
         if nulls_equal:
-            return Expr(
+            return self._new(
                 sql.when(item_expr.is_null())
                 .then(
                     sql.coalesce(
@@ -1104,11 +1107,11 @@ class ExprListNameSpace(sql.CoreHandler[sql.SqlExpr]):
                 )
                 .otherwise(sql.coalesce(contains_expr, False))
             )
-        return Expr(contains_expr)
+        return self._new(contains_expr)
 
     def get(self, index: int) -> Expr:
         """Return the value by index in each list."""
-        return Expr(
+        return self._new(
             self.inner().list.extract(
                 sql.lit(index + 1 if index >= 0 else index),
             )
@@ -1116,27 +1119,27 @@ class ExprListNameSpace(sql.CoreHandler[sql.SqlExpr]):
 
     def min(self) -> Expr:
         """Compute the min value of the lists in the array."""
-        return Expr(self.inner().list.min())
+        return self._new(self.inner().list.min())
 
     def max(self) -> Expr:
         """Compute the max value of the lists in the array."""
-        return Expr(self.inner().list.max())
+        return self._new(self.inner().list.max())
 
     def mean(self) -> Expr:
         """Compute the mean value of the lists in the array."""
-        return Expr(self.inner().list.avg())
+        return self._new(self.inner().list.avg())
 
     def median(self) -> Expr:
         """Compute the median value of the lists in the array."""
-        return Expr(self.inner().list.median())
+        return self._new(self.inner().list.median())
 
     def sum(self) -> Expr:
         """Compute the sum value of the lists in the array."""
-        return Expr(self.inner().list.sum())
+        return self._new(self.inner().list.sum())
 
     def sort(self, *, descending: bool = False, nulls_last: bool = False) -> Expr:
         """Sort the lists of the expression."""
-        return Expr(
+        return self._new(
             self.inner().list.sort(
                 sql.lit(sql.Kword.sort_order(desc=descending)),
                 sql.lit(sql.Kword.null_order(last=nulls_last)),
@@ -1145,55 +1148,71 @@ class ExprListNameSpace(sql.CoreHandler[sql.SqlExpr]):
 
 
 @dataclass(slots=True)
-class ExprStructNameSpace(sql.CoreHandler[sql.SqlExpr]):
+class ExprStructNameSpace(ExprNameSpaceBase):
     """Struct operations namespace (equivalent to pl.Expr.struct)."""
 
     def field(self, name: str) -> Expr:
         """Retrieve a struct field by name."""
-        return Expr(self.inner().struct.extract(sql.lit(name)))
+        return self._new(self.inner().struct.extract(sql.lit(name)))
 
     def with_fields(
         self, *exprs: IntoExpr | Iterable[IntoExpr], **named_exprs: IntoExpr
     ) -> Expr:
         """Return a new struct with updated or additional fields."""
-        return (
-            self.inner()
-            .struct.insert(*sql.args_into_exprs(exprs, named_exprs))
-            .pipe(Expr)
+
+        def _with_name(value: IntoExpr) -> tuple[str, sql.SqlExpr]:
+            match value:
+                case Expr() as expr:
+                    output_name = self._output_name(expr)
+                    return (output_name, expr.inner())
+                case _:
+                    return sql.into_expr(value, as_col=True).pipe(
+                        lambda expr: (expr.inner().get_name(), expr)
+                    )
+
+        args = (
+            sql.try_iter(exprs)
+            .flat_map(sql.try_iter)
+            .map(_with_name)
+            .chain(
+                pc.Dict.from_ref(named_exprs)
+                .items()
+                .iter()
+                .map_star(lambda name, value: (name, sql.into_expr(value, as_col=True)))
+            )
+            .map_star(lambda name, expr: expr.alias(name))
         )
+        return self._new(self.inner().struct.insert(*args))
 
 
 @dataclass(slots=True)
-class ExprNameNameSpace:
+class ExprNameNameSpace(ExprNameSpaceBase):
     """Name operations namespace (equivalent to pl.Expr.name)."""
 
-    _parent: Expr
-
-    def _with_mapper(self, mapper: Callable[[str], str]) -> Expr:
-        return self._parent._with_alias_output_name(mapper)  # pyright: ignore[reportPrivateUsage]
-
     def keep(self) -> Expr:
-        return self._with_mapper(lambda name: name)
+        return self._clear_alias_output_name()
 
     def map(self, function: Callable[[str], str]) -> Expr:
-        return self._with_mapper(function)
+        return self._with_alias_mapper(function)
 
     def prefix(self, prefix: str) -> Expr:
-        return self._with_mapper(lambda name: f"{prefix}{name}")
+        return self._with_alias_mapper(lambda name: f"{prefix}{name}")
 
     def suffix(self, suffix: str) -> Expr:
-        return self._with_mapper(lambda name: f"{name}{suffix}")
+        return self._with_alias_mapper(lambda name: f"{name}{suffix}")
 
     def to_lowercase(self) -> Expr:
-        return self._with_mapper(str.lower)
+        return self._with_alias_mapper(str.lower)
 
     def to_uppercase(self) -> Expr:
-        return self._with_mapper(str.upper)
+        return self._with_alias_mapper(str.upper)
 
     def replace(self, pattern: str, value: str, *, literal: bool = False) -> Expr:
         match literal:
             case True:
-                return self._with_mapper(lambda name: name.replace(pattern, value))
+                return self._with_alias_mapper(
+                    lambda name: name.replace(pattern, value)
+                )
             case False:
                 regex = re.compile(pattern)
-                return self._with_mapper(lambda name: regex.sub(value, name))
+                return self._with_alias_mapper(lambda name: regex.sub(value, name))

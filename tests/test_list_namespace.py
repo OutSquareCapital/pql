@@ -68,28 +68,16 @@ def assert_eq_pl(
 
 
 def test_list_len() -> None:
-    assert_eq(
-        pql.col("x").list.len().alias("x_len"),
-        nw.col("x").list.len().alias("x_len"),
-    )
-    assert_eq_pl(
-        pql.col("x_var").list.len().alias("x_len"),
-        pl.col("x_var").list.len().alias("x_len"),
-    )
+    assert_eq(pql.col("x").list.len(), nw.col("x").list.len())
+    assert_eq_pl(pql.col("x_var").list.len(), pl.col("x_var").list.len())
 
 
 def test_list_unique() -> None:
-    assert_eq(
-        pql.col("x").list.unique().alias("x_unique"),
-        nw.col("x").list.unique().alias("x_unique"),
-    )
+    assert_eq(pql.col("x").list.unique(), nw.col("x").list.unique())
 
 
 def test_list_contains() -> None:
-    assert_eq(
-        pql.col("x").list.contains(2).alias("x"),
-        nw.col("x").list.contains(2).alias("x"),
-    )
+    assert_eq(pql.col("x").list.contains(2), nw.col("x").list.contains(2))
     assert_eq_pl(
         (
             pql.col("x").list.contains(None, nulls_equal=True).alias("x_nulls_eq"),
@@ -118,53 +106,38 @@ def test_list_contains() -> None:
 
 def test_list_get() -> None:
     assert_eq(
-        pql.col("x").list.get(0).alias("x"),
-        nw.col("x").list.get(0).alias("x"),
+        pql.col("x").list.get(0),
+        nw.col("x").list.get(0),
     )
     assert_eq_pl(
-        pql.col("x").list.get(-1).alias("x"),
-        pl.col("x").list.get(-1).alias("x"),
+        pql.col("x").list.get(-1),
+        pl.col("x").list.get(-1),
     )
     with pytest.raises(pl.exceptions.ComputeError, match="get index is out of bounds"):
         assert_eq_pl(
-            pql.col("x_var").list.get(10).alias("x"),
-            pl.col("x_var").list.get(10).alias("x"),
+            pql.col("x_var").list.get(10),
+            pl.col("x_var").list.get(10),
         )
 
 
 def test_list_min() -> None:
-    assert_eq(
-        pql.col("x").list.min().alias("x_min"),
-        nw.col("x").list.min().alias("x_min"),
-    )
+    assert_eq(pql.col("x").list.min(), nw.col("x").list.min())
 
 
 def test_list_max() -> None:
-    assert_eq(
-        pql.col("x").list.max().alias("x_max"),
-        nw.col("x").list.max().alias("x_max"),
-    )
+    assert_eq(pql.col("x").list.max(), nw.col("x").list.max())
 
 
 def test_list_mean() -> None:
-    assert_eq(
-        pql.col("x").list.mean().alias("x_mean"),
-        nw.col("x").list.mean().alias("x_mean"),
-    )
+    assert_eq(pql.col("x").list.mean(), nw.col("x").list.mean())
 
 
 def test_list_median() -> None:
-    assert_eq(
-        pql.col("x").list.median().alias("x_median"),
-        nw.col("x").list.median().alias("x_median"),
-    )
+    assert_eq(pql.col("x").list.median(), nw.col("x").list.median())
 
 
 def test_list_sum() -> None:
-    assert_eq(
-        pql.col("x").list.sum().alias("x_sum"),
-        nw.col("x").list.sum().alias("x_sum"),
-    )
+    assert_eq(pql.col("x").list.sum(), nw.col("x").list.sum())
 
 
 def test_list_sort() -> None:
@@ -186,17 +159,13 @@ def test_list_sort() -> None:
 
 def test_list_eval_num() -> None:
     assert_eq_pl(
-        pql.col("x").list.eval(pql.element().mul(2)).alias("x_eval"),
-        pl.col("x").list.eval(pl.element().mul(2)).alias("x_eval"),
+        pql.col("x").list.eval(pql.element().mul(2)),
+        pl.col("x").list.eval(pl.element().mul(2)),
     )
 
 
 def test_list_eval_str() -> None:
     assert_eq_pl(
-        pql.col("str_vals")
-        .list.eval(pql.element().str.to_uppercase())
-        .alias("x_eval_rank"),
-        pl.col("str_vals")
-        .list.eval(pl.element().str.to_uppercase())
-        .alias("x_eval_rank"),
+        pql.col("str_vals").list.eval(pql.element().str.to_uppercase()),
+        pl.col("str_vals").list.eval(pl.element().str.to_uppercase()),
     )

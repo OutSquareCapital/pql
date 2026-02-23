@@ -123,19 +123,17 @@ def _exprs() -> tuple[pql.Expr, ...]:
         pql.col("1d").cast(pql.List(pql.UInt16())).alias("lst"),
         pql.col("1d").cast(pql.Array(pql.UInt16(), size=2)).alias("arr_1d"),
         pql.col("2d").cast(pql.Array(pql.UInt16(), size=2).with_dim(2)).alias("arr_2d"),
-        pql.col("blobs").cast(pql.Binary()).alias("blobs"),
-        pql.col("duration").cast(pql.Duration()).alias("duration"),
-        pql.col("enumerated").cast(pql.Enum(["A", "B", "C"])).alias("enumerated"),
+        pql.col("blobs").cast(pql.Binary()),
+        pql.col("duration").cast(pql.Duration()),
+        pql.col("enumerated").cast(pql.Enum(["A", "B", "C"])),
         pql.col("enumerated").cast(pql.Enum(MyEnum)).alias("enumerated_enum"),
-        pql.col("mapped").cast(pql.Map(pql.String(), pql.Int32())).alias("mapped"),
-        pql.col("structured")
-        .cast(pql.Struct({"a": pql.Int32(), "b": pql.String(), "c": pql.Boolean()}))
-        .alias("structured"),
-        pql.col("unioned")
-        .cast(pql.Union([pql.Int32(), pql.String(), pql.Float64()]))
-        .alias("unioned"),
-        pql.col("bits").cast(pql.BitString()).alias("bits"),
-        pql.col("uuid_data").cast(pql.UUID()).alias("uuid_data"),
+        pql.col("mapped").cast(pql.Map(pql.String(), pql.Int32())),
+        pql.col("structured").cast(
+            pql.Struct({"a": pql.Int32(), "b": pql.String(), "c": pql.Boolean()})
+        ),
+        pql.col("unioned").cast(pql.Union([pql.Int32(), pql.String(), pql.Float64()])),
+        pql.col("bits").cast(pql.BitString()),
+        pql.col("uuid_data").cast(pql.UUID()),
     )
 
 

@@ -120,65 +120,55 @@ def assert_eq_pl(
 
 
 def test_to_uppercase() -> None:
-    assert_eq(
-        (pql.col("text").str.to_uppercase().alias("upper")),
-        (nw.col("text").str.to_uppercase().alias("upper")),
-    )
+    assert_eq(pql.col("text").str.to_uppercase(), nw.col("text").str.to_uppercase())
 
 
 def test_to_lowercase() -> None:
-    assert_eq(
-        (pql.col("text").str.to_lowercase().alias("lower")),
-        (nw.col("text").str.to_lowercase().alias("lower")),
-    )
+    assert_eq(pql.col("text").str.to_lowercase(), nw.col("text").str.to_lowercase())
 
 
 def test_len_chars() -> None:
-    assert_eq(
-        (pql.col("text").str.len_chars().alias("length")),
-        (nw.col("text").str.len_chars().alias("length")),
-    )
+    assert_eq(pql.col("text").str.len_chars(), nw.col("text").str.len_chars())
 
 
 def test_contains_literal() -> None:
     assert_eq(
-        (pql.col("text").str.contains("lo", literal=True).alias("contains_lo")),
-        (nw.col("text").str.contains("lo", literal=True).alias("contains_lo")),
+        pql.col("text").str.contains("lo", literal=True),
+        nw.col("text").str.contains("lo", literal=True),
     )
 
 
 def test_starts_with() -> None:
     assert_eq(
-        (pql.col("text").str.starts_with("Hello").alias("starts_hello")),
-        (nw.col("text").str.starts_with("Hello").alias("starts_hello")),
+        pql.col("text").str.starts_with("Hello"),
+        nw.col("text").str.starts_with("Hello"),
     )
 
 
 def test_ends_with() -> None:
     assert_eq(
-        (pql.col("text").str.ends_with("suffix").alias("ends_suffix")),
-        (nw.col("text").str.ends_with("suffix").alias("ends_suffix")),
+        pql.col("text").str.ends_with("suffix"), nw.col("text").str.ends_with("suffix")
     )
 
 
 def test_replace() -> None:
     with pytest.raises(NotImplementedError):
         assert_eq(
-            (pql.col("text").str.replace("Hello", "Hi").alias("replaced")),
-            (nw.col("text").str.replace("Hello", "Hi").alias("replaced")),
+            (pql.col("text").str.replace("Hello", "Hi")),
+            (nw.col("text").str.replace("Hello", "Hi")),
         )
     assert_eq_pl(
-        (pql.col("text").str.replace("Hello", "Hi").alias("replaced")),
-        (pl.col("text").str.replace("Hello", "Hi").alias("replaced")),
+        pql.col("text").str.replace("Hello", "Hi"),
+        pl.col("text").str.replace("Hello", "Hi"),
     )
     assert_eq_pl(
         (
-            pql.col("text").str.replace("a", "_", n=2).alias("replaced"),
+            pql.col("text").str.replace("a", "_", n=2),
             pql.col("text").str.replace("a", "_", n=0).alias("replaced_0"),
             pql.col("text").str.replace("a", "_", n=-1).alias("replaced_minus1"),
         ),
         (
-            pl.col("text").str.replace("a", "_", n=2).alias("replaced"),
+            pl.col("text").str.replace("a", "_", n=2),
             pl.col("text").str.replace("a", "_", n=0).alias("replaced_0"),
             pl.col("text").str.replace("a", "_", n=-1).alias("replaced_minus1"),
         ),
@@ -186,14 +176,8 @@ def test_replace() -> None:
 
 
 def test_strip_chars() -> None:
-    assert_eq(
-        (pql.col("text").str.strip_chars().alias("stripped")),
-        (nw.col("text").str.strip_chars().alias("stripped")),
-    )
-    assert_eq(
-        (pql.col("text").str.strip_chars(" ").alias("stripped_space")),
-        (nw.col("text").str.strip_chars(" ").alias("stripped_space")),
-    )
+    assert_eq(pql.col("text").str.strip_chars(), nw.col("text").str.strip_chars())
+    assert_eq(pql.col("text").str.strip_chars(" "), nw.col("text").str.strip_chars(" "))
 
 
 def test_strip_chars_start() -> None:
@@ -211,12 +195,11 @@ def test_strip_chars_start() -> None:
 
 def test_strip_chars_end() -> None:
     assert_eq_pl(
-        (pql.col("text").str.strip_chars_end().alias("rstripped")),
-        (pl.col("text").str.strip_chars_end().alias("rstripped")),
+        pql.col("text").str.strip_chars_end(), pl.col("text").str.strip_chars_end()
     )
     assert_eq_pl(
-        (pql.col("text").str.strip_chars_end(" ").alias("rstripped")),
-        (pl.col("text").str.strip_chars_end(" ").alias("rstripped")),
+        pql.col("text").str.strip_chars_end(" "),
+        pl.col("text").str.strip_chars_end(" "),
     )
 
 
@@ -244,187 +227,141 @@ def test_slice() -> None:
 
 
 def test_len_bytes() -> None:
-    assert_eq_pl(
-        (pql.col("text").str.len_bytes().alias("bytes")),
-        (pl.col("text").str.len_bytes().alias("bytes")),
-    )
+    assert_eq_pl(pql.col("text").str.len_bytes(), pl.col("text").str.len_bytes())
 
 
 def test_head_str() -> None:
-    assert_eq(
-        (pql.col("text").str.head(3).alias("first_3")),
-        (nw.col("text").str.head(3).alias("first_3")),
-    )
+    assert_eq(pql.col("text").str.head(3), nw.col("text").str.head(3))
 
 
 def test_tail_str() -> None:
-    assert_eq(
-        (pql.col("text").str.tail(3).alias("last_3")),
-        (nw.col("text").str.tail(3).alias("last_3")),
-    )
+    assert_eq(pql.col("text").str.tail(3), nw.col("text").str.tail(3))
 
 
 def test_reverse_str() -> None:
-    assert_eq_pl(
-        (pql.col("text").str.reverse().alias("reversed")),
-        (pl.col("text").str.reverse().alias("reversed")),
-    )
+    assert_eq_pl(pql.col("text").str.reverse(), pl.col("text").str.reverse())
 
 
 def test_to_titlecase() -> None:
-    assert_eq(
-        (pql.col("text").str.to_titlecase().alias("title")),
-        (nw.col("text").str.to_titlecase().alias("title")),
-    )
+    assert_eq(pql.col("text").str.to_titlecase(), nw.col("text").str.to_titlecase())
 
 
 def test_split() -> None:
-    assert_eq(
-        (pql.col("text").str.split(",").alias("split")),
-        (nw.col("text").str.split(",").alias("split")),
-    )
+    assert_eq(pql.col("text").str.split(","), nw.col("text").str.split(","))
 
 
 def test_extract_all() -> None:
     assert_eq_pl(
-        (pql.col("text").str.extract_all(r"\d+").alias("extracted")),
-        (pl.col("text").str.extract_all(r"\d+").alias("extracted")),
+        pql.col("text").str.extract_all(r"\d+"), pl.col("text").str.extract_all(r"\d+")
     )
 
 
 def test_count_matches() -> None:
     assert_eq_pl(
-        (pql.col("text").str.count_matches("a", literal=True).alias("count")),
-        (pl.col("text").str.count_matches("a", literal=True).alias("count")),
+        pql.col("text").str.count_matches("a", literal=True),
+        pl.col("text").str.count_matches("a", literal=True),
     )
 
 
 def test_strip_prefix() -> None:
     assert_eq_pl(
-        (pql.col("prefixed").str.strip_prefix("prefix_").alias("stripped")),
-        (pl.col("prefixed").str.strip_prefix("prefix_").alias("stripped")),
+        pql.col("prefixed").str.strip_prefix("prefix_"),
+        pl.col("prefixed").str.strip_prefix("prefix_"),
     )
     assert_eq_pl(
-        (
-            pql.col("prefixed")
-            .str.strip_prefix(pql.col("prefix_col"))
-            .alias("stripped"),
-        ),
-        (pl.col("prefixed").str.strip_prefix(pl.col("prefix_col")).alias("stripped"),),
+        pql.col("prefixed").str.strip_prefix(pql.col("prefix_col")),
+        pl.col("prefixed").str.strip_prefix(pl.col("prefix_col")),
     )
     assert_eq_pl(
-        (pql.col("prefix_exact").str.strip_prefix("foo").alias("stripped")),
-        (pl.col("prefix_exact").str.strip_prefix("foo").alias("stripped")),
+        pql.col("prefix_exact").str.strip_prefix("foo"),
+        pl.col("prefix_exact").str.strip_prefix("foo"),
     )
 
 
 def test_strip_suffix() -> None:
     assert_eq_pl(
-        (pql.col("suffixed").str.strip_suffix("_suffix").alias("stripped")),
-        (pl.col("suffixed").str.strip_suffix("_suffix").alias("stripped")),
+        pql.col("suffixed").str.strip_suffix("_suffix"),
+        pl.col("suffixed").str.strip_suffix("_suffix"),
     )
     assert_eq_pl(
-        (
-            pql.col("suffixed")
-            .str.strip_suffix(pql.col("suffix_col"))
-            .alias("stripped"),
-        ),
-        (pl.col("suffixed").str.strip_suffix(pl.col("suffix_col")).alias("stripped"),),
+        pql.col("suffixed").str.strip_suffix(pql.col("suffix_col")),
+        pl.col("suffixed").str.strip_suffix(pl.col("suffix_col")),
     )
     assert_eq_pl(
-        (pql.col("suffix_exact").str.strip_suffix("bar").alias("stripped")),
-        (pl.col("suffix_exact").str.strip_suffix("bar").alias("stripped")),
+        pql.col("suffix_exact").str.strip_suffix("bar"),
+        pl.col("suffix_exact").str.strip_suffix("bar"),
     )
 
 
 def test_replace_all() -> None:
     assert_eq(
-        (pql.col("text").str.replace_all("o", "0", literal=True).alias("replaced")),
-        (nw.col("text").str.replace_all("o", "0", literal=True).alias("replaced")),
+        pql.col("text").str.replace_all("o", "0", literal=True),
+        nw.col("text").str.replace_all("o", "0", literal=True),
     )
 
     assert_eq(
-        (pql.col("text").str.replace_all("l", "L", literal=True).alias("replaced")),
-        (nw.col("text").str.replace_all("l", "L", literal=True).alias("replaced")),
+        pql.col("text").str.replace_all("l", "L", literal=True),
+        nw.col("text").str.replace_all("l", "L", literal=True),
     )
 
     assert_eq(
-        (pql.col("text").str.replace_all(r"\d+", "X", literal=False).alias("replaced")),
-        (nw.col("text").str.replace_all(r"\d+", "X", literal=False).alias("replaced")),
+        pql.col("text").str.replace_all(r"\d+", "X", literal=False),
+        nw.col("text").str.replace_all(r"\d+", "X", literal=False),
     )
     assert_eq(
-        (
-            pql.col("text")
-            .str.replace_all("suffix", pql.col("suffix_val"), literal=True)
-            .alias("replaced"),
-        ),
-        (
-            nw.col("text")
-            .str.replace_all("suffix", nw.col("suffix_val"), literal=True)
-            .alias("replaced"),
-        ),
+        pql.col("text").str.replace_all("suffix", pql.col("suffix_val"), literal=True),
+        nw.col("text").str.replace_all("suffix", nw.col("suffix_val"), literal=True),
     )
 
 
 def test_head() -> None:
-    assert_eq(
-        (pql.col("text").str.head(2).alias("first")),
-        (nw.col("text").str.head(2).alias("first")),
-    )
+    assert_eq(pql.col("text").str.head(2), nw.col("text").str.head(2))
 
 
 def test_tail() -> None:
-    assert_eq(
-        pql.col("text").str.tail(2).alias("last"),
-        (nw.col("text").str.tail(2).alias("last")),
-    )
+    assert_eq(pql.col("text").str.tail(2), nw.col("text").str.tail(2))
 
 
 def test_contains_regex() -> None:
     assert_eq(
-        (pql.col("text").str.contains(r"\d+", literal=False).alias("has_digit")),
-        (nw.col("text").str.contains(r"\d+", literal=False).alias("has_digit")),
+        pql.col("text").str.contains(r"\d+", literal=False),
+        nw.col("text").str.contains(r"\d+", literal=False),
     )
 
 
 def test_count_matches_literal() -> None:
     assert_eq_pl(
-        (pql.col("text").str.count_matches("a", literal=True).alias("count")),
-        (pl.col("text").str.count_matches("a", literal=True).alias("count")),
+        (pql.col("text").str.count_matches("a", literal=True)),
+        (pl.col("text").str.count_matches("a", literal=True)),
     )
 
 
 def test_count_matches_regex() -> None:
     assert_eq_pl(
-        (pql.col("text").str.count_matches(r"\d+", literal=False).alias("count")),
-        (pl.col("text").str.count_matches(r"\d+", literal=False).alias("count")),
+        (pql.col("text").str.count_matches(r"\d+", literal=False)),
+        (pl.col("text").str.count_matches(r"\d+", literal=False)),
     )
 
 
 def test_pad_start() -> None:
     assert_eq_pl(
-        (pql.col("text_short").str.pad_start(5).alias("padded")),
-        (pl.col("text_short").str.pad_start(5).alias("padded")),
+        pql.col("text_short").str.pad_start(5), pl.col("text_short").str.pad_start(5)
     )
     assert_eq_pl(
-        (pql.col("text_short").str.pad_start(10, fill_char="*").alias("padded")),
-        (pl.col("text_short").str.pad_start(10, fill_char="*").alias("padded")),
+        pql.col("text_short").str.pad_start(10, fill_char="*"),
+        pl.col("text_short").str.pad_start(10, fill_char="*"),
     )
 
 
 def test_pad_end() -> None:
     assert_eq_pl(
-        (pql.col("text_short").str.pad_end(5).alias("padded")),
-        (pl.col("text_short").str.pad_end(5).alias("padded")),
+        pql.col("text_short").str.pad_end(5), pl.col("text_short").str.pad_end(5)
     )
     assert_eq_pl(
-        (pql.col("text_short").str.pad_end(10, fill_char="-").alias("padded")),
-        (pl.col("text_short").str.pad_end(10, fill_char="-").alias("padded")),
+        pql.col("text_short").str.pad_end(10, fill_char="-"),
+        pl.col("text_short").str.pad_end(10, fill_char="-"),
     )
 
 
 def test_zfill() -> None:
-    assert_eq_pl(
-        (pql.col("numbers").str.zfill(10).alias("zfilled")),
-        (pl.col("numbers").str.zfill(10).alias("zfilled")),
-    )
+    assert_eq_pl(pql.col("numbers").str.zfill(10), pl.col("numbers").str.zfill(10))

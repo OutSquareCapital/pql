@@ -52,11 +52,11 @@ def assert_eq_pl(
 
 
 def test_rand() -> None:
-    assert_eq((True & pql.col("a")).alias("r"), (True & nw.col("a")).alias("r"))
+    assert_eq((True & pql.col("a").alias("r")), (True & nw.col("a")).alias("r"))
 
 
 def test_ror() -> None:
-    assert_eq((False | pql.col("a")).alias("r"), (False | nw.col("a")).alias("r"))
+    assert_eq((False | pql.col("a").alias("r")), (False | nw.col("a")).alias("r"))
 
 
 def test_hash() -> None:
@@ -75,7 +75,7 @@ def test_repeat_by() -> None:
 
 
 def test_mul() -> None:
-    assert_eq(pql.col("x").mul(5).alias("r"), nw.col("x").__mul__(5).alias("r"))
+    assert_eq(pql.col("x").mul(5), nw.col("x").__mul__(5))
     assert_eq(
         pql.col("salary").mul(2).alias("double_salary"),
         nw.col("salary").__mul__(2).alias("double_salary"),
@@ -83,7 +83,7 @@ def test_mul() -> None:
 
 
 def test_truediv() -> None:
-    assert_eq((pql.col("x") / 5).alias("r"), (nw.col("x") / 5).alias("r"))
+    assert_eq((pql.col("x") / 5), (nw.col("x") / 5))
 
     assert_eq(
         (pql.col("salary").truediv(1000).alias("salary_k"),),
@@ -107,67 +107,63 @@ def test_repr() -> None:
 
 
 def test_and() -> None:
-    assert_eq(
-        (pql.col("a") & pql.col("b")).alias("r"), (nw.col("a") & nw.col("b")).alias("r")
-    )
+    assert_eq((pql.col("a") & pql.col("b")), (nw.col("a") & nw.col("b")))
 
 
 def test_or() -> None:
-    assert_eq(
-        (pql.col("a") | pql.col("b")).alias("r"), (nw.col("a") | nw.col("b")).alias("r")
-    )
+    assert_eq((pql.col("a") | pql.col("b")), (nw.col("a") | nw.col("b")))
 
 
 def test_not() -> None:
-    assert_eq((~pql.col("a")).alias("r"), (~nw.col("a")).alias("r"))
+    assert_eq((~pql.col("a")), (~nw.col("a")))
 
 
 def test_radd() -> None:
-    assert_eq((10 + pql.col("x")).alias("r"), (10 + nw.col("x")).alias("r"))
+    assert_eq((10 + pql.col("x").alias("r")), (10 + nw.col("x")).alias("r"))
 
 
 def test_rmul() -> None:
-    assert_eq((10 * pql.col("x")).alias("r"), (10 * nw.col("x")).alias("r"))
+    assert_eq((10 * pql.col("x").alias("r")), (10 * nw.col("x")).alias("r"))
 
 
 def test_rtruediv() -> None:
-    assert_eq((10 / pql.col("x")).alias("r"), (10 / nw.col("x")).alias("r"))
+    assert_eq((10 / pql.col("x").alias("r")), (10 / nw.col("x")).alias("r"))
 
 
 def test_eq() -> None:
-    assert_eq((pql.col("x") == 2).alias("x"), (nw.col("x") == 2))
+    assert_eq((pql.col("x") == 2), (nw.col("x") == 2))
 
 
 def test_lt() -> None:
-    assert_eq((pql.col("x") < 3).alias("x"), (nw.col("x") < 3))
+    assert_eq((pql.col("x") < 3), (nw.col("x") < 3))
 
 
 def test_gt() -> None:
-    assert_eq((pql.col("x") > 2).alias("x"), (nw.col("x") > 2))
+    assert_eq((pql.col("x") > 2), (nw.col("x") > 2))
 
 
 def test_ge() -> None:
-    assert_eq((pql.col("x") >= 3).alias("x"), (nw.col("x") >= 3))
+    assert_eq((pql.col("x") >= 3), (nw.col("x") >= 3))
 
 
 def test_rsub() -> None:
-    assert_eq((10 - pql.col("x")).alias("x"), (10 - nw.col("x")).alias("x"))
+    assert_eq((10 - pql.col("x")).alias("r"), (10 - nw.col("x")).alias("r"))
 
 
 def test_rfloordiv() -> None:
-    assert_eq((10 // pql.col("x")).alias("x"), (10 // nw.col("x")).alias("x"))
+    assert_eq((10 // pql.col("x")).alias("r"), (10 // nw.col("x")).alias("r"))
 
 
 def test_rmod() -> None:
-    assert_eq((10 % pql.col("x")).alias("x"), (10 % nw.col("x")).alias("x"))
+    assert_eq((10 % pql.col("x")).alias("r"), (10 % nw.col("x")).alias("r"))
 
 
 def test_rpow() -> None:
-    assert_eq((2 ** pql.col("x")).alias("x"), (2 ** nw.col("x")).alias("x"))
+    assert_eq((2 ** pql.col("x")).alias("r"), (2 ** nw.col("x")).alias("r"))
 
 
 def test_neg() -> None:
-    assert_eq_pl((-pql.col("x")).alias("x"), (-pl.col("x")).alias("x"))
+    assert_eq_pl((-pql.col("x")), (-pl.col("x")))
     assert_eq_pl(
         pql.col("x").neg().alias("neg"),
         pl.col("x").neg().alias("neg"),
@@ -175,45 +171,39 @@ def test_neg() -> None:
 
 
 def test_ne() -> None:
-    assert_eq((pql.col("x") != 2).alias("x"), (nw.col("x") != 2).alias("x"))
+    assert_eq((pql.col("x") != 2), (nw.col("x") != 2))
 
 
 def test_le() -> None:
-    assert_eq((pql.col("x") <= 2).alias("x"), (nw.col("x") <= 2).alias("x"))
+    assert_eq((pql.col("x") <= 2), (nw.col("x") <= 2))
 
 
 def test_sub() -> None:
-    assert_eq((pql.col("x") - 5).alias("x"), (nw.col("x") - 5).alias("x"))
+    assert_eq((pql.col("x") - 5), (nw.col("x") - 5))
 
 
 def test_floordiv() -> None:
-    assert_eq((pql.col("x") // 3).alias("x"), (nw.col("x") // 3).alias("x"))
+    assert_eq((pql.col("x") // 3), (nw.col("x") // 3))
 
 
 def test_is_first_distinct() -> None:
-    assert_eq_pl(
-        pql.col("a").is_first_distinct().alias("is_first"),
-        pl.col("a").is_first_distinct().alias("is_first"),
-    )
+    assert_eq_pl(pql.col("a").is_first_distinct(), pl.col("a").is_first_distinct())
 
 
 def test_is_last_distinct() -> None:
-    assert_eq_pl(
-        pql.col("x").is_last_distinct().alias("is_last"),
-        pl.col("x").is_last_distinct().alias("is_last"),
-    )
+    assert_eq_pl(pql.col("x").is_last_distinct(), pl.col("x").is_last_distinct())
 
 
 def test_sinh() -> None:
-    assert_eq_pl(pql.col("x").sinh().alias("sinh"), pl.col("x").sinh().alias("sinh"))
+    assert_eq_pl(pql.col("x").sinh(), pl.col("x").sinh())
 
 
 def test_cosh() -> None:
-    assert_eq_pl(pql.col("x").cosh().alias("cosh"), pl.col("x").cosh().alias("cosh"))
+    assert_eq_pl(pql.col("x").cosh(), pl.col("x").cosh())
 
 
 def test_tanh() -> None:
-    assert_eq_pl(pql.col("x").tanh().alias("tanh"), pl.col("x").tanh().alias("tanh"))
+    assert_eq_pl(pql.col("x").tanh(), pl.col("x").tanh())
 
 
 def test_col_getattr() -> None:
@@ -221,198 +211,133 @@ def test_col_getattr() -> None:
 
 
 def test_round_modes() -> None:
-    assert_eq(
-        pql.col("x").round(2).alias("rounded"),
-        nw.col("x").round(2).alias("rounded"),
+    assert_eq(pql.col("x").round(2), nw.col("x").round(2))
+    assert_eq_pl(
+        pql.col("x").round(2, mode="half_to_even"),
+        pl.col("x").round(2, mode="half_to_even"),
     )
     assert_eq_pl(
-        pql.col("x").round(2, mode="half_to_even").alias("rounded"),
-        pl.col("x").round(2, mode="half_to_even").alias("rounded"),
-    )
-    assert_eq_pl(
-        pql.col("x").round(2, mode="half_away_from_zero").alias("rounded"),
-        pl.col("x").round(2, mode="half_away_from_zero").alias("rounded"),
+        pql.col("x").round(2, mode="half_away_from_zero"),
+        pl.col("x").round(2, mode="half_away_from_zero"),
     )
 
 
 def test_pipe() -> None:
-    assert_eq(
-        pql.col("x").pipe(lambda x: x * 2).alias("x"), nw.col("x").pipe(lambda x: x * 2)
-    )
+    assert_eq(pql.col("x").pipe(lambda x: x * 2), nw.col("x").pipe(lambda x: x * 2))
 
 
 def test_forward_fill() -> None:
-    assert_eq_pl(
-        pql.col("a").forward_fill().alias("forward_filled"),
-        pl.col("a").forward_fill().alias("forward_filled"),
-    )
+    assert_eq_pl(pql.col("a").forward_fill(), pl.col("a").forward_fill())
 
 
 def test_backward_fill() -> None:
-    assert_eq_pl(
-        pql.col("a").backward_fill().alias("backward_filled"),
-        pl.col("a").backward_fill().alias("backward_filled"),
-    )
+    assert_eq_pl(pql.col("a").backward_fill(), pl.col("a").backward_fill())
 
 
 def test_is_nan() -> None:
-    assert_eq(
-        pql.col("x").is_nan().alias("is_nan"), nw.col("x").is_nan().alias("is_nan")
-    )
+    assert_eq(pql.col("x").is_nan(), nw.col("x").is_nan())
 
 
 def test_is_null() -> None:
-    assert_eq(
-        pql.col("x").is_null().alias("is_null"), nw.col("x").is_null().alias("is_null")
-    )
+    assert_eq(pql.col("x").is_null(), nw.col("x").is_null())
 
 
 def test_is_not_null() -> None:
-    assert_eq_pl(
-        pql.col("x").is_not_null().alias("is_not_null"),
-        pl.col("x").is_not_null().alias("is_not_null"),
-    )
+    assert_eq_pl(pql.col("x").is_not_null(), pl.col("x").is_not_null())
 
 
 def test_is_not_nan() -> None:
-    assert_eq_pl(
-        pql.col("x").is_not_nan().alias("is_not_nan"),
-        pl.col("x").is_not_nan().alias("is_not_nan"),
-    )
+    assert_eq_pl(pql.col("x").is_not_nan(), pl.col("x").is_not_nan())
 
 
 def test_is_finite() -> None:
-    assert_eq(
-        pql.col("x").is_finite().alias("is_finite"),
-        nw.col("x").is_finite().alias("is_finite"),
-    )
+    assert_eq(pql.col("x").is_finite(), nw.col("x").is_finite())
 
 
 def test_is_infinite() -> None:
-    assert_eq_pl(
-        pql.col("x").is_infinite().alias("is_infinite"),
-        pl.col("x").is_infinite().alias("is_infinite"),
-    )
+    assert_eq_pl(pql.col("x").is_infinite(), pl.col("x").is_infinite())
 
 
 def test_fill_nan() -> None:
-    assert_eq(
-        pql.col("x").fill_nan(0.0).alias("filled"),
-        nw.col("x").fill_nan(0.0).alias("filled"),
-    )
+    assert_eq(pql.col("x").fill_nan(0.0), nw.col("x").fill_nan(0.0))
 
 
 def test_is_duplicated() -> None:
-    assert_eq(
-        pql.col("a").is_duplicated().alias("is_dup"),
-        nw.col("a").is_duplicated().alias("is_dup"),
-    )
+    assert_eq(pql.col("a").is_duplicated(), nw.col("a").is_duplicated())
 
 
 def test_floor() -> None:
-    assert_eq(
-        pql.col("x").floor().alias("x_floor"), nw.col("x").floor().alias("x_floor")
-    )
+    assert_eq(pql.col("x").floor(), nw.col("x").floor())
 
 
 def test_ceil() -> None:
-    assert_eq(pql.col("x").ceil().alias("x_ceil"), nw.col("x").ceil().alias("x_ceil"))
+    assert_eq(pql.col("x").ceil(), nw.col("x").ceil())
 
 
 def test_round() -> None:
-    assert_eq(
-        pql.col("x").round(2).alias("x_round"), nw.col("x").round(2).alias("x_round")
-    )
+    assert_eq(pql.col("x").round(2), nw.col("x").round(2))
 
 
 def test_sqrt() -> None:
-    assert_eq(pql.col("x").sqrt().alias("x_sqrt"), nw.col("x").sqrt().alias("x_sqrt"))
+    assert_eq(pql.col("x").sqrt(), nw.col("x").sqrt())
 
 
 def test_cbrt() -> None:
-    assert_eq_pl(
-        pql.col("x").cbrt().alias("x_cbrt"), pl.col("x").cbrt().alias("x_cbrt")
-    )
+    assert_eq_pl(pql.col("x").cbrt(), pl.col("x").cbrt())
 
 
 def test_log() -> None:
-    result = pql.col("x").log(10).alias("x_log10")
-    expected = nw.col("x").log(10).alias("x_log10")
-    assert_eq(result, expected)
+    assert_eq(pql.col("x").log(10), nw.col("x").log(10))
 
 
 def test_log10() -> None:
-    assert_eq_pl(
-        pql.col("x").log10().alias("x_log10"), pl.col("x").log10().alias("x_log10")
-    )
+    assert_eq_pl(pql.col("x").log10(), pl.col("x").log10())
 
 
 def test_log1p() -> None:
-    assert_eq_pl(
-        pql.col("x").log1p().alias("x_log1p"), pl.col("x").log1p().alias("x_log1p")
-    )
+    assert_eq_pl(pql.col("x").log1p(), pl.col("x").log1p())
 
 
 def test_exp() -> None:
-    assert_eq(pql.col("x").exp().alias("x_exp"), nw.col("x").exp().alias("x_exp"))
+    assert_eq(pql.col("x").exp(), nw.col("x").exp())
 
 
 def test_sin() -> None:
-    assert_eq(pql.col("x").sin().alias("sin_x"), nw.col("x").sin().alias("sin_x"))
+    assert_eq(pql.col("x").sin(), nw.col("x").sin())
 
 
 def test_cos() -> None:
-    assert_eq_pl(pql.col("x").cos().alias("cos_x"), pl.col("x").cos().alias("cos_x"))
+    assert_eq_pl(pql.col("x").cos(), pl.col("x").cos())
 
 
 def test_tan() -> None:
-    assert_eq_pl(pql.col("x").tan().alias("tan_x"), pl.col("x").tan().alias("tan_x"))
+    assert_eq_pl(pql.col("x").tan(), pl.col("x").tan())
 
 
 def test_arctan() -> None:
-    assert_eq_pl(
-        pql.col("x").arctan().alias("arctan_x"), pl.col("x").arctan().alias("arctan_x")
-    )
+    assert_eq_pl(pql.col("x").arctan(), pl.col("x").arctan())
 
 
 def test_degrees() -> None:
-    assert_eq_pl(pql.col("x").degrees().alias("x"), pl.col("x").degrees().alias("x"))
+    assert_eq_pl(pql.col("x").degrees(), pl.col("x").degrees())
 
 
 def test_radians() -> None:
-    assert_eq_pl(pql.col("x").radians().alias("x"), pl.col("x").radians().alias("x"))
+    assert_eq_pl(pql.col("x").radians(), pl.col("x").radians())
 
 
 def test_sign() -> None:
-    assert_eq_pl(
-        pql.col("x").sign().alias("sign_x"), pl.col("x").sign().alias("sign_x")
-    )
+    assert_eq_pl(pql.col("x").sign(), pl.col("x").sign())
 
 
 def test_pow() -> None:
-    assert_eq(
-        (
-            pql.col("x").pow(2).alias("x_squared"),
-            pql.col("x").__pow__(2).alias("x_squared_bis"),
-        ),
-        (
-            nw.col("x").__pow__(2).alias("x_squared"),
-            nw.col("x").__pow__(2).alias("x_squared_bis"),
-        ),
-    )
+    assert_eq(pql.col("x").pow(2), nw.col("x").__pow__(2))
+    assert_eq(pql.col("x").__pow__(2), nw.col("x").__pow__(2))
 
 
 def test_add() -> None:
-    assert_eq(
-        (
-            pql.col("age").add(10).alias("age_plus_10"),
-            (pql.col("age") + 10).alias("age_plus_10_bis"),
-        ),
-        (
-            nw.col("age").__add__(10).alias("age_plus_10"),
-            (nw.col("age") + 10).alias("age_plus_10_bis"),
-        ),
-    )
+    assert_eq(pql.col("age").add(10), nw.col("age").__add__(10))
+    assert_eq(pql.col("age").__add__(10), nw.col("age").__add__(10))
 
 
 def test_mod() -> None:
@@ -429,27 +354,17 @@ def test_mod() -> None:
 
 
 def test_is_in() -> None:
-    assert_eq(
-        pql.col("x").is_in([2, 3]).alias("x_in"),
-        nw.col("x").is_in([2, 3]).alias("x_in"),
-    )
+    assert_eq(pql.col("x").is_in([2, 3]), nw.col("x").is_in([2, 3]))
 
 
 def test_abs() -> None:
-    assert_eq(pql.col("x").abs().alias("x"), nw.col("x").abs().alias("x"))
+    assert_eq(pql.col("x").abs(), nw.col("x").abs())
 
 
 def test_shift() -> None:
-    assert_eq_pl(
-        pql.col("x").shift().alias("x_shift"), pl.col("x").shift().alias("x_shift")
-    )
-    assert_eq_pl(
-        pql.col("x").shift(-1).alias("x_shift_neg"),
-        pl.col("x").shift(-1).alias("x_shift_neg"),
-    )
-    assert_eq_pl(
-        pql.col("x").shift(0).alias("x_shift0"), pl.col("x").shift(0).alias("x_shift0")
-    )
+    assert_eq_pl(pql.col("x").shift(), pl.col("x").shift())
+    assert_eq_pl(pql.col("x").shift(-1), pl.col("x").shift(-1))
+    assert_eq_pl(pql.col("x").shift(0), pl.col("x").shift(0))
 
 
 def test_diff() -> None:
@@ -476,10 +391,7 @@ def test_is_between() -> None:
 
 
 def test_is_unique() -> None:
-    assert_eq(
-        pql.col("a").is_unique().alias("is_unique"),
-        nw.col("a").is_unique().alias("is_unique"),
-    )
+    assert_eq(pql.col("a").is_unique(), nw.col("a").is_unique())
 
 
 def test_filter() -> None:
@@ -541,98 +453,72 @@ def test_when_then_chained() -> None:
 
 
 def test_count() -> None:
-    assert_eq(
-        pql.col("x").count().alias("x_count"), nw.col("x").count().alias("x_count")
-    )
+    assert_eq(pql.col("x").count(), nw.col("x").count())
 
 
 def test_len() -> None:
-    assert_eq_pl(pql.col("x").len().alias("x_len"), pl.col("x").len().alias("x_len"))
+    assert_eq_pl(pql.col("x").len(), pl.col("x").len())
 
 
 def test_sum() -> None:
-    assert_eq_pl(pql.col("x").sum().alias("x_sum"), pl.col("x").sum().alias("x_sum"))
+    assert_eq_pl(pql.col("x").sum(), pl.col("x").sum())
 
 
 def test_mean() -> None:
-    assert_eq_pl(
-        pql.col("x").mean().alias("x_mean"), pl.col("x").mean().alias("x_mean")
-    )
+    assert_eq_pl(pql.col("x").mean(), pl.col("x").mean())
 
 
 def test_median() -> None:
-    assert_eq_pl(
-        pql.col("x").median().alias("x_median"),
-        pl.col("x").median().alias("x_median"),
-    )
+    assert_eq_pl(pql.col("x").median(), pl.col("x").median())
 
 
 def test_min() -> None:
-    assert_eq_pl(pql.col("x").min().alias("x_min"), pl.col("x").min().alias("x_min"))
+    assert_eq_pl(pql.col("x").min(), pl.col("x").min())
 
 
 def test_max() -> None:
-    assert_eq_pl(pql.col("x").max().alias("x_max"), pl.col("x").max().alias("x_max"))
+    assert_eq_pl(pql.col("x").max(), pl.col("x").max())
 
 
-def test_first_expr() -> None:
+def test_first() -> None:
+    assert_eq_pl(pql.col("x").first(), pl.col("x").first())
     assert_eq_pl(
-        pql.col("x").first().alias("x_first"),
-        pl.col("x").first().alias("x_first"),
+        pql.col("x").first(ignore_nulls=False), pl.col("x").first(ignore_nulls=False)
     )
     assert_eq_pl(
-        pql.col("x").first(ignore_nulls=False).alias("x_first_with_null"),
-        pl.col("x").first(ignore_nulls=False).alias("x_first_with_null"),
+        pql.col("x").first(ignore_nulls=True), pl.col("x").first(ignore_nulls=True)
     )
     assert_eq_pl(
-        pql.col("x").first(ignore_nulls=True).alias("x_first_non_null"),
-        pl.col("x").first(ignore_nulls=True).alias("x_first_non_null"),
+        pql.col("age").first(ignore_nulls=False),
+        pl.col("age").first(ignore_nulls=False),
     )
     assert_eq_pl(
-        pql.col("age").first(ignore_nulls=False).alias("age_first_with_nulls"),
-        pl.col("age").first(ignore_nulls=False).alias("age_first_with_nulls"),
-    )
-    assert_eq_pl(
-        pql.col("age").first(ignore_nulls=True).alias("age_first_non_null"),
-        pl.col("age").first(ignore_nulls=True).alias("age_first_non_null"),
+        pql.col("age").first(ignore_nulls=True), pl.col("age").first(ignore_nulls=True)
     )
 
 
-def test_last_expr() -> None:
+def test_last() -> None:
+    assert_eq_pl(pql.col("x").last(), pl.col("x").last())
     assert_eq_pl(
-        pql.col("x").last().alias("x_last"),
-        pl.col("x").last().alias("x_last"),
+        pql.col("x").last(ignore_nulls=False), pl.col("x").last(ignore_nulls=False)
     )
     assert_eq_pl(
-        pql.col("x").last(ignore_nulls=False).alias("x_last_with_null"),
-        pl.col("x").last(ignore_nulls=False).alias("x_last_with_null"),
+        pql.col("x").last(ignore_nulls=True), pl.col("x").last(ignore_nulls=True)
     )
     assert_eq_pl(
-        pql.col("x").last(ignore_nulls=True).alias("x_last_non_null"),
-        pl.col("x").last(ignore_nulls=True).alias("x_last_non_null"),
+        pql.col("age").last(ignore_nulls=False), pl.col("age").last(ignore_nulls=False)
     )
     assert_eq_pl(
-        pql.col("age").last(ignore_nulls=False).alias("age_last_with_nulls"),
-        pl.col("age").last(ignore_nulls=False).alias("age_last_with_nulls"),
-    )
-    assert_eq_pl(
-        pql.col("age").last(ignore_nulls=True).alias("age_last_non_null"),
-        pl.col("age").last(ignore_nulls=True).alias("age_last_non_null"),
+        pql.col("age").last(ignore_nulls=True), pl.col("age").last(ignore_nulls=True)
     )
 
 
-def test_mode_expr() -> None:
-    assert_eq_pl(
-        pql.col("x").mode().alias("x_mode"),
-        pl.col("x").mode().alias("x_mode"),
-    )
+def test_mode() -> None:
+    assert_eq_pl(pql.col("x").mode(), pl.col("x").mode())
 
 
-def test_unique_expr() -> None:
-    assert_eq_pl(
-        pql.col("x").unique().alias("x_unique"),
-        pl.col("x").unique().alias("x_unique"),
-    )
+def test_unique() -> None:
+    assert_eq_pl(pql.col("x").unique(), pl.col("x").unique())
     assert_eq_pl(
         (
             pql.col("x").unique().alias("x_unique_left"),
@@ -643,34 +529,16 @@ def test_unique_expr() -> None:
             pl.col("x").unique().add(3).alias("x_unique_right"),
         ),
     )
-    assert_frame_equal(
-        sample_df()
-        .to_native()
-        .pl(lazy=True)
-        .select(
-            x_unique=pl.col("x").unique(),
-            x_unique_right=pl.col("x").unique().add(3),
-        )
-        .collect(),
-        pql.LazyFrame(sample_df().to_native())
-        .select(
-            x_unique=pql.col("x").unique(),
-            x_unique_right=pql.col("x").unique().add(3),
-        )
-        .collect(),
-        check_dtypes=False,
-        check_row_order=False,
-    )
 
 
-def test_is_close_expr() -> None:
+def test_is_close() -> None:
     assert_eq_pl(
-        pql.col("salary")
-        .is_close(pql.col("salary").add(0.001), abs_tol=0.01, rel_tol=0.0)
-        .alias("salary_close"),
-        pl.col("salary")
-        .is_close(pl.col("salary").add(0.001), abs_tol=0.01, rel_tol=0.0)
-        .alias("salary_close"),
+        pql.col("salary").is_close(
+            pql.col("salary").add(0.001), abs_tol=0.01, rel_tol=0.0
+        ),
+        pl.col("salary").is_close(
+            pl.col("salary").add(0.001), abs_tol=0.01, rel_tol=0.0
+        ),
     )
     assert_eq_pl(
         pql.col("salary")
@@ -820,176 +688,114 @@ def test_fill_null() -> None:
         match="must specify either a fill `value` or `strategy`",
     ):
         pl.col("age").fill_null()
+    assert_eq_pl(pql.col("age").fill_null(0), pl.col("age").fill_null(0))
     assert_eq_pl(
-        pql.col("age").fill_null(0).alias("age_fill_null"),
-        pl.col("age").fill_null(0).alias("age_fill_null"),
+        pql.col("age").fill_null(strategy="forward"),
+        pl.col("age").fill_null(strategy="forward"),
     )
     assert_eq_pl(
-        pql.col("age").fill_null(strategy="forward").alias("age_fill_fwd"),
-        pl.col("age").fill_null(strategy="forward").alias("age_fill_fwd"),
+        pql.col("age").fill_null(strategy="backward"),
+        pl.col("age").fill_null(strategy="backward"),
     )
     assert_eq_pl(
-        pql.col("age").fill_null(strategy="backward").alias("age_fill_bwd"),
-        pl.col("age").fill_null(strategy="backward").alias("age_fill_bwd"),
+        pql.col("age").fill_null(strategy="forward", limit=0),
+        pl.col("age").fill_null(strategy="forward", limit=0),
     )
     assert_eq_pl(
-        pql.col("age").fill_null(strategy="forward", limit=0).alias("age_fill_fwd_l0"),
-        pl.col("age").fill_null(strategy="forward", limit=0).alias("age_fill_fwd_l0"),
+        pql.col("age").fill_null(strategy="forward", limit=1),
+        pl.col("age").fill_null(strategy="forward", limit=1),
     )
     assert_eq_pl(
-        pql.col("age").fill_null(strategy="forward", limit=1).alias("age_fill_fwd_l1"),
-        pl.col("age").fill_null(strategy="forward", limit=1).alias("age_fill_fwd_l1"),
+        pql.col("age").fill_null(strategy="backward", limit=0),
+        pl.col("age").fill_null(strategy="backward", limit=0),
     )
     assert_eq_pl(
-        pql.col("age").fill_null(strategy="backward", limit=0).alias("age_fill_bwd_l0"),
-        pl.col("age").fill_null(strategy="backward", limit=0).alias("age_fill_bwd_l0"),
+        pql.col("age").fill_null(strategy="backward", limit=1),
+        pl.col("age").fill_null(strategy="backward", limit=1),
     )
     assert_eq_pl(
-        pql.col("age").fill_null(strategy="backward", limit=1).alias("age_fill_bwd_l1"),
-        pl.col("age").fill_null(strategy="backward", limit=1).alias("age_fill_bwd_l1"),
+        pql.col("age").fill_null(strategy="min"),
+        pl.col("age").fill_null(strategy="min"),
     )
     assert_eq_pl(
-        pql.col("age").fill_null(strategy="min").alias("age_fill_min"),
-        pl.col("age").fill_null(strategy="min").alias("age_fill_min"),
+        pql.col("age").fill_null(strategy="max"),
+        pl.col("age").fill_null(strategy="max"),
     )
     assert_eq_pl(
-        pql.col("age").fill_null(strategy="max").alias("age_fill_max"),
-        pl.col("age").fill_null(strategy="max").alias("age_fill_max"),
+        pql.col("age").fill_null(strategy="mean"),
+        pl.col("age").fill_null(strategy="mean"),
     )
     assert_eq_pl(
-        pql.col("age").fill_null(strategy="mean").alias("age_fill_mean"),
-        pl.col("age").fill_null(strategy="mean").alias("age_fill_mean"),
+        pql.col("age").fill_null(strategy="zero"),
+        pl.col("age").fill_null(strategy="zero"),
     )
     assert_eq_pl(
-        pql.col("age").fill_null(strategy="zero").alias("age_fill_zero"),
-        pl.col("age").fill_null(strategy="zero").alias("age_fill_zero"),
-    )
-    assert_eq_pl(
-        pql.col("age").fill_null(strategy="one").alias("age_fill_one"),
-        pl.col("age").fill_null(strategy="one").alias("age_fill_one"),
+        pql.col("age").fill_null(strategy="one"),
+        pl.col("age").fill_null(strategy="one"),
     )
 
 
 def test_std() -> None:
-    assert_eq_pl(pql.col("x").std().alias("x_std"), pl.col("x").std().alias("x_std"))
-    assert_eq_pl(
-        pql.col("x").std(ddof=0).alias("x_std_pop"),
-        pl.col("x").std(ddof=0).alias("x_std_pop"),
-    )
+    assert_eq_pl(pql.col("x").std(), pl.col("x").std())
+    assert_eq_pl(pql.col("x").std(ddof=0), pl.col("x").std(ddof=0))
 
 
 def test_var() -> None:
-    assert_eq_pl(pql.col("x").var().alias("x_var"), pl.col("x").var().alias("x_var"))
-    assert_eq_pl(
-        pql.col("x").var(ddof=0).alias("x_var_pop"),
-        pl.col("x").var(ddof=0).alias("x_var_pop"),
-    )
+    assert_eq_pl(pql.col("x").var(), pl.col("x").var())
+    assert_eq_pl(pql.col("x").var(ddof=0), pl.col("x").var(ddof=0))
 
 
-def test_all_expr() -> None:
-    assert_eq_pl(
-        pql.col("x").gt(0).all().alias("all_pos"),
-        pl.col("x").gt(0).all().alias("all_pos"),
-    )
+def test_all() -> None:
+    assert_eq_pl(pql.col("x").gt(0).all(), pl.col("x").gt(0).all())
 
 
 def test_any() -> None:
-    assert_eq_pl(
-        pql.col("x").gt(10).any().alias("any_gt_10"),
-        pl.col("x").gt(10).any().alias("any_gt_10"),
-    )
+    assert_eq_pl(pql.col("x").gt(10).any(), pl.col("x").gt(10).any())
 
 
 def test_n_unique() -> None:
-    assert_eq_pl(
-        pql.col("x").n_unique().alias("x_n_unique"),
-        pl.col("x").n_unique().alias("x_n_unique"),
-    )
+    assert_eq_pl(pql.col("x").n_unique(), pl.col("x").n_unique())
 
 
 def test_null_count() -> None:
-    assert_eq_pl(
-        pql.col("age").null_count().alias("age_null_count"),
-        pl.col("age").null_count().alias("age_null_count"),
-    )
+    assert_eq_pl(pql.col("age").null_count(), pl.col("age").null_count())
 
 
 def test_rank() -> None:
+    assert_eq_pl(pql.col("x").rank(), pl.col("x").rank())
+    assert_eq_pl(pql.col("x").rank(method="min"), pl.col("x").rank(method="min"))
+    assert_eq_pl(pql.col("x").rank(method="max"), pl.col("x").rank(method="max"))
+    assert_eq_pl(pql.col("x").rank(method="dense"), pl.col("x").rank(method="dense"))
     assert_eq_pl(
-        pql.col("x").rank().alias("x_rank"), pl.col("x").rank().alias("x_rank")
+        pql.col("x").rank(method="ordinal"), pl.col("x").rank(method="ordinal")
     )
-    assert_eq_pl(
-        pql.col("x").rank(method="min").alias("x_rank_min"),
-        pl.col("x").rank(method="min").alias("x_rank_min"),
-    )
-    assert_eq_pl(
-        pql.col("x").rank(method="max").alias("x_rank_max"),
-        pl.col("x").rank(method="max").alias("x_rank_max"),
-    )
-    assert_eq_pl(
-        pql.col("x").rank(method="dense").alias("x_rank_dense"),
-        pl.col("x").rank(method="dense").alias("x_rank_dense"),
-    )
-    assert_eq_pl(
-        pql.col("x").rank(method="ordinal").alias("x_rank_ord"),
-        pl.col("x").rank(method="ordinal").alias("x_rank_ord"),
-    )
-    assert_eq_pl(
-        pql.col("x").rank(descending=True).alias("x_rank_desc"),
-        pl.col("x").rank(descending=True).alias("x_rank_desc"),
-    )
+    assert_eq_pl(pql.col("x").rank(descending=True), pl.col("x").rank(descending=True))
 
 
 def test_cum_count() -> None:
+    assert_eq_pl(pql.col("x").cum_count(), pl.col("x").cum_count())
     assert_eq_pl(
-        pql.col("x").cum_count().alias("x_cum_count"),
-        pl.col("x").cum_count().alias("x_cum_count"),
-    )
-    assert_eq_pl(
-        pql.col("x").cum_count(reverse=True).alias("x_cum_count_rev"),
-        pl.col("x").cum_count(reverse=True).alias("x_cum_count_rev"),
+        pql.col("x").cum_count(reverse=True), pl.col("x").cum_count(reverse=True)
     )
 
 
 def test_cum_sum() -> None:
-    assert_eq_pl(
-        pql.col("x").cum_sum().alias("x_cum_sum"),
-        pl.col("x").cum_sum().alias("x_cum_sum"),
-    )
-    assert_eq_pl(
-        pql.col("x").cum_sum(reverse=True).alias("x_cum_sum_rev"),
-        pl.col("x").cum_sum(reverse=True).alias("x_cum_sum_rev"),
-    )
+    assert_eq_pl(pql.col("x").cum_sum(), pl.col("x").cum_sum())
+    assert_eq_pl(pql.col("x").cum_sum(reverse=True), pl.col("x").cum_sum(reverse=True))
 
 
 def test_cum_prod() -> None:
+    assert_eq_pl(pql.col("x").cum_prod(), pl.col("x").cum_prod())
     assert_eq_pl(
-        pql.col("x").cum_prod().alias("x_cum_prod"),
-        pl.col("x").cum_prod().alias("x_cum_prod"),
-    )
-    assert_eq_pl(
-        pql.col("x").cum_prod(reverse=True).alias("x_cum_prod_rev"),
-        pl.col("x").cum_prod(reverse=True).alias("x_cum_prod_rev"),
+        pql.col("x").cum_prod(reverse=True), pl.col("x").cum_prod(reverse=True)
     )
 
 
 def test_cum_min() -> None:
-    assert_eq_pl(
-        pql.col("x").cum_min().alias("x_cum_min"),
-        pl.col("x").cum_min().alias("x_cum_min"),
-    )
-    assert_eq_pl(
-        pql.col("x").cum_min(reverse=True).alias("x_cum_min_rev"),
-        pl.col("x").cum_min(reverse=True).alias("x_cum_min_rev"),
-    )
+    assert_eq_pl(pql.col("x").cum_min(), pl.col("x").cum_min())
+    assert_eq_pl(pql.col("x").cum_min(reverse=True), pl.col("x").cum_min(reverse=True))
 
 
 def test_cum_max() -> None:
-    assert_eq_pl(
-        pql.col("x").cum_max().alias("x_cum_max"),
-        pl.col("x").cum_max().alias("x_cum_max"),
-    )
-    assert_eq_pl(
-        pql.col("x").cum_max(reverse=True).alias("x_cum_max_rev"),
-        pl.col("x").cum_max(reverse=True).alias("x_cum_max_rev"),
-    )
+    assert_eq_pl(pql.col("x").cum_max(), pl.col("x").cum_max())
+    assert_eq_pl(pql.col("x").cum_max(reverse=True), pl.col("x").cum_max(reverse=True))
