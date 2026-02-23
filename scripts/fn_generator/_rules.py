@@ -242,6 +242,13 @@ NAMESPACE_SPECS = pc.Seq(
             categories=pc.Seq(()),
             strip_prefixes=pc.Seq(("map_",)),
         ),
+        NamespaceSpec(
+            name="EnumFns",
+            doc="Mixin providing auto-generated DuckDB enum functions as methods.",
+            prefixes=pc.Seq(("enum_",)),
+            categories=pc.Seq(()),
+            strip_prefixes=pc.Seq(("enum_",)),
+        ),
     )
 )
 """Namespace metadata and function prefixes."""

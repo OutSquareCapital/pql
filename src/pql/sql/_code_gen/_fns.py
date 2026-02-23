@@ -984,80 +984,6 @@ class Fns(DuckHandler):
         """
         return self._new(func("entropy", self.inner()))
 
-    def enum_code(self) -> Self:
-        """Returns the numeric value backing the given enum value.
-
-        **SQL name**: *enum_code*
-
-        Examples:
-            enum_code('happy'::mood)
-
-        Returns:
-            Self
-        """
-        return self._new(func("enum_code", self.inner()))
-
-    def enum_first(self) -> Self:
-        """Returns the first value of the input enum type.
-
-        **SQL name**: *enum_first*
-
-        Examples:
-            enum_first(NULL::mood)
-
-        Returns:
-            Self
-        """
-        return self._new(func("enum_first", self.inner()))
-
-    def enum_last(self) -> Self:
-        """Returns the last value of the input enum type.
-
-        **SQL name**: *enum_last*
-
-        Examples:
-            enum_last(NULL::mood)
-
-        Returns:
-            Self
-        """
-        return self._new(func("enum_last", self.inner()))
-
-    def enum_range(self) -> Self:
-        """Returns all values of the input enum type as an array.
-
-        **SQL name**: *enum_range*
-
-        Examples:
-            enum_range(NULL::mood)
-
-        Returns:
-            Self
-        """
-        return self._new(func("enum_range", self.inner()))
-
-    def enum_range_boundary(self, end: Self) -> Self:
-        """Returns the range between the two given enum values as an array.
-
-        The values must be of the same enum type.
-
-        When the first parameter is NULL, the result starts with the first value of the enum type.
-
-        When the second parameter is NULL, the result ends with the last value of the enum type.
-
-        **SQL name**: *enum_range_boundary*
-
-        Args:
-            end (Self): `ANY` expression
-
-        Examples:
-            enum_range_boundary(NULL, 'happy'::mood)
-
-        Returns:
-            Self
-        """
-        return self._new(func("enum_range_boundary", self.inner(), end))
-
     def epoch(self) -> Self:
         """Extract the epoch component from a temporal type.
 
@@ -8386,3 +8312,81 @@ class MapFns[T: Fns](NameSpaceHandler[T]):
             T
         """
         return self._new(func("map_values", self.inner()))
+
+
+class EnumFns[T: Fns](NameSpaceHandler[T]):
+    """Mixin providing auto-generated DuckDB enum functions as methods."""
+
+    def code(self) -> T:
+        """Returns the numeric value backing the given enum value.
+
+        **SQL name**: *enum_code*
+
+        Examples:
+            enum_code('happy'::mood)
+
+        Returns:
+            T
+        """
+        return self._new(func("enum_code", self.inner()))
+
+    def first(self) -> T:
+        """Returns the first value of the input enum type.
+
+        **SQL name**: *enum_first*
+
+        Examples:
+            enum_first(NULL::mood)
+
+        Returns:
+            T
+        """
+        return self._new(func("enum_first", self.inner()))
+
+    def last(self) -> T:
+        """Returns the last value of the input enum type.
+
+        **SQL name**: *enum_last*
+
+        Examples:
+            enum_last(NULL::mood)
+
+        Returns:
+            T
+        """
+        return self._new(func("enum_last", self.inner()))
+
+    def range(self) -> T:
+        """Returns all values of the input enum type as an array.
+
+        **SQL name**: *enum_range*
+
+        Examples:
+            enum_range(NULL::mood)
+
+        Returns:
+            T
+        """
+        return self._new(func("enum_range", self.inner()))
+
+    def range_boundary(self, end: T) -> T:
+        """Returns the range between the two given enum values as an array.
+
+        The values must be of the same enum type.
+
+        When the first parameter is NULL, the result starts with the first value of the enum type.
+
+        When the second parameter is NULL, the result ends with the last value of the enum type.
+
+        **SQL name**: *enum_range_boundary*
+
+        Args:
+            end (T): `ANY` expression
+
+        Examples:
+            enum_range_boundary(NULL, 'happy'::mood)
+
+        Returns:
+            T
+        """
+        return self._new(func("enum_range_boundary", self.inner(), end))

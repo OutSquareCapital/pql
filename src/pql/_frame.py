@@ -58,17 +58,11 @@ class JoinKeys[T: pc.Seq[str] | str](NamedTuple):
             case (pc.NONE, pc.Some(lk), pc.Some(rk)):
                 return pc.Ok(JoinKeys(lk, rk))
             case (pc.NONE, _, _):
-                return pc.Err(
-                    ValueError(
-                        "Either (`left_on` and `right_on`) or `on` keys should be specified."
-                    )
-                )
+                msg = "Either (`left_on` and `right_on`) or `on` keys should be specified."
+                return pc.Err(ValueError(msg))
             case _:
-                return pc.Err(
-                    ValueError(
-                        "If `on` is specified, `left_on` and `right_on` should be None."
-                    )
-                )
+                msg = "If `on` is specified, `left_on` and `right_on` should be None."
+                return pc.Err(ValueError(msg))
 
     @staticmethod
     def from_by(
@@ -81,15 +75,12 @@ class JoinKeys[T: pc.Seq[str] | str](NamedTuple):
             case (pc.NONE, pc.Some(bl), pc.Some(br)):
                 left_vals = sql.try_iter(bl).collect()
                 right_vals = sql.try_iter(br).collect()
-                return (
-                    pc.Ok(JoinKeys(left_vals, right_vals))
-                    if left_vals.length() == right_vals.length()
-                    else pc.Err(
-                        ValueError(
-                            "`by_left` and `by_right` must have the same length."
-                        )
-                    )
-                )
+                match left_vals.length() == right_vals.length():
+                    case True:
+                        return pc.Ok(JoinKeys(left_vals, right_vals))
+                    case False:
+                        msg = "`by_left` and `by_right` must have the same length."
+                        return pc.Err(ValueError(msg))
             case (pc.NONE, pc.NONE, pc.NONE):
                 return pc.Ok(JoinKeys(pc.Seq[str].new(), pc.Seq[str].new()))
             case (pc.NONE, _, _):

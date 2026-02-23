@@ -2,6 +2,7 @@ from ._core import Expression, Relation
 from ._fns import (
     ArrayFns,
     DateTimeFns,
+    EnumFns,
     Fns,
     JsonFns,
     ListFns,
@@ -14,6 +15,7 @@ from ._fns import (
 __all__ = [
     "ArrayFns",
     "DateTimeFns",
+    "EnumFns",
     "Expression",
     "Fns",
     "JsonFns",

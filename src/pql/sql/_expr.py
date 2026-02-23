@@ -10,6 +10,7 @@ import pyochain as pc
 from ._code_gen import (
     ArrayFns,
     DateTimeFns,
+    EnumFns,
     Expression,
     Fns,
     JsonFns,
@@ -67,6 +68,11 @@ class SqlExpr(Expression, Fns):
     def map(self) -> SqlExprMapNameSpace:
         """Access map functions."""
         return SqlExprMapNameSpace(self)
+
+    @property
+    def enum(self) -> SqlExprEnumNameSpace:
+        """Access enum functions."""
+        return SqlExprEnumNameSpace(self)
 
     def log(self, x: Self | float | None = None) -> Self:
         """Computes the logarithm of x to base b.
@@ -499,3 +505,8 @@ class SqlExprRegexNameSpace(RegexFns[SqlExpr]):
 @dataclass(slots=True)
 class SqlExprMapNameSpace(MapFns[SqlExpr]):
     """Map function namespace for SQL expressions."""
+
+
+@dataclass(slots=True)
+class SqlExprEnumNameSpace(EnumFns[SqlExpr]):
+    """Enum function namespace for SQL expressions."""

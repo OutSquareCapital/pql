@@ -120,7 +120,7 @@ class ComparisonInfos:
     pql_info: pc.Option[MethodInfo] = field(default_factory=lambda: pc.NONE)
     ignored_params: pc.Set[str] = field(default_factory=pc.Set[str].new)
 
-    def to_status(self) -> MethodStatus:  # noqa: PLR0911
+    def to_status(self) -> MethodStatus:  # noqa: C901, PLR0911
         """Classify the method comparison result."""
         match (self.pql_info, self.narwhals, self.polars):
             case (pc.NONE, pc.Some(_), _):
@@ -147,13 +147,13 @@ class ComparisonInfos:
                     case False:
                         return MethodStatus(Status.MATCH, MismatchOn.NULL)
             case (pc.Some(target), pc.Some(nw_info), pc.NONE):
-                return (
-                    MethodStatus(Status.SIGNATURE_MISMATCH, MismatchOn.NW)
-                    if _mismatch_against(
-                        target.to_map(), nw_info.to_map(), self.ignored_params
-                    )
-                    else MethodStatus(Status.MATCH, MismatchOn.NULL)
-                )
+                match _mismatch_against(
+                    target.to_map(), nw_info.to_map(), self.ignored_params
+                ):
+                    case True:
+                        return MethodStatus(Status.SIGNATURE_MISMATCH, MismatchOn.NW)
+                    case False:
+                        return MethodStatus(Status.MATCH, MismatchOn.NULL)
             case _:
                 return MethodStatus(Status.MISSING, MismatchOn.NULL)
 
