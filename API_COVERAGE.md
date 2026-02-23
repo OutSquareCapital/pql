@@ -7,12 +7,13 @@ This report shows the API coverage of pql compared to Polars.
 | Class       | Coverage        | Total     | Matched  | Missing | Mismatched | Extra   |
 | ----------- | --------------- | --------- | -------- | ------- | ---------- | ------- |
 | LazyFrame   | (53.8%, 29.5%)  | (26, 88)  | (14, 26) | (2, 43) | (10, 19)   | (29, 8) |
-| Expr        | (70.0%, 41.0%)  | (70, 217) | (49, 89) | (8, 99) | (13, 29)   | (57, 1) |
+| Expr        | (70.0%, 41.5%)  | (70, 217) | (49, 90) | (8, 98) | (13, 29)   | (58, 1) |
 | LazyGroupBy | (0.0%, 5.9%)    | (1, 17)   | (0, 1)   | (0, 16) | (1, 0)     | (0, 0)  |
 | Expr.str    | (89.5%, 24.5%)  | (19, 49)  | (17, 12) | (2, 24) | (0, 13)    | (9, 1)  |
-| Expr.list   | (90.0%, 34.9%)  | (10, 43)  | (9, 15)  | (0, 25) | (1, 3)     | (9, 1)  |
+| Expr.list   | (90.0%, 32.6%)  | (10, 43)  | (9, 14)  | (0, 25) | (1, 4)     | (9, 1)  |
 | Expr.struct | (100.0%, 20.0%) | (1, 5)    | (1, 1)   | (0, 3)  | (0, 1)     | (2, 1)  |
 | Expr.name   | (100.0%, 70.0%) | (6, 10)   | (6, 7)   | (0, 3)  | (0, 0)     | (2, 1)  |
+| Expr.arr    | (100.0%, 45.2%) | (0, 31)   | (0, 14)  | (0, 13) | (0, 4)     | (19, 1) |
 
 ## LazyFrame
 
@@ -174,7 +175,7 @@ This report shows the API coverage of pql compared to Polars.
 
 ## Expr
 
-### [x] Missing Methods (100)
+### [x] Missing Methods (99)
 
 - `agg_groups`
   - **Polars**: () -> Expr
@@ -192,8 +193,6 @@ This report shows the API coverage of pql compared to Polars.
   - **Polars**: () -> Expr
 - `arg_unique`
   - **Polars**: () -> Expr
-- `arr`
-  - **Polars**: ()
 - `bin`
   - **Polars**: ()
 - `bitwise_count_ones`
@@ -593,8 +592,12 @@ This report shows the API coverage of pql compared to Polars.
 - `to_struct`
   - **Polars**: (n_field_strategy: ListToStructWidthStrategy | None, fields: Sequence[str] | Callable[[int], str] | None, upper_bound: int | None) -> Expr
 
-### [!] Signature Mismatches (1)
+### [!] Signature Mismatches (2)
 
+- `contains` (nw)
+  - **Narwhals**: (`item: NonNestedLiteral`) -> ExprT
+  - **Polars**: (item: IntoExpr, `nulls_equal: bool`) -> Expr
+  - **pql**: (`item: IntoExpr`) -> Expr
 - `eval` (pl)
   - **Polars***: (expr: Expr, `parallel: bool`) -> Expr
   - **pql**: (expr: Expr) -> Expr
@@ -628,6 +631,56 @@ This report shows the API coverage of pql compared to Polars.
   - **Polars**: (prefix: str) -> Expr
 - `suffix_fields`
   - **Polars**: (suffix: str) -> Expr
+
+### [+] Extra Methods (pql-only) (1)
+
+- `inner`
+
+## Expr.arr
+
+### [x] Missing Methods (13)
+
+- `agg`
+  - **Polars**: (expr: Expr) -> Expr
+- `arg_max`
+  - **Polars**: () -> Expr
+- `arg_min`
+  - **Polars**: () -> Expr
+- `count_matches`
+  - **Polars**: (element: IntoExpr) -> Expr
+- `explode`
+  - **Polars**: (empty_as_null: bool, keep_nulls: bool) -> Expr
+- `head`
+  - **Polars**: (n: int | str | Expr, as_array: bool) -> Expr
+- `join`
+  - **Polars**: (separator: IntoExprColumn, ignore_nulls: bool) -> Expr
+- `n_unique`
+  - **Polars**: () -> Expr
+- `shift`
+  - **Polars**: (n: int | IntoExprColumn) -> Expr
+- `slice`
+  - **Polars**: (offset: int | str | Expr, length: int | str | Expr | None, as_array: bool) -> Expr
+- `tail`
+  - **Polars**: (n: int | str | Expr, as_array: bool) -> Expr
+- `to_list`
+  - **Polars**: () -> Expr
+- `to_struct`
+  - **Polars**: (fields: Sequence[str] | Callable[[int], str] | None) -> Expr
+
+### [!] Signature Mismatches (4)
+
+- `contains` (pl)
+  - **Polars***: (item: IntoExpr, `nulls_equal: bool`) -> Expr
+  - **pql**: (item: IntoExpr) -> Expr
+- `eval` (pl)
+  - **Polars***: (expr: Expr, `as_list: bool`) -> Expr
+  - **pql**: (expr: Expr) -> Expr
+- `get` (pl)
+  - **Polars***: (`index: int | IntoExprColumn`, `null_on_oob: bool`) -> Expr
+  - **pql**: (`index: int`) -> Expr
+- `unique` (pl)
+  - **Polars***: (`maintain_order: bool`) -> Expr
+  - **pql**: () -> Expr
 
 ### [+] Extra Methods (pql-only) (1)
 

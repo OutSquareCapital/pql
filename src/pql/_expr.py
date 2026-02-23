@@ -326,6 +326,11 @@ class Expr(sql.CoreHandler[sql.SqlExpr]):
         return ExprListNameSpace(self)
 
     @property
+    def arr(self) -> ExprArrayNameSpace:
+        """Access array operations."""
+        return ExprArrayNameSpace(self)
+
+    @property
     def struct(self) -> ExprStructNameSpace:
         """Access struct operations."""
         return ExprStructNameSpace(self)
@@ -1365,10 +1370,108 @@ class ExprStringNameSpace(ExprNameSpaceBase):
 
 
 @dataclass(slots=True)
+class ExprArrayNameSpace(ExprNameSpaceBase):
+    """Array operations namespace (equivalent to pl.Expr.array)."""
+
+    def all(self) -> Expr:
+        """Return whether all values in the array are true."""
+        return self._new(self.inner().list.bool_and())
+
+    def any(self) -> Expr:
+        """Return whether any value in the array is true."""
+        return self._new(self.inner().list.bool_or())
+
+    def eval(self, expr: Expr) -> Expr:
+        """Run an expression against each array element."""
+        return self._new(self.inner().arr.transform(sql.fn_once(expr.inner())))
+
+    def len(self) -> Expr:
+        """Return the number of elements in each array."""
+        return self._new(self.inner().arr.length())
+
+    def unique(self) -> Expr:
+        """Return unique values in each array."""
+        return self._new(self.inner().arr.distinct())
+
+    def contains(self, item: IntoExpr) -> Expr:
+        """Check if arrays contain the given item."""
+        return self._new(self.inner().arr.contains(sql.into_expr(item)))
+
+    def get(self, index: int) -> Expr:
+        """Return the value by index in each array."""
+        return self._new(self.inner().arr.extract(index + 1 if index >= 0 else index))
+
+    def first(self) -> Expr:
+        """Get the first element of each array."""
+        return self._new(self.inner().list.first())
+
+    def last(self) -> Expr:
+        """Get the last element of each array."""
+        return self._new(self.inner().list.last())
+
+    def min(self) -> Expr:
+        """Compute the min value of the arrays in the column."""
+        return self._new(self.inner().list.min())
+
+    def max(self) -> Expr:
+        """Compute the max value of the arrays in the column."""
+        return self._new(self.inner().list.max())
+
+    def mean(self) -> Expr:
+        """Compute the mean value of the arrays in the column."""
+        return self._new(self.inner().list.avg())
+
+    def median(self) -> Expr:
+        """Compute the median value of the arrays in the column."""
+        return self._new(self.inner().list.median())
+
+    def sum(self) -> Expr:
+        """Compute the sum value of the arrays in the column."""
+        return self._new(self.inner().list.sum())
+
+    def std(self, ddof: int = 1) -> Expr:
+        """Compute the standard deviation of the arrays in the column."""
+        match ddof:
+            case 0:
+                return self._new(self.inner().list.stddev_pop())
+            case _:
+                return self._new(self.inner().list.stddev_samp())
+
+    def var(self, ddof: int = 1) -> Expr:
+        """Compute the variance of the arrays in the column."""
+        match ddof:
+            case 0:
+                return self._new(self.inner().list.var_pop())
+            case _:
+                return self._new(self.inner().list.var_samp())
+
+    def sort(self, *, descending: bool = False, nulls_last: bool = False) -> Expr:
+        """Sort the lists of the column."""
+        return self._new(
+            self.inner().arr.sort(
+                sql.lit(sql.Kword.sort_order(desc=descending)),
+                sql.lit(sql.Kword.null_order(last=nulls_last)),
+            )
+        )
+
+    def reverse(self) -> Expr:
+        """Reverse the arrays of the expression."""
+        return self._new(self.inner().arr.reverse())
+
+
+@dataclass(slots=True)
 class ExprListNameSpace(ExprNameSpaceBase):
     """List operations namespace (equivalent to pl.Expr.list)."""
 
     # TODO: reduce, agg, filter
+
+    def all(self) -> Expr:
+        """Return whether all values in the list are true."""
+        return self._new(self.inner().list.bool_and())
+
+    def any(self) -> Expr:
+        """Return whether any value in the listis true."""
+        return self._new(self.inner().list.bool_or())
 
     def eval(self, expr: Expr) -> Expr:
         """Run an expression against each list element."""
@@ -1382,29 +1485,13 @@ class ExprListNameSpace(ExprNameSpaceBase):
         """Return unique values in each list."""
         return self._new(self.inner().list.distinct())
 
-    def contains(self, item: IntoExpr, *, nulls_equal: bool = True) -> Expr:
+    def contains(self, item: IntoExpr) -> Expr:
         """Check if sublists contain the given item."""
-        item_expr = sql.into_expr(item)
-        contains_expr = self.inner().list.contains(item_expr)
-        if nulls_equal:
-            return self._new(
-                sql.when(item_expr.is_null())
-                .then(
-                    sql.coalesce(
-                        self.inner().list.position(sql.lit(None)).is_not_null(), False
-                    )
-                )
-                .otherwise(sql.coalesce(contains_expr, False))
-            )
-        return self._new(contains_expr)
+        return self._new(self.inner().list.contains(sql.into_expr(item)))
 
     def get(self, index: int) -> Expr:
         """Return the value by index in each list."""
-        return self._new(
-            self.inner().list.extract(
-                sql.lit(index + 1 if index >= 0 else index),
-            )
-        )
+        return self._new(self.inner().list.extract(index + 1 if index >= 0 else index))
 
     def first(self) -> Expr:
         """Get the first element of each list."""
@@ -1415,27 +1502,27 @@ class ExprListNameSpace(ExprNameSpaceBase):
         return self._new(self.inner().list.last())
 
     def min(self) -> Expr:
-        """Compute the min value of the lists in the array."""
+        """Compute the min value of the lists in the column."""
         return self._new(self.inner().list.min())
 
     def max(self) -> Expr:
-        """Compute the max value of the lists in the array."""
+        """Compute the max value of the lists in the column."""
         return self._new(self.inner().list.max())
 
     def mean(self) -> Expr:
-        """Compute the mean value of the lists in the array."""
+        """Compute the mean value of the lists in the column."""
         return self._new(self.inner().list.avg())
 
     def median(self) -> Expr:
-        """Compute the median value of the lists in the array."""
+        """Compute the median value of the lists in the column."""
         return self._new(self.inner().list.median())
 
     def sum(self) -> Expr:
-        """Compute the sum value of the lists in the array."""
+        """Compute the sum value of the lists in the column."""
         return self._new(self.inner().list.sum())
 
     def std(self, ddof: int = 1) -> Expr:
-        """Compute the standard deviation of the lists in the array."""
+        """Compute the standard deviation of the lists in the column."""
         match ddof:
             case 0:
                 return self._new(self.inner().list.stddev_pop())
@@ -1443,7 +1530,7 @@ class ExprListNameSpace(ExprNameSpaceBase):
                 return self._new(self.inner().list.stddev_samp())
 
     def var(self, ddof: int = 1) -> Expr:
-        """Compute the variance of the lists in the array."""
+        """Compute the variance of the lists in the column."""
         match ddof:
             case 0:
                 return self._new(self.inner().list.var_pop())
@@ -1451,7 +1538,7 @@ class ExprListNameSpace(ExprNameSpaceBase):
                 return self._new(self.inner().list.var_samp())
 
     def sort(self, *, descending: bool = False, nulls_last: bool = False) -> Expr:
-        """Sort the lists of the expression."""
+        """Sort the lists of the column."""
         return self._new(
             self.inner().list.sort(
                 sql.lit(sql.Kword.sort_order(desc=descending)),
@@ -1462,14 +1549,6 @@ class ExprListNameSpace(ExprNameSpaceBase):
     def reverse(self) -> Expr:
         """Reverse the lists of the expression."""
         return self._new(self.inner().list.reverse())
-
-    def all(self) -> Expr:
-        """Return whether all values in the list are true."""
-        return self._new(self.inner().list.bool_and())
-
-    def any(self) -> Expr:
-        """Return whether any value in the listis true."""
-        return self._new(self.inner().list.bool_or())
 
 
 @dataclass(slots=True)

@@ -86,22 +86,12 @@ def test_contains() -> None:
     assert_eq(pql.col("x").list.contains(2), nw.col("x").list.contains(2))
     assert_eq_pl(
         (
-            pql.col("x").list.contains(None, nulls_equal=True).alias("x_nulls_eq"),
-            pql.col("x").list.contains(None, nulls_equal=False).alias("x_nulls_neq"),
-            pql.col("x")
-            .list.contains(pql.col("y"), nulls_equal=True)
-            .alias("x_nulls_eq_y"),
-            pql.col("x")
-            .list.contains(pql.col("y"), nulls_equal=False)
-            .alias("x_nulls_neq_y"),
+            pql.col("x").list.contains(None).alias("x_nulls_neq"),
+            pql.col("x").list.contains(pql.col("y")).alias("x_nulls_neq_y"),
             pql.col("x").list.contains(pql.col("y")).alias("x_y"),
         ),
         (
-            pl.col("x").list.contains(None, nulls_equal=True).alias("x_nulls_eq"),
             pl.col("x").list.contains(None, nulls_equal=False).alias("x_nulls_neq"),
-            pl.col("x")
-            .list.contains(pl.col("y"), nulls_equal=True)
-            .alias("x_nulls_eq_y"),
             pl.col("x")
             .list.contains(pl.col("y"), nulls_equal=False)
             .alias("x_nulls_neq_y"),
