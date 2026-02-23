@@ -272,9 +272,23 @@ class ComparisonResult:
     def to_format(self, *, status: Status) -> pc.Iter[str]:
         """Format a single comparison result as markdown lines."""
         match (status, self.infos.narwhals, self.infos.polars, self.infos.pql_info):
-            case (Status.MISSING, pc.Some(narwhals_info), _, _):
-                return pc.Iter.once(
-                    f"- `{self.method_name}` {narwhals_info.signature_str()}"
+            case (Status.MISSING, _, _, _):
+                return (
+                    pc.Iter.once(f"- `{self.method_name}`")
+                    .chain(
+                        self.infos.narwhals.map(
+                            lambda info: pc.Iter.once(
+                                f"  - **Narwhals**: {info.signature_str()}"
+                            )
+                        ).unwrap_or(default=pc.Iter(()))
+                    )
+                    .chain(
+                        self.infos.polars.map(
+                            lambda info: pc.Iter.once(
+                                f"  - **Polars**: {info.signature_str()}"
+                            )
+                        ).unwrap_or(default=pc.Iter(()))
+                    )
                 )
             case (
                 Status.SIGNATURE_MISMATCH,
@@ -286,19 +300,19 @@ class ComparisonResult:
                     pc.Iter(
                         (
                             f"- `{self.method_name}` ({self.classification.mismatch_source.value})",
-                            f"  - {'Narwhals'}: {_signature_with_diff(nw_info, pql_info, self.infos.ignored_params)}",
+                            f"  - **Narwhals**: {_signature_with_diff(nw_info, pql_info, self.infos.ignored_params)}",
                         )
                     )
                     .chain(
                         self.infos.polars.map(
                             lambda pl_info: pc.Iter.once(
-                                f"  - {'Polars'}: {_signature_with_diff(pl_info, pql_info, self.infos.ignored_params)}"
+                                f"  - **Polars**: {_signature_with_diff(pl_info, pql_info, self.infos.ignored_params)}"
                             )
                         ).unwrap_or(default=pc.Iter(()))
                     )
                     .chain(
                         pc.Iter.once(
-                            f"  - pql: {_signature_with_diff(pql_info, nw_info, self.infos.ignored_params)}"
+                            f"  - **pql**: {_signature_with_diff(pql_info, nw_info, self.infos.ignored_params)}"
                         )
                     )
                 )
@@ -311,8 +325,8 @@ class ComparisonResult:
                 return pc.Iter(
                     (
                         f"- `{self.method_name}` ({self.classification.mismatch_source.value})",
-                        f"  - {'Polars'}: {_signature_with_diff(pl_info, pql_info, self.infos.ignored_params)}",
-                        f"  - pql: {_signature_with_diff(pql_info, pl_info, self.infos.ignored_params)}",
+                        f"  - **Polars***: {_signature_with_diff(pl_info, pql_info, self.infos.ignored_params)}",
+                        f"  - **pql**: {_signature_with_diff(pql_info, pl_info, self.infos.ignored_params)}",
                     )
                 )
             case _:
