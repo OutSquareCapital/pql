@@ -1,19 +1,16 @@
 from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Literal
 
 import pyochain as pc
 
 from ._infos import (
     ComparisonResult,
-    MethodInfo,
-    ParamInfo,
-    annotations_differ,
+    RefBackend,
     get_attr,
 )
 from ._models import Status
 
-type RefBackend = Literal["narwhals", "polars"]
+REF_BACKENDS = pc.Seq(("narwhals", "polars"))
 
 
 @dataclass(slots=True)
@@ -42,16 +39,15 @@ class ComparisonReport:
 
     def to_row(self) -> pc.Seq[str]:
         """Return a row of summary data as columns."""
-        libs = LibCell()
         return pc.Seq(
             (
                 self.name,
-                libs.coverage(self.results),
-                libs.count(self.results, _has_reference),
-                libs.status(self.results, Status.MATCH),
-                libs.status(self.results, Status.MISSING),
-                libs.status(self.results, Status.SIGNATURE_MISMATCH),
-                libs.status(self.results, Status.EXTRA),
+                _coverage_cell(self.results),
+                _count_cell(self.results, _has_reference),
+                _status_cell(self.results, Status.MATCH),
+                _status_cell(self.results, Status.MISSING),
+                _status_cell(self.results, Status.SIGNATURE_MISMATCH),
+                _status_cell(self.results, Status.EXTRA),
             )
         )
 
@@ -187,36 +183,29 @@ def _format_row(row: pc.Seq[str], widths: pc.Seq[int]) -> str:
     return f"| {cells} |"
 
 
-class LibCell:
-    libs = pc.Seq(("narwhals", "polars"))
+def _for_each_ref[T](mapper: Callable[[RefBackend], T]) -> pc.Seq[T]:
+    return REF_BACKENDS.iter().map(mapper).collect()
 
-    def status(self, results: pc.Vec[ComparisonResult], status: Status) -> str:
-        return (
-            self.libs.iter()
-            .map(lambda ref: _count_for_ref_status(results, ref, status))
-            .collect()
-            .into(lambda pair: f"({pair[0]}, {pair[1]})")
-        )
 
-    def count(
-        self,
-        results: pc.Vec[ComparisonResult],
-        predicate: Callable[[ComparisonResult, RefBackend], bool],
-    ) -> str:
-        return (
-            self.libs.iter()
-            .map(lambda ref: _count_for_ref(results, ref, predicate))
-            .collect()
-            .into(lambda pair: f"({pair[0]}, {pair[1]})")
-        )
+def _count_cell(
+    results: pc.Vec[ComparisonResult],
+    predicate: Callable[[ComparisonResult, RefBackend], bool],
+) -> str:
+    return _for_each_ref(lambda ref: _count_for_ref(results, ref, predicate)).into(
+        lambda pair: f"({pair[0]}, {pair[1]})"
+    )
 
-    def coverage(self, results: pc.Vec[ComparisonResult]) -> str:
-        return (
-            self.libs.iter()
-            .map(lambda ref: _coverage_percent(results, ref))
-            .collect()
-            .into(lambda pair: f"({pair[0]:.1f}%, {pair[1]:.1f}%)")
-        )
+
+def _status_cell(results: pc.Vec[ComparisonResult], status: Status) -> str:
+    return _for_each_ref(lambda ref: _count_for_ref_status(results, ref, status)).into(
+        lambda pair: f"({pair[0]}, {pair[1]})"
+    )
+
+
+def _coverage_cell(results: pc.Vec[ComparisonResult]) -> str:
+    return _for_each_ref(lambda ref: _coverage_percent(results, ref)).into(
+        lambda pair: f"({pair[0]:.1f}%, {pair[1]:.1f}%)"
+    )
 
 
 def _coverage_percent(results: pc.Vec[ComparisonResult], ref: RefBackend) -> float:
@@ -238,83 +227,23 @@ def _count_for_ref(
 
 
 def _count_for_ref_status(
-    results: pc.Vec[ComparisonResult],
-    ref: RefBackend,
-    status: Status,
+    results: pc.Vec[ComparisonResult], ref: RefBackend, status: Status
 ) -> int:
     return (
-        results.iter().filter(lambda result: _has_status(result, ref, status)).length()
+        results.iter()
+        .filter(
+            lambda result: (
+                result.infos.status_for_ref(ref)
+                .map(lambda current: current == status)
+                .unwrap_or(default=False)
+            )
+        )
+        .length()
     )
-
-
-def _reference_info(result: ComparisonResult, ref: RefBackend) -> pc.Option[MethodInfo]:
-    match ref:
-        case "narwhals":
-            return result.infos.narwhals
-        case "polars":
-            return result.infos.polars
 
 
 def _has_reference(result: ComparisonResult, ref: RefBackend) -> bool:
-    return _reference_info(result, ref).is_some()
-
-
-def _has_status(result: ComparisonResult, ref: RefBackend, status: Status) -> bool:
-    return (
-        _status_for_ref(result, ref)
-        .map(lambda current: current == status)
-        .unwrap_or(default=False)
-    )
-
-
-def _status_for_ref(result: ComparisonResult, ref: RefBackend) -> pc.Option[Status]:
-    match (_reference_info(result, ref), result.infos.pql_info):
-        case (pc.NONE, pc.NONE):
-            return pc.NONE
-        case (pc.Some(_), pc.NONE):
-            return pc.Some(Status.MISSING)
-        case (pc.NONE, pc.Some(_)):
-            return pc.Some(Status.EXTRA)
-        case (pc.Some(reference), pc.Some(pql_info)):
-            return pc.Some(
-                Status.SIGNATURE_MISMATCH
-                if _mismatch_against(pql_info, reference, result.infos.ignored_params)
-                else Status.MATCH
-            )
-        case _:
-            return pc.NONE
-
-
-def _mismatch_against(
-    target: MethodInfo, other: MethodInfo, ignored: pc.Set[str]
-) -> bool:
-    target_filtered = _without_ignored_params(target.to_map(), ignored)
-    other_filtered = _without_ignored_params(other.to_map(), ignored)
-    on_params = (
-        other_filtered.keys().symmetric_difference(target_filtered.keys()).length() > 0
-    )
-    on_ann = (
-        other_filtered.keys()
-        .intersection(target_filtered.keys())
-        .any(
-            lambda name: annotations_differ(
-                other_filtered.get_item(name).unwrap(),
-                target_filtered.get_item(name).unwrap(),
-            )
-        )
-    )
-    return on_params or on_ann
-
-
-def _without_ignored_params(
-    mapping: pc.Dict[str, ParamInfo], ignored: pc.Set[str]
-) -> pc.Dict[str, ParamInfo]:
-    return (
-        mapping.items()
-        .iter()
-        .filter(lambda item: not ignored.contains(item[0]))
-        .collect(pc.Dict)
-    )
+    return result.infos.has_reference(ref)
 
 
 def _by_status(

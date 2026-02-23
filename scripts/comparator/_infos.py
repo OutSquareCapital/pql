@@ -2,8 +2,7 @@ from __future__ import annotations
 
 import inspect
 from dataclasses import dataclass, field
-from functools import partial
-from typing import NamedTuple, Self
+from typing import Literal, NamedTuple, Self
 
 import pyochain as pc
 
@@ -12,6 +11,7 @@ from ._parse import extract_last_name, normalize_annotation
 
 type MapInfo = pc.Dict[str, ParamInfo]
 type IgnoredParams = pc.Dict[str, pc.Dict[str, pc.Set[str]]]
+type RefBackend = Literal["narwhals", "polars"]
 
 IGNORED_PARAMS_BY_CLASS_AND_METHOD: IgnoredParams = pc.Dict.from_kwargs(
     LazyFrame=pc.Dict.from_kwargs(
@@ -120,6 +120,37 @@ class ComparisonInfos:
     pql_info: pc.Option[MethodInfo] = field(default_factory=lambda: pc.NONE)
     ignored_params: pc.Set[str] = field(default_factory=pc.Set[str].new)
 
+    def reference(self, ref: RefBackend) -> pc.Option[MethodInfo]:
+        match ref:
+            case "narwhals":
+                return self.narwhals
+            case "polars":
+                return self.polars
+
+    def has_reference(self, ref: RefBackend) -> bool:
+        return self.reference(ref).is_some()
+
+    def status_for_ref(self, ref: RefBackend) -> pc.Option[Status]:
+        match (self.reference(ref), self.pql_info):
+            case (pc.NONE, pc.NONE):
+                return pc.NONE
+            case (pc.Some(_), pc.NONE):
+                return pc.Some(Status.MISSING)
+            case (pc.NONE, pc.Some(_)):
+                return pc.Some(Status.EXTRA)
+            case (pc.Some(reference), pc.Some(pql_info)):
+                return pc.Some(
+                    Status.SIGNATURE_MISMATCH
+                    if _mismatch_against(
+                        pql_info.to_map(),
+                        reference.to_map(),
+                        self.ignored_params,
+                    )
+                    else Status.MATCH
+                )
+            case _:
+                return pc.NONE
+
     def to_status(self) -> MethodStatus:  # noqa: C901, PLR0911
         """Classify the method comparison result."""
         match (self.pql_info, self.narwhals, self.polars):
@@ -128,34 +159,33 @@ class ComparisonInfos:
             case (pc.Some(_), pc.NONE, pc.NONE):
                 return MethodStatus(Status.EXTRA, MismatchOn.NULL)
             case (pc.Some(target), pc.NONE, pc.Some(pl_info)):
-                match _mismatch_against(
-                    target.to_map(), pl_info.to_map(), self.ignored_params
-                ):
+                match _method_mismatch(target, pl_info, self.ignored_params):
                     case True:
                         return MethodStatus(Status.SIGNATURE_MISMATCH, MismatchOn.PL)
                     case False:
                         return MethodStatus(Status.MATCH, MismatchOn.NULL)
             case (pc.Some(target), pc.Some(nw_info), pc.Some(pl_info)):
-                target_vs = partial(
-                    _mismatch_against,
-                    target.to_map(),
-                    ignored=self.ignored_params,
-                )
-                match target_vs(nw_info.to_map()) and target_vs(pl_info.to_map()):
+                nw_mismatch = _method_mismatch(target, nw_info, self.ignored_params)
+                pl_mismatch = _method_mismatch(target, pl_info, self.ignored_params)
+                match nw_mismatch and pl_mismatch:
                     case True:
                         return MethodStatus(Status.SIGNATURE_MISMATCH, MismatchOn.NW)
                     case False:
                         return MethodStatus(Status.MATCH, MismatchOn.NULL)
             case (pc.Some(target), pc.Some(nw_info), pc.NONE):
-                match _mismatch_against(
-                    target.to_map(), nw_info.to_map(), self.ignored_params
-                ):
+                match _method_mismatch(target, nw_info, self.ignored_params):
                     case True:
                         return MethodStatus(Status.SIGNATURE_MISMATCH, MismatchOn.NW)
                     case False:
                         return MethodStatus(Status.MATCH, MismatchOn.NULL)
             case _:
                 return MethodStatus(Status.MISSING, MismatchOn.NULL)
+
+
+def _method_mismatch(
+    target: MethodInfo, other: MethodInfo, ignored: pc.Set[str]
+) -> bool:
+    return _mismatch_against(target.to_map(), other.to_map(), ignored)
 
 
 def _get_annotation_str(annotation: object) -> pc.Option[str]:
