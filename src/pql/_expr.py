@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING, Any, NamedTuple, Self
 
 import pyochain as pc
 
-from . import sql
+from . import _datatypes as dt, sql  # pyright: ignore[reportPrivateUsage]
 
 if TYPE_CHECKING:
     from ._datatypes import DataType
@@ -1160,6 +1160,27 @@ class ExprNameSpaceBase:
 class ExprStringNameSpace(ExprNameSpaceBase):
     """String operations namespace (equivalent to pl.Expr.str)."""
 
+    def join(self, delimiter: str = "", *, ignore_nulls: bool = True) -> Expr:
+        """Vertically concatenate string values into a single string."""
+        aggregated = self.inner().str.agg(sql.lit(delimiter))
+        match ignore_nulls:
+            case True:
+                return self._parent._as_scalar(aggregated)  # pyright: ignore[reportPrivateUsage]
+            case False:
+                return self._parent._as_scalar(  # pyright: ignore[reportPrivateUsage]
+                    sql.when(self.inner().is_null().bool_or())
+                    .then(sql.lit(None))
+                    .otherwise(aggregated)
+                )
+
+    def escape_regex(self) -> Expr:
+        """Escape all regex meta characters in the string."""
+        return self._new(
+            self.inner().re.replace(
+                sql.lit(r"([.^$*+?{}\[\]\\|()])"), sql.lit(r"\\\1"), sql.lit("g")
+            )
+        )
+
     def to_uppercase(self) -> Expr:
         """Convert to uppercase."""
         return self._new(self.inner().str.upper())
@@ -1251,6 +1272,44 @@ class ExprStringNameSpace(ExprNameSpaceBase):
     def extract_all(self, pattern: str | Expr) -> Expr:
         """Extract all regex matches."""
         return self._new(self.inner().re.extract_all(sql.into_expr(pattern)))
+
+    def extract(self, pattern: IntoExprColumn, group_index: int = 1) -> Expr:
+        """Extract a regex capture group."""
+        return self._new(self.inner().re.extract(sql.into_expr(pattern), group_index))
+
+    def json_path_match(self, json_path: IntoExprColumn) -> Expr:
+        """Extract first JSONPath match from string JSON values."""
+        return self._new(self.inner().json.extract_string(sql.into_expr(json_path)))
+
+    def to_date(self, format: str | None = None) -> Expr:  # noqa: A002
+        """Parse string values as date."""
+        match format:
+            case None:
+                return self._parent.cast(dt.Date())
+            case _:
+                return self._new(self.inner().str.strptime(sql.lit(format))).cast(
+                    dt.Date()
+                )
+
+    def to_datetime(self, format: str | None = None) -> Expr:  # noqa: A002
+        """Parse string values as datetime."""
+        match format:
+            case None:
+                return self._parent.cast(dt.Datetime())
+            case _:
+                return self._new(self.inner().str.strptime(sql.lit(format))).cast(
+                    dt.Datetime()
+                )
+
+    def to_time(self, format: str | None = None) -> Expr:  # noqa: A002
+        """Parse string values as time."""
+        match format:
+            case None:
+                return self._parent.cast(dt.Time())
+            case _:
+                return self._new(self.inner().str.strptime(sql.lit(format))).cast(
+                    dt.Time()
+                )
 
     def count_matches(self, pattern: str | Expr, *, literal: bool = False) -> Expr:
         """Count pattern matches."""

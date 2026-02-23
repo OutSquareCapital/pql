@@ -52,6 +52,12 @@ def sample_df() -> nw.LazyFrame[duckdb.DuckDBPyRelation]:
                         "20:00:00",
                         "23:59:59",
                     ],
+                    "text_with_null": [
+                        "aa",
+                        None,
+                        "bb",
+                        "cc",
+                    ],
                     "prefixed": [
                         "prefix_text",
                         "prefix_other",
@@ -90,6 +96,7 @@ def sample_df() -> nw.LazyFrame[duckdb.DuckDBPyRelation]:
                     ],
                     "suffix_val": pc.Iter(range(4)).map(lambda _: "suffix").collect(),
                     "json": ['{"a": 1}', '{"a": 2}', '{"a": 3}', '{"a": 4}'],
+                    "json_path": ["$.a", "$.a", "$.a", "$.a"],
                     "numbers": ["123.456", "456.789", "789.123", "1234.567"],
                 }
             )
@@ -253,6 +260,110 @@ def test_split() -> None:
 def test_extract_all() -> None:
     assert_eq_pl(
         pql.col("text").str.extract_all(r"\d+"), pl.col("text").str.extract_all(r"\d+")
+    )
+
+
+def test_extract() -> None:
+    assert_eq_pl(
+        (
+            pql.col("text").str.extract(r"(\w+)").alias("group_default"),
+            pql.col("text")
+            .str.extract(r"(\w+)\s+(\w+)", group_index=2)
+            .alias("group_index_2"),
+            pql.col("text").str.extract(pql.lit(r"(\w+)"), group_index=0).alias("all"),
+        ),
+        (
+            pl.col("text").str.extract(r"(\w+)").alias("group_default"),
+            pl.col("text")
+            .str.extract(r"(\w+)\s+(\w+)", group_index=2)
+            .alias("group_index_2"),
+            pl.col("text").str.extract(pl.lit(r"(\w+)"), group_index=0).alias("all"),
+        ),
+    )
+
+
+def test_escape_regex() -> None:
+    assert_eq_pl(pql.col("text").str.escape_regex(), pl.col("text").str.escape_regex())
+
+
+def test_json_path_match() -> None:
+    assert_eq_pl(
+        (
+            pql.col("json").str.json_path_match("$.a").alias("json_lit"),
+            pql.col("json").str.json_path_match(pql.col("json_path")).alias("json_col"),
+        ),
+        (
+            pl.col("json").str.json_path_match("$.a").alias("json_lit"),
+            pl.col("json").str.json_path_match(pl.col("json_path")).alias("json_col"),
+        ),
+    )
+
+
+def test_join() -> None:
+    assert_eq_pl(
+        (
+            pql.col("text_short").str.join().alias("default"),
+            pql.col("text_short").str.join("|").alias("custom"),
+            pql.col("text_with_null")
+            .str.join("-", ignore_nulls=True)
+            .alias("ignore_nulls_true"),
+            pql.col("text_with_null")
+            .str.join("-", ignore_nulls=False)
+            .alias("ignore_nulls_false"),
+        ),
+        (
+            pl.col("text_short").str.join().alias("default"),
+            pl.col("text_short").str.join("|").alias("custom"),
+            pl.col("text_with_null")
+            .str.join("-", ignore_nulls=True)
+            .alias("ignore_nulls_true"),
+            pl.col("text_with_null")
+            .str.join("-", ignore_nulls=False)
+            .alias("ignore_nulls_false"),
+        ),
+    )
+
+
+def test_to_date() -> None:
+    assert_eq_pl(
+        (
+            pql.col("date_str").str.to_date().alias("default"),
+            pql.col("date_str").str.to_date(format="%Y-%m-%d").alias("format"),
+        ),
+        (
+            pl.col("date_str").str.to_date().alias("default"),
+            pl.col("date_str").str.to_date(format="%Y-%m-%d").alias("format"),
+        ),
+    )
+
+
+def test_to_datetime() -> None:
+    assert_eq_pl(
+        (
+            pql.col("dt_str").str.to_datetime().alias("default"),
+            pql.col("dt_str")
+            .str.to_datetime(format="%Y-%m-%d %H:%M:%S")
+            .alias("format"),
+        ),
+        (
+            pl.col("dt_str").str.to_datetime().alias("default"),
+            pl.col("dt_str")
+            .str.to_datetime(format="%Y-%m-%d %H:%M:%S")
+            .alias("format"),
+        ),
+    )
+
+
+def test_to_time() -> None:
+    assert_eq_pl(
+        (
+            pql.col("time_str").str.to_time().alias("default"),
+            pql.col("time_str").str.to_time(format="%H:%M:%S").alias("format"),
+        ),
+        (
+            pl.col("time_str").str.to_time().alias("default"),
+            pl.col("time_str").str.to_time(format="%H:%M:%S").alias("format"),
+        ),
     )
 
 
