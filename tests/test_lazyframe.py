@@ -1,5 +1,3 @@
-"""Tests for expression operations to achieve 100% coverage - comparing with Polars."""
-
 from __future__ import annotations
 
 from functools import partial
@@ -839,7 +837,6 @@ def test_lazyframe_unpivot() -> None:
 
 
 def test_select_with_named_expr() -> None:
-    """Test select with named expressions."""
     df = pl.DataFrame({"a": [1, 2, 3], "b": [4, 5, 6]})
     result = (
         pql.LazyFrame(df).select(pql.col("a"), doubled=pql.col("b").mul(2)).collect()
@@ -849,7 +846,6 @@ def test_select_with_named_expr() -> None:
 
 
 def test_join_left_on_right_on_length_mismatch() -> None:
-    """Test join error when left_on and right_on have different lengths."""
     left = pl.DataFrame({"id1": [1, 2], "id2": ["a", "b"], "a": [10, 20]})
     right = pl.DataFrame({"id1": [1, 2], "b": [100, 200]})
     with pytest.raises(ValueError, match="same length"):
@@ -859,7 +855,6 @@ def test_join_left_on_right_on_length_mismatch() -> None:
 
 
 def test_join_left_with_multiple_keys() -> None:
-    """Test left join with multiple keys."""
     left = pl.DataFrame({"id1": [1, 2, 3], "id2": ["a", "b", "c"], "a": [10, 20, 30]})
     right = pl.DataFrame(
         {"id1": [2, 3, 4], "id2": ["b", "c", "d"], "b": [200, 300, 400]}

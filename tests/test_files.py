@@ -13,7 +13,6 @@ assert_eq = partial(assert_frame_equal, check_dtypes=False, check_row_order=Fals
 
 @pytest.fixture
 def sample_df() -> pl.DataFrame:
-    """Create a sample DataFrame for testing."""
     return pl.DataFrame(
         {
             "id": [1, 2, 3, 4, 5],

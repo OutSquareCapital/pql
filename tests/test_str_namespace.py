@@ -11,7 +11,6 @@ import pql
 
 
 def sample_df() -> nw.LazyFrame[duckdb.DuckDBPyRelation]:
-    """Create a sample DataFrame with string data for testing."""
     return nw.from_native(
         duckdb.from_arrow(
             pl.DataFrame(

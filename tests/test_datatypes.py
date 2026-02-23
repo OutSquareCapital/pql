@@ -1,5 +1,3 @@
-"""Tests for datatype casting functionality in PQL."""
-
 from __future__ import annotations
 
 from enum import Enum
@@ -14,8 +12,6 @@ if TYPE_CHECKING:
 
 
 class MyEnum(Enum):
-    """Test enum for enum casting tests."""
-
     A = "A"
     B = "B"
     C = "C"
@@ -23,7 +19,6 @@ class MyEnum(Enum):
 
 @pytest.fixture(scope="session")
 def sample_data() -> pql.LazyFrame:
-    """Sample LazyFrame with various data types for testing casts."""
     return pql.LazyFrame(
         {
             "numeric": [1, 2, 3],
