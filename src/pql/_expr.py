@@ -19,6 +19,7 @@ if TYPE_CHECKING:
         RankMethod,
         RollingInterpolationMethod,
         RoundMode,
+        TransferEncoding,
     )
     from .sql.typing import IntoExpr, IntoExprColumn
 
@@ -1277,6 +1278,37 @@ class ExprStringNameSpace(ExprNameSpaceBase):
         """Extract a regex capture group."""
         return self._new(self.inner().re.extract(sql.into_expr(pattern), group_index))
 
+    def find(self, pattern: str | Expr, *, literal: bool = False) -> Expr:
+        """Return the first match offset as a zero-based index."""
+        pattern_expr = sql.into_expr(pattern)
+        match literal:
+            case True:
+                return (
+                    self.inner()
+                    .str.strpos(pattern_expr)
+                    .pipe(
+                        lambda pos: (
+                            sql.when(pos.eq(sql.lit(0)))
+                            .then(sql.lit(None))
+                            .otherwise(pos.sub(sql.lit(1)))
+                        )
+                    )
+                    .pipe(self._new)
+                )
+            case False:
+                return (
+                    self.inner()
+                    .re.extract(pattern_expr, 0)
+                    .pipe(
+                        lambda matched: (
+                            sql.when(matched.eq(sql.lit("")))
+                            .then(sql.lit(None))
+                            .otherwise(self.inner().str.strpos(matched).sub(sql.lit(1)))
+                        )
+                    )
+                    .pipe(self._new)
+                )
+
     def json_path_match(self, json_path: IntoExprColumn) -> Expr:
         """Extract first JSONPath match from string JSON values."""
         return self._new(self.inner().json.extract_string(sql.into_expr(json_path)))
@@ -1310,6 +1342,26 @@ class ExprStringNameSpace(ExprNameSpaceBase):
                 return self._new(self.inner().str.strptime(sql.lit(format))).cast(
                     dt.Time()
                 )
+
+    def strptime(self, format: str | Expr) -> Expr:  # noqa: A002
+        """Parse string values into datetime using one or more formats."""
+        return self._new(self.inner().str.strptime(sql.into_expr(format)))
+
+    def encode(self, encoding: TransferEncoding = "base64") -> Expr:
+        """Encode UTF-8 strings as binary values."""
+        match encoding:
+            case "base64":
+                return self._new(self.inner().encode().str.to_base64())
+            case "hex":
+                return self._new(self.inner().encode().str.to_hex().str.lower())
+
+    def normalize(self) -> Expr:
+        """Normalize strings using NFC normalization."""
+        return self._new(self.inner().str.nfc_normalize())
+
+    def to_decimal(self, scale: int) -> Expr:
+        """Parse string values as decimal with the requested scale."""
+        return self._parent.cast(dt.Decimal(scale=scale))
 
     def count_matches(self, pattern: str | Expr, *, literal: bool = False) -> Expr:
         """Count pattern matches."""

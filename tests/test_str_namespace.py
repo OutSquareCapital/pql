@@ -46,11 +46,23 @@ def sample_df() -> nw.LazyFrame[duckdb.DuckDBPyRelation]:
                         "2024-03-25 20:00:00",
                         "2024-04-30 23:59:59",
                     ],
+                    "dt_mixed": [
+                        "2024-01-15",
+                        "2024-02-20 15:45:30",
+                        "2024-03-25",
+                        "2024-04-30 23:59:59",
+                    ],
                     "time_str": [
                         "10:30:00",
                         "15:45:30",
                         "20:00:00",
                         "23:59:59",
+                    ],
+                    "normalize_input": [
+                        "ardèch",
+                        "Café",
+                        "résumé",
+                        "naive",
                     ],
                     "text_with_null": [
                         "aa",
@@ -282,6 +294,22 @@ def test_extract() -> None:
     )
 
 
+def test_find() -> None:
+    pattern = r"[A-Z][a-z]+"
+    assert_eq_pl(
+        (
+            pql.col("text").str.find("World", literal=True).alias("literal_found"),
+            pql.col("text").str.find("missing", literal=True).alias("literal_none"),
+            pql.col("text").str.find(pattern, literal=False).alias("regex"),
+        ),
+        (
+            pl.col("text").str.find("World", literal=True).alias("literal_found"),
+            pl.col("text").str.find("missing", literal=True).alias("literal_none"),
+            pl.col("text").str.find(pattern, literal=False).alias("regex"),
+        ),
+    )
+
+
 def test_escape_regex() -> None:
     assert_eq_pl(pql.col("text").str.escape_regex(), pl.col("text").str.escape_regex())
 
@@ -364,6 +392,29 @@ def test_to_time() -> None:
             pl.col("time_str").str.to_time().alias("default"),
             pl.col("time_str").str.to_time(format="%H:%M:%S").alias("format"),
         ),
+    )
+
+
+def test_strptime() -> None:
+    fmt = "%Y-%m-%d %H:%M:%S"
+    assert_eq_pl(
+        pql.col("dt_str").str.strptime(fmt),
+        pl.col("dt_str").str.strptime(pl.Datetime, fmt),
+    )
+
+
+def test_normalize() -> None:
+    """Duckdb currently only supports NFC normalization."""
+    assert_eq_pl(
+        pql.col("normalize_input").str.normalize(),
+        pl.col("normalize_input").str.normalize("NFC"),
+    )
+
+
+def test_to_decimal() -> None:
+    assert_eq_pl(
+        pql.col("numbers").str.to_decimal(3),
+        pl.col("numbers").str.to_decimal(scale=3),
     )
 
 
@@ -476,3 +527,10 @@ def test_pad_end() -> None:
 
 def test_zfill() -> None:
     assert_eq_pl(pql.col("numbers").str.zfill(10), pl.col("numbers").str.zfill(10))
+
+
+def test_encode() -> None:
+    assert_eq_pl(
+        pql.col("text").str.encode("base64"), pl.col("text").str.encode("base64")
+    )
+    assert_eq_pl(pql.col("text").str.encode("hex"), pl.col("text").str.encode("hex"))

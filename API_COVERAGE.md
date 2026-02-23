@@ -9,7 +9,7 @@ This report shows the API coverage of pql compared to Polars.
 | LazyFrame   | (53.8%, 29.5%)  | (26, 88)  | (14, 26) | (2, 43) | (10, 19)   | (29, 8) |
 | Expr        | (70.0%, 41.5%)  | (70, 217) | (49, 90) | (8, 98) | (13, 29)   | (58, 1) |
 | LazyGroupBy | (0.0%, 5.9%)    | (1, 17)   | (0, 1)   | (0, 16) | (1, 0)     | (0, 0)  |
-| Expr.str    | (100.0%, 32.7%) | (19, 49)  | (19, 16) | (0, 17) | (0, 16)    | (14, 1) |
+| Expr.str    | (100.0%, 36.7%) | (19, 49)  | (19, 18) | (0, 12) | (0, 19)    | (19, 1) |
 | Expr.list   | (90.0%, 32.6%)  | (10, 43)  | (9, 14)  | (0, 25) | (1, 4)     | (9, 1)  |
 | Expr.struct | (100.0%, 20.0%) | (1, 5)    | (1, 1)   | (0, 3)  | (0, 1)     | (2, 1)  |
 | Expr.name   | (100.0%, 70.0%) | (6, 10)   | (6, 7)   | (0, 3)  | (0, 0)     | (2, 1)  |
@@ -480,7 +480,7 @@ This report shows the API coverage of pql compared to Polars.
 
 ## Expr.str
 
-### [x] Missing Methods (17)
+### [x] Missing Methods (12)
 
 - `concat`
   - **Polars**: (delimiter: str | None, ignore_nulls: bool) -> Expr
@@ -488,37 +488,36 @@ This report shows the API coverage of pql compared to Polars.
   - **Polars**: (patterns: IntoExpr, ascii_case_insensitive: bool) -> Expr
 - `decode`
   - **Polars**: (encoding: TransferEncoding, strict: bool) -> Expr
-- `encode`
-  - **Polars**: (encoding: TransferEncoding) -> Expr
 - `explode`
   - **Polars**: () -> Expr
 - `extract_groups`
   - **Polars**: (pattern: str) -> Expr
 - `extract_many`
   - **Polars**: (patterns: IntoExpr, ascii_case_insensitive: bool, overlapping: bool, leftmost: bool) -> Expr
-- `find`
-  - **Polars**: (pattern: str | Expr, literal: bool, strict: bool) -> Expr
 - `find_many`
   - **Polars**: (patterns: IntoExpr, ascii_case_insensitive: bool, overlapping: bool, leftmost: bool) -> Expr
 - `json_decode`
   - **Polars**: (dtype: DataTypeExpr, infer_schema_length: int | None) -> Expr
-- `normalize`
-  - **Polars**: (form: UnicodeForm) -> Expr
 - `replace_many`
   - **Polars**: (patterns: IntoExpr | Mapping[str, str], replace_with: IntoExpr | NoDefault, ascii_case_insensitive: bool, leftmost: bool) -> Expr
 - `split_exact`
   - **Polars**: (by: IntoExpr, n: int, inclusive: bool) -> Expr
 - `splitn`
   - **Polars**: (by: IntoExpr, n: int) -> Expr
-- `strptime`
-  - **Polars**: (dtype: PolarsTemporalType, format: str | None, strict: bool, exact: bool, cache: bool, ambiguous: Ambiguous | Expr) -> Expr
-- `to_decimal`
-  - **Polars**: (scale: int) -> Expr
 - `to_integer`
   - **Polars**: (base: int | IntoExprColumn, dtype: PolarsIntegerType, strict: bool) -> Expr
 
-### [!] Signature Mismatches (1)
+### [!] Signature Mismatches (4)
 
+- `find` (pl)
+  - **Polars***: (pattern: str | Expr, literal: bool, `strict: bool`) -> Expr
+  - **pql**: (pattern: str | Expr, literal: bool) -> Expr
+- `normalize` (pl)
+  - **Polars***: (`form: UnicodeForm`) -> Expr
+  - **pql**: () -> Expr
+- `strptime` (pl)
+  - **Polars***: (`dtype: PolarsTemporalType`, `format: str | None`, `strict: bool`, `exact: bool`, `cache: bool`, `ambiguous: Ambiguous | Expr`) -> Expr
+  - **pql**: (`format: str | Expr`) -> Expr
 - `to_time` (pl)
   - **Polars***: (format: str | None, `strict: bool`, `cache: bool`) -> Expr
   - **pql**: (format: str | None) -> Expr
