@@ -364,6 +364,14 @@ def get_attr(obj: object, name: str) -> pc.Option[object]:
     return pc.Option(getattr(obj, name, None))
 
 
+def is_deprecated_method(obj: object, name: str) -> bool:
+    return (
+        get_attr(obj, name)
+        .map(lambda attr: bool(getattr(attr, "__deprecated__", False)))
+        .unwrap_or(default=False)
+    )
+
+
 def _signature_with_diff(
     base: MethodInfo, other: MethodInfo, ignored: pc.Set[str]
 ) -> str:

@@ -7,6 +7,7 @@ from ._infos import (
     ComparisonResult,
     RefBackend,
     get_attr,
+    is_deprecated_method,
 )
 from ._models import Status
 
@@ -91,12 +92,19 @@ class ClassComparison:
         def _get_public_methods(cls: type) -> pc.Set[str]:
             return (
                 pc.Iter(dir(cls))
-                .filter(lambda name: not name.startswith("_"))
                 .filter(
                     lambda name: (
-                        get_attr(cls, name)
-                        .map(lambda attr: callable(attr) or isinstance(attr, property))
-                        .unwrap_or(default=False)
+                        not name.startswith("_")
+                        and not is_deprecated_method(cls, name)
+                        and (
+                            get_attr(cls, name)
+                            .map(
+                                lambda attr: (
+                                    callable(attr) or isinstance(attr, property)
+                                )
+                            )
+                            .unwrap_or(default=False)
+                        )
                     )
                 )
                 .collect(pc.Set)
