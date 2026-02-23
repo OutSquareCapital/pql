@@ -11,6 +11,7 @@ import pql
 
 def sample_df() -> nw.LazyFrame[duckdb.DuckDBPyRelation]:
     """Create a sample DataFrame with string data for testing."""
+    nan = float("nan")
     return nw.from_native(
         duckdb.from_arrow(
             pl.DataFrame(
@@ -18,11 +19,12 @@ def sample_df() -> nw.LazyFrame[duckdb.DuckDBPyRelation]:
                     "a": [True, False, True, None, True, False],
                     "b": [True, True, False, None, True, False],
                     "x": [10, 2, 3, 5, 10, 20],
-                    "n": [2, 3, 1, None, 2, 3],
+                    "n": [None, 3, 1, None, 2, 3],
                     "s": ["1", "2", "3", None, "1", "2"],
                     "age": [25, 30, 35, None, 25, 30],
                     "salary": [50000.0, 60000.0, 70000.0, None, 50000.0, 60000.0],
                     "nested": [[1, 2], [3, 4], [5], None, [1, 2], [3, 4]],
+                    "nan_vals": [1.0, nan, 3.0, nan, 5.0, nan],
                 }
             )
         )
@@ -33,8 +35,8 @@ def assert_eq(
     pql_exprs: pql.Expr | Iterable[pql.Expr], polars_exprs: nw.Expr | Iterable[nw.Expr]
 ) -> None:
     assert_frame_equal(
-        sample_df().lazy().select(polars_exprs).to_native().pl(),
         pql.LazyFrame(sample_df().to_native()).select(pql_exprs).collect(),
+        sample_df().lazy().select(polars_exprs).to_native().pl(),
         check_dtypes=False,
         check_row_order=False,
     )
@@ -44,8 +46,8 @@ def assert_eq_pl(
     pql_exprs: pql.Expr | Iterable[pql.Expr], polars_exprs: pl.Expr | Iterable[pl.Expr]
 ) -> None:
     assert_frame_equal(
-        sample_df().to_native().pl(lazy=True).select(polars_exprs).collect(),
         pql.LazyFrame(sample_df().to_native()).select(pql_exprs).collect(),
+        sample_df().to_native().pl(lazy=True).select(polars_exprs).collect(),
         check_dtypes=False,
         check_row_order=False,
     )
@@ -61,6 +63,27 @@ def test_ror() -> None:
 
 def test_hash() -> None:
     assert hash(pql.col("x")) == hash(pql.col("x"))
+
+
+def test_bitwise_and() -> None:
+    assert_eq_pl(pql.col("x").bitwise_and(), pl.col("x").bitwise_and())
+
+
+def test_bitwise_or() -> None:
+    assert_eq_pl(pql.col("x").bitwise_or(), pl.col("x").bitwise_or())
+
+
+def test_bitwise_xor() -> None:
+    assert_eq_pl(pql.col("x").bitwise_xor(), pl.col("x").bitwise_xor())
+
+
+def test_xor() -> None:
+    assert_eq_pl(pql.col("x").xor(3), pl.col("x").xor(3))
+    assert_eq_pl(pql.col("x").__xor__(3), pl.col("x").xor(3))
+    assert_eq_pl(
+        pql.col("x").xor(pql.col("n")),
+        pl.col("x").xor(pl.col("n")),
+    )
 
 
 def test_repeat_by() -> None:
@@ -231,23 +254,24 @@ def test_forward_fill() -> None:
 
 
 def test_backward_fill() -> None:
-    assert_eq_pl(pql.col("a").backward_fill(), pl.col("a").backward_fill())
+    assert_eq_pl(pql.col("n").backward_fill(), pl.col("n").backward_fill())
+    assert_eq_pl(pql.col("n").backward_fill(2), pl.col("n").backward_fill(2))
 
 
 def test_is_nan() -> None:
-    assert_eq(pql.col("x").is_nan(), nw.col("x").is_nan())
+    assert_eq(pql.col("nan_vals").is_nan(), nw.col("nan_vals").is_nan())
 
 
 def test_is_null() -> None:
-    assert_eq(pql.col("x").is_null(), nw.col("x").is_null())
+    assert_eq(pql.col("n").is_null(), nw.col("n").is_null())
 
 
 def test_is_not_null() -> None:
-    assert_eq_pl(pql.col("x").is_not_null(), pl.col("x").is_not_null())
+    assert_eq_pl(pql.col("n").is_not_null(), pl.col("n").is_not_null())
 
 
 def test_is_not_nan() -> None:
-    assert_eq_pl(pql.col("x").is_not_nan(), pl.col("x").is_not_nan())
+    assert_eq_pl(pql.col("nan_vals").is_not_nan(), pl.col("nan_vals").is_not_nan())
 
 
 def test_is_finite() -> None:
@@ -259,7 +283,7 @@ def test_is_infinite() -> None:
 
 
 def test_fill_nan() -> None:
-    assert_eq(pql.col("x").fill_nan(0.0), nw.col("x").fill_nan(0.0))
+    assert_eq(pql.col("nan_vals").fill_nan(0.0), nw.col("nan_vals").fill_nan(0.0))
 
 
 def test_is_duplicated() -> None:
@@ -318,6 +342,39 @@ def test_arctan() -> None:
     assert_eq_pl(pql.col("x").arctan(), pl.col("x").arctan())
 
 
+def test_arccos() -> None:
+    assert_eq_pl(
+        pql.col("x").truediv(20).arccos(),
+        pl.col("x").truediv(20).arccos(),
+    )
+
+
+def test_arccosh() -> None:
+    assert_eq_pl(pql.col("x").arccosh(), pl.col("x").arccosh())
+
+
+def test_arcsin() -> None:
+    assert_eq_pl(
+        pql.col("x").truediv(20).arcsin(),
+        pl.col("x").truediv(20).arcsin(),
+    )
+
+
+def test_arcsinh() -> None:
+    assert_eq_pl(pql.col("x").arcsinh(), pl.col("x").arcsinh())
+
+
+def test_arctanh() -> None:
+    assert_eq_pl(
+        pql.col("x").truediv(30).arctanh(),
+        pl.col("x").truediv(30).arctanh(),
+    )
+
+
+def test_cot() -> None:
+    assert_eq_pl(pql.col("x").cot(), pl.col("x").cot())
+
+
 def test_degrees() -> None:
     assert_eq_pl(pql.col("x").degrees(), pl.col("x").degrees())
 
@@ -373,6 +430,12 @@ def test_diff() -> None:
     )
 
 
+def test_pct_change() -> None:
+    assert_eq_pl(pql.col("x").pct_change(), pl.col("x").pct_change())
+    assert_eq_pl(pql.col("x").pct_change(2), pl.col("x").pct_change(2))
+    assert_eq_pl(pql.col("x").pct_change(-1), pl.col("x").pct_change(-1))
+
+
 def test_is_between() -> None:
     assert_eq_pl(
         [
@@ -392,30 +455,6 @@ def test_is_between() -> None:
 
 def test_is_unique() -> None:
     assert_eq(pql.col("a").is_unique(), nw.col("a").is_unique())
-
-
-def test_filter() -> None:
-    assert_eq_pl(
-        pql.col("x").filter(pql.col("a")).alias("x_filtered"),
-        pl.when(pl.col("a")).then(pl.col("x")).otherwise(None).alias("x_filtered"),
-    )
-    assert_eq_pl(
-        pql.col("x").filter(pql.col("a"), pql.col("b")).alias("x_filtered_ab"),
-        pl.when(pl.col("a") & pl.col("b"))
-        .then(pl.col("x"))
-        .otherwise(None)
-        .alias("x_filtered_ab"),
-    )
-
-
-def test_drop_nulls() -> None:
-    assert_eq_pl(
-        pql.col("x").drop_nulls().alias("x_drop_nulls"),
-        pl.when(pl.col("x").is_not_null())
-        .then(pl.col("x"))
-        .otherwise(None)
-        .alias("x_drop_nulls"),
-    )
 
 
 def test_when_then_simple() -> None:
@@ -483,38 +522,54 @@ def test_max() -> None:
 def test_first() -> None:
     assert_eq_pl(pql.col("x").first(), pl.col("x").first())
     assert_eq_pl(
-        pql.col("x").first(ignore_nulls=False), pl.col("x").first(ignore_nulls=False)
+        pql.col("n").first(ignore_nulls=False), pl.col("n").first(ignore_nulls=False)
     )
     assert_eq_pl(
-        pql.col("x").first(ignore_nulls=True), pl.col("x").first(ignore_nulls=True)
+        pql.col("n").first(ignore_nulls=True), pl.col("n").first(ignore_nulls=True)
     )
     assert_eq_pl(
-        pql.col("age").first(ignore_nulls=False),
-        pl.col("age").first(ignore_nulls=False),
+        pql.col("n").first(ignore_nulls=False),
+        pl.col("n").first(ignore_nulls=False),
     )
     assert_eq_pl(
-        pql.col("age").first(ignore_nulls=True), pl.col("age").first(ignore_nulls=True)
+        pql.col("n").first(ignore_nulls=True), pl.col("n").first(ignore_nulls=True)
     )
 
 
 def test_last() -> None:
-    assert_eq_pl(pql.col("x").last(), pl.col("x").last())
-    assert_eq_pl(
-        pql.col("x").last(ignore_nulls=False), pl.col("x").last(ignore_nulls=False)
-    )
-    assert_eq_pl(
-        pql.col("x").last(ignore_nulls=True), pl.col("x").last(ignore_nulls=True)
-    )
-    assert_eq_pl(
-        pql.col("age").last(ignore_nulls=False), pl.col("age").last(ignore_nulls=False)
-    )
-    assert_eq_pl(
-        pql.col("age").last(ignore_nulls=True), pl.col("age").last(ignore_nulls=True)
-    )
+    assert_eq_pl(pql.col("n").last(), pl.col("n").last())
 
 
 def test_mode() -> None:
     assert_eq_pl(pql.col("x").mode(), pl.col("x").mode())
+
+
+def test_approx_n_unique() -> None:
+    assert_eq_pl(pql.col("x").approx_n_unique(), pl.col("x").approx_n_unique())
+
+
+def test_product() -> None:
+    assert_eq_pl(pql.col("x").product(), pl.col("x").product())
+
+
+def test_max_by() -> None:
+    assert_eq_pl(pql.col("x").max_by("age"), pl.col("x").max_by("age"))
+    assert_eq_pl(
+        pql.col("salary").max_by(pql.col("x").neg()),
+        pl.col("salary").max_by(pl.col("x").neg()),
+    )
+
+
+def test_min_by() -> None:
+    assert_eq_pl(pql.col("x").min_by("age"), pl.col("x").min_by("age"))
+    assert_eq_pl(
+        pql.col("salary").min_by(pql.col("x").neg()),
+        pl.col("salary").min_by(pl.col("x").neg()),
+    )
+
+
+def test_implode() -> None:
+    assert_eq_pl(pql.col("x").implode(), pl.col("x").implode())
 
 
 def test_unique() -> None:
@@ -556,53 +611,54 @@ def test_is_close() -> None:
 
 def test_rolling_mean() -> None:
     assert_eq_pl(
-        pql.col("x")
-        .rolling_mean(window_size=3, min_samples=2, center=False)
-        .alias("x_rolling_mean"),
-        pl.col("x")
-        .rolling_mean(window_size=3, min_samples=2, center=False)
-        .alias("x_rolling_mean"),
+        pql.col("x").rolling_mean(window_size=3, min_samples=2, center=False),
+        pl.col("x").rolling_mean(window_size=3, min_samples=2, center=False),
     )
     assert_eq_pl(
-        pql.col("x")
-        .rolling_mean(window_size=3, min_samples=2, center=True)
-        .alias("x_rolling_mean_center_true"),
-        pl.col("x")
-        .rolling_mean(window_size=3, min_samples=2, center=True)
-        .alias("x_rolling_mean_center_true"),
+        pql.col("x").rolling_mean(window_size=3, min_samples=2, center=True),
+        pl.col("x").rolling_mean(window_size=3, min_samples=2, center=True),
     )
 
 
 def test_rolling_sum() -> None:
     assert_eq_pl(
-        pql.col("x")
-        .rolling_sum(window_size=3, min_samples=2, center=False)
-        .alias("x_rolling_sum"),
-        pl.col("x")
-        .rolling_sum(window_size=3, min_samples=2, center=False)
-        .alias("x_rolling_sum"),
+        pql.col("x").rolling_sum(window_size=3, min_samples=2, center=False),
+        pl.col("x").rolling_sum(window_size=3, min_samples=2, center=False),
     )
 
 
 def test_rolling_std() -> None:
     assert_eq_pl(
-        pql.col("x")
-        .rolling_std(window_size=3, min_samples=2, center=False, ddof=1)
-        .alias("x_rolling_std"),
-        pl.col("x")
-        .rolling_std(window_size=3, min_samples=2, center=False, ddof=1)
-        .alias("x_rolling_std"),
+        pql.col("x").rolling_std(window_size=3, min_samples=2, center=False, ddof=1),
+        pl.col("x").rolling_std(window_size=3, min_samples=2, center=False, ddof=1),
     )
 
 
 def test_rolling_var() -> None:
     assert_eq_pl(
-        pql.col("x")
-        .rolling_var(window_size=3, min_samples=2, center=False, ddof=1)
-        .alias("x_rolling_var"),
-        pl.col("x")
-        .rolling_var(window_size=3, min_samples=2, center=False, ddof=1)
-        .alias("x_rolling_var"),
+        pql.col("x").rolling_var(window_size=3, min_samples=2, center=False, ddof=1),
+        pl.col("x").rolling_var(window_size=3, min_samples=2, center=False, ddof=1),
+    )
+
+
+def test_rolling_min() -> None:
+    assert_eq_pl(
+        pql.col("x").rolling_min(window_size=3, min_samples=2, center=False),
+        pl.col("x").rolling_min(window_size=3, min_samples=2, center=False),
+    )
+
+
+def test_rolling_max() -> None:
+    assert_eq_pl(
+        pql.col("x").rolling_max(window_size=3, min_samples=2, center=False),
+        pl.col("x").rolling_max(window_size=3, min_samples=2, center=False),
+    )
+
+
+def test_rolling_median() -> None:
+    assert_eq_pl(
+        pql.col("x").rolling_median(window_size=3, min_samples=2, center=False),
+        pl.col("x").rolling_median(window_size=3, min_samples=2, center=False),
     )
 
 
@@ -672,17 +728,35 @@ def test_quantile() -> None:
 
 def test_over() -> None:
     assert_eq_pl(pql.col("x").sum().over("a"), pl.col("x").sum().over("a"))
+
+
+def test_over_order_by() -> None:
     assert_eq_pl(
-        pql.col("x").sum().over("a", order_by="b"),
-        pl.col("x").sum().over("a", order_by="b"),
+        pql.col("x").sum().over("a", order_by="n"),
+        pl.col("x").sum().over("a", order_by="n"),
     )
+
+
+def test_over_descending() -> None:
     assert_eq_pl(
         pql.col("x").sum().over("a", descending=True),
         pl.col("x").sum().over("a", descending=True),
     )
+
+
+def test_over_with_nulls_last() -> None:
+    """Polars is currently bugged and does not handle nulls last correctly in window functions.
+
+    Hence, we voluntarily don't test the ordering on a columns with nulls, otherwise it would fail.
+
+    That being said, in isolation, it does work on `pql`.
+
+    See:
+        https://github.com/pola-rs/polars/issues/24989
+    """
     assert_eq_pl(
-        pql.col("x").sum().over("n", nulls_last=True),
-        pl.col("x").sum().over("n", nulls_last=True),
+        pql.col("n").first().over("a", order_by="x", nulls_last=True),
+        pl.col("n").first().over("a", order_by="x", nulls_last=True),
     )
 
 
@@ -768,6 +842,10 @@ def test_n_unique() -> None:
 
 def test_null_count() -> None:
     assert_eq_pl(pql.col("age").null_count(), pl.col("age").null_count())
+
+
+def test_has_nulls() -> None:
+    assert_eq_pl(pql.col("age").has_nulls(), pl.col("age").has_nulls())
 
 
 def test_rank() -> None:

@@ -32,8 +32,8 @@ def assert_eq(
     pql_exprs: pql.Expr | Iterable[pql.Expr], polars_exprs: nw.Expr | Iterable[nw.Expr]
 ) -> None:
     assert_frame_equal(
-        sample_df().lazy().select(polars_exprs).to_native().pl(),
         pql.LazyFrame(sample_df().to_native()).select(pql_exprs).collect(),
+        sample_df().lazy().select(polars_exprs).to_native().pl(),
         check_dtypes=False,
         check_row_order=False,
     )
@@ -43,8 +43,8 @@ def assert_eq_pl(
     pql_exprs: pql.Expr | Iterable[pql.Expr], polars_exprs: pl.Expr | Iterable[pl.Expr]
 ) -> None:
     assert_frame_equal(
-        sample_df().to_native().pl(lazy=True).select(polars_exprs).collect(),
         pql.LazyFrame(sample_df().to_native()).select(pql_exprs).collect(),
+        sample_df().to_native().pl(lazy=True).select(polars_exprs).collect(),
         check_dtypes=False,
         check_row_order=False,
     )

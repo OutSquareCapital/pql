@@ -407,6 +407,9 @@ class Expr(sql.CoreHandler[sql.SqlExpr]):
     def __or__(self, other: IntoExpr) -> Self:
         return self.or_(other)
 
+    def __xor__(self, other: IntoExpr) -> Self:
+        return self.xor(other)
+
     def __ror__(self, other: IntoExpr) -> Self:
         return self._new(sql.into_expr(other).ror(self.inner()))
 
@@ -471,6 +474,18 @@ class Expr(sql.CoreHandler[sql.SqlExpr]):
     def not_(self) -> Self:
         return self._new(self.inner().not_())
 
+    def bitwise_and(self) -> Self:
+        return self._as_scalar(self.inner().bit_and())
+
+    def bitwise_or(self) -> Self:
+        return self._as_scalar(self.inner().bit_or())
+
+    def bitwise_xor(self) -> Self:
+        return self._as_scalar(self.inner().bit_xor())
+
+    def xor(self, other: IntoExpr) -> Self:
+        return self._new(self.inner().xor(sql.into_expr(other)))
+
     def alias(self, name: str) -> Self:
         """Rename the expression."""
         return self._with_meta(self.inner(), alias_name=pc.Some(lambda _: name))
@@ -503,6 +518,9 @@ class Expr(sql.CoreHandler[sql.SqlExpr]):
 
     def diff(self) -> Self:
         return self.sub(self.shift())
+
+    def pct_change(self, n: int = 1) -> Self:
+        return self.truediv(self.shift(n)).sub(sql.lit(1))
 
     def is_between(
         self,
@@ -575,17 +593,33 @@ class Expr(sql.CoreHandler[sql.SqlExpr]):
             case False:
                 return self._as_scalar(self.inner().first())
 
-    def last(self, *, ignore_nulls: bool = False) -> Self:
+    def last(self) -> Self:
         """Get last value."""
-        match ignore_nulls:
-            case True:
-                return self._as_scalar(self.filter(self.is_not_null()).inner().last())
-            case False:
-                return self._as_scalar(self.inner().last())
+        return self._as_scalar(self.inner().last())
 
     def mode(self) -> Self:
         """Compute mode."""
         return self._as_scalar(self.inner().mode())
+
+    def approx_n_unique(self) -> Self:
+        """Approximate the number of unique values."""
+        return self._as_scalar(self.inner().approx_count_distinct())
+
+    def product(self) -> Self:
+        """Compute the product."""
+        return self._as_scalar(self.inner().product())
+
+    def max_by(self, by: IntoExpr) -> Self:
+        """Return the value corresponding to the maximum of another expression."""
+        return self._as_scalar(self.inner().max_by(sql.into_expr(by, as_col=True)))
+
+    def min_by(self, by: IntoExpr) -> Self:
+        """Return the value corresponding to the minimum of another expression."""
+        return self._as_scalar(self.inner().min_by(sql.into_expr(by, as_col=True)))
+
+    def implode(self) -> Self:
+        """Aggregate values into a list."""
+        return self._as_scalar(self.inner().implode())
 
     def unique(self) -> Self:
         """Get unique values."""
@@ -613,6 +647,36 @@ class Expr(sql.CoreHandler[sql.SqlExpr]):
                     .otherwise(close)
                 )
 
+    def rolling_max(
+        self,
+        window_size: int,
+        min_samples: int | None = None,
+        *,
+        center: bool = False,
+    ) -> Self:
+        """Compute rolling mean."""
+        return self._rolling_agg(
+            window_size=window_size,
+            min_samples=min_samples,
+            center=center,
+            agg=lambda expr: expr.max(),
+        )
+
+    def rolling_min(
+        self,
+        window_size: int,
+        min_samples: int | None = None,
+        *,
+        center: bool = False,
+    ) -> Self:
+        """Compute rolling mean."""
+        return self._rolling_agg(
+            window_size=window_size,
+            min_samples=min_samples,
+            center=center,
+            agg=lambda expr: expr.min(),
+        )
+
     def rolling_mean(
         self,
         window_size: int,
@@ -626,6 +690,21 @@ class Expr(sql.CoreHandler[sql.SqlExpr]):
             min_samples=min_samples,
             center=center,
             agg=lambda expr: expr.mean(),
+        )
+
+    def rolling_median(
+        self,
+        window_size: int,
+        min_samples: int | None = None,
+        *,
+        center: bool = False,
+    ) -> Self:
+        """Compute rolling mean."""
+        return self._rolling_agg(
+            window_size=window_size,
+            min_samples=min_samples,
+            center=center,
+            agg=lambda expr: expr.median(),
         )
 
     def rolling_sum(
@@ -734,6 +813,10 @@ class Expr(sql.CoreHandler[sql.SqlExpr]):
         """Count null values."""
         return self.len().sub(self.count())
 
+    def has_nulls(self) -> Self:
+        """Return whether the expression contains nulls."""
+        return self._as_scalar(self.inner().is_null().bool_or())
+
     def rank(self, method: RankMethod = "average", *, descending: bool = False) -> Self:
         """Compute rank values."""
         base_rank = (
@@ -824,22 +907,6 @@ class Expr(sql.CoreHandler[sql.SqlExpr]):
             .pipe(self._as_window)
         )
 
-    def filter(
-        self,
-        *predicates: IntoExprColumn | Iterable[IntoExprColumn],
-        **constraints: IntoExpr,
-    ) -> Self:
-        return self._new(
-            resolve_predicates(predicates, constraints)
-            .fold(sql.lit(value=True), lambda acc, pred: acc.and_(pred))
-            .pipe(sql.when)
-            .then(self.inner())
-            .otherwise(sql.lit(None))
-        )
-
-    def drop_nulls(self) -> Self:
-        return self.filter(self.is_not_null())
-
     def floor(self) -> Self:
         """Round down to the nearest integer."""
         return self._new(self.inner().floor())
@@ -897,6 +964,30 @@ class Expr(sql.CoreHandler[sql.SqlExpr]):
         """Compute the arc tangent."""
         return self._new(self.inner().atan())
 
+    def arccos(self) -> Self:
+        """Compute the arc cosine."""
+        return self._new(self.inner().acos())
+
+    def arccosh(self) -> Self:
+        """Compute the inverse hyperbolic cosine."""
+        return self._new(self.inner().acosh())
+
+    def arcsin(self) -> Self:
+        """Compute the arc sine."""
+        return self._new(self.inner().asin())
+
+    def arcsinh(self) -> Self:
+        """Compute the inverse hyperbolic sine."""
+        return self._new(self.inner().asinh())
+
+    def arctanh(self) -> Self:
+        """Compute the inverse hyperbolic tangent."""
+        return self._new(self.inner().atanh())
+
+    def cot(self) -> Self:
+        """Compute the cotangent."""
+        return self._new(self.inner().cot())
+
     def sinh(self) -> Self:
         """Compute the hyperbolic sine."""
         return self._new(self.inner().sinh())
@@ -925,9 +1016,15 @@ class Expr(sql.CoreHandler[sql.SqlExpr]):
         """Fill null values with the last non-null value."""
         return self._new(self.inner().last_value().over(rows_end=0, ignore_nulls=True))
 
-    def backward_fill(self) -> Self:
+    def backward_fill(self, limit: int | None = None) -> Self:
         """Fill null values with the next non-null value."""
-        return self._new(self.inner().any_value().over(rows_start=0))
+        expr = self.inner().any_value()
+        return (
+            pc.Option(limit)
+            .map(lambda lmt: expr.over(rows_start=0, rows_end=lmt))
+            .unwrap_or_else(lambda: expr.over(rows_start=0))
+            .pipe(self._as_window)
+        )
 
     def is_nan(self) -> Self:
         """Check if value is NaN."""
@@ -1309,6 +1406,14 @@ class ExprListNameSpace(ExprNameSpaceBase):
             )
         )
 
+    def first(self) -> Expr:
+        """Get the first element of each list."""
+        return self._new(self.inner().list.first())
+
+    def last(self) -> Expr:
+        """Get the last element of each list."""
+        return self._new(self.inner().list.last())
+
     def min(self) -> Expr:
         """Compute the min value of the lists in the array."""
         return self._new(self.inner().list.min())
@@ -1329,6 +1434,22 @@ class ExprListNameSpace(ExprNameSpaceBase):
         """Compute the sum value of the lists in the array."""
         return self._new(self.inner().list.sum())
 
+    def std(self, ddof: int = 1) -> Expr:
+        """Compute the standard deviation of the lists in the array."""
+        match ddof:
+            case 0:
+                return self._new(self.inner().list.stddev_pop())
+            case _:
+                return self._new(self.inner().list.stddev_samp())
+
+    def var(self, ddof: int = 1) -> Expr:
+        """Compute the variance of the lists in the array."""
+        match ddof:
+            case 0:
+                return self._new(self.inner().list.var_pop())
+            case _:
+                return self._new(self.inner().list.var_samp())
+
     def sort(self, *, descending: bool = False, nulls_last: bool = False) -> Expr:
         """Sort the lists of the expression."""
         return self._new(
@@ -1337,6 +1458,18 @@ class ExprListNameSpace(ExprNameSpaceBase):
                 sql.lit(sql.Kword.null_order(last=nulls_last)),
             )
         )
+
+    def reverse(self) -> Expr:
+        """Reverse the lists of the expression."""
+        return self._new(self.inner().list.reverse())
+
+    def all(self) -> Expr:
+        """Return whether all values in the list are true."""
+        return self._new(self.inner().list.bool_and())
+
+    def any(self) -> Expr:
+        """Return whether any value in the listis true."""
+        return self._new(self.inner().list.bool_or())
 
 
 @dataclass(slots=True)

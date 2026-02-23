@@ -4,15 +4,15 @@ This report shows the API coverage of pql compared to Polars.
 
 ## Summary
 
-| Class       | Coverage        | Total     | Matched  | Missing  | Mismatched | Extra   |
-| ----------- | --------------- | --------- | -------- | -------- | ---------- | ------- |
-| LazyFrame   | (53.8%, 29.5%)  | (26, 88)  | (14, 26) | (2, 43)  | (10, 19)   | (29, 8) |
-| Expr        | (71.4%, 34.6%)  | (70, 217) | (50, 75) | (6, 117) | (14, 25)   | (37, 1) |
-| LazyGroupBy | (0.0%, 5.9%)    | (1, 17)   | (0, 1)   | (0, 16)  | (1, 0)     | (0, 0)  |
-| Expr.str    | (89.5%, 24.5%)  | (19, 49)  | (17, 12) | (2, 24)  | (0, 13)    | (9, 1)  |
-| Expr.list   | (90.0%, 18.6%)  | (10, 43)  | (9, 8)   | (0, 32)  | (1, 3)     | (2, 1)  |
-| Expr.struct | (100.0%, 20.0%) | (1, 5)    | (1, 1)   | (0, 3)   | (0, 1)     | (2, 1)  |
-| Expr.name   | (100.0%, 70.0%) | (6, 10)   | (6, 7)   | (0, 3)   | (0, 0)     | (2, 1)  |
+| Class       | Coverage        | Total     | Matched  | Missing | Mismatched | Extra   |
+| ----------- | --------------- | --------- | -------- | ------- | ---------- | ------- |
+| LazyFrame   | (53.8%, 29.5%)  | (26, 88)  | (14, 26) | (2, 43) | (10, 19)   | (29, 8) |
+| Expr        | (70.0%, 41.0%)  | (70, 217) | (49, 89) | (8, 99) | (13, 29)   | (57, 1) |
+| LazyGroupBy | (0.0%, 5.9%)    | (1, 17)   | (0, 1)   | (0, 16) | (1, 0)     | (0, 0)  |
+| Expr.str    | (89.5%, 24.5%)  | (19, 49)  | (17, 12) | (2, 24) | (0, 13)    | (9, 1)  |
+| Expr.list   | (90.0%, 34.9%)  | (10, 43)  | (9, 15)  | (0, 25) | (1, 3)     | (9, 1)  |
+| Expr.struct | (100.0%, 20.0%) | (1, 5)    | (1, 1)   | (0, 3)  | (0, 1)     | (2, 1)  |
+| Expr.name   | (100.0%, 70.0%) | (6, 10)   | (6, 7)   | (0, 3)  | (0, 0)     | (2, 1)  |
 
 ## LazyFrame
 
@@ -129,17 +129,11 @@ This report shows the API coverage of pql compared to Polars.
 
 ## Expr
 
-### [x] Missing Methods (118)
+### [x] Missing Methods (100)
 
 - `agg_groups`
 - `any_value` (ignore_nulls: bool) -> Self
 - `append`
-- `approx_n_unique`
-- `arccos`
-- `arccosh`
-- `arcsin`
-- `arcsinh`
-- `arctanh`
 - `arg_max`
 - `arg_min`
 - `arg_sort`
@@ -147,24 +141,21 @@ This report shows the API coverage of pql compared to Polars.
 - `arg_unique`
 - `arr`
 - `bin`
-- `bitwise_and`
 - `bitwise_count_ones`
 - `bitwise_count_zeros`
 - `bitwise_leading_ones`
 - `bitwise_leading_zeros`
-- `bitwise_or`
 - `bitwise_trailing_ones`
 - `bitwise_trailing_zeros`
-- `bitwise_xor`
 - `bottom_k`
 - `bottom_k_by`
 - `cat` ()
-- `cot`
 - `cumulative_eval`
 - `cut`
 - `deserialize`
 - `dot`
 - `drop_nans`
+- `drop_nulls` () -> Self
 - `dt` ()
 - `entropy`
 - `eq_missing`
@@ -176,15 +167,14 @@ This report shows the API coverage of pql compared to Polars.
 - `explode`
 - `ext`
 - `extend_constant`
+- `filter` (*predicates: Any) -> Self
 - `flatten`
 - `from_json`
 - `gather`
 - `gather_every`
 - `get`
-- `has_nulls`
 - `head`
 - `hist`
-- `implode`
 - `index_of`
 - `inspect`
 - `interpolate`
@@ -194,16 +184,12 @@ This report shows the API coverage of pql compared to Polars.
 - `lower_bound`
 - `map_batches` (function: Callable[[Any], CompliantExpr[Any, Any]], return_dtype: DType | None, returns_scalar: bool) -> Self
 - `map_elements`
-- `max_by`
 - `meta`
-- `min_by`
 - `nan_max`
 - `nan_min`
 - `ne_missing`
-- `pct_change`
 - `peak_max`
 - `peak_min`
-- `product`
 - `qcut`
 - `rechunk`
 - `register_plugin`
@@ -216,12 +202,9 @@ This report shows the API coverage of pql compared to Polars.
 - `rolling`
 - `rolling_kurtosis`
 - `rolling_map`
-- `rolling_max`
 - `rolling_max_by`
 - `rolling_mean_by`
-- `rolling_median`
 - `rolling_median_by`
-- `rolling_min`
 - `rolling_min_by`
 - `rolling_quantile`
 - `rolling_quantile_by`
@@ -248,13 +231,9 @@ This report shows the API coverage of pql compared to Polars.
 - `upper_bound`
 - `value_counts`
 - `where`
-- `xor`
 
-### [!] Signature Mismatches (11)
+### [!] Signature Mismatches (15)
 
-- `backward_fill` (pl)
-  - Polars: (`limit: int | None`) -> Expr
-  - pql: () -> Self
 - `cast` (nw)
   - Narwhals: (`dtype: IntoDType`) -> Self
   - Polars: (`dtype: DataTypeExpr | type[Any]`, `strict: bool`, `wrap_numerical: bool`) -> Expr
@@ -273,6 +252,10 @@ This report shows the API coverage of pql compared to Polars.
 - `hash` (pl)
   - Polars: (seed: int, `seed_1: int | None`, `seed_2: int | None`, `seed_3: int | None`) -> Expr
   - pql: (seed: int) -> Self
+- `last` (nw)
+  - Narwhals: (`order_by: str | Iterable[str] | None`) -> Self
+  - Polars: (`ignore_nulls: bool`) -> Expr
+  - pql: () -> Self
 - `mode` (nw)
   - Narwhals: (`keep: ModeKeepStrategy`) -> Self
   - Polars: (`maintain_order: bool`) -> Expr
@@ -281,6 +264,9 @@ This report shows the API coverage of pql compared to Polars.
   - Narwhals: (`*partition_by: str | Sequence[str]`, `order_by: str | Sequence[str] | None`) -> Self
   - Polars: (partition_by: IntoExpr | Iterable[IntoExpr] | None, *more_exprs: IntoExpr, order_by: IntoExpr | Iterable[IntoExpr] | None, descending: bool, nulls_last: bool, `mapping_strategy: WindowMappingStrategy`) -> Expr
   - pql: (`partition_by: IntoExpr | Iterable[IntoExpr] | None`, `*more_exprs: IntoExpr`, `order_by: IntoExpr | Iterable[IntoExpr] | None`, `descending: bool`, `nulls_last: bool`) -> Self
+- `pct_change` (pl)
+  - Polars: (`n: int | IntoExprColumn`) -> Expr
+  - pql: (`n: int`) -> Self
 - `pow` (pl)
   - Polars: (`exponent: IntoExprColumn | int | float`) -> Expr
   - pql: (`other: Any`) -> Self
@@ -290,6 +276,15 @@ This report shows the API coverage of pql compared to Polars.
 - `replace` (pl)
   - Polars: (`old: IntoExpr | Sequence[Any] | Mapping[Any, Any]`, `new: IntoExpr | Sequence[Any] | NoDefault`, `default: IntoExpr | NoDefault`, `return_dtype: PolarsDataType | None`) -> Expr
   - pql: (`old: IntoExpr`, `new: IntoExpr`) -> Self
+- `rolling_max` (pl)
+  - Polars: (window_size: int, `weights: list_[float] | None`, min_samples: int | None, center: bool) -> Expr
+  - pql: (window_size: int, min_samples: int | None, center: bool) -> Self
+- `rolling_median` (pl)
+  - Polars: (window_size: int, `weights: list_[float] | None`, min_samples: int | None, center: bool) -> Expr
+  - pql: (window_size: int, min_samples: int | None, center: bool) -> Self
+- `rolling_min` (pl)
+  - Polars: (window_size: int, `weights: list_[float] | None`, min_samples: int | None, center: bool) -> Expr
+  - pql: (window_size: int, min_samples: int | None, center: bool) -> Self
 
 ### [+] Extra Methods (pql-only) (1)
 
@@ -351,11 +346,9 @@ This report shows the API coverage of pql compared to Polars.
 
 ## Expr.list
 
-### [x] Missing Methods (32)
+### [x] Missing Methods (25)
 
 - `agg`
-- `all`
-- `any`
 - `arg_max`
 - `arg_min`
 - `concat`
@@ -364,15 +357,12 @@ This report shows the API coverage of pql compared to Polars.
 - `drop_nulls`
 - `explode`
 - `filter`
-- `first`
 - `gather`
 - `gather_every`
 - `head`
 - `item`
 - `join`
-- `last`
 - `n_unique`
-- `reverse`
 - `sample`
 - `set_difference`
 - `set_intersection`
@@ -380,11 +370,9 @@ This report shows the API coverage of pql compared to Polars.
 - `set_union`
 - `shift`
 - `slice`
-- `std`
 - `tail`
 - `to_array`
 - `to_struct`
-- `var`
 
 ### [!] Signature Mismatches (1)
 
