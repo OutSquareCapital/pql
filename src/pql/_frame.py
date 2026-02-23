@@ -236,32 +236,39 @@ class LazyFrame(sql.CoreHandler[sql.Relation]):
         plan = ExprPlan.from_inputs(self.columns, exprs, named_exprs)
         match plan.can_use_unique():
             case True:
-                return self.__from_lf__(self.inner().unique(plan.unique().join(", ")))
-            case False:
                 return (
-                    plan.aliased_sql().into(self._agg)
-                    if plan.is_scalar_select()
-                    else plan.aliased_sql().into(self._select)
+                    self.inner().unique(plan.unique().join(", ")).pipe(self.__from_lf__)
                 )
+            case False:
+                match plan.is_scalar_select():
+                    case True:
+                        return plan.aliased_sql().into(self._agg)
+                    case False:
+                        return plan.aliased_sql().into(self._select)
 
     def with_columns(
         self, *exprs: IntoExpr | Iterable[IntoExpr], **named_exprs: IntoExpr
     ) -> Self:
         """Add or replace columns."""
         cols = self.columns
-        updates = ExprPlan.from_inputs(self.columns, exprs, named_exprs).to_updates()
         return (
-            cols.iter()
-            .map(
-                lambda name: updates.get_item(name).map_or(
-                    sql.col(name), lambda c: c.alias(name)
+            ExprPlan.from_inputs(self.columns, exprs, named_exprs)
+            .to_updates()
+            .into(
+                lambda updates: (
+                    cols.iter()
+                    .map(
+                        lambda name: updates.get_item(name).map_or(
+                            sql.col(name), lambda c: c.alias(name)
+                        )
+                    )
+                    .chain(
+                        updates.items()
+                        .iter()
+                        .filter_star(lambda name, _expr: name not in cols)
+                        .map_star(lambda name, expr: expr.alias(name))
+                    )
                 )
-            )
-            .chain(
-                updates.items()
-                .iter()
-                .filter_star(lambda name, _expr: name not in cols)
-                .map_star(lambda name, expr: expr.alias(name))
             )
             .into(self._select)
         )
@@ -482,17 +489,16 @@ class LazyFrame(sql.CoreHandler[sql.Relation]):
             case n_val if n_val < 0:
 
                 def _shift_fn(c: str) -> sql.SqlExpr:
-                    return sql.col(c).lead(sql.lit(abs_n)).alias(c)
+                    return sql.col(c).lead(abs_n).alias(c)
 
             case _:
 
                 def _shift_fn(c: str) -> sql.SqlExpr:
-                    return sql.col(c).lag(sql.lit(abs_n)).alias(c)
+                    return sql.col(c).lag(abs_n).alias(c)
 
+        fill_expr = sql.into_expr(fill_value)
         return self._iter_slct(
-            lambda c: sql.coalesce(
-                _shift_fn(c).over(), sql.into_expr(fill_value)
-            ).alias(c)
+            lambda c: sql.coalesce(_shift_fn(c).over(), fill_expr).alias(c)
         )
 
     def clone(self) -> Self:
@@ -780,33 +786,34 @@ class LazyFrame(sql.CoreHandler[sql.Relation]):
             else pc.Ok(None)
         ).unwrap()
 
-        subset_cols = (
+        order_cols_opt = order_by_opt.map(lambda cols: cols.iter().map(sql.col))
+
+        def _marker(subset_cols: Iterable[sql.SqlExpr]) -> sql.SqlExpr:
+            match keep:
+                case "none":
+                    return sql.all().count().over(partition_by=subset_cols)
+                case "first":
+                    return sql.row_number().over(
+                        partition_by=subset_cols,
+                        order_by=order_cols_opt.unwrap(),
+                    )
+                case "last":
+                    return sql.row_number().over(
+                        partition_by=subset_cols,
+                        order_by=order_cols_opt.unwrap(),
+                        descending=True,
+                        nulls_last=True,
+                    )
+                case _:
+                    return sql.row_number().over(partition_by=subset_cols)
+
+        return (
             pc.Option(subset)
             .map(lambda value: sql.try_iter(value).map(sql.col))
             .unwrap_or(self.columns.iter().map(sql.col))
-        )
-        order_cols_opt = order_by_opt.map(lambda cols: cols.iter().map(sql.col))
-
-        match keep:
-            case "none":
-                marker = sql.all().count().over(partition_by=subset_cols)
-            case "first":
-                marker = sql.row_number().over(
-                    partition_by=subset_cols,
-                    order_by=order_cols_opt.unwrap(),
-                )
-            case "last":
-                marker = sql.row_number().over(
-                    partition_by=subset_cols,
-                    order_by=order_cols_opt.unwrap(),
-                    descending=True,
-                    nulls_last=True,
-                )
-            case _:
-                marker = sql.row_number().over(partition_by=subset_cols)
-
-        return (
-            self.with_columns(marker.alias(TEMP_NAME))
+            .into(_marker)
+            .alias(TEMP_NAME)
+            .pipe(self.with_columns)
             .filter(TEMP_COL.eq(sql.lit(1)))
             .drop(TEMP_NAME)
         )
@@ -864,25 +871,26 @@ class LazyFrame(sql.CoreHandler[sql.Relation]):
     def top_k(
         self,
         k: int,
-        *,
         by: IntoExpr | Iterable[IntoExpr],
+        *,
         reverse: bool | Sequence[bool] = False,
     ) -> Self:
         """Return top k rows by column(s)."""
-        return self.sort(
-            by,
-            descending=(
-                not reverse
-                if isinstance(reverse, bool)
-                else pc.Iter(reverse).map(lambda x: not x).collect()
-            ),
-        ).head(k)
+
+        def _descending() -> bool | Sequence[bool]:
+            match reverse:
+                case bool():
+                    return not reverse
+                case _:
+                    return pc.Iter(reverse).map(lambda x: not x).collect()
+
+        return self.sort(by, descending=_descending()).head(k)
 
     def bottom_k(
         self,
         k: int,
-        *,
         by: IntoExpr | Iterable[IntoExpr],
+        *,
         reverse: bool | Sequence[bool] = False,
     ) -> Self:
         """Return bottom k rows by column(s)."""

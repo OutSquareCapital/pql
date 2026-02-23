@@ -279,8 +279,8 @@ This report shows the API coverage of pql compared to Polars.
   - pql: () -> Self
 - `over` (nw)
   - Narwhals: (`*partition_by: str | Sequence[str]`, `order_by: str | Sequence[str] | None`) -> Self
-  - Polars: (partition_by: IntoExpr | Iterable[IntoExpr] | None, *more_exprs: IntoExpr, order_by: IntoExpr | Iterable[IntoExpr] | None, `descending: bool`, `nulls_last: bool`, `mapping_strategy: WindowMappingStrategy`) -> Expr
-  - pql: (`partition_by: IntoExpr | Iterable[IntoExpr] | None`, `*more_exprs: IntoExpr`, `order_by: IntoExpr | Iterable[IntoExpr] | None`) -> Self
+  - Polars: (partition_by: IntoExpr | Iterable[IntoExpr] | None, *more_exprs: IntoExpr, order_by: IntoExpr | Iterable[IntoExpr] | None, descending: bool, nulls_last: bool, `mapping_strategy: WindowMappingStrategy`) -> Expr
+  - pql: (`partition_by: IntoExpr | Iterable[IntoExpr] | None`, `*more_exprs: IntoExpr`, `order_by: IntoExpr | Iterable[IntoExpr] | None`, `descending: bool`, `nulls_last: bool`) -> Self
 - `pow` (pl)
   - Polars: (`exponent: IntoExprColumn | int | float`) -> Expr
   - pql: (`other: Any`) -> Self

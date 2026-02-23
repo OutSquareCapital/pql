@@ -793,35 +793,55 @@ class Expr(sql.CoreHandler[sql.SqlExpr]):
         partition_by: IntoExpr | Iterable[IntoExpr] | None,
         *more_exprs: IntoExpr,
         order_by: IntoExpr | Iterable[IntoExpr] | None = None,
+        descending: bool = False,
+        nulls_last: bool = False,
     ) -> Self:
-        partition_exprs = (
+        return (
             sql.try_iter(partition_by)
             .chain(more_exprs)
             .map(lambda x: sql.into_expr(x, as_col=True))
-        )
-        expr = (
-            pc.Option(order_by)
-            .map(
-                lambda value: (
-                    sql.try_iter(value)
-                    .map(lambda x: sql.into_expr(x, as_col=True))
-                    .collect()
+            .into(
+                lambda partition_exprs: (
+                    pc.Option(order_by)
+                    .map(
+                        lambda value: (
+                            sql.try_iter(value)
+                            .map(lambda x: sql.into_expr(x, as_col=True))
+                            .collect()
+                        )
+                    )
+                    .map(
+                        lambda x: self.inner().over(
+                            partition_exprs,
+                            x,
+                            descending=descending,
+                            nulls_last=nulls_last,
+                        )
+                    )
+                    .unwrap_or_else(
+                        lambda: self.inner().over(
+                            partition_exprs,
+                            descending=descending,
+                            nulls_last=nulls_last,
+                        )
+                    )
                 )
             )
-            .map(lambda x: self.inner().over(partition_exprs, x))
-            .unwrap_or(self.inner().over(partition_exprs))
+            .pipe(self._as_window)
         )
-        return self._as_window(expr)
 
     def filter(
         self,
         *predicates: IntoExprColumn | Iterable[IntoExprColumn],
         **constraints: IntoExpr,
     ) -> Self:
-        cond = resolve_predicates(predicates, constraints).fold(
-            sql.lit(value=True), lambda acc, pred: acc.and_(pred)
+        return self._new(
+            resolve_predicates(predicates, constraints)
+            .fold(sql.lit(value=True), lambda acc, pred: acc.and_(pred))
+            .pipe(sql.when)
+            .then(self.inner())
+            .otherwise(sql.lit(None))
         )
-        return self._new(sql.when(cond).then(self.inner()).otherwise(sql.lit(None)))
 
     def drop_nulls(self) -> Self:
         return self.filter(self.is_not_null())

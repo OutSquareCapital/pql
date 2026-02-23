@@ -671,9 +671,18 @@ def test_quantile() -> None:
 
 
 def test_over() -> None:
+    assert_eq_pl(pql.col("x").sum().over("a"), pl.col("x").sum().over("a"))
     assert_eq_pl(
-        pql.col("x").sum().over("a").alias("x_sum_over_a"),
-        pl.col("x").sum().over("a").alias("x_sum_over_a"),
+        pql.col("x").sum().over("a", order_by="b"),
+        pl.col("x").sum().over("a", order_by="b"),
+    )
+    assert_eq_pl(
+        pql.col("x").sum().over("a", descending=True),
+        pl.col("x").sum().over("a", descending=True),
+    )
+    assert_eq_pl(
+        pql.col("x").sum().over("n", nulls_last=True),
+        pl.col("x").sum().over("n", nulls_last=True),
     )
 
 

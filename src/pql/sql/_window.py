@@ -20,7 +20,9 @@ class Kword(StrEnum):
     NULLS_FIRST = "NULLS FIRST"
 
     @classmethod
-    def rows_clause(cls, row_start: pc.Option[int], row_end: pc.Option[int]) -> str:
+    def rows_clause(
+        cls, row_start: pc.Option[int], row_end: pc.Option[int], *, has_order_by: bool
+    ) -> str:
         match (row_start, row_end):
             case (pc.Some(start), pc.Some(end)):
                 return f"""--sql
@@ -31,6 +33,9 @@ class Kword(StrEnum):
             case (pc.NONE, pc.Some(end)):
                 return f"""--sql
                 ROWS BETWEEN UNBOUNDED PRECEDING AND {end} FOLLOWING"""
+            case _ if has_order_by:
+                return """--sql
+                ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING"""
             case _:
                 return ""
 
@@ -68,6 +73,7 @@ def over_expr(  # noqa: PLR0913
     nulls_last: Iterable[bool] | bool = False,
     ignore_nulls: bool = False,
 ) -> duckdb.Expression:
+    has_order_by = order_by.map(lambda _: True).unwrap_or_else(lambda: False)
     return duckdb.SQLExpression(
         _build_over(
             handle_nulls(expr, ignore_nulls=ignore_nulls),
@@ -75,7 +81,7 @@ def over_expr(  # noqa: PLR0913
             order_by.map(lambda x: try_iter(x).collect()).into(
                 get_order_by, descending=descending, nulls_last=nulls_last
             ),
-            Kword.rows_clause(row_start=rows_start, row_end=rows_end),
+            Kword.rows_clause(rows_start, rows_end, has_order_by=has_order_by),
         )
     )
 
