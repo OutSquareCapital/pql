@@ -73,3 +73,7 @@ def test_with_fields() -> None:
         )
         .alias("x"),
     )
+
+
+def test_json_encode() -> None:
+    assert_eq_pl(pql.col("x").struct.json_encode(), pl.col("x").struct.json_encode())

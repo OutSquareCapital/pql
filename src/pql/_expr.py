@@ -23,6 +23,9 @@ if TYPE_CHECKING:
     )
     from .sql.typing import IntoExpr, IntoExprColumn
 
+_NONE = sql.lit(None)
+_EMPTY_STR = sql.lit("")
+
 
 class RollingBounds(NamedTuple):
     start: int
@@ -310,7 +313,7 @@ class Expr(sql.CoreHandler[sql.SqlExpr]):
                 .ge(sql.lit(pc.Option(min_samples).unwrap_or(window_size)))
             )
             .then(agg(self.inner()).over(rows_start=bounds.start, rows_end=bounds.end))
-            .otherwise(sql.lit(None))
+            .otherwise(_NONE)
         )
 
     def __repr__(self) -> str:
@@ -1170,7 +1173,7 @@ class ExprStringNameSpace(ExprNameSpaceBase):
             case False:
                 return self._parent._as_scalar(  # pyright: ignore[reportPrivateUsage]
                     sql.when(self.inner().is_null().bool_or())
-                    .then(sql.lit(None))
+                    .then(_NONE)
                     .otherwise(aggregated)
                 )
 
@@ -1289,7 +1292,7 @@ class ExprStringNameSpace(ExprNameSpaceBase):
                     .pipe(
                         lambda pos: (
                             sql.when(pos.eq(sql.lit(0)))
-                            .then(sql.lit(None))
+                            .then(_NONE)
                             .otherwise(pos.sub(sql.lit(1)))
                         )
                     )
@@ -1301,8 +1304,8 @@ class ExprStringNameSpace(ExprNameSpaceBase):
                     .re.extract(pattern_expr, 0)
                     .pipe(
                         lambda matched: (
-                            sql.when(matched.eq(sql.lit("")))
-                            .then(sql.lit(None))
+                            sql.when(matched.eq(_EMPTY_STR))
+                            .then(_NONE)
                             .otherwise(self.inner().str.strpos(matched).sub(sql.lit(1)))
                         )
                     )
@@ -1374,7 +1377,7 @@ class ExprStringNameSpace(ExprNameSpaceBase):
                     self.inner()
                     .str.length()
                     .sub(
-                        self.inner().str.replace(pattern_expr, sql.lit("")).str.length()
+                        self.inner().str.replace(pattern_expr, _EMPTY_STR).str.length()
                     )
                     .truediv(pattern_expr.str.length())
                     .pipe(self._new)
@@ -1386,7 +1389,7 @@ class ExprStringNameSpace(ExprNameSpaceBase):
             case str() as prefix_str:
                 return (
                     self.inner()
-                    .re.replace(sql.lit(f"^{re.escape(prefix_str)}"), sql.lit(""))
+                    .re.replace(sql.lit(f"^{re.escape(prefix_str)}"), _EMPTY_STR)
                     .pipe(self._new)
                 )
             case _:
@@ -1411,7 +1414,7 @@ class ExprStringNameSpace(ExprNameSpaceBase):
             case str() as suffix_str:
                 return self._new(
                     self.inner().re.replace(
-                        sql.lit(f"{re.escape(suffix_str)}$"), sql.lit("")
+                        sql.lit(f"{re.escape(suffix_str)}$"), _EMPTY_STR
                     )
                 )
             case _:
@@ -1476,7 +1479,7 @@ class ExprStringNameSpace(ExprNameSpaceBase):
                     .str.concat(sql.element().str.substring(2))
                 )
             )
-            .list.aggregate(sql.lit("string_agg"), sql.lit(""))
+            .list.aggregate(sql.lit("string_agg"), _EMPTY_STR)
         )
 
 
@@ -1504,9 +1507,47 @@ class ExprArrayNameSpace(ExprNameSpaceBase):
         """Return unique values in each array."""
         return self._new(self.inner().arr.distinct())
 
+    def n_unique(self) -> Expr:
+        """Return the number of unique values in each array."""
+        return self._new(self.inner().arr.distinct().arr.length())
+
     def contains(self, item: IntoExpr) -> Expr:
-        """Check if arrays contain the given item."""
+        """Check if subarrays contain the given item."""
         return self._new(self.inner().arr.contains(sql.into_expr(item)))
+
+    def count_matches(self, element: IntoExpr) -> Expr:
+        """Count matches in each array."""
+        return self._new(
+            self.inner()
+            .arr.filter(sql.fn_once(sql.element().eq(sql.into_expr(element))))
+            .arr.length()
+        )
+
+    def drop_nulls(self) -> Expr:
+        """Drop null values in each array."""
+        return self._new(
+            self.inner().arr.filter(sql.fn_once(sql.element().is_not_null()))
+        )
+
+    def join(self, separator: IntoExprColumn, *, ignore_nulls: bool = True) -> Expr:
+        """Join string values in each array with a separator."""
+        joined = self.inner().arr.aggregate(
+            sql.lit("string_agg"), sql.into_expr(separator)
+        )
+        match ignore_nulls:
+            case True:
+                return self._new(sql.coalesce(joined, _EMPTY_STR))
+            case False:
+                return self._new(
+                    sql.when(
+                        self.inner()
+                        .arr.filter(sql.fn_once(sql.element().is_null()))
+                        .arr.length()
+                        .gt(sql.lit(0))
+                    )
+                    .then(_NONE)
+                    .otherwise(sql.coalesce(joined, _EMPTY_STR))
+                )
 
     def get(self, index: int) -> Expr:
         """Return the value by index in each array."""
@@ -1596,9 +1637,47 @@ class ExprListNameSpace(ExprNameSpaceBase):
         """Return unique values in each list."""
         return self._new(self.inner().list.distinct())
 
+    def n_unique(self) -> Expr:
+        """Return the number of unique values in each list."""
+        return self._new(self.inner().list.distinct().list.length())
+
     def contains(self, item: IntoExpr) -> Expr:
         """Check if sublists contain the given item."""
         return self._new(self.inner().list.contains(sql.into_expr(item)))
+
+    def count_matches(self, element: IntoExpr) -> Expr:
+        """Count matches in each list."""
+        return self._new(
+            self.inner()
+            .list.filter(sql.fn_once(sql.element().eq(sql.into_expr(element))))
+            .list.length()
+        )
+
+    def drop_nulls(self) -> Expr:
+        """Drop null values in each list."""
+        return self._new(
+            self.inner().list.filter(sql.fn_once(sql.element().is_not_null()))
+        )
+
+    def join(self, separator: IntoExprColumn, *, ignore_nulls: bool = True) -> Expr:
+        """Join string values in each list with a separator."""
+        joined = self.inner().list.aggregate(
+            sql.lit("string_agg"), sql.into_expr(separator)
+        )
+        match ignore_nulls:
+            case True:
+                return self._new(sql.coalesce(joined, _EMPTY_STR))
+            case False:
+                return self._new(
+                    sql.when(
+                        self.inner()
+                        .list.filter(sql.fn_once(sql.element().is_null()))
+                        .list.length()
+                        .gt(sql.lit(0))
+                    )
+                    .then(_NONE)
+                    .otherwise(sql.coalesce(joined, _EMPTY_STR))
+                )
 
     def get(self, index: int) -> Expr:
         """Return the value by index in each list."""
@@ -1669,6 +1748,10 @@ class ExprStructNameSpace(ExprNameSpaceBase):
     def field(self, name: str) -> Expr:
         """Retrieve a struct field by name."""
         return self._new(self.inner().struct.extract(sql.lit(name)))
+
+    def json_encode(self) -> Expr:
+        """Encode struct values as JSON strings."""
+        return self._new(self.inner().to_json())
 
     def with_fields(
         self, *exprs: IntoExpr | Iterable[IntoExpr], **named_exprs: IntoExpr

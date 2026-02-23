@@ -92,6 +92,10 @@ def test_unique() -> None:
     assert_eq(pql.col("x").arr.unique(), nw.col("x").list.unique())
 
 
+def test_n_unique() -> None:
+    assert_eq_pl(pql.col("x").arr.n_unique(), pl.col("x").arr.n_unique())
+
+
 def test_contains() -> None:
     assert_eq(pql.col("x").arr.contains(2), nw.col("x").list.contains(2))
     assert_eq_pl(
@@ -107,6 +111,18 @@ def test_contains() -> None:
             .alias("x_nulls_neq_y"),
             pl.col("x").arr.contains(pl.col("y")).alias("x_y"),
         ),
+    )
+
+
+def test_count_matches() -> None:
+    assert_eq_pl(pql.col("x").arr.count_matches(5), pl.col("x").arr.count_matches(5))
+
+
+def test_drop_nulls() -> None:
+    """Drop nulls don't exist for array in polars."""
+    assert_eq_pl(
+        pql.col("booleans").arr.drop_nulls(),
+        pl.col("booleans").cast(pl.List(pl.Boolean)).list.drop_nulls(),
     )
 
 
@@ -212,3 +228,11 @@ def test_any() -> None:
 
 def test_all() -> None:
     assert_eq_pl(pql.col("booleans").arr.all(), pl.col("booleans").arr.all())
+
+
+def test_join() -> None:
+    assert_eq_pl(pql.col("str_vals").arr.join("-"), pl.col("str_vals").arr.join("-"))
+    assert_eq_pl(
+        pql.col("str_vals").arr.join("-", ignore_nulls=False),
+        pl.col("str_vals").arr.join("-", ignore_nulls=False),
+    )
