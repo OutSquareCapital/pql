@@ -116,33 +116,24 @@ class JoinKeys[T: pc.Seq[str] | str](NamedTuple):
 class LazyGroupBy:
     __slots__ = ("_frame", "_group_expr", "_keys")
 
-    def __init__(
-        self,
-        frame: LazyFrame,
-        keys: pc.Seq[sql.SqlExpr],
-    ) -> None:
+    def __init__(self, frame: LazyFrame, keys: pc.Seq[sql.SqlExpr]) -> None:
         self._frame = frame
         self._keys = keys
         self._group_expr = self._keys.iter().map(str).join(", ")
 
     def agg(
-        self,
-        *aggs: IntoExpr | Iterable[IntoExpr],
-        **named_aggs: IntoExpr,
+        self, *aggs: IntoExpr | Iterable[IntoExpr], **named_aggs: IntoExpr
     ) -> LazyFrame:
-        return self._frame.__from_lf__(
-            self._frame.inner().aggregate(
-                self._keys.iter().chain(
-                    sql.try_iter(aggs)
-                    .flat_map(sql.try_iter)
-                    .flat_map(lambda value: _into_output(value, self._frame.columns))
-                    .into(
-                        sql.args_into_exprs,
-                        named_aggs,
-                    )
-                ),
-                self._group_expr,
+        return (
+            self._keys.iter()
+            .chain(
+                sql.try_iter(aggs)
+                .flat_map(sql.try_iter)
+                .flat_map(lambda value: _into_output(value, self._frame.columns))
+                .into(sql.args_into_exprs, named_aggs)
             )
+            .into(self._frame.inner().aggregate, self._group_expr)
+            .pipe(self._frame.__from_lf__)
         )
 
 
@@ -193,11 +184,13 @@ class LazyFrame(sql.CoreHandler[sql.Relation]):
     def _select(
         self, exprs: IntoExprColumn | Iterable[IntoExprColumn], groups: str = ""
     ) -> Self:
-        return self.__from_lf__(
-            self.inner().select(
+        return (
+            self.inner()
+            .select(
                 *sql.try_flatten(exprs).map(lambda v: sql.into_expr(v, as_col=True)),
                 groups=groups,
             )
+            .pipe(self.__from_lf__)
         )
 
     def _filter(self, predicates: IntoExprColumn | Iterable[IntoExprColumn]) -> Self:
@@ -220,11 +213,13 @@ class LazyFrame(sql.CoreHandler[sql.Relation]):
         exprs: IntoExprColumn | Iterable[IntoExprColumn],
         group_expr: sql.SqlExpr | str = "",
     ) -> Self:
-        return self.__from_lf__(
-            self.inner().aggregate(
+        return (
+            self.inner()
+            .aggregate(
                 sql.try_flatten(exprs).map(lambda v: sql.into_expr(v, as_col=True)),
                 group_expr,
             )
+            .pipe(self.__from_lf__)
         )
 
     def _iter_slct(self, func: Callable[[str], sql.SqlExpr]) -> Self:
@@ -377,27 +372,25 @@ class LazyFrame(sql.CoreHandler[sql.Relation]):
                 case (False, False):
                     return col.asc()
 
-        sort_exprs = (
+        return (
             sql.try_iter(by)
             .chain(more_by)
             .map(lambda v: sql.into_expr(v, as_col=True))
             .collect()
-        )
-
-        return self.__from_lf__(
-            self.inner().sort(
-                *sort_exprs.iter()
-                .zip(
+            .into(
+                lambda sort_exprs: sort_exprs.iter().zip(
                     _args_iter(sort_exprs, "descending", arg=descending).unwrap(),
                     _args_iter(sort_exprs, "nulls_last", arg=nulls_last).unwrap(),
                 )
-                .map_star(_make_order)
             )
+            .map_star(_make_order)
+            .into(lambda x: self.inner().sort(*x))
+            .pipe(self.__from_lf__)
         )
 
     def limit(self, n: int) -> Self:
         """Limit the number of rows."""
-        return self.__from_lf__(self.inner().limit(n))
+        return self.inner().limit(n).pipe(self.__from_lf__)
 
     def head(self, n: int = 5) -> Self:
         """Get the first n rows."""
@@ -466,7 +459,7 @@ class LazyFrame(sql.CoreHandler[sql.Relation]):
                 lambda name: _project_col(name, unnest=unnest, replace=replace)
             )
 
-        return self.__from_lf__(
+        return (
             target.is_not_null()
             .and_(target.len().gt(sql.lit(0)))
             .pipe(
@@ -479,6 +472,7 @@ class LazyFrame(sql.CoreHandler[sql.Relation]):
                     )
                 )
             )
+            .pipe(self.__from_lf__)
         )
 
     def rename(self, mapping: Mapping[str, str]) -> Self:
@@ -701,20 +695,23 @@ class LazyFrame(sql.CoreHandler[sql.Relation]):
 
         match native_how:
             case "inner" | "left" | "cross" | "outer":
-                return self.__from_lf__(
-                    rel.select(
-                        *self.columns.iter()
-                        .map(lambda name: sql.col(f'lhs."{name}"'))
-                        .chain(
-                            other.columns.iter()
-                            .map(_rhs_expr)
-                            .filter_map(lambda expr: expr)
-                        )
-                    ).set_alias(self.inner().alias)
+                return (
+                    self.columns.iter()
+                    .map(lambda name: sql.col(f'lhs."{name}"'))
+                    .chain(
+                        other.columns.iter()
+                        .map(_rhs_expr)
+                        .filter_map(lambda expr: expr)
+                    )
+                    .into(lambda x: rel.select(*x))
+                    .set_alias(self.inner().alias)
+                    .pipe(self.__from_lf__)
                 )
             case _:
-                return self.__from_lf__(
-                    rel.select("lhs.*").set_alias(self.inner().alias)
+                return (
+                    rel.select("lhs.*")
+                    .set_alias(self.inner().alias)
+                    .pipe(self.__from_lf__)
                 )
 
     def join_asof(  # noqa: PLR0913
@@ -798,7 +795,7 @@ class LazyFrame(sql.CoreHandler[sql.Relation]):
                     sql.SqlExpr.and_
                 )
 
-                return self.__from_lf__(
+                return (
                     self.with_row_index(name=TEMP_NAME, order_by=self.columns)
                     .inner()
                     .set_alias(lhs)
@@ -820,6 +817,7 @@ class LazyFrame(sql.CoreHandler[sql.Relation]):
                     )
                     .filter(sql.col(asof_rank).eq(sql.lit(1)))
                     .select(sql.all(exclude=(asof_rank, asof_order, TEMP_NAME)))
+                    .pipe(self.__from_lf__)
                 )
 
     def quantile(self, quantile: float) -> Self:
