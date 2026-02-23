@@ -46,8 +46,25 @@ def assert_eq_pl(
     )
 
 
-def test_struct_field() -> None:
+def test_field() -> None:
     assert_eq(
         pql.col("x").struct.field("a").alias("a"),
         nw.col("x").struct.field("a").alias("a"),
+    )
+
+
+def test_with_fields() -> None:
+    assert_eq_pl(
+        pql.col("x")
+        .struct.with_fields(
+            pql.col("x").struct.field("a").alias("e"),
+            pql.col("x").struct.field("b").alias("f"),
+        )
+        .alias("x"),
+        pl.col("x")
+        .struct.with_fields(
+            pl.col("x").struct.field("a").alias("e"),
+            pl.col("x").struct.field("b").alias("f"),
+        )
+        .alias("x"),
     )

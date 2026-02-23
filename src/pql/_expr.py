@@ -1150,6 +1150,16 @@ class ExprStructNameSpace(sql.CoreHandler[sql.SqlExpr]):
         """Retrieve a struct field by name."""
         return Expr(self.inner().struct.extract(sql.lit(name)))
 
+    def with_fields(
+        self, *exprs: IntoExpr | Iterable[IntoExpr], **named_exprs: IntoExpr
+    ) -> Expr:
+        """Return a new struct with updated or additional fields."""
+        return (
+            self.inner()
+            .struct.insert(*sql.args_into_exprs(exprs, named_exprs))
+            .pipe(Expr)
+        )
+
 
 @dataclass(slots=True)
 class ExprNameNameSpace:
