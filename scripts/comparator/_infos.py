@@ -23,7 +23,11 @@ IGNORED_PARAMS_BY_CLASS_AND_METHOD: IgnoredParams = pc.Dict.from_kwargs(
 def annotations_differ(pl_param: ParamInfo, pql_param: ParamInfo) -> bool:
     match (pl_param.annotation, pql_param.annotation):
         case (pc.Some(pl_ann), pc.Some(pql_ann)):
-            return normalize_annotation(pl_ann) != normalize_annotation(pql_ann)
+            normalized_pl = normalize_annotation(pl_ann)
+            normalized_pql = normalize_annotation(pql_ann)
+            if normalized_pl == "Any":
+                return False
+            return normalized_pl != normalized_pql
         case _:
             return False
 
