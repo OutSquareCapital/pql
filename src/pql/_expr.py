@@ -20,7 +20,7 @@ if TYPE_CHECKING:
         RollingInterpolationMethod,
         RoundMode,
     )
-    from .sql.typing import IntoExpr
+    from .sql.typing import IntoExpr, IntoExprColumn
 
 
 class RollingBounds(NamedTuple):
@@ -52,14 +52,204 @@ class ExprMeta:
     def __from_expr__(cls, expr: sql.SqlExpr) -> Self:
         return cls(expr.inner().get_name())
 
+    @property
     def output_name(self) -> str:
-        return self.alias_name.map(lambda alias_fn: alias_fn(self.root_name)).unwrap_or(
-            self.root_name
+        match self.alias_name:
+            case pc.Some(alias_fn):
+                return alias_fn(self.root_name)
+            case _:
+                return self.root_name
+
+    @property
+    def is_scalar_select(self) -> bool:
+        return self.is_scalar_like and not self.has_window
+
+    def from_projection(self, output_name: str) -> Self:
+        return self.__class__(
+            output_name,
+            pc.NONE,
+            self.is_scalar_like,
+            self.has_window,
+            self.is_unique_projection,
         )
 
-    def undo_alias(self) -> Self:
-        self.alias_name = pc.NONE
-        return self
+    def resolve_output_names(
+        self, base_names: pc.Seq[str], forced_name: pc.Option[str]
+    ) -> pc.Seq[str]:
+        match forced_name:
+            case pc.Some(name):
+                return pc.Seq((name,))
+            case _:
+                match self.alias_name:
+                    case pc.Some(alias_fn):
+                        return base_names.iter().map(alias_fn).collect()
+                    case _:
+                        return base_names
+
+    def with_alias_mapper(self, mapper: Callable[[str], str]) -> Self:
+        match self.alias_name:
+            case pc.Some(current):
+
+                def _composed(name: str) -> str:
+                    return mapper(current(name))
+
+                composed = _composed
+            case _:
+
+                def _composed(name: str) -> str:
+                    return mapper(name)
+
+                composed = _composed
+        return replace(self, alias_name=pc.Some(composed))
+
+    def clear_alias(self) -> Self:
+        return replace(self, alias_name=pc.NONE)
+
+
+@dataclass(slots=True)
+class ExprProjection:
+    expr: sql.SqlExpr
+    meta: ExprMeta
+
+    def as_aliased(self) -> sql.SqlExpr:
+        return self.expr.alias(self.meta.output_name)
+
+    def as_unique(self) -> str:
+        base_sql = str(self.expr)
+        return (
+            base_sql
+            if self.meta.output_name == base_sql
+            else f"{base_sql} AS {self.meta.output_name}"
+        )
+
+
+@dataclass(slots=True)
+class ExprPlan:
+    projections: pc.Seq[ExprProjection]
+
+    @classmethod
+    def from_inputs(
+        cls,
+        columns: pc.Seq[str],
+        exprs: Iterable[IntoExpr | Iterable[IntoExpr]],
+        named_exprs: dict[str, IntoExpr] | None = None,
+    ) -> Self:
+        return cls(
+            sql.try_flatten(exprs)
+            .flat_map(lambda value: _resolve_projection(columns, value))  # pyright: ignore[reportArgumentType]
+            .chain(
+                pc.Option(named_exprs)
+                .map(
+                    lambda mapping: (
+                        pc.Dict.from_ref(mapping)
+                        .items()
+                        .iter()
+                        .map_star(
+                            lambda k, v: _resolve_projection(
+                                columns, v, alias_override=pc.Some(k)
+                            )
+                        )
+                        .flatten()
+                    )
+                )
+                .unwrap_or(pc.Iter[ExprProjection].new())
+            )
+            .collect()
+        )
+
+    def aliased_sql(self) -> pc.Iter[sql.SqlExpr]:
+        return self.projections.iter().map(ExprProjection.as_aliased)
+
+    def to_updates(self) -> pc.Dict[str, sql.SqlExpr]:
+        return (
+            self.projections.iter()
+            .map(lambda p: (p.meta.output_name, p.expr))
+            .collect(pc.Dict)
+        )
+
+    def is_scalar_select(self) -> bool:
+        return self.projections.then(
+            lambda values: values.iter().all(
+                lambda projection: projection.meta.is_scalar_select
+            )
+        ).unwrap_or(default=False)
+
+    def can_use_unique(self) -> bool:
+        return self.projections.then(
+            lambda values: values.iter().all(
+                lambda projection: projection.meta.is_unique_projection
+            )
+        ).unwrap_or(default=False)
+
+    def unique(self) -> pc.Iter[str]:
+        return self.projections.iter().map(ExprProjection.as_unique)
+
+
+def _resolve_projection(
+    columns: pc.Seq[str],
+    value: IntoExpr,
+    *,
+    alias_override: pc.Option[str] = pc.NONE,
+) -> pc.Iter[ExprProjection]:
+    match value:
+        case Expr() as expr:
+            is_star = str(expr.inner()).strip() == "*"
+            base_names = columns if is_star else pc.Seq((expr.meta.root_name,))
+            output_names = expr.meta.resolve_output_names(base_names, alias_override)
+            match is_star and alias_override is pc.NONE:
+                case True:
+                    return (
+                        columns.iter()
+                        .zip(output_names)
+                        .map_star(
+                            lambda column_name, output_name: ExprProjection(
+                                sql.col(column_name),
+                                expr.meta.from_projection(output_name),
+                            )
+                        )
+                    )
+                case False:
+                    return pc.Iter[ExprProjection].once(
+                        ExprProjection(
+                            expr.inner(),
+                            expr.meta.from_projection(output_names.first()),
+                        )
+                    )
+        case _:
+            resolved = sql.into_expr(value, as_col=True)
+            resolved_meta = ExprMeta.__from_expr__(resolved)
+            return pc.Iter[ExprProjection].once(
+                ExprProjection(
+                    resolved,
+                    resolved_meta.from_projection(
+                        alias_override.unwrap_or(resolved_meta.root_name)
+                    ),
+                )
+            )
+
+
+def resolve_predicates(
+    predicates: Iterable[IntoExprColumn | Iterable[IntoExprColumn]],
+    constraints: dict[str, IntoExpr] | None = None,
+) -> pc.Iter[sql.SqlExpr]:
+    return (
+        sql.try_flatten(predicates)
+        .map(lambda value: sql.into_expr(value, as_col=True))  # pyright: ignore[reportArgumentType]
+        .chain(
+            pc.Option(constraints)
+            .map(
+                lambda mapping: (
+                    pc.Dict.from_ref(mapping)
+                    .items()
+                    .iter()
+                    .map_star(
+                        lambda name, value: sql.col(name).eq(sql.into_expr(value))
+                    )
+                )
+            )
+            .unwrap_or(pc.Iter[sql.SqlExpr].new())
+        )
+    )
 
 
 @dataclass(slots=True, init=False)
@@ -74,21 +264,29 @@ class Expr(sql.CoreHandler[sql.SqlExpr]):
             lambda: ExprMeta.__from_expr__(inner)
         )
 
-    def _new(self, value: sql.SqlExpr) -> Self:
-        return self.__class__(value, pc.Some(self.meta))
+    def _new(self, value: sql.SqlExpr, meta: pc.Option[ExprMeta] = pc.NONE) -> Self:
+        return self.__class__(value, pc.Some(meta.unwrap_or(self.meta)))
+
+    def _with_meta(
+        self,
+        value: sql.SqlExpr,
+        **changes: str | bool | pc.Option[Callable[[str], str]],
+    ) -> Self:
+        return self._new(value, pc.Some(replace(self.meta, **changes)))
 
     def _as_window(
         self, expr: sql.SqlExpr, *, is_scalar_like: bool | None = None
     ) -> Self:
-        self.meta.has_window = True
-        self.meta.is_scalar_like = pc.Option(is_scalar_like).unwrap_or(
-            self.meta.is_scalar_like
+        return self._with_meta(
+            expr,
+            has_window=True,
+            is_scalar_like=pc.Option(is_scalar_like).unwrap_or(
+                self.meta.is_scalar_like
+            ),
         )
-        return self._new(expr)
 
     def _as_scalar(self, expr: sql.SqlExpr) -> Self:
-        self.meta.is_scalar_like = True
-        return self._new(expr)
+        return self._with_meta(expr, is_scalar_like=True)
 
     def _reversed(self, expr: sql.SqlExpr, *, reverse: bool = False) -> Self:
         match reverse:
@@ -98,8 +296,7 @@ class Expr(sql.CoreHandler[sql.SqlExpr]):
                 return self._as_window(expr.over(rows_end=0))
 
     def _clear_alias_name(self) -> Expr:
-        self.meta = self.meta.undo_alias()
-        return self._new(self.inner())
+        return self._new(self.inner(), pc.Some(self.meta.clear_alias()))
 
     def _rolling_agg(
         self,
@@ -282,8 +479,7 @@ class Expr(sql.CoreHandler[sql.SqlExpr]):
 
     def alias(self, name: str) -> Self:
         """Rename the expression."""
-        self.meta.alias_name = pc.Some(lambda _: name)
-        return self._new(self.inner())
+        return self._with_meta(self.inner(), alias_name=pc.Some(lambda _: name))
 
     def is_null(self) -> Self:
         """Check if the expression is NULL."""
@@ -399,8 +595,7 @@ class Expr(sql.CoreHandler[sql.SqlExpr]):
 
     def unique(self) -> Self:
         """Get unique values."""
-        self.meta.is_unique_projection = True
-        return self._new(self.inner())
+        return self._with_meta(self.inner(), is_unique_projection=True)
 
     def is_close(
         self,
@@ -618,11 +813,13 @@ class Expr(sql.CoreHandler[sql.SqlExpr]):
         )
         return self._as_window(expr)
 
-    def filter(self, *predicates: Any) -> Self:  # noqa: ANN401
-        cond = (
-            sql.try_flatten(predicates)
-            .map(lambda v: sql.into_expr(v, as_col=True))
-            .fold(sql.lit(value=True), lambda acc, pred: acc.and_(pred))
+    def filter(
+        self,
+        *predicates: IntoExprColumn | Iterable[IntoExprColumn],
+        **constraints: IntoExpr,
+    ) -> Self:
+        cond = resolve_predicates(predicates, constraints).fold(
+            sql.lit(value=True), lambda acc, pred: acc.and_(pred)
         )
         return self._new(sql.when(cond).then(self.inner()).otherwise(sql.lit(None)))
 
@@ -837,15 +1034,10 @@ class ExprNameSpaceBase:
         return self._parent._new(expr)  # pyright: ignore[reportPrivateUsage]
 
     def _with_alias_mapper(self, mapper: Callable[[str], str]) -> Expr:
-        def _compose_alias() -> Callable[[str], str]:
-            match self._parent.meta.alias_name:
-                case pc.Some(current):
-                    return lambda name: mapper(current(name))
-                case _:
-                    return mapper
-
-        self._parent.meta.alias_name = pc.Some(_compose_alias())
-        return self._parent._new(self._parent.inner())  # pyright: ignore[reportPrivateUsage]
+        return self._parent._new(  # pyright: ignore[reportPrivateUsage]
+            self._parent.inner(),
+            pc.Some(self._parent.meta.with_alias_mapper(mapper)),
+        )
 
 
 @dataclass(slots=True)
@@ -1145,27 +1337,9 @@ class ExprStructNameSpace(ExprNameSpaceBase):
         self, *exprs: IntoExpr | Iterable[IntoExpr], **named_exprs: IntoExpr
     ) -> Expr:
         """Return a new struct with updated or additional fields."""
-
-        def _with_name(value: IntoExpr) -> tuple[str, sql.SqlExpr]:
-            match value:
-                case Expr() as expr:
-                    return (expr.meta.output_name(), expr.inner())
-                case _:
-                    return sql.into_expr(value, as_col=True).pipe(
-                        lambda expr: (expr.inner().get_name(), expr)
-                    )
-
         return (
-            sql.try_iter(exprs)
-            .flat_map(sql.try_iter)
-            .map(_with_name)
-            .chain(
-                pc.Dict.from_ref(named_exprs)
-                .items()
-                .iter()
-                .map_star(lambda name, value: (name, sql.into_expr(value, as_col=True)))
-            )
-            .map_star(lambda name, expr: expr.alias(name))
+            ExprPlan.from_inputs(pc.Seq[str].new(), exprs, named_exprs)
+            .aliased_sql()
             .into(lambda args: self._new(self.inner().struct.insert(*args)))
         )
 

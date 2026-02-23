@@ -4,13 +4,13 @@ from __future__ import annotations
 
 from collections.abc import Callable, Iterable, Mapping, Sequence
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, NamedTuple, Self, TypeIs
+from typing import TYPE_CHECKING, Any, NamedTuple, Self
 
 import pyochain as pc
 
 from . import sql
 from ._datatypes import DataType
-from ._expr import Expr
+from ._expr import Expr, ExprPlan, resolve_predicates
 
 if TYPE_CHECKING:
     import polars as pl
@@ -34,62 +34,6 @@ if TYPE_CHECKING:
 
 TEMP_NAME = "__pql_temp__"
 TEMP_COL = sql.col(TEMP_NAME)
-
-
-def _eval_exprs_and_aliases(
-    columns: pc.Seq[str],
-    exprs: Iterable[IntoExpr | Iterable[IntoExpr]],
-    named_exprs: Mapping[str, IntoExpr] | None = None,
-) -> pc.Iter[tuple[str, sql.SqlExpr]]:
-    def _evaluate(value: IntoExpr) -> pc.Iter[tuple[str, sql.SqlExpr]]:
-        match value:
-            case Expr() as expr:
-                is_star = str(expr.inner()).strip() == "*"
-                base_names = columns if is_star else pc.Seq((expr.meta.root_name,))
-                output_names = expr.meta.alias_name.map(
-                    lambda alias_name: base_names.iter().map(alias_name).collect()
-                ).unwrap_or(base_names)
-                match is_star:
-                    case True:
-                        return (
-                            columns.iter()
-                            .zip(output_names)
-                            .map_star(
-                                lambda column_name, output_name: (
-                                    output_name,
-                                    sql.col(column_name),
-                                )
-                            )
-                        )
-                    case False:
-                        return pc.Iter[tuple[str, sql.SqlExpr]].once(
-                            (output_names.first(), expr.inner())
-                        )
-            case _:
-                expr = sql.into_expr(value, as_col=True)
-                return pc.Iter[tuple[str, sql.SqlExpr]].once(
-                    (expr.inner().get_name(), expr)
-                )
-
-    return (
-        sql.try_iter(exprs)
-        .flat_map(sql.try_iter)
-        .flat_map(_evaluate)
-        .chain(
-            pc.Option(named_exprs)
-            .map(
-                lambda mapping: (
-                    pc.Dict(mapping)
-                    .items()
-                    .iter()
-                    .map_star(
-                        lambda name, value: (name, sql.into_expr(value, as_col=True))
-                    )
-                )
-            )
-            .unwrap_or(pc.Iter[tuple[str, sql.SqlExpr]].new())
-        )
-    )
 
 
 class JoinKeys[T: pc.Seq[str] | str](NamedTuple):
@@ -175,9 +119,9 @@ class LazyGroupBy:
         return (
             self._keys.iter()
             .chain(
-                _eval_exprs_and_aliases(self._frame.columns, aggs, named_aggs).map_star(
-                    lambda name, expr: expr.alias(name)
-                )
+                ExprPlan.from_inputs(
+                    self._frame.columns, aggs, named_exprs=named_aggs
+                ).aliased_sql()
             )
             .into(self._frame.inner().aggregate, self._group_expr)
             .pipe(self._frame.__from_lf__)
@@ -289,80 +233,15 @@ class LazyFrame(sql.CoreHandler[sql.Relation]):
         self, *exprs: IntoExpr | Iterable[IntoExpr], **named_exprs: IntoExpr
     ) -> Self:
         """Select columns or expressions."""
-        flat = sql.try_iter(exprs).flat_map(sql.try_iter).collect()
-
-        def _is_expr(val: object) -> TypeIs[Expr]:
-            return isinstance(val, Expr)
-
-        def _extract_unique_sql() -> pc.Option[pc.Iter[str]]:
-            has_selected = flat.length() > 0 or len(named_exprs) > 0
-            all_unique = (
-                flat.iter()
-                .chain(named_exprs.values())
-                .all(lambda value: _is_expr(value) and value.meta.is_unique_projection)
-            )
-            match has_selected and all_unique:
-                case True:
-
-                    def _unique_sql(expr: Expr) -> str:
-                        base_sql = str(expr.inner())
-                        alias_name = expr.meta.alias_name.map(
-                            lambda alias_fn: alias_fn(expr.meta.root_name)
-                        ).unwrap_or(expr.meta.root_name)
-                        return (
-                            base_sql
-                            if alias_name == base_sql
-                            else f"{base_sql} AS {alias_name}"
-                        )
-
-                    return pc.Some(
-                        flat.iter()
-                        .filter(_is_expr)
-                        .map(_unique_sql)
-                        .chain(
-                            pc.Dict.from_ref(named_exprs)
-                            .items()
-                            .iter()
-                            .map_star(
-                                lambda name, expr: (
-                                    f"{sql.into_expr(expr).inner()} AS {name}"
-                                )
-                            )
-                        )
-                    )
-                case False:
-                    return pc.NONE
-
-        def _is_scalar_select() -> bool:
-            return (
-                flat.iter()
-                .chain(named_exprs.values())
-                .collect()
-                .then(
-                    lambda x: x.iter().all(
-                        lambda value: (
-                            _is_expr(value)
-                            and value.meta.is_scalar_like
-                            and not value.meta.has_window
-                        )
-                    )
-                )
-                .unwrap_or(default=False)
-            )
-
-        def _agg_or_select(exprs: pc.Iter[sql.SqlExpr]) -> Self:
-            if _is_scalar_select():
-                return exprs.into(self._agg)
-            return exprs.into(self._select)
-
-        match _extract_unique_sql():
-            case pc.Some(unique_sql):
-                return self.__from_lf__(self.inner().unique(unique_sql.join(", ")))
-            case _:
+        plan = ExprPlan.from_inputs(self.columns, exprs, named_exprs)
+        match plan.can_use_unique():
+            case True:
+                return self.__from_lf__(self.inner().unique(plan.unique().join(", ")))
+            case False:
                 return (
-                    _eval_exprs_and_aliases(self.columns, flat, named_exprs)
-                    .map_star(lambda name, expr: expr.alias(name))
-                    .into(_agg_or_select)
+                    plan.aliased_sql().into(self._agg)
+                    if plan.is_scalar_select()
+                    else plan.aliased_sql().into(self._select)
                 )
 
     def with_columns(
@@ -370,44 +249,30 @@ class LazyFrame(sql.CoreHandler[sql.Relation]):
     ) -> Self:
         """Add or replace columns."""
         cols = self.columns
+        updates = ExprPlan.from_inputs(self.columns, exprs, named_exprs).to_updates()
         return (
-            _eval_exprs_and_aliases(self.columns, exprs, named_exprs)
-            .collect(pc.Dict)
-            .into(
-                lambda updates: (
-                    cols.iter()
-                    .map(
-                        lambda name: updates.get_item(name).map_or(
-                            sql.col(name), lambda c: c.alias(name)
-                        )
-                    )
-                    .chain(
-                        updates.items()
-                        .iter()
-                        .filter_star(lambda name, _expr: name not in cols)
-                        .map_star(lambda name, expr: expr.alias(name))
-                    )
+            cols.iter()
+            .map(
+                lambda name: updates.get_item(name).map_or(
+                    sql.col(name), lambda c: c.alias(name)
                 )
+            )
+            .chain(
+                updates.items()
+                .iter()
+                .filter_star(lambda name, _expr: name not in cols)
+                .map_star(lambda name, expr: expr.alias(name))
             )
             .into(self._select)
         )
 
     def filter(
         self,
-        *predicates: IntoExpr | Iterable[IntoExpr],
-        **constraints: Any,  # noqa: ANN401
+        *predicates: IntoExprColumn | Iterable[IntoExprColumn],
+        **constraints: IntoExpr,
     ) -> Self:
         """Filter rows based on predicates and equality constraints."""
-        return (
-            sql.args_into_exprs(predicates)
-            .chain(
-                pc.Dict.from_ref(constraints)
-                .items()
-                .iter()
-                .map_star(lambda name, value: sql.col(name).eq(sql.into_expr(value)))
-            )
-            .into(self._filter)
-        )
+        return resolve_predicates(predicates, constraints).into(self._filter)
 
     def sort(
         self,

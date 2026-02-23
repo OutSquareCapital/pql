@@ -22,7 +22,6 @@ from ._datatypes import (
 from ._expr import SqlExpr
 from ._funcs import (
     all,
-    args_into_exprs,
     coalesce,
     col,
     element,
@@ -63,7 +62,6 @@ __all__ = [
     "UnionType",
     "When",
     "all",
-    "args_into_exprs",
     "coalesce",
     "col",
     "element",

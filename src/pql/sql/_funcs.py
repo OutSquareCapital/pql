@@ -4,7 +4,7 @@ from functools import partial
 import duckdb
 import pyochain as pc
 
-from ._core import func, into_duckdb, try_flatten, try_iter
+from ._core import func, into_duckdb, try_iter
 from ._expr import SqlExpr
 from .typing import IntoExpr, IntoExprColumn
 
@@ -111,28 +111,3 @@ def into_expr(value: IntoExpr, *, as_col: bool = False) -> SqlExpr:
             return col(value)
         case _:
             return lit(value)
-
-
-def args_into_exprs(
-    exprs: Iterable[IntoExpr | Iterable[IntoExpr]],
-    named_exprs: dict[str, IntoExpr] | None = None,
-) -> pc.Iter[SqlExpr]:
-    """Convert positional and keyword arguments to an iterator of DuckDB Expressions."""
-    return (
-        try_flatten(exprs)
-        .map(lambda v: into_expr(v, as_col=True))  # pyright: ignore[reportArgumentType]
-        .chain(
-            pc.Option(named_exprs)
-            .map(
-                lambda x: (
-                    pc.Dict.from_ref(x)
-                    .items()
-                    .iter()
-                    .map_star(
-                        lambda name, expr: into_expr(expr, as_col=True).alias(name)
-                    )
-                )
-            )
-            .unwrap_or(pc.Iter[SqlExpr].new())
-        )
-    )
