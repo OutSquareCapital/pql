@@ -47,6 +47,7 @@ class ExprMeta:
     is_scalar_like: bool = False
     has_window: bool = False
     is_unique_projection: bool = False
+    is_multi: bool = False
 
     @classmethod
     def __from_expr__(cls, expr: sql.SqlExpr) -> Self:
@@ -65,13 +66,7 @@ class ExprMeta:
         return self.is_scalar_like and not self.has_window
 
     def from_projection(self, output_name: str) -> Self:
-        return self.__class__(
-            output_name,
-            pc.NONE,
-            self.is_scalar_like,
-            self.has_window,
-            self.is_unique_projection,
-        )
+        return replace(self, root_name=output_name, alias_name=pc.NONE, is_multi=False)
 
     def resolve_output_names(
         self, base_names: pc.Seq[str], forced_name: pc.Option[str]
@@ -157,32 +152,27 @@ class ExprPlan:
             .collect()
         )
 
+    def into_iter(self) -> pc.Iter[ExprProjection]:
+        return self.projections.iter()
+
     def aliased_sql(self) -> pc.Iter[sql.SqlExpr]:
-        return self.projections.iter().map(ExprProjection.as_aliased)
+        return self.into_iter().map(lambda p: p.as_aliased())
+
+    def unique(self) -> pc.Iter[str]:
+        return self.into_iter().map(lambda p: p.as_unique())
 
     def to_updates(self) -> pc.Dict[str, sql.SqlExpr]:
         return (
-            self.projections.iter()
+            self.into_iter()
             .map(lambda p: (p.meta.output_name, p.expr))
             .collect(pc.Dict)
         )
 
     def is_scalar_select(self) -> bool:
-        return self.projections.then(
-            lambda values: values.iter().all(
-                lambda projection: projection.meta.is_scalar_select
-            )
-        ).unwrap_or(default=False)
+        return self.into_iter().all(lambda p: p.meta.is_scalar_select)
 
     def can_use_unique(self) -> bool:
-        return self.projections.then(
-            lambda values: values.iter().all(
-                lambda projection: projection.meta.is_unique_projection
-            )
-        ).unwrap_or(default=False)
-
-    def unique(self) -> pc.Iter[str]:
-        return self.projections.iter().map(ExprProjection.as_unique)
+        return self.into_iter().all(lambda p: p.meta.is_unique_projection)
 
 
 def _resolve_projection(
@@ -193,10 +183,11 @@ def _resolve_projection(
 ) -> pc.Iter[ExprProjection]:
     match value:
         case Expr() as expr:
-            is_star = str(expr.inner()).strip() == "*"
-            base_names = columns if is_star else pc.Seq((expr.meta.root_name,))
+            base_names = (
+                columns if expr.meta.is_multi else pc.Seq((expr.meta.root_name,))
+            )
             output_names = expr.meta.resolve_output_names(base_names, alias_override)
-            match is_star and alias_override is pc.NONE:
+            match expr.meta.is_multi and alias_override.is_none():
                 case True:
                     return (
                         columns.iter()
@@ -265,7 +256,10 @@ class Expr(sql.CoreHandler[sql.SqlExpr]):
         )
 
     def _new(self, value: sql.SqlExpr, meta: pc.Option[ExprMeta] = pc.NONE) -> Self:
-        return self.__class__(value, pc.Some(meta.unwrap_or(self.meta)))
+        return self.__class__(
+            value,
+            pc.Some(meta.unwrap_or_else(lambda: replace(self.meta, is_multi=False))),
+        )
 
     def _with_meta(
         self,
