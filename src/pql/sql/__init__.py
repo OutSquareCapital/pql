@@ -40,6 +40,7 @@ from ._rel_conversions import (
     from_sequence,
 )
 from ._when import ChainedThen, ChainedWhen, Then, When, when
+from ._window import Kword
 
 __all__ = [
     "ArrayType",
@@ -49,6 +50,7 @@ __all__ = [
     "DType",
     "DecimalType",
     "EnumType",
+    "Kword",
     "ListType",
     "MapType",
     "RawTypes",

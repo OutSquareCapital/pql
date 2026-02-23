@@ -23,13 +23,24 @@ class Kword(StrEnum):
     def rows_clause(cls, row_start: pc.Option[int], row_end: pc.Option[int]) -> str:
         match (row_start, row_end):
             case (pc.Some(start), pc.Some(end)):
-                return f"""ROWS BETWEEN {-start} PRECEDING AND {end} FOLLOWING"""
+                return f"""--sql
+                ROWS BETWEEN {-start} PRECEDING AND {end} FOLLOWING"""
             case (pc.Some(start), pc.NONE):
-                return f"""ROWS BETWEEN {-start} PRECEDING AND UNBOUNDED FOLLOWING"""
+                return f"""--sql
+                ROWS BETWEEN {-start} PRECEDING AND UNBOUNDED FOLLOWING"""
             case (pc.NONE, pc.Some(end)):
-                return f"""ROWS BETWEEN UNBOUNDED PRECEDING AND {end} FOLLOWING"""
+                return f"""--sql
+                ROWS BETWEEN UNBOUNDED PRECEDING AND {end} FOLLOWING"""
             case _:
                 return ""
+
+    @classmethod
+    def null_order(cls, *, last: bool) -> str:
+        return cls.NULLS_LAST if last else cls.NULLS_FIRST
+
+    @classmethod
+    def sort_order(cls, *, desc: bool) -> str:
+        return cls.DESC if desc else cls.ASC
 
     @classmethod
     def partition_by(cls, by: str) -> str:
@@ -43,7 +54,7 @@ class Kword(StrEnum):
 
     @classmethod
     def sort_strat(cls, item: object, *, desc: bool, nulls_last: bool) -> str:
-        return f"{item} {cls.DESC if desc else cls.ASC} {cls.NULLS_LAST if nulls_last else cls.NULLS_FIRST}"
+        return f"{item} {cls.sort_order(desc=desc)} {cls.null_order(last=nulls_last)}"
 
 
 def over_expr(  # noqa: PLR0913

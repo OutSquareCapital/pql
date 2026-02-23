@@ -909,10 +909,10 @@ class ExprStringNameSpace(sql.CoreHandler[sql.SqlExpr]):
                     self.inner().re.replace(pattern_expr, value_expr, sql.lit("g"))
                 )
             case _:
-                return Expr(
-                    pc.Iter(range(n)).fold(
-                        self.inner(), lambda acc, _: _replace_once(acc)
-                    )
+                return (
+                    pc.Iter(range(n))
+                    .fold(self.inner(), lambda acc, _: _replace_once(acc))
+                    .pipe(Expr)
                 )
 
     def strip_chars(self, characters: str | None = None) -> Expr:
@@ -960,40 +960,41 @@ class ExprStringNameSpace(sql.CoreHandler[sql.SqlExpr]):
         pattern_expr = sql.into_expr(pattern)
         match literal:
             case False:
-                return Expr(
-                    self.inner().re.extract_all(pattern_expr).list.len(),
-                )
+                return Expr(self.inner().re.extract_all(pattern_expr).list.len())
             case True:
-                return Expr(
+                return (
                     self.inner()
                     .str.length()
                     .sub(
                         self.inner().str.replace(pattern_expr, sql.lit("")).str.length()
                     )
                     .truediv(pattern_expr.str.length())
+                    .pipe(Expr)
                 )
 
     def strip_prefix(self, prefix: IntoExpr) -> Expr:
         """Strip prefix from string."""
         match prefix:
             case str() as prefix_str:
-                return Expr(
-                    self.inner().re.replace(
-                        sql.lit(f"^{re.escape(prefix_str)}"), sql.lit("")
-                    )
+                return (
+                    self.inner()
+                    .re.replace(sql.lit(f"^{re.escape(prefix_str)}"), sql.lit(""))
+                    .pipe(Expr)
                 )
             case _:
-                prefix_expr = sql.into_expr(prefix)
-                return Expr(
-                    sql.when(
-                        self.inner().str.starts_with(prefix_expr),
-                    )
-                    .then(
-                        self.inner().str.substring(
-                            prefix_expr.str.length().add(sql.lit(1))
+                return (
+                    sql.into_expr(prefix)
+                    .pipe(
+                        lambda prefix: sql.when(
+                            self.inner().str.starts_with(prefix),
+                        ).then(
+                            self.inner().str.substring(
+                                prefix.str.length().add(sql.lit(1))
+                            )
                         )
                     )
                     .otherwise(self.inner())
+                    .pipe(Expr)
                 )
 
     def strip_suffix(self, suffix: IntoExpr) -> Expr:
@@ -1135,10 +1136,11 @@ class ExprListNameSpace(sql.CoreHandler[sql.SqlExpr]):
 
     def sort(self, *, descending: bool = False, nulls_last: bool = False) -> Expr:
         """Sort the lists of the expression."""
-        sort_direction = "DESC" if descending else "ASC"
-        nulls_position = "NULLS LAST" if nulls_last else "NULLS FIRST"
         return Expr(
-            self.inner().list.sort(sql.lit(sort_direction), sql.lit(nulls_position))
+            self.inner().list.sort(
+                sql.lit(sql.Kword.sort_order(desc=descending)),
+                sql.lit(sql.Kword.null_order(last=nulls_last)),
+            )
         )
 
 
