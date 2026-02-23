@@ -45,14 +45,8 @@ def _eval_exprs_and_aliases(
         match value:
             case Expr() as expr:
                 is_star = str(expr.inner()).strip() == "*"
-                base_names = (
-                    columns
-                    if is_star
-                    else pc.Seq(
-                        (expr._root_name.unwrap_or(expr.inner().inner().get_name()),)  # pyright: ignore[reportPrivateUsage]
-                    )
-                )
-                output_names = expr._alias_output_name.map(  # pyright: ignore[reportPrivateUsage]
+                base_names = columns if is_star else pc.Seq((expr.meta.root_name,))
+                output_names = expr.meta.alias_name.map(
                     lambda alias_name: base_names.iter().map(alias_name).collect()
                 ).unwrap_or(base_names)
                 match is_star:
@@ -305,23 +299,16 @@ class LazyFrame(sql.CoreHandler[sql.Relation]):
             all_unique = (
                 flat.iter()
                 .chain(named_exprs.values())
-                .all(
-                    lambda value: (
-                        _is_expr(value) and value._is_unique_projection  # pyright: ignore[reportPrivateUsage]
-                    )
-                )
+                .all(lambda value: _is_expr(value) and value.meta.is_unique_projection)
             )
             match has_selected and all_unique:
                 case True:
 
                     def _unique_sql(expr: Expr) -> str:
                         base_sql = str(expr.inner())
-                        root_name = expr._root_name.unwrap_or(  # pyright: ignore[reportPrivateUsage]
-                            expr.inner().inner().get_name()
-                        )
-                        alias_name = expr._alias_output_name.map(  # pyright: ignore[reportPrivateUsage]
-                            lambda alias_fn: alias_fn(root_name)
-                        ).unwrap_or(root_name)
+                        alias_name = expr.meta.alias_name.map(
+                            lambda alias_fn: alias_fn(expr.meta.root_name)
+                        ).unwrap_or(expr.meta.root_name)
                         return (
                             base_sql
                             if alias_name == base_sql
@@ -355,8 +342,8 @@ class LazyFrame(sql.CoreHandler[sql.Relation]):
                     lambda x: x.iter().all(
                         lambda value: (
                             _is_expr(value)
-                            and value._is_scalar_like  # pyright: ignore[reportPrivateUsage]
-                            and not value._has_window  # pyright: ignore[reportPrivateUsage]
+                            and value.meta.is_scalar_like
+                            and not value.meta.has_window
                         )
                     )
                 )

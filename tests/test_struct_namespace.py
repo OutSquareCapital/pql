@@ -57,14 +57,20 @@ def test_with_fields() -> None:
     assert_eq_pl(
         pql.col("x")
         .struct.with_fields(
+            "x",
             pql.col("x").struct.field("a").alias("e"),
             pql.col("x").struct.field("b").alias("f"),
+            g=pql.col("x").struct.field("c"),
+            h="x",
         )
         .alias("x"),
         pl.col("x")
         .struct.with_fields(
+            "x",
             pl.col("x").struct.field("a").alias("e"),
             pl.col("x").struct.field("b").alias("f"),
+            g=pl.col("x").struct.field("c"),
+            h="x",
         )
         .alias("x"),
     )

@@ -22,9 +22,9 @@ class When:
         return Then(self._when.then(value))
 
 
-@dataclass(slots=True)
 class Then(Expr):
-    _inner: sql.Then  # pyright: ignore[reportIncompatibleVariableOverride]
+    _inner: sql.Then
+    __slots__ = ()
 
     def when(self, predicate: IntoExpr) -> ChainedWhen:
         return ChainedWhen(self._inner.when(predicate))
@@ -41,9 +41,9 @@ class ChainedWhen:
         return ChainedThen(self._chained_when.then(statement))
 
 
-@dataclass(slots=True)
 class ChainedThen(Expr):
-    _inner: sql.ChainedThen  # pyright: ignore[reportIncompatibleVariableOverride]
+    _inner: sql.ChainedThen
+    __slots__ = ()
 
     def when(self, predicate: IntoExpr) -> ChainedWhen:
         return ChainedWhen(self._inner.when(predicate))

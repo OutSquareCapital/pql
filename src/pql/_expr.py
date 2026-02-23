@@ -4,8 +4,8 @@ from __future__ import annotations
 
 import re
 from collections.abc import Callable, Collection, Iterable
-from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, Any, Self
+from dataclasses import dataclass, field, replace
+from typing import TYPE_CHECKING, Any, NamedTuple, Self
 
 import pyochain as pc
 
@@ -21,68 +21,85 @@ if TYPE_CHECKING:
         RoundMode,
     )
     from .sql.typing import IntoExpr
-TRUE = pc.Some(value=True)
+
+
+class RollingBounds(NamedTuple):
+    start: int
+    end: int
+
+    @classmethod
+    def new(cls, window_size: int, *, center: bool) -> Self:
+        match center:
+            case True:
+                left = window_size // 2
+                right = window_size - left - 1
+                return cls(-left, right)
+            case False:
+                return cls(-(window_size - 1), 0)
 
 
 @dataclass(slots=True)
+class ExprMeta:
+    """Metadata for expressions, used for tracking properties that affect query generation."""
+
+    root_name: str
+    alias_name: pc.Option[Callable[[str], str]] = field(default_factory=lambda: pc.NONE)
+    is_scalar_like: bool = False
+    has_window: bool = False
+    is_unique_projection: bool = False
+
+    @classmethod
+    def __from_expr__(cls, expr: sql.SqlExpr) -> Self:
+        return cls(expr.inner().get_name())
+
+    def output_name(self) -> str:
+        return self.alias_name.map(lambda alias_fn: alias_fn(self.root_name)).unwrap_or(
+            self.root_name
+        )
+
+    def undo_alias(self) -> Self:
+        self.alias_name = pc.NONE
+        return self
+
+
+@dataclass(slots=True, init=False)
 class Expr(sql.CoreHandler[sql.SqlExpr]):
     """Expression wrapper providing Polars-like API over DuckDB expressions."""
 
-    _root_name: pc.Option[str] = field(default_factory=lambda: pc.NONE)
-    _alias_output_name: pc.Option[Callable[[str], str]] = field(
-        default_factory=lambda: pc.NONE
-    )
+    meta: ExprMeta
 
-    _is_scalar_like: bool = False
-    _has_window: bool = False
-    _is_unique_projection: bool = False
-
-    def __post_init__(self) -> None:
-        self._root_name = self._root_name.or_else(
-            lambda: pc.Some(self.inner().inner().get_name()).filter(
-                lambda name: name != "*"
-            )
+    def __init__(self, inner: sql.SqlExpr, meta: pc.Option[ExprMeta] = pc.NONE) -> None:
+        self._inner = inner
+        self.meta = meta.map(replace).unwrap_or_else(
+            lambda: ExprMeta.__from_expr__(inner)
         )
 
-    def _new(  # noqa: PLR0913
-        self,
-        value: sql.SqlExpr,
-        root_name: pc.Option[str] = pc.NONE,
-        alias_output_name: pc.Option[Callable[[str], str]] = pc.NONE,
-        *,
-        is_scalar_like: pc.Option[bool] = pc.NONE,
-        is_unique_projection: pc.Option[bool] = pc.NONE,
-        keep_alias_output_name: bool = True,
-    ) -> Self:
-        return self.__class__(
-            value,
-            root_name.or_else(lambda: self._root_name),
-            self._alias_output_name if keep_alias_output_name else alias_output_name,
-            is_scalar_like.unwrap_or(self._is_scalar_like),
-            _has_window=self._has_window,
-            _is_unique_projection=is_unique_projection.unwrap_or(
-                self._is_unique_projection
-            ),
-        )
+    def _new(self, value: sql.SqlExpr) -> Self:
+        return self.__class__(value, pc.Some(self.meta))
 
-    def _new_window(
+    def _as_window(
         self, expr: sql.SqlExpr, *, is_scalar_like: bool | None = None
     ) -> Self:
-        return self.__class__(
-            expr,
-            self._root_name,
-            self._alias_output_name,
-            pc.Option(is_scalar_like).unwrap_or(self._is_scalar_like),
-            _has_window=True,
-            _is_unique_projection=self._is_unique_projection,
+        self.meta.has_window = True
+        self.meta.is_scalar_like = pc.Option(is_scalar_like).unwrap_or(
+            self.meta.is_scalar_like
         )
+        return self._new(expr)
+
+    def _as_scalar(self, expr: sql.SqlExpr) -> Self:
+        self.meta.is_scalar_like = True
+        return self._new(expr)
 
     def _reversed(self, expr: sql.SqlExpr, *, reverse: bool = False) -> Self:
         match reverse:
             case True:
-                return self._new_window(expr.over(rows_start=0))
+                return self._as_window(expr.over(rows_start=0))
             case False:
-                return self._new_window(expr.over(rows_end=0))
+                return self._as_window(expr.over(rows_end=0))
+
+    def _clear_alias_name(self) -> Expr:
+        self.meta = self.meta.undo_alias()
+        return self._new(self.inner())
 
     def _rolling_agg(
         self,
@@ -92,24 +109,15 @@ class Expr(sql.CoreHandler[sql.SqlExpr]):
         *,
         center: bool,
     ) -> Self:
-        def _rolling_bounds() -> tuple[int, int]:
-            match center:
-                case True:
-                    left = window_size // 2
-                    right = window_size - left - 1
-                    return (-left, right)
-                case False:
-                    return (-(window_size - 1), 0)
-
-        rows_start, rows_end = _rolling_bounds()
-        return self._new_window(
+        bounds = RollingBounds.new(window_size, center=center)
+        return self._as_window(
             sql.when(
                 self.inner()
                 .count()
-                .over(rows_start=rows_start, rows_end=rows_end)
+                .over(rows_start=bounds.start, rows_end=bounds.end)
                 .ge(sql.lit(pc.Option(min_samples).unwrap_or(window_size)))
             )
-            .then(agg(self.inner()).over(rows_start=rows_start, rows_end=rows_end))
+            .then(agg(self.inner()).over(rows_start=bounds.start, rows_end=bounds.end))
             .otherwise(sql.lit(None))
         )
 
@@ -274,11 +282,8 @@ class Expr(sql.CoreHandler[sql.SqlExpr]):
 
     def alias(self, name: str) -> Self:
         """Rename the expression."""
-        return self._new(
-            self.inner(),
-            alias_output_name=pc.Some(lambda _: name),
-            keep_alias_output_name=False,
-        )
+        self.meta.alias_name = pc.Some(lambda _: name)
+        return self._new(self.inner())
 
     def is_null(self) -> Self:
         """Check if the expression is NULL."""
@@ -304,7 +309,7 @@ class Expr(sql.CoreHandler[sql.SqlExpr]):
                 expr = self.inner().lag(n_val)
             case _:
                 expr = self.inner().lead(-n)
-        return self._new_window(expr.over())
+        return self._as_window(expr.over())
 
     def diff(self) -> Self:
         return self.sub(self.shift())
@@ -346,58 +351,56 @@ class Expr(sql.CoreHandler[sql.SqlExpr]):
 
     def count(self) -> Self:
         """Count the number of values."""
-        return self._new(self.inner().count(), is_scalar_like=TRUE)
+        return self._as_scalar(self.inner().count())
 
     def len(self) -> Self:
         """Get the number of rows in context (including nulls)."""
-        return self._new(self.inner().is_null().count(), is_scalar_like=TRUE)
+        return self._as_scalar(self.inner().is_null().count())
 
     def sum(self) -> Self:
         """Compute the sum."""
-        return self._new(self.inner().sum(), is_scalar_like=TRUE)
+        return self._as_scalar(self.inner().sum())
 
     def mean(self) -> Self:
         """Compute the mean."""
-        return self._new(self.inner().mean(), is_scalar_like=TRUE)
+        return self._as_scalar(self.inner().mean())
 
     def median(self) -> Self:
         """Compute the median."""
-        return self._new(self.inner().median(), is_scalar_like=TRUE)
+        return self._as_scalar(self.inner().median())
 
     def min(self) -> Self:
         """Compute the minimum."""
-        return self._new(self.inner().min(), is_scalar_like=TRUE)
+        return self._as_scalar(self.inner().min())
 
     def max(self) -> Self:
         """Compute the maximum."""
-        return self._new(self.inner().max(), is_scalar_like=TRUE)
+        return self._as_scalar(self.inner().max())
 
     def first(self, *, ignore_nulls: bool = False) -> Self:
         """Get first value."""
         match ignore_nulls:
             case True:
-                return self._new(self.inner().any_value(), is_scalar_like=TRUE)
+                return self._as_scalar(self.inner().any_value())
             case False:
-                return self._new(self.inner().first(), is_scalar_like=TRUE)
+                return self._as_scalar(self.inner().first())
 
     def last(self, *, ignore_nulls: bool = False) -> Self:
         """Get last value."""
         match ignore_nulls:
             case True:
-                return self._new(
-                    self.filter(self.is_not_null()).inner().last(),
-                    is_scalar_like=TRUE,
-                )
+                return self._as_scalar(self.filter(self.is_not_null()).inner().last())
             case False:
-                return self._new(self.inner().last(), is_scalar_like=TRUE)
+                return self._as_scalar(self.inner().last())
 
     def mode(self) -> Self:
         """Compute mode."""
-        return self._new(self.inner().mode(), is_scalar_like=TRUE)
+        return self._as_scalar(self.inner().mode())
 
     def unique(self) -> Self:
         """Get unique values."""
-        return self._new(self.inner(), is_unique_projection=TRUE)
+        self.meta.is_unique_projection = True
+        return self._new(self.inner())
 
     def is_close(
         self,
@@ -487,7 +490,7 @@ class Expr(sql.CoreHandler[sql.SqlExpr]):
                 expr = self.inner().stddev_pop()
             case _:
                 expr = self.inner().stddev_samp()
-        return self._new(expr, is_scalar_like=TRUE)
+        return self._as_scalar(expr)
 
     def var(self, ddof: int = 1) -> Self:
         """Compute the variance."""
@@ -496,25 +499,25 @@ class Expr(sql.CoreHandler[sql.SqlExpr]):
                 expr = self.inner().var_pop()
             case _:
                 expr = self.inner().var_samp()
-        return self._new(expr, is_scalar_like=TRUE)
+        return self._as_scalar(expr)
 
     def kurtosis(self, *, fisher: bool = True, bias: bool = True) -> Self:
         base = self.inner().kurtosis_pop() if bias else self.inner().kurtosis()
         match fisher:
             case True:
-                return self._new(base, is_scalar_like=TRUE)
+                return self._as_scalar(base)
             case False:
-                return self._new(base.add(sql.lit(3)), is_scalar_like=TRUE)
+                return self._as_scalar(base.add(sql.lit(3)))
 
     def skew(self, *, bias: bool = True) -> Self:
         adjusted = self.inner().skewness()
         match bias:
             case False:
-                return self._new(adjusted, is_scalar_like=TRUE)
+                return self._as_scalar(adjusted)
             case True:
                 n = self.inner().count()
                 factor = n.sub(sql.lit(2)).truediv(n.mul(n.sub(sql.lit(1))).sqrt())
-                return self._new(adjusted.mul(factor), is_scalar_like=TRUE)
+                return self._as_scalar(adjusted.mul(factor))
 
     def quantile(
         self, quantile: float, interpolation: RollingInterpolationMethod = "nearest"
@@ -524,21 +527,19 @@ class Expr(sql.CoreHandler[sql.SqlExpr]):
                 expr = self.inner().quantile_cont(quantile)
             case _:
                 expr = self.inner().quantile(quantile)
-        return self._new(expr, is_scalar_like=TRUE)
+        return self._as_scalar(expr)
 
     def all(self) -> Self:
         """Return whether all values are true."""
-        return self._new(self.inner().bool_and(), is_scalar_like=TRUE)
+        return self._as_scalar(self.inner().bool_and())
 
     def any(self) -> Self:
         """Return whether any value is true."""
-        return self._new(self.inner().bool_or(), is_scalar_like=TRUE)
+        return self._as_scalar(self.inner().bool_or())
 
     def n_unique(self) -> Self:
         """Count distinct values."""
-        return self._new(
-            self.inner().implode().list.distinct().list.length(), is_scalar_like=TRUE
-        )
+        return self._as_scalar(self.inner().implode().list.distinct().list.length())
 
     def null_count(self) -> Self:
         """Count null values."""
@@ -570,7 +571,7 @@ class Expr(sql.CoreHandler[sql.SqlExpr]):
                     .row_number()
                     .over(order_by=self.inner(), descending=descending)
                 )
-        return self._new_window(expr)
+        return self._as_window(expr)
 
     def cum_count(self, *, reverse: bool = False) -> Self:
         """Cumulative non-null count."""
@@ -615,7 +616,7 @@ class Expr(sql.CoreHandler[sql.SqlExpr]):
             .map(lambda x: self.inner().over(partition_exprs, x))
             .unwrap_or(self.inner().over(partition_exprs))
         )
-        return self._new_window(expr)
+        return self._as_window(expr)
 
     def filter(self, *predicates: Any) -> Self:  # noqa: ANN401
         cond = (
@@ -837,29 +838,14 @@ class ExprNameSpaceBase:
 
     def _with_alias_mapper(self, mapper: Callable[[str], str]) -> Expr:
         def _compose_alias() -> Callable[[str], str]:
-            match self._parent._alias_output_name:  # pyright: ignore[reportPrivateUsage]
+            match self._parent.meta.alias_name:
                 case pc.Some(current):
                     return lambda name: mapper(current(name))
                 case _:
                     return mapper
 
-        return self._parent._new(  # pyright: ignore[reportPrivateUsage]
-            self._parent.inner(),
-            alias_output_name=pc.Some(_compose_alias()),
-            keep_alias_output_name=False,
-        )
-
-    def _clear_alias_output_name(self) -> Expr:
-        return self._parent._new(  # pyright: ignore[reportPrivateUsage]
-            self._parent.inner(), keep_alias_output_name=False
-        )
-
-    @staticmethod
-    def _output_name(expr: Expr) -> str:
-        root_name = expr._root_name.unwrap_or(expr.inner().inner().get_name())  # pyright: ignore[reportPrivateUsage]
-        return expr._alias_output_name.map(  # pyright: ignore[reportPrivateUsage]
-            lambda alias_fn: alias_fn(root_name)
-        ).unwrap_or(root_name)
+        self._parent.meta.alias_name = pc.Some(_compose_alias())
+        return self._parent._new(self._parent.inner())  # pyright: ignore[reportPrivateUsage]
 
 
 @dataclass(slots=True)
@@ -1163,14 +1149,13 @@ class ExprStructNameSpace(ExprNameSpaceBase):
         def _with_name(value: IntoExpr) -> tuple[str, sql.SqlExpr]:
             match value:
                 case Expr() as expr:
-                    output_name = self._output_name(expr)
-                    return (output_name, expr.inner())
+                    return (expr.meta.output_name(), expr.inner())
                 case _:
                     return sql.into_expr(value, as_col=True).pipe(
                         lambda expr: (expr.inner().get_name(), expr)
                     )
 
-        args = (
+        return (
             sql.try_iter(exprs)
             .flat_map(sql.try_iter)
             .map(_with_name)
@@ -1181,8 +1166,8 @@ class ExprStructNameSpace(ExprNameSpaceBase):
                 .map_star(lambda name, value: (name, sql.into_expr(value, as_col=True)))
             )
             .map_star(lambda name, expr: expr.alias(name))
+            .into(lambda args: self._new(self.inner().struct.insert(*args)))
         )
-        return self._new(self.inner().struct.insert(*args))
 
 
 @dataclass(slots=True)
@@ -1190,7 +1175,7 @@ class ExprNameNameSpace(ExprNameSpaceBase):
     """Name operations namespace (equivalent to pl.Expr.name)."""
 
     def keep(self) -> Expr:
-        return self._clear_alias_output_name()
+        return self._parent._clear_alias_name()  # pyright: ignore[reportPrivateUsage]
 
     def map(self, function: Callable[[str], str]) -> Expr:
         return self._with_alias_mapper(function)
