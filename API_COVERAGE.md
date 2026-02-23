@@ -4,22 +4,64 @@ This report shows the API coverage of pql compared to Polars.
 
 ## Summary
 
-| Class       | Coverage vs Narwhals | Total | Matched | Missing | Mismatched | Extra | Extra vs Narwhals |
-| ----------- | -------------------- | ----- | ------- | ------- | ---------- | ----- | ----------------- |
-| LazyFrame   | 68.1%                | 47    | 32      | 2       | 13         | 8     | 21                |
-| Expr        | 83.0%                | 106   | 88      | 6       | 12         | 1     | 36                |
-| LazyGroupBy | 100.0%               | 1     | 1       | 0       | 0          | 0     | 0                 |
-| Expr.str    | 92.6%                | 27    | 25      | 2       | 0          | 2     | 8                 |
-| Expr.list   | 90.9%                | 11    | 10      | 0       | 1          | 2     | 1                 |
-| Expr.struct | 100.0%               | 1     | 1       | 0       | 0          | 2     | 0                 |
-| Expr.name   | 100.0%               | 7     | 7       | 0       | 0          | 0     | 1                 |
+| Class       | Coverage        | Total     | Matched  | Missing  | Mismatched | Extra   |
+| ----------- | --------------- | --------- | -------- | -------- | ---------- | ------- |
+| LazyFrame   | (57.7%, 29.5%)  | (26, 88)  | (15, 26) | (2, 43)  | (9, 19)    | (29, 8) |
+| Expr        | (71.4%, 34.1%)  | (70, 217) | (50, 74) | (6, 117) | (14, 26)   | (37, 1) |
+| LazyGroupBy | (0.0%, 5.9%)    | (1, 17)   | (0, 1)   | (0, 16)  | (1, 0)     | (0, 0)  |
+| Expr.str    | (89.5%, 24.5%)  | (19, 49)  | (17, 12) | (2, 24)  | (0, 13)    | (10, 2) |
+| Expr.list   | (90.0%, 18.6%)  | (10, 43)  | (9, 8)   | (0, 32)  | (1, 3)     | (3, 2)  |
+| Expr.struct | (100.0%, 20.0%) | (1, 5)    | (1, 1)   | (0, 3)   | (0, 1)     | (3, 2)  |
+| Expr.name   | (100.0%, 70.0%) | (6, 10)   | (6, 7)   | (0, 3)   | (0, 0)     | (1, 0)  |
 
 ## LazyFrame
 
-### [x] Missing Methods (2)
+### [x] Missing Methods (44)
 
+- `approx_n_unique`
+- `cache`
+- `clear`
+- `collect_async`
+- `collect_batches`
+- `describe`
+- `deserialize`
+- `drop_nans`
+- `dtypes`
+- `fetch`
+- `fill_null`
+- `group_by_dynamic`
+- `inspect`
+- `interpolate`
+- `join_where`
+- `last`
+- `map_batches`
+- `match_to_schema`
+- `melt`
+- `merge_sorted`
+- `pipe_with_schema`
+- `pivot`
+- `profile`
+- `remote`
+- `remove`
+- `reverse`
+- `rolling`
+- `select_seq`
+- `serialize`
+- `set_sorted`
+- `show`
+- `show_graph`
+- `sink_batches`
+- `sink_delta`
+- `sink_ipc`
+- `slice`
+- `sql`
 - `tail` (n: int) -> Self
 - `to_native` () -> LazyFrameT
+- `unnest`
+- `update`
+- `with_columns_seq`
+- `with_context`
+- `with_row_count`
 
 ### [!] Signature Mismatches (13)
 
@@ -83,14 +125,126 @@ This report shows the API coverage of pql compared to Polars.
 
 ## Expr
 
-### [x] Missing Methods (6)
+### [x] Missing Methods (118)
 
+- `agg_groups`
 - `any_value` (ignore_nulls: bool) -> Self
+- `append`
+- `approx_n_unique`
+- `arccos`
+- `arccosh`
+- `arcsin`
+- `arcsinh`
+- `arctanh`
+- `arg_max`
+- `arg_min`
+- `arg_sort`
+- `arg_true`
+- `arg_unique`
+- `arr`
+- `bin`
+- `bitwise_and`
+- `bitwise_count_ones`
+- `bitwise_count_zeros`
+- `bitwise_leading_ones`
+- `bitwise_leading_zeros`
+- `bitwise_or`
+- `bitwise_trailing_ones`
+- `bitwise_trailing_zeros`
+- `bitwise_xor`
+- `bottom_k`
+- `bottom_k_by`
 - `cat` ()
+- `cot`
+- `cumulative_eval`
+- `cut`
+- `deserialize`
+- `dot`
+- `drop_nans`
 - `dt` ()
+- `entropy`
+- `eq_missing`
 - `ewm_mean` (com: float | None, span: float | None, half_life: float | None, alpha: float | None, adjust: bool, min_samples: int, ignore_nulls: bool) -> Self
+- `ewm_mean_by`
+- `ewm_std`
+- `ewm_var`
+- `exclude`
+- `explode`
+- `ext`
+- `extend_constant`
+- `flatten`
+- `from_json`
+- `gather`
+- `gather_every`
+- `get`
+- `has_nulls`
+- `head`
+- `hist`
+- `implode`
+- `index_of`
+- `inspect`
+- `interpolate`
+- `interpolate_by`
+- `item`
+- `limit`
+- `lower_bound`
 - `map_batches` (function: Callable[[Any], CompliantExpr[Any, Any]], return_dtype: DType | None, returns_scalar: bool) -> Self
+- `map_elements`
+- `max_by`
+- `meta`
+- `min_by`
+- `nan_max`
+- `nan_min`
+- `ne_missing`
+- `pct_change`
+- `peak_max`
+- `peak_min`
+- `product`
+- `qcut`
+- `rechunk`
+- `register_plugin`
+- `reinterpret`
 - `replace_strict` (old: Sequence[Any] | Mapping[Any, Any], new: Sequence[Any] | None, default: Any | NoDefault, return_dtype: IntoDType | None) -> Self
+- `reshape`
+- `reverse`
+- `rle`
+- `rle_id`
+- `rolling`
+- `rolling_kurtosis`
+- `rolling_map`
+- `rolling_max`
+- `rolling_max_by`
+- `rolling_mean_by`
+- `rolling_median`
+- `rolling_median_by`
+- `rolling_min`
+- `rolling_min_by`
+- `rolling_quantile`
+- `rolling_quantile_by`
+- `rolling_rank`
+- `rolling_rank_by`
+- `rolling_skew`
+- `rolling_std_by`
+- `rolling_sum_by`
+- `rolling_var_by`
+- `round_sig_figs`
+- `sample`
+- `search_sorted`
+- `set_sorted`
+- `shrink_dtype`
+- `shuffle`
+- `slice`
+- `sort`
+- `sort_by`
+- `tail`
+- `to_physical`
+- `top_k`
+- `top_k_by`
+- `unique_counts`
+- `upper_bound`
+- `value_counts`
+- `where`
+- `xor`
 
 ### [!] Signature Mismatches (12)
 
@@ -143,12 +297,53 @@ This report shows the API coverage of pql compared to Polars.
 
 ## LazyGroupBy
 
+### [x] Missing Methods (16)
+
+- `all`
+- `count`
+- `first`
+- `having`
+- `head`
+- `last`
+- `len`
+- `map_groups`
+- `max`
+- `mean`
+- `median`
+- `min`
+- `n_unique`
+- `quantile`
+- `sum`
+- `tail`
+
 ## Expr.str
 
-### [x] Missing Methods (2)
+### [x] Missing Methods (24)
 
+- `concat`
+- `contains_any`
+- `decode`
+- `encode`
+- `escape_regex`
+- `explode`
+- `extract`
+- `extract_groups`
+- `extract_many`
+- `find`
+- `find_many`
+- `join`
+- `json_decode`
+- `json_path_match`
+- `normalize`
+- `replace_many`
+- `split_exact`
+- `splitn`
+- `strptime`
 - `to_date` (format: str | None) -> ExprT
 - `to_datetime` (format: str | None) -> ExprT
+- `to_decimal`
+- `to_integer`
+- `to_time`
 
 ### [+] Extra Methods (pql-only) (2)
 
@@ -156,6 +351,41 @@ This report shows the API coverage of pql compared to Polars.
 - `pipe`
 
 ## Expr.list
+
+### [x] Missing Methods (32)
+
+- `agg`
+- `all`
+- `any`
+- `arg_max`
+- `arg_min`
+- `concat`
+- `count_matches`
+- `diff`
+- `drop_nulls`
+- `explode`
+- `filter`
+- `first`
+- `gather`
+- `gather_every`
+- `head`
+- `item`
+- `join`
+- `last`
+- `n_unique`
+- `reverse`
+- `sample`
+- `set_difference`
+- `set_intersection`
+- `set_symmetric_difference`
+- `set_union`
+- `shift`
+- `slice`
+- `std`
+- `tail`
+- `to_array`
+- `to_struct`
+- `var`
 
 ### [!] Signature Mismatches (1)
 
@@ -170,9 +400,21 @@ This report shows the API coverage of pql compared to Polars.
 
 ## Expr.struct
 
+### [x] Missing Methods (3)
+
+- `json_encode`
+- `rename_fields`
+- `unnest`
+
 ### [+] Extra Methods (pql-only) (2)
 
 - `inner`
 - `pipe`
 
 ## Expr.name
+
+### [x] Missing Methods (3)
+
+- `map_fields`
+- `prefix_fields`
+- `suffix_fields`

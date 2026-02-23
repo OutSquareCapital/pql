@@ -1,10 +1,19 @@
+from collections.abc import Callable
 from dataclasses import dataclass
-from typing import cast
+from typing import Literal
 
 import pyochain as pc
 
-from ._infos import ComparisonResult, get_attr
+from ._infos import (
+    ComparisonResult,
+    MethodInfo,
+    ParamInfo,
+    annotations_differ,
+    get_attr,
+)
 from ._models import Status
+
+type RefBackend = Literal["narwhals", "polars"]
 
 
 @dataclass(slots=True)
@@ -33,16 +42,16 @@ class ComparisonReport:
 
     def to_row(self) -> pc.Seq[str]:
         """Return a row of summary data as columns."""
+        libs = LibCell()
         return pc.Seq(
             (
                 self.name,
-                f"{_coverage_percent(self.results):.1f}%",
-                str(_total_methods(self.results)),
-                str(_by_status(self.results, Status.MATCH).length()),
-                str(_by_status(self.results, Status.MISSING).length()),
-                str(_by_status(self.results, Status.SIGNATURE_MISMATCH).length()),
-                str(_by_status(self.results, Status.EXTRA).length()),
-                str(_extra_vs_narwhals(self.results).length()),
+                libs.coverage(self.results),
+                libs.count(self.results, _has_reference),
+                libs.status(self.results, Status.MATCH),
+                libs.status(self.results, Status.MISSING),
+                libs.status(self.results, Status.SIGNATURE_MISMATCH),
+                libs.status(self.results, Status.EXTRA),
             )
         )
 
@@ -61,13 +70,12 @@ def _summary_header() -> pc.Seq[str]:
     return pc.Seq(
         (
             "Class",
-            "Coverage vs Narwhals",
+            "Coverage",
             "Total",
             "Matched",
             "Missing",
             "Mismatched",
             "Extra",
-            "Extra vs Narwhals",
         )
     )
 
@@ -106,6 +114,7 @@ class ClassComparison:
         return ComparisonReport(
             self.name,
             _get_public_methods(self.narwhals_cls)
+            .union(_get_public_methods(self.polars_cls))
             .union(_get_public_methods(self.pql_cls))
             .iter()
             .map(
@@ -178,49 +187,137 @@ def _format_row(row: pc.Seq[str], widths: pc.Seq[int]) -> str:
     return f"| {cells} |"
 
 
-def _coverage_percent(results: pc.Vec[ComparisonResult]) -> float:
-    """Calculate API coverage percentage."""
+class LibCell:
+    libs = pc.Seq(("narwhals", "polars"))
 
-    def _accumulator(acc: tuple[int, int], r: ComparisonResult) -> tuple[int, int]:
+    def status(self, results: pc.Vec[ComparisonResult], status: Status) -> str:
         return (
-            acc[0]
-            + (1 if r.infos.narwhals.is_some() or r.infos.polars.is_some() else 0),
-            acc[1] + (1 if r.classification.status == Status.MATCH else 0),
+            self.libs.iter()
+            .map(lambda ref: _count_for_ref_status(results, ref, status))
+            .collect()
+            .into(lambda pair: f"({pair[0]}, {pair[1]})")
         )
 
-    match results.iter().fold(cast(tuple[int, int], (0, 0)), _accumulator):
-        case (0, _):
+    def count(
+        self,
+        results: pc.Vec[ComparisonResult],
+        predicate: Callable[[ComparisonResult, RefBackend], bool],
+    ) -> str:
+        return (
+            self.libs.iter()
+            .map(lambda ref: _count_for_ref(results, ref, predicate))
+            .collect()
+            .into(lambda pair: f"({pair[0]}, {pair[1]})")
+        )
+
+    def coverage(self, results: pc.Vec[ComparisonResult]) -> str:
+        return (
+            self.libs.iter()
+            .map(lambda ref: _coverage_percent(results, ref))
+            .collect()
+            .into(lambda pair: f"({pair[0]:.1f}%, {pair[1]:.1f}%)")
+        )
+
+
+def _coverage_percent(results: pc.Vec[ComparisonResult], ref: RefBackend) -> float:
+    total = _count_for_ref(results, ref, _has_reference)
+    matched = _count_for_ref_status(results, ref, Status.MATCH)
+    match total:
+        case 0:
             return 100.0
-        case (total_narwhals, matched):
-            return (matched / total_narwhals) * 100
+        case _:
+            return (matched / total) * 100
 
 
-def _total_methods(results: pc.Vec[ComparisonResult]) -> int:
-    """Count total methods considered for coverage."""
+def _count_for_ref(
+    results: pc.Vec[ComparisonResult],
+    ref: RefBackend,
+    predicate: Callable[[ComparisonResult, RefBackend], bool],
+) -> int:
+    return results.iter().filter(lambda result: predicate(result, ref)).length()
+
+
+def _count_for_ref_status(
+    results: pc.Vec[ComparisonResult],
+    ref: RefBackend,
+    status: Status,
+) -> int:
     return (
-        results.iter()
-        .filter(lambda r: r.infos.narwhals.is_some() or r.infos.polars.is_some())
-        .length()
+        results.iter().filter(lambda result: _has_status(result, ref, status)).length()
+    )
+
+
+def _reference_info(result: ComparisonResult, ref: RefBackend) -> pc.Option[MethodInfo]:
+    match ref:
+        case "narwhals":
+            return result.infos.narwhals
+        case "polars":
+            return result.infos.polars
+
+
+def _has_reference(result: ComparisonResult, ref: RefBackend) -> bool:
+    return _reference_info(result, ref).is_some()
+
+
+def _has_status(result: ComparisonResult, ref: RefBackend, status: Status) -> bool:
+    return (
+        _status_for_ref(result, ref)
+        .map(lambda current: current == status)
+        .unwrap_or(default=False)
+    )
+
+
+def _status_for_ref(result: ComparisonResult, ref: RefBackend) -> pc.Option[Status]:
+    match (_reference_info(result, ref), result.infos.pql_info):
+        case (pc.NONE, pc.NONE):
+            return pc.NONE
+        case (pc.Some(_), pc.NONE):
+            return pc.Some(Status.MISSING)
+        case (pc.NONE, pc.Some(_)):
+            return pc.Some(Status.EXTRA)
+        case (pc.Some(reference), pc.Some(pql_info)):
+            return pc.Some(
+                Status.SIGNATURE_MISMATCH
+                if _mismatch_against(pql_info, reference, result.infos.ignored_params)
+                else Status.MATCH
+            )
+        case _:
+            return pc.NONE
+
+
+def _mismatch_against(
+    target: MethodInfo, other: MethodInfo, ignored: pc.Set[str]
+) -> bool:
+    target_filtered = _without_ignored_params(target.to_map(), ignored)
+    other_filtered = _without_ignored_params(other.to_map(), ignored)
+    on_params = (
+        other_filtered.keys().symmetric_difference(target_filtered.keys()).length() > 0
+    )
+    on_ann = (
+        other_filtered.keys()
+        .intersection(target_filtered.keys())
+        .any(
+            lambda name: annotations_differ(
+                other_filtered.get_item(name).unwrap(),
+                target_filtered.get_item(name).unwrap(),
+            )
+        )
+    )
+    return on_params or on_ann
+
+
+def _without_ignored_params(
+    mapping: pc.Dict[str, ParamInfo], ignored: pc.Set[str]
+) -> pc.Dict[str, ParamInfo]:
+    return (
+        mapping.items()
+        .iter()
+        .filter(lambda item: not ignored.contains(item[0]))
+        .collect(pc.Dict)
     )
 
 
 def _by_status(
     results: pc.Vec[ComparisonResult], status: Status
 ) -> pc.Seq[ComparisonResult]:
-    """Filter results by match status."""
     return results.iter().filter(lambda r: r.classification.status == status).collect()
-
-
-def _extra_vs_narwhals(results: pc.Vec[ComparisonResult]) -> pc.Seq[ComparisonResult]:
-    """Filter results where pql has methods missing in narwhals."""
-    return (
-        results.iter()
-        .filter(
-            lambda r: (
-                r.infos.pql_info.is_some()
-                and r.infos.narwhals.is_none()
-                and r.infos.polars.is_some()
-            )
-        )
-        .collect()
-    )
