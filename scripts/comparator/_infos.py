@@ -250,7 +250,7 @@ class ComparisonResult:
     @classmethod
     def from_method(
         cls,
-        narwhals_cls: type,
+        narwhals_cls: pc.Option[type],
         polars_cls: type,
         pql_cls: type,
         method_name: str,
@@ -258,7 +258,7 @@ class ComparisonResult:
     ) -> Self:
         """Compare a single method between narwhals, polars, and pql."""
         infos = ComparisonInfos(
-            narwhals=_get_method_info(narwhals_cls, method_name),
+            narwhals=narwhals_cls.and_then(_get_method_info, method_name),
             polars=_get_method_info(polars_cls, method_name),
             pql_info=_get_method_info(pql_cls, method_name),
             ignored_params=ignored_params_for(class_name, method_name),

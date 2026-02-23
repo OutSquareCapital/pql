@@ -80,15 +80,10 @@ def _summary_header() -> pc.Seq[str]:
 class ClassComparison:
     """Converter between entry arguments and ComparisonReport."""
 
-    narwhals_cls: type
+    narwhals_cls: pc.Option[type]
     polars_cls: type
     pql_cls: type
-    name: str = ""
-
-    def __post_init__(self) -> None:
-        """Set default name if not provided."""
-        if self.name == "":
-            self.name = self.narwhals_cls.__name__
+    name: str
 
     def to_report(self) -> ComparisonReport:
         """Compare two classes and return comparison results."""
@@ -109,7 +104,8 @@ class ClassComparison:
 
         return ComparisonReport(
             self.name,
-            _get_public_methods(self.narwhals_cls)
+            self.narwhals_cls.map(_get_public_methods)
+            .unwrap_or(pc.Set[str].new())
             .union(_get_public_methods(self.polars_cls))
             .union(_get_public_methods(self.pql_cls))
             .iter()
