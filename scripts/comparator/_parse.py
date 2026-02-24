@@ -67,8 +67,7 @@ class _UnionCanonicalizer(ast.NodeTransformer):
                 return (
                     members_as_text.iter()
                     .filter(lambda text: not (has_float and text == Builtins.INT))
-                    .collect(pc.Set)
-                    .iter()
+                    .unique()
                     .sort()
                     .into(_build_union_expr)
                 )

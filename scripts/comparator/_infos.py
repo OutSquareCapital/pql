@@ -221,7 +221,7 @@ def _without_ignored_params(mapping: MapInfo, ignored: pc.Set[str]) -> MapInfo:
     return (
         mapping.items()
         .iter()
-        .filter(lambda item: not ignored.contains(item[0]))
+        .filter_star(lambda k, _v: not ignored.contains(k))
         .collect(pc.Dict)
     )
 
@@ -275,22 +275,17 @@ class ComparisonResult:
                             lambda info: pc.Iter.once(
                                 f"  - **Narwhals**: {info.signature_str()}"
                             )
-                        ).unwrap_or(default=pc.Iter(()))
+                        ).unwrap_or(pc.Iter(()))
                     )
                     .chain(
                         self.infos.polars.map(
                             lambda info: pc.Iter.once(
                                 f"  - **Polars**: {info.signature_str()}"
                             )
-                        ).unwrap_or(default=pc.Iter(()))
+                        ).unwrap_or(pc.Iter(()))
                     )
                 )
-            case (
-                Status.SIGNATURE_MISMATCH,
-                pc.Some(nw_info),
-                _,
-                pc.Some(pql_info),
-            ):
+            case (Status.SIGNATURE_MISMATCH, pc.Some(nw_info), _, pc.Some(pql_info)):
                 return (
                     pc.Iter(
                         (
@@ -303,7 +298,7 @@ class ComparisonResult:
                             lambda pl_info: pc.Iter.once(
                                 f"  - **Polars**: {_signature_with_diff(pl_info, pql_info, self.infos.ignored_params)}"
                             )
-                        ).unwrap_or(default=pc.Iter(()))
+                        ).unwrap_or(pc.Iter(()))
                     )
                     .chain(
                         pc.Iter.once(
@@ -311,12 +306,7 @@ class ComparisonResult:
                         )
                     )
                 )
-            case (
-                Status.SIGNATURE_MISMATCH,
-                pc.NONE,
-                pc.Some(pl_info),
-                pc.Some(pql_info),
-            ):
+            case (Status.SIGNATURE_MISMATCH, _, pc.Some(pl_info), pc.Some(pql_info)):
                 return pc.Iter(
                     (
                         f"- `{self.method_name}` ({self.classification.mismatch_source.value})",
@@ -336,12 +326,7 @@ def _build_method_info(attr: object, name: str) -> pc.Option[MethodInfo]:
     match attr:
         case property():
             return pc.Some(
-                MethodInfo(
-                    name=name,
-                    params=pc.Seq[ParamInfo].new(),
-                    return_annotation=pc.NONE,
-                    is_property=True,
-                )
+                MethodInfo(name, pc.Seq[ParamInfo].new(), pc.NONE, is_property=True)
             )
         case attr if callable(attr):
             try:

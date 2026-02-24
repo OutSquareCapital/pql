@@ -59,15 +59,7 @@ def header() -> pc.Iter[str]:
 
 def _summary_header() -> pc.Seq[str]:
     return pc.Seq(
-        (
-            "Class",
-            "Coverage",
-            "Total",
-            "Matched",
-            "Missing",
-            "Mismatched",
-            "Extra",
-        )
+        ("Class", "Coverage", "Total", "Matched", "Missing", "Mismatched", "Extra")
     )
 
 
