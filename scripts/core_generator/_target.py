@@ -6,6 +6,7 @@ from typing import NamedTuple
 import duckdb
 import pyochain as pc
 
+from .._utils import Builtins, DuckDB, Dunders, Pql, Pyochain, Typing
 from ._rules import (
     EXPR_TYPE_SUBS,
     KW_ONLY_FIXES,
@@ -13,7 +14,6 @@ from ._rules import (
     PYTYPING_REWRITES,
     RETURN_TYPE_FIXES,
     TYPE_SUBS,
-    PyLit,
 )
 
 
@@ -27,7 +27,7 @@ class TargetSpec:
     stub_class: str
     wrapper_class: str
     wrapper_base: str
-    type_subs: pc.Dict[PyLit, PyLit]
+    type_subs: pc.Dict[DuckDB, Pql | Typing]
     wrapped_return_type: str
     param_type_fixes: pc.Dict[str, pc.Dict[str, str]] = field(
         default_factory=pc.Dict[str, pc.Dict[str, str]].new
@@ -50,27 +50,29 @@ class TargetSpec:
         )
 
     def return_meta(self, annotation: str) -> ReturnMeta:
-        def _collection_kind() -> pc.Option[PyLit]:
+        def _collection_kind() -> pc.Option[Builtins]:
             match rewritten:
-                case _ if rewritten.startswith(PyLit.LIST):
-                    return pc.Some(PyLit.LIST)
-                case _ if rewritten.startswith(PyLit.DICT):
-                    return pc.Some(PyLit.DICT)
+                case _ if rewritten.startswith(Builtins.LIST):
+                    return pc.Some(Builtins.LIST)
+                case _ if rewritten.startswith(Builtins.DICT):
+                    return pc.Some(Builtins.DICT)
                 case _:
                     return pc.NONE
 
-        def _build(collection: str, suffix: str) -> ReturnMeta:
+        def _build(collection: Pyochain, suffix: str) -> ReturnMeta:
             return ReturnMeta(
-                f"pc.{collection}{suffix}" if suffix else f"pc.{collection}[Any]",
+                f"pc.{collection}{suffix}"
+                if suffix
+                else f"pc.{collection}[{Typing.ANY}]",
                 pc.Some(f"pc.{collection}.from_ref"),
             )
 
         rewritten = self.rewrite_type(annotation)
         match _collection_kind():
-            case pc.Some(PyLit.LIST):
-                return _build("Vec", rewritten.removeprefix(PyLit.LIST))
-            case pc.Some(PyLit.DICT):
-                return _build("Dict", rewritten.removeprefix(PyLit.DICT))
+            case pc.Some(Builtins.LIST):
+                return _build(Pyochain.VEC, rewritten.removeprefix(Builtins.LIST))
+            case pc.Some(Builtins.DICT):
+                return _build(Pyochain.DICT, rewritten.removeprefix(Builtins.DICT))
             case _:
                 return ReturnMeta(rewritten, pc.NONE)
 
@@ -141,23 +143,23 @@ class {self.wrapper_class}({self.wrapper_base}):
 
 
 REL_TARGET = TargetSpec(
-    stub_class=PyLit.DUCK_REL,
-    wrapper_class=PyLit.RELATION,
-    wrapper_base=PyLit.REL_HANDLER,
+    stub_class=DuckDB.RELATION,
+    wrapper_class=Pql.RELATION,
+    wrapper_base=Pql.REL_HANDLER,
     type_subs=TYPE_SUBS,
-    wrapped_return_type=PyLit.DUCK_REL,
+    wrapped_return_type=DuckDB.RELATION,
     param_type_fixes=PARAM_TYPE_FIXES,
     return_type_fixes=RETURN_TYPE_FIXES,
     kw_only_fixes=KW_ONLY_FIXES,
 )
 
 EXPR_TARGET = TargetSpec(
-    stub_class=PyLit.DUCK_EXPR,
-    wrapper_class=PyLit.DUCK_EXPR,
-    wrapper_base=PyLit.DUCK_HANDLER,
+    stub_class=DuckDB.EXPRESSION,
+    wrapper_class=DuckDB.EXPRESSION,
+    wrapper_base=Pql.DUCK_HANDLER,
     type_subs=EXPR_TYPE_SUBS,
-    wrapped_return_type=PyLit.DUCK_EXPR,
-    skip_methods=pc.Set({"__init__", "when", "otherwise"}),
+    wrapped_return_type=DuckDB.EXPRESSION,
+    skip_methods=pc.Set({Dunders.INIT, "when", "otherwise"}),
     method_renames=pc.Dict.from_kwargs(
         isnull="is_null", isin="is_in", isnotin="is_not_in", isnotnull="is_not_null"
     ),

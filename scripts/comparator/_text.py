@@ -3,15 +3,9 @@ from dataclasses import dataclass
 
 import pyochain as pc
 
-from ._infos import (
-    ComparisonResult,
-    RefBackend,
-    get_attr,
-    is_deprecated_method,
-)
-from ._models import Status
-
-REF_BACKENDS = pc.Seq(("narwhals", "polars"))
+from .._utils import Dunders, Pql
+from ._infos import ComparisonResult, get_attr
+from ._rules import RefBackend, Status
 
 
 @dataclass(slots=True)
@@ -84,7 +78,7 @@ class ClassComparison:
     narwhals_cls: pc.Option[type]
     polars_cls: type
     pql_cls: type
-    name: str
+    name: Pql
 
     def to_report(self) -> ComparisonReport:
         """Compare two classes and return comparison results."""
@@ -95,7 +89,12 @@ class ClassComparison:
                 .filter(
                     lambda name: (
                         not name.startswith("_")
-                        and not is_deprecated_method(cls, name)
+                        and not (
+                            get_attr(cls, name)
+                            .and_then(lambda attr: get_attr(attr, Dunders.DEPRECATED))
+                            .map(bool)
+                            .unwrap_or(default=False)
+                        )
                         and (
                             get_attr(cls, name)
                             .map(
@@ -188,7 +187,7 @@ def _format_row(row: pc.Seq[str], widths: pc.Seq[int]) -> str:
 
 
 def _for_each_ref[T](mapper: Callable[[RefBackend], T]) -> pc.Seq[T]:
-    return REF_BACKENDS.iter().map(mapper).collect()
+    return pc.Iter(RefBackend).map(mapper).collect()
 
 
 def _count_cell(

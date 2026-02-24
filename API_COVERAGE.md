@@ -4,16 +4,16 @@ This report shows the API coverage of pql compared to Polars.
 
 ## Summary
 
-| Class       | Coverage        | Total     | Matched  | Missing | Mismatched | Extra   |
-| ----------- | --------------- | --------- | -------- | ------- | ---------- | ------- |
-| LazyFrame   | (57.7%, 34.9%)  | (26, 83)  | (15, 29) | (1, 33) | (10, 21)   | (33, 8) |
-| Expr        | (70.0%, 42.3%)  | (70, 213) | (49, 90) | (8, 94) | (13, 29)   | (58, 1) |
-| LazyGroupBy | (0.0%, 50.0%)   | (1, 16)   | (0, 8)   | (0, 4)  | (1, 4)     | (11, 0) |
-| Expr.str    | (100.0%, 38.3%) | (19, 47)  | (19, 18) | (0, 10) | (0, 19)    | (19, 1) |
-| Expr.list   | (90.0%, 41.9%)  | (10, 43)  | (9, 18)  | (0, 21) | (1, 4)     | (13, 1) |
-| Expr.struct | (100.0%, 40.0%) | (1, 5)    | (1, 2)   | (0, 2)  | (0, 1)     | (3, 1)  |
-| Expr.name   | (100.0%, 70.0%) | (6, 10)   | (6, 7)   | (0, 3)  | (0, 0)     | (2, 1)  |
-| Expr.arr    | (100.0%, 54.8%) | (0, 31)   | (0, 17)  | (0, 10) | (0, 4)     | (23, 2) |
+| Class               | Coverage        | Total     | Matched  | Missing | Mismatched | Extra   |
+| ------------------- | --------------- | --------- | -------- | ------- | ---------- | ------- |
+| LazyFrame           | (57.7%, 34.9%)  | (26, 83)  | (15, 29) | (1, 33) | (10, 21)   | (33, 8) |
+| Expr                | (70.0%, 42.3%)  | (70, 213) | (49, 90) | (8, 94) | (13, 29)   | (58, 1) |
+| LazyGroupBy         | (0.0%, 50.0%)   | (1, 16)   | (0, 8)   | (0, 4)  | (1, 4)     | (11, 0) |
+| ExprStrNameSpace    | (100.0%, 38.3%) | (19, 47)  | (19, 18) | (0, 10) | (0, 19)    | (19, 1) |
+| ExprListNameSpace   | (90.0%, 44.2%)  | (10, 43)  | (9, 19)  | (0, 21) | (1, 3)     | (13, 1) |
+| ExprStructNameSpace | (100.0%, 40.0%) | (1, 5)    | (1, 2)   | (0, 2)  | (0, 1)     | (3, 1)  |
+| ExprNameNameSpace   | (100.0%, 70.0%) | (6, 10)   | (6, 7)   | (0, 3)  | (0, 0)     | (2, 1)  |
+| ExprArrNameSpace    | (100.0%, 54.8%) | (0, 31)   | (0, 17)  | (0, 10) | (0, 4)     | (23, 2) |
 
 ## LazyFrame
 
@@ -120,11 +120,11 @@ This report shows the API coverage of pql compared to Polars.
   - **pql**: (`*predicates: IntoExprColumn | Iterable[IntoExprColumn]`, `**constraints: IntoExpr`) -> Self
 - `join` (nw)
   - **Narwhals**: (other: Self, `on: str | list[str] | None`, how: JoinStrategy, `left_on: str | list[str] | None`, `right_on: str | list[str] | None`, suffix: str) -> Self
-  - **Polars**: (other: LazyFrame, `on: str | Expr | Sequence[str | Expr] | None`, how: JoinStrategy, `left_on: str | Expr | Sequence[str | Expr] | None`, `right_on: str | Expr | Sequence[str | Expr] | None`, suffix: str, `validate: JoinValidation`, `nulls_equal: bool`, `coalesce: bool | None`, `maintain_order: MaintainOrderJoin | None`, `allow_parallel: bool`, `force_parallel: bool`) -> LazyFrame
+  - **Polars**: (other: LazyFrame, `on: str | Expr | Sequence[str | Expr] | None`, how: JoinStrategy, `left_on: str | Expr | Sequence[str | Expr] | None`, `right_on: str | Expr | Sequence[str | Expr] | None`, suffix: str, `validate: JoinValidation`, `nulls_equal: bool`, `coalesce: bool | None`, `maintain_order: MaintainOrderJoin | None`, allow_parallel: bool, force_parallel: bool) -> LazyFrame
   - **pql**: (other: Self, `on: str | Iterable[str] | None`, how: JoinStrategy, `left_on: str | Iterable[str] | None`, `right_on: str | Iterable[str] | None`, suffix: str) -> Self
 - `join_asof` (nw)
   - **Narwhals**: (other: Self, left_on: str | None, right_on: str | None, on: str | None, `by_left: str | list[str] | None`, `by_right: str | list[str] | None`, `by: str | list[str] | None`, strategy: AsofJoinStrategy, suffix: str) -> Self
-  - **Polars**: (other: LazyFrame, `left_on: str | None | Expr`, `right_on: str | None | Expr`, `on: str | None | Expr`, `by_left: str | Sequence[str] | None`, `by_right: str | Sequence[str] | None`, `by: str | Sequence[str] | None`, strategy: AsofJoinStrategy, suffix: str, `tolerance: str | int | float | timedelta | None`, `allow_parallel: bool`, `force_parallel: bool`, `coalesce: bool`, `allow_exact_matches: bool`, `check_sortedness: bool`) -> LazyFrame
+  - **Polars**: (other: LazyFrame, `left_on: str | None | Expr`, `right_on: str | None | Expr`, `on: str | None | Expr`, `by_left: str | Sequence[str] | None`, `by_right: str | Sequence[str] | None`, `by: str | Sequence[str] | None`, strategy: AsofJoinStrategy, suffix: str, `tolerance: str | int | float | timedelta | None`, allow_parallel: bool, force_parallel: bool, `coalesce: bool`, `allow_exact_matches: bool`, `check_sortedness: bool`) -> LazyFrame
   - **pql**: (other: Self, left_on: str | None, right_on: str | None, on: str | None, `by_left: str | Iterable[str] | None`, `by_right: str | Iterable[str] | None`, `by: str | Iterable[str] | None`, strategy: AsofJoinStrategy, suffix: str) -> Self
 - `quantile` (pl)
   - **Polars***: (`quantile: float | Expr`, `interpolation: QuantileMethod`) -> LazyFrame
@@ -446,7 +446,7 @@ This report shows the API coverage of pql compared to Polars.
   - **Polars***: (quantile: float, `interpolation: QuantileMethod`) -> LazyFrame
   - **pql**: (quantile: float, `interpolation: RollingInterpolationMethod`) -> LazyFrame
 
-## Expr.str
+## ExprStrNameSpace
 
 ### [x] Missing Methods (10)
 
@@ -490,7 +490,7 @@ This report shows the API coverage of pql compared to Polars.
 
 - `inner`
 
-## Expr.list
+## ExprListNameSpace
 
 ### [x] Missing Methods (21)
 
@@ -537,21 +537,18 @@ This report shows the API coverage of pql compared to Polars.
 - `to_struct`
   - **Polars**: (n_field_strategy: ListToStructWidthStrategy | None, fields: Sequence[str] | Callable[[int], str] | None, upper_bound: int | None) -> Expr
 
-### [!] Signature Mismatches (2)
+### [!] Signature Mismatches (1)
 
 - `contains` (nw)
   - **Narwhals**: (`item: NonNestedLiteral`) -> ExprT
   - **Polars**: (item: IntoExpr, `nulls_equal: bool`) -> Expr
   - **pql**: (`item: IntoExpr`) -> Expr
-- `eval` (pl)
-  - **Polars***: (expr: Expr, `parallel: bool`) -> Expr
-  - **pql**: (expr: Expr) -> Expr
 
 ### [+] Extra Methods (pql-only) (1)
 
 - `inner`
 
-## Expr.struct
+## ExprStructNameSpace
 
 ### [x] Missing Methods (2)
 
@@ -564,7 +561,7 @@ This report shows the API coverage of pql compared to Polars.
 
 - `inner`
 
-## Expr.name
+## ExprNameNameSpace
 
 ### [x] Missing Methods (3)
 
@@ -579,7 +576,7 @@ This report shows the API coverage of pql compared to Polars.
 
 - `inner`
 
-## Expr.arr
+## ExprArrNameSpace
 
 ### [x] Missing Methods (10)
 

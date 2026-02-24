@@ -4,7 +4,8 @@ from typing import TypeIs
 
 import pyochain as pc
 
-from ._structs import MethodInfo, ParamInfo, PyLit
+from .._utils import Builtins, Typing
+from ._structs import MethodInfo, ParamInfo
 from ._target import TargetSpec
 
 
@@ -47,7 +48,7 @@ def _parse_method(
             defaults = pc.Vec.from_ref(node.args.defaults)
             num_no_default = regular_args.length() - defaults.length()
 
-            def _check_decorator(target: PyLit) -> bool:
+            def _check_decorator(target: str) -> bool:
                 return pc.Iter(node.decorator_list).any(
                     lambda d: _is_decorator(d, target)
                 )
@@ -63,10 +64,12 @@ def _parse_method(
                     ),
                     return_type=target.fix_return(
                         node.name,
-                        pc.Option(node.returns).map(ast.unparse).unwrap_or(PyLit.NONE),
+                        pc.Option(node.returns)
+                        .map(ast.unparse)
+                        .unwrap_or(Builtins.NONE),
                     ),
-                    is_overload=_check_decorator(PyLit.OVERLOAD),
-                    is_property=_check_decorator(PyLit.PROPERTY),
+                    is_overload=_check_decorator(Typing.OVERLOAD),
+                    is_property=_check_decorator(Builtins.PROPERTY),
                     doc=docs.get_item(node.name).unwrap_or(""),
                     target=target,
                 )
@@ -129,7 +132,7 @@ def _to_param(
         target.fix_param(
             method_name,
             arg.arg,
-            pc.Option(arg.annotation).map(ast.unparse).unwrap_or(PyLit.ANY),
+            pc.Option(arg.annotation).map(ast.unparse).unwrap_or(Typing.ANY),
         ),
         default,
         is_kw_only,

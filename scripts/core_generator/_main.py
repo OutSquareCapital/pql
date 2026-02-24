@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING
 import pyochain as pc
 
 from ._parse import extract_methods_from_stub
-from ._rules import PyLit
+from ._rules import header
 from ._target import EXPR_TARGET, REL_TARGET
 
 if TYPE_CHECKING:
@@ -69,5 +69,5 @@ def generate(stub_path: Path) -> str:
     return (
         pc.Iter(("relation", "expression"))
         .map(lambda name: _generate_target(stub_path, name))
-        .into(lambda classes: f"{PyLit.header()}{classes.join(chr(10) * 2)}\n")
+        .into(lambda classes: f"{header()}{classes.join(chr(10) * 2)}\n")
     )

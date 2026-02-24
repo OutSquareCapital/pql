@@ -8,8 +8,11 @@ from typing import NamedTuple, Self
 import pyochain as pc
 from astToolkit import Make
 
-from ._rules import PyLit
+from .._utils import Builtins, CollectionsABC, DuckDB, Pql, Pyochain, Typing
 from ._target import REL_TARGET, ReturnMeta, TargetSpec
+
+ARG = "arg"
+INNER = "inner"
 
 
 @dataclass(slots=True)
@@ -26,11 +29,11 @@ class ParamInfo:
         match target:
             case t if t == REL_TARGET:
                 match target.rewrite_type(self.annotation):
-                    case a if PyLit.DUCK_HANDLER in a and PyLit.STR not in a:
+                    case a if Pql.DUCK_HANDLER in a and Builtins.STR not in a:
                         expr = _iter_map_inner(_iter_from_name(self.name))
-                    case a if PyLit.DUCK_HANDLER in a:
+                    case a if Pql.DUCK_HANDLER in a:
                         expr = _iter_map_name(
-                            _iter_from_name(self.name), PyLit.INTO_DUCKDB
+                            _iter_from_name(self.name), Pql.INTO_DUCKDB
                         )
                     case _:
                         expr = Make.Name(self.name)
@@ -45,25 +48,25 @@ class ParamInfo:
         match target:
             case t if t == REL_TARGET:
                 match self.annotation:
-                    case a if PyLit.ITERABLE in a and PyLit.DUCK_EXPR in a:
+                    case a if CollectionsABC.ITERABLE in a and DuckDB.EXPRESSION in a:
                         return _iter_map_name(
-                            _call_name("try_iter", Make.Name(self.name)),
-                            PyLit.INTO_DUCKDB,
+                            _call_name(Pql.TRY_ITER, Make.Name(self.name)),
+                            Pql.INTO_DUCKDB,
                         )
-                    case a if PyLit.DUCK_EXPR in a and PyLit.DUCK_REL not in a:
-                        return _call_name(PyLit.INTO_DUCKDB, Make.Name(self.name))
-                    case a if PyLit.DUCK_REL in a:
-                        return _call_attr0(Make.Name(self.name), "inner")
+                    case a if DuckDB.EXPRESSION in a and DuckDB.RELATION not in a:
+                        return _call_name(Pql.INTO_DUCKDB, Make.Name(self.name))
+                    case a if DuckDB.RELATION in a:
+                        return _call_attr0(Make.Name(self.name), INNER)
                     case _:
                         return Make.Name(self.name)
             case _:
                 match self.annotation:
-                    case a if PyLit.ITERABLE in a and target.stub_class in a:
+                    case a if CollectionsABC.ITERABLE in a and target.stub_class in a:
                         return _iter_map_inner(
-                            _call_name("try_iter", Make.Name(self.name))
+                            _call_name(Pql.TRY_ITER, Make.Name(self.name))
                         )
-                    case a if target.stub_class in a or PyLit.DUCK_REL in a:
-                        return _call_attr0(Make.Name(self.name), "inner")
+                    case a if target.stub_class in a or DuckDB.RELATION in a:
+                        return _call_attr0(Make.Name(self.name), INNER)
                     case _:
                         return Make.Name(self.name)
 
@@ -91,11 +94,11 @@ class MethodInfo:
 
     @property
     def returns_none(self) -> bool:
-        return self.return_type == PyLit.NONE
+        return self.return_type == Builtins.NONE
 
     def _return_meta(self) -> ReturnMeta:
         if self.returns_relation:
-            return ReturnMeta(PyLit.SELF_RET, pc.NONE)
+            return ReturnMeta(Typing.SELF, pc.NONE)
         return self.target.return_meta(self.return_type)
 
     def generate_method(self) -> str:
@@ -109,10 +112,12 @@ class MethodInfo:
                 return self._build_property_signature(return_annotation).render(
                     self.doc,
                     _wrap_return_expr(
-                        _call_attr(_call_attr0(Make.Name("self"), "inner"), self.name),
+                        _call_attr(
+                            _call_attr0(Make.Name(Builtins.SELF), INNER), self.name
+                        ),
                         wrapper,
                     ),
-                    decorators=pc.Seq((PyLit.PROPERTY,)),
+                    decorators=pc.Seq((Builtins.PROPERTY,)),
                 )
             case _:
                 return ast_signature.render(self.doc, self._build_return_expr(wrapper))
@@ -123,7 +128,7 @@ class MethodInfo:
         args = Make.arguments(
             list_arg=pos_params.iter()
             .map(lambda p: _make_arg(p.name, self.target.rewrite_type(p.annotation)))
-            .insert(Make.arg(PyLit.SELF))
+            .insert(Make.arg(Builtins.SELF))
             .collect(list),
             vararg=self.vararg.map(
                 lambda p: _make_arg(p.name, self.target.rewrite_type(p.annotation))
@@ -175,7 +180,7 @@ class MethodInfo:
     def _build_property_signature(self, return_annotation: str) -> AstSignature:
         return AstSignature(
             self.target.rename_method(self.name),
-            Make.arguments(list_arg=[Make.arg(PyLit.SELF)]),
+            Make.arguments(list_arg=[Make.arg(Builtins.SELF)]),
             _to_expr(return_annotation),
         )
 
@@ -192,7 +197,7 @@ class MethodInfo:
         )
 
         call = ast.Call(
-            func=_call_attr(_call_attr0(Make.Name("self"), "inner"), self.name),
+            func=_call_attr(_call_attr0(Make.Name(Builtins.SELF), INNER), self.name),
             args=self.vararg.map_or(
                 args.collect(list),
                 lambda v: args.insert(v.forward_vararg(self.target)).collect(list),
@@ -201,7 +206,7 @@ class MethodInfo:
         )
 
         if self.returns_relation:
-            return _call_attr(Make.Name("self"), "_new", call)
+            return _call_attr(Make.Name(Builtins.SELF), "_new", call)
         return _wrap_return_expr(call, wrapper)
 
 
@@ -241,7 +246,7 @@ class AstSignature(NamedTuple):
             name=self.name,
             argumentSpecification=self.args,
             body=[Make.Expr(Make.Constant(Ellipsis))],
-            decorator_list=[Make.Name(PyLit.OVERLOAD)],
+            decorator_list=[Make.Name(Typing.OVERLOAD)],
             returns=self.returns,
         )
         ast.fix_missing_locations(rendered)
@@ -265,14 +270,14 @@ def _wrap_return_expr(value: ast.expr, wrapper: pc.Option[str]) -> ast.expr:
 
 def _iter_map_inner(iterable_expr: ast.expr) -> ast.expr:
     lambda_expr = ast.Lambda(
-        args=ast.arguments(args=[Make.arg("arg")]),
-        body=_call_attr0(Make.Name("arg"), "inner"),
+        args=ast.arguments(args=[Make.arg(ARG)]),
+        body=_call_attr0(Make.Name(ARG), INNER),
     )
     return _call_attr(iterable_expr, "map", lambda_expr)
 
 
 def _iter_from_name(name: str) -> ast.expr:
-    return _call_attr(Make.Name("pc"), "Iter", Make.Name(name))
+    return _call_attr(Make.Name("pc"), Pyochain.ITER, Make.Name(name))
 
 
 def _call_name(name: str, *args: ast.expr) -> ast.Call:

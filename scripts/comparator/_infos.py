@@ -2,22 +2,20 @@ from __future__ import annotations
 
 import inspect
 from dataclasses import dataclass, field
-from typing import Literal, NamedTuple, Self
+from typing import NamedTuple, Self
 
 import pyochain as pc
 
-from ._models import MismatchOn, Status
+from .._utils import Builtins, Pql, Typing, get_attr
 from ._parse import extract_last_name, normalize_annotation
+from ._rules import (
+    IGNORED_PARAMS_BY_CLASS_AND_METHOD,
+    MismatchOn,
+    RefBackend,
+    Status,
+)
 
 type MapInfo = pc.Dict[str, ParamInfo]
-type IgnoredParams = pc.Dict[str, pc.Dict[str, pc.Set[str]]]
-type RefBackend = Literal["narwhals", "polars"]
-
-IGNORED_PARAMS_BY_CLASS_AND_METHOD: IgnoredParams = pc.Dict.from_kwargs(
-    LazyFrame=pc.Dict.from_kwargs(
-        sort=pc.Set(("maintain_order", "multithreaded")),
-    )
-)
 
 
 def annotations_differ(pl_param: ParamInfo, pql_param: ParamInfo) -> bool:
@@ -25,7 +23,7 @@ def annotations_differ(pl_param: ParamInfo, pql_param: ParamInfo) -> bool:
         case (pc.Some(pl_ann), pc.Some(pql_ann)):
             normalized_pl = normalize_annotation(pl_ann)
             normalized_pql = normalize_annotation(pql_ann)
-            if normalized_pl == "Any":
+            if normalized_pl == Typing.ANY:
                 return False
             return normalized_pl != normalized_pql
         case _:
@@ -90,16 +88,13 @@ class MethodInfo:
             return_annotation=_get_annotation_str(sig.return_annotation),
         )
 
-    def signature_str(self) -> str:
+    def signature_str(self, highlight_names: pc.Option[pc.Set[str]] = pc.NONE) -> str:
         """Generate a human-readable signature string."""
+        highlights = highlight_names.unwrap_or_else(pc.Set[str].new)
         params_str = (
             self.params.iter()
-            .filter(lambda p: p.name != "self")
-            .map(
-                lambda p: p.annotation.map(
-                    lambda a: f"{p.param_name()}: {a}"
-                ).unwrap_or(p.param_name() + ("=..." if p.has_default else ""))
-            )
+            .filter(lambda p: p.name != Builtins.SELF)
+            .map(lambda p: _format_param_str(p, highlights))
             .join(", ")
         )
         ret = self.return_annotation.map(lambda r: f" -> {r}").unwrap_or("")
@@ -109,7 +104,7 @@ class MethodInfo:
         """Convert parameters to a dictionary mapping names to ParamInfo."""
         return (
             self.params.iter()
-            .filter(lambda p: p.name != "self")
+            .filter(lambda p: p.name != Builtins.SELF)
             .map(lambda p: (p.name, p))
             .collect(pc.Dict)
         )
@@ -126,9 +121,9 @@ class ComparisonInfos:
 
     def reference(self, ref: RefBackend) -> pc.Option[MethodInfo]:
         match ref:
-            case "narwhals":
+            case RefBackend.NARWHALS:
                 return self.narwhals
-            case "polars":
+            case RefBackend.POLARS:
                 return self.polars
 
     def has_reference(self, ref: RefBackend) -> bool:
@@ -231,7 +226,7 @@ def _without_ignored_params(mapping: MapInfo, ignored: pc.Set[str]) -> MapInfo:
     )
 
 
-def ignored_params_for(class_name: str, method_name: str) -> pc.Set[str]:
+def ignored_params_for(class_name: Pql, method_name: str) -> pc.Set[str]:
     return (
         IGNORED_PARAMS_BY_CLASS_AND_METHOD.get_item(class_name)
         .and_then(lambda method_map: method_map.get_item(method_name))
@@ -254,7 +249,7 @@ class ComparisonResult:
         polars_cls: type,
         pql_cls: type,
         method_name: str,
-        class_name: str,
+        class_name: Pql,
     ) -> Self:
         """Compare a single method between narwhals, polars, and pql."""
         infos = ComparisonInfos(
@@ -359,41 +354,17 @@ def _build_method_info(attr: object, name: str) -> pc.Option[MethodInfo]:
             return pc.NONE
 
 
-def get_attr(obj: object, name: str) -> pc.Option[object]:
-    """Safe getattr returning Option."""
-    return pc.Option(getattr(obj, name, None))
-
-
-def is_deprecated_method(obj: object, name: str) -> bool:
-    return (
-        get_attr(obj, name)
-        .map(lambda attr: bool(getattr(attr, "__deprecated__", False)))
-        .unwrap_or(default=False)
+def _format_param_str(param: ParamInfo, highlight_names: pc.Set[str]) -> str:
+    rendered = param.annotation.map(lambda a: f"{param.param_name()}: {a}").unwrap_or(
+        param.param_name() + ("=..." if param.has_default else "")
     )
+    return rendered if not highlight_names.contains(param.name) else f"`{rendered}`"
 
 
 def _signature_with_diff(
     base: MethodInfo, other: MethodInfo, ignored: pc.Set[str]
 ) -> str:
-    diff_names = _diff_param_names(base, other, ignored)
-
-    def _format_param(p: ParamInfo) -> str:
-        match diff_names.any(lambda name: name == p.name):
-            case True:
-                return f"`{p.annotation.map(lambda a: f'{p.param_name()}: {a}').unwrap_or(p.param_name() + ('=...' if p.has_default else ''))}`"
-            case False:
-                return p.annotation.map(lambda a: f"{p.param_name()}: {a}").unwrap_or(
-                    p.param_name() + ("=..." if p.has_default else "")
-                )
-
-    params_str = (
-        base.params.iter()
-        .filter(lambda p: p.name != "self")
-        .map(_format_param)
-        .join(", ")
-    )
-    ret = base.return_annotation.map(lambda r: f" -> {r}").unwrap_or("")
-    return f"({params_str}){ret}"
+    return base.signature_str(pc.Some(_diff_param_names(base, other, ignored)))
 
 
 def _diff_param_names(

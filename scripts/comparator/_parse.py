@@ -3,6 +3,8 @@ import re
 
 import pyochain as pc
 
+from .._utils import Builtins, Pql, Typing
+
 GENERIC_SYMBOL_PATTERN = re.compile(r"^[A-Z][A-Z0-9_]*$")
 
 SELF_PATTERN = re.compile(r"\b(Self|Expr|LazyFrame)\b")
@@ -14,7 +16,7 @@ class _GenericCanonicalizer(ast.NodeTransformer):
 
     def visit_Name(self, node: ast.Name) -> ast.AST:
         match node.id:
-            case name if name not in {"Self", "Expr", "LazyFrame"} and bool(
+            case name if name not in {Typing.SELF, Pql.EXPR, Pql.LAZY_FRAME} and bool(
                 GENERIC_SYMBOL_PATTERN.match(name)
             ):
                 canonical_name = self._mapping.setdefault(
@@ -58,11 +60,13 @@ class _UnionCanonicalizer(ast.NodeTransformer):
                             return pc.Iter.once(node)
 
                 members_as_text = _union_members(node).map(ast.unparse).collect()
-                has_float = members_as_text.iter().any(lambda text: text == "float")
+                has_float = members_as_text.iter().any(
+                    lambda text: text == Builtins.FLOAT
+                )
 
                 return (
                     members_as_text.iter()
-                    .filter(lambda text: not (has_float and text == "int"))
+                    .filter(lambda text: not (has_float and text == Builtins.INT))
                     .collect(pc.Set)
                     .iter()
                     .sort()
