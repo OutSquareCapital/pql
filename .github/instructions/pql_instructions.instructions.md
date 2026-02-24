@@ -149,25 +149,28 @@ Generated from scripts in `scripts/`.
 - Always attempt `SqlExpr`/`Relation` methods first.
 - Use raw SQL only if impossible with wrappers, and keep it minimal and justified.
 
-1. Do not patch generated files directly:
+2. Do not patch generated files directly:
 
 - Never hand-edit `src/pql/sql/_code_gen/*`.
 - Modify generator logic in `scripts/*` and regenerate.
 
-1. Preserve DuckDB semantics:
+3. Preserve DuckDB semantics:
 
 - Do not “hack” DuckDB behavior to mimic Polars exactly when semantics differ.
 - Null ordering/handling differences are acceptable if explicit and consistent.
 
-1. Keep generated SQL/relations efficient:
+4. Keep generated SQL/relations efficient:
 
 - Avoid unnecessary projections/materialization.
 - Keep expression composition compact.
 
-1. Maintain fluent style:
+5. Maintain fluent style:
 
 - Prefer method chaining.
 - Reuse existing helpers (`args_into_exprs`, `try_iter`, `try_flatten`, `into_expr`).
+
+6. Don't hack the arguments:
+- Avoid adding arguments who are not used or raise NotImplementedErrors for "API compatibility". If it don't work, then it don't exist.
 
 ---
 
