@@ -27,31 +27,31 @@ def get_comparisons() -> str:
                     pc.Some(nw.col("x").str.__class__),
                     pl.col("x").str.__class__,
                     pql.col("x").str.__class__,
-                    name="Expr.str",
+                    "Expr.str",
                 ),
                 ClassComparison(
                     pc.Some(nw.col("x").list.__class__),
                     pl.col("x").list.__class__,
                     pql.col("x").list.__class__,
-                    name="Expr.list",
+                    "Expr.list",
                 ),
                 ClassComparison(
                     pc.Some(nw.col("x").struct.__class__),
                     pl.col("x").struct.__class__,
                     pql.col("x").struct.__class__,
-                    name="Expr.struct",
+                    "Expr.struct",
                 ),
                 ClassComparison(
                     pc.Some(nw.col("x").name.__class__),
                     pl.col("x").name.__class__,
                     pql.col("x").name.__class__,
-                    name="Expr.name",
+                    "Expr.name",
                 ),
                 ClassComparison(
                     pc.NONE,
                     pl.col("x").arr.__class__,
                     pql.col("x").arr.__class__,
-                    name="Expr.arr",
+                    "Expr.arr",
                 ),
             )
         )

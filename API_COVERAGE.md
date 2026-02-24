@@ -6,9 +6,9 @@ This report shows the API coverage of pql compared to Polars.
 
 | Class       | Coverage        | Total     | Matched  | Missing | Mismatched | Extra   |
 | ----------- | --------------- | --------- | -------- | ------- | ---------- | ------- |
-| LazyFrame   | (53.8%, 31.3%)  | (26, 83)  | (14, 26) | (2, 38) | (10, 19)   | (29, 8) |
+| LazyFrame   | (57.7%, 34.9%)  | (26, 83)  | (15, 29) | (1, 34) | (10, 20)   | (32, 8) |
 | Expr        | (70.0%, 42.3%)  | (70, 213) | (49, 90) | (8, 94) | (13, 29)   | (58, 1) |
-| LazyGroupBy | (0.0%, 6.2%)    | (1, 16)   | (0, 1)   | (0, 15) | (1, 0)     | (0, 0)  |
+| LazyGroupBy | (0.0%, 50.0%)   | (1, 16)   | (0, 8)   | (0, 4)  | (1, 4)     | (11, 0) |
 | Expr.str    | (100.0%, 38.3%) | (19, 47)  | (19, 18) | (0, 10) | (0, 19)    | (19, 1) |
 | Expr.list   | (90.0%, 41.9%)  | (10, 43)  | (9, 18)  | (0, 21) | (1, 4)     | (13, 1) |
 | Expr.struct | (100.0%, 40.0%) | (1, 5)    | (1, 2)   | (0, 2)  | (0, 1)     | (3, 1)  |
@@ -17,7 +17,7 @@ This report shows the API coverage of pql compared to Polars.
 
 ## LazyFrame
 
-### [x] Missing Methods (39)
+### [x] Missing Methods (35)
 
 - `cache`
   - **Polars**: () -> LazyFrame
@@ -27,8 +27,6 @@ This report shows the API coverage of pql compared to Polars.
   - **Polars**: (gevent: bool, engine: EngineType, optimizations: QueryOptFlags) -> Awaitable[DataFrame] | _GeventDataFrameResult[DataFrame]
 - `collect_batches`
   - **Polars**: (chunk_size: int | None, maintain_order: bool, lazy: bool, engine: EngineType, optimizations: QueryOptFlags) -> Iterator[DataFrame]
-- `describe`
-  - **Polars**: (percentiles: Sequence[float] | float | None, interpolation: QuantileMethod) -> DataFrame
 - `deserialize`
   - **Polars**: (source: str | bytes | Path | IOBase, format: SerializationFormat) -> LazyFrame
 - `drop_nans`
@@ -45,8 +43,6 @@ This report shows the API coverage of pql compared to Polars.
   - **Polars**: () -> LazyFrame
 - `join_where`
   - **Polars**: (other: LazyFrame, *predicates: Expr | Iterable[Expr], suffix: str) -> LazyFrame
-- `last`
-  - **Polars**: () -> LazyFrame
 - `map_batches`
   - **Polars**: (function: Callable[[DataFrame], DataFrame], predicate_pushdown: bool, projection_pushdown: bool, slice_pushdown: bool, no_optimizations: bool, schema: None | SchemaDict, validate_output_schema: bool, streamable: bool) -> LazyFrame
 - `match_to_schema`
@@ -83,13 +79,8 @@ This report shows the API coverage of pql compared to Polars.
   - **Polars**: (target: DeltaTable, mode: Literal['error', 'append', 'overwrite', 'ignore', 'merge'], storage_options: StorageOptionsDict | None, credential_provider: CredentialProviderFunction | Literal['auto'] | None, delta_write_options: dict[str, Any] | None, delta_merge_options: dict[str, Any] | None, optimizations: QueryOptFlags) -> TableMerger | None
 - `sink_ipc`
   - **Polars**: (path: str | Path | IO[bytes] | PartitionBy, compression: IpcCompression | None, compat_level: CompatLevel | None, record_batch_size: int | None, maintain_order: bool, storage_options: StorageOptionsDict | None, credential_provider: CredentialProviderFunction | Literal['auto'] | None, retries: int | None, sync_on_close: SyncOnCloseMethod | None, mkdir: bool, lazy: bool, engine: EngineType, optimizations: QueryOptFlags, _record_batch_statistics: bool) -> LazyFrame | None
-- `slice`
-  - **Polars**: (offset: int, length: int | None) -> LazyFrame
 - `sql`
   - **Polars**: (query: str, table_name: str) -> LazyFrame
-- `tail`
-  - **Narwhals**: (n: int) -> Self
-  - **Polars**: (n: int) -> LazyFrame
 - `to_native`
   - **Narwhals**: () -> LazyFrameT
 - `unnest`
@@ -99,7 +90,7 @@ This report shows the API coverage of pql compared to Polars.
 - `with_columns_seq`
   - **Polars**: (*exprs: IntoExpr | Iterable[IntoExpr], **named_exprs: IntoExpr) -> LazyFrame
 
-### [!] Signature Mismatches (14)
+### [!] Signature Mismatches (15)
 
 - `cast` (pl)
   - **Polars***: (`dtypes: Mapping[ColumnNameOrSelector | PolarsDataType, PolarsDataType | PythonDataType] | PolarsDataType | pl.DataTypeExpr | Schema`, `strict: bool`) -> LazyFrame
@@ -108,6 +99,9 @@ This report shows the API coverage of pql compared to Polars.
   - **Narwhals**: (`backend: IntoBackend[Polars | Pandas | Arrow] | None`, `**kwargs: Any`) -> DataFrame[Any]
   - **Polars**: (`type_coercion: bool`, `predicate_pushdown: bool`, `projection_pushdown: bool`, `simplify_expression: bool`, `slice_pushdown: bool`, `comm_subplan_elim: bool`, `comm_subexpr_elim: bool`, `cluster_with_columns: bool`, `collapse_joins: bool`, `no_optimization: bool`, `engine: EngineType`, `background: bool`, `optimizations: QueryOptFlags`, `**_kwargs: Any`) -> DataFrame | InProcessQuery
   - **pql**: () -> DataFrame
+- `describe` (pl)
+  - **Polars***: (`percentiles: Sequence[float] | float | None`, `interpolation: QuantileMethod`) -> DataFrame
+  - **pql**: () -> Self
 - `drop` (nw)
   - **Narwhals**: (`*columns: str | Iterable[str]`, `strict: bool`) -> Self
   - **Polars**: (`*columns: ColumnNameOrSelector | Iterable[ColumnNameOrSelector]`, `strict: bool`) -> LazyFrame
@@ -425,38 +419,31 @@ This report shows the API coverage of pql compared to Polars.
 
 ## LazyGroupBy
 
-### [x] Missing Methods (15)
+### [x] Missing Methods (4)
 
-- `all`
-  - **Polars**: () -> LazyFrame
-- `first`
-  - **Polars**: (ignore_nulls: bool) -> LazyFrame
 - `having`
   - **Polars**: (*predicates: IntoExpr | Iterable[IntoExpr]) -> LazyGroupBy
 - `head`
   - **Polars**: (n: int) -> LazyFrame
-- `last`
-  - **Polars**: (ignore_nulls: bool) -> LazyFrame
-- `len`
-  - **Polars**: (name: str | None) -> LazyFrame
 - `map_groups`
   - **Polars**: (function: Callable[[DataFrame], DataFrame], schema: SchemaDict | None) -> LazyFrame
-- `max`
-  - **Polars**: () -> LazyFrame
-- `mean`
-  - **Polars**: () -> LazyFrame
-- `median`
-  - **Polars**: () -> LazyFrame
-- `min`
-  - **Polars**: () -> LazyFrame
-- `n_unique`
-  - **Polars**: () -> LazyFrame
-- `quantile`
-  - **Polars**: (quantile: float, interpolation: QuantileMethod) -> LazyFrame
-- `sum`
-  - **Polars**: () -> LazyFrame
 - `tail`
   - **Polars**: (n: int) -> LazyFrame
+
+### [!] Signature Mismatches (4)
+
+- `first` (pl)
+  - **Polars***: (`ignore_nulls: bool`) -> LazyFrame
+  - **pql**: () -> LazyFrame
+- `last` (pl)
+  - **Polars***: (`ignore_nulls: bool`) -> LazyFrame
+  - **pql**: () -> LazyFrame
+- `len` (pl)
+  - **Polars***: (`name: str | None`) -> LazyFrame
+  - **pql**: (`name: str`) -> LazyFrame
+- `quantile` (pl)
+  - **Polars***: (quantile: float, `interpolation: QuantileMethod`) -> LazyFrame
+  - **pql**: (quantile: float, `interpolation: RollingInterpolationMethod`) -> LazyFrame
 
 ## Expr.str
 

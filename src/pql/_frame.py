@@ -21,6 +21,7 @@ if TYPE_CHECKING:
         JoinKeysRes,
         JoinStrategy,
         OptIter,
+        RollingInterpolationMethod,
         UniqueKeepStrategy,
     )
     from .sql.typing import (
@@ -112,6 +113,57 @@ class LazyGroupBy:
         self._frame = frame
         self._keys = keys
         self._group_expr = self._keys.iter().map(str).join(", ")
+
+    def _agg_columns(self, func: Callable[[Expr], Expr]) -> LazyFrame:
+        key_names = (
+            self._keys.iter().map(lambda key: key.inner().get_name()).collect(pc.Set)
+        )
+
+        return (
+            self._frame.columns.iter()
+            .filter(lambda name: name not in key_names)
+            .map(lambda name: func(Expr(sql.col(name))).alias(name))
+            .into(self.agg)
+        )
+
+    def len(self, name: str = "len") -> LazyFrame:
+        return self.agg(sql.lit(1).count().alias(name))
+
+    def all(self) -> LazyFrame:
+        return self._agg_columns(Expr.implode)
+
+    def sum(self) -> LazyFrame:
+        return self._agg_columns(Expr.sum)
+
+    def mean(self) -> LazyFrame:
+        return self._agg_columns(Expr.mean)
+
+    def median(self) -> LazyFrame:
+        return self._agg_columns(Expr.median)
+
+    def min(self) -> LazyFrame:
+        return self._agg_columns(Expr.min)
+
+    def max(self) -> LazyFrame:
+        return self._agg_columns(Expr.max)
+
+    def first(self) -> LazyFrame:
+        return self._agg_columns(Expr.first)
+
+    def last(self) -> LazyFrame:
+        return self._agg_columns(Expr.last)
+
+    def n_unique(self) -> LazyFrame:
+        return self._agg_columns(Expr.n_unique)
+
+    def quantile(
+        self,
+        quantile: float,
+        interpolation: RollingInterpolationMethod = "nearest",
+    ) -> LazyFrame:
+        return self._agg_columns(
+            lambda expr: expr.quantile(quantile, interpolation=interpolation)
+        )
 
     def agg(
         self, *aggs: IntoExpr | Iterable[IntoExpr], **named_aggs: IntoExpr
@@ -436,9 +488,31 @@ class LazyFrame(sql.CoreHandler[sql.Relation]):
         """Get the first row."""
         return self.head(1)
 
+    def last(self) -> Self:
+        """Get the last row."""
+        return self.tail(1)
+
+    def slice(self, offset: int, length: int | None = None) -> Self:
+        """Get a slice of rows."""
+        row_count = self.inner().__len__()
+        start = max(row_count + offset, 0) if offset < 0 else offset
+        size = max(row_count - start, 0) if length is None else max(length, 0)
+        return self.inner().limit(size, start).pipe(self.__from_lf__)
+
+    def tail(self, n: int = 5) -> Self:
+        """Get the last n rows."""
+        row_count = self.inner().__len__()
+        size = max(n, 0)
+        start = max(row_count - size, 0)
+        return self.inner().limit(size, start).pipe(self.__from_lf__)
+
     def count(self) -> Self:
         """Return the count of each column."""
         return self._iter_agg(sql.SqlExpr.count)
+
+    def describe(self) -> Self:
+        """Return descriptive statistics."""
+        return self.inner().describe().pipe(self.__from_lf__)
 
     def sum(self) -> Self:
         """Aggregate the sum of each column."""

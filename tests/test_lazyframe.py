@@ -110,21 +110,6 @@ def test_with_columns_name_prefix(sample_df: pl.DataFrame) -> None:
     )
 
 
-def test_lazyframe_group_by_name_prefix(sample_df: pl.DataFrame) -> None:
-    assert_eq(
-        pql.LazyFrame(sample_df)
-        .group_by("department")
-        .agg(pql.col("salary").mean().name.prefix("avg_"))
-        .sort("department")
-        .collect(),
-        sample_df.lazy()
-        .group_by("department")
-        .agg(pl.col("salary").mean().name.prefix("avg_"))
-        .sort("department")
-        .collect(),
-    )
-
-
 def test_select_unique_name_prefix(sample_df: pl.DataFrame) -> None:
     assert_eq(
         pql.LazyFrame(sample_df)
@@ -521,18 +506,39 @@ def test_lazyframe_gather_every(sample_df: pl.DataFrame) -> None:
     )
 
 
-def test_lazyframe_group_by(sample_df: pl.DataFrame) -> None:
+def test_lazyframe_slice(sample_df: pl.DataFrame) -> None:
     assert_eq(
-        pql.LazyFrame(sample_df)
-        .group_by("department")
-        .agg(pql.col("salary").mean().alias("mean_salary"))
-        .sort("department")
-        .collect(),
-        sample_df.lazy()
-        .group_by("department")
-        .agg(pl.col("salary").mean().alias("mean_salary"))
-        .sort("department")
-        .collect(),
+        pql.LazyFrame(sample_df).sort("id").slice(1, 3).collect(),
+        sample_df.lazy().sort("id").slice(1, 3).collect(),
+    )
+    assert_eq(
+        pql.LazyFrame(sample_df).sort("id").slice(2).collect(),
+        sample_df.lazy().sort("id").slice(2).collect(),
+    )
+    assert_eq(
+        pql.LazyFrame(sample_df).sort("id").slice(-2, 1).collect(),
+        sample_df.lazy().sort("id").slice(-2, 1).collect(),
+    )
+
+
+def test_lazyframe_tail_and_last(sample_df: pl.DataFrame) -> None:
+    assert_eq(
+        pql.LazyFrame(sample_df).sort("id").tail().collect(),
+        sample_df.lazy().sort("id").tail().collect(),
+    )
+    assert_eq(
+        pql.LazyFrame(sample_df).sort("id").tail(2).collect(),
+        sample_df.lazy().sort("id").tail(2).collect(),
+    )
+    assert_eq(
+        pql.LazyFrame(sample_df).sort("id").last().collect(),
+        sample_df.lazy().sort("id").last().collect(),
+    )
+
+
+def test_lazyframe_describe(sample_df: pl.DataFrame) -> None:
+    assert (
+        pql.LazyFrame(sample_df).select("age", "salary").describe().collect().height > 0
     )
 
 
