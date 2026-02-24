@@ -6,7 +6,7 @@ This report shows the API coverage of pql compared to Polars.
 
 | Class               | Coverage        | Total     | Matched  | Missing | Mismatched | Extra   |
 | ------------------- | --------------- | --------- | -------- | ------- | ---------- | ------- |
-| LazyFrame           | (57.7%, 34.9%)  | (26, 83)  | (15, 29) | (1, 33) | (10, 21)   | (33, 8) |
+| LazyFrame           | (57.7%, 34.9%)  | (26, 83)  | (15, 29) | (1, 32) | (10, 22)   | (34, 8) |
 | Expr                | (70.0%, 42.3%)  | (70, 213) | (49, 90) | (8, 94) | (13, 29)   | (58, 1) |
 | LazyGroupBy         | (0.0%, 50.0%)   | (1, 16)   | (0, 8)   | (0, 4)  | (1, 4)     | (11, 0) |
 | ExprStrNameSpace    | (100.0%, 38.3%) | (19, 47)  | (19, 18) | (0, 10) | (0, 19)    | (19, 1) |
@@ -17,7 +17,7 @@ This report shows the API coverage of pql compared to Polars.
 
 ## LazyFrame
 
-### [x] Missing Methods (34)
+### [x] Missing Methods (33)
 
 - `cache`
   - **Polars**: () -> LazyFrame
@@ -81,14 +81,12 @@ This report shows the API coverage of pql compared to Polars.
   - **Polars**: (query: str, table_name: str) -> LazyFrame
 - `to_native`
   - **Narwhals**: () -> LazyFrameT
-- `unnest`
-  - **Polars**: (columns: ColumnNameOrSelector | Collection[ColumnNameOrSelector], *more_columns: ColumnNameOrSelector, separator: str | None) -> LazyFrame
 - `update`
   - **Polars**: (other: LazyFrame, on: str | Sequence[str] | None, how: Literal['left', 'inner', 'full'], left_on: str | Sequence[str] | None, right_on: str | Sequence[str] | None, include_nulls: bool, maintain_order: MaintainOrderJoin | None) -> LazyFrame
 - `with_columns_seq`
   - **Polars**: (*exprs: IntoExpr | Iterable[IntoExpr], **named_exprs: IntoExpr) -> LazyFrame
 
-### [!] Signature Mismatches (16)
+### [!] Signature Mismatches (17)
 
 - `cast` (pl)
   - **Polars***: (`dtypes: Mapping[ColumnNameOrSelector | PolarsDataType, PolarsDataType | PythonDataType] | PolarsDataType | pl.DataTypeExpr | Schema`, `strict: bool`) -> LazyFrame
@@ -146,6 +144,9 @@ This report shows the API coverage of pql compared to Polars.
   - **Narwhals**: (`file: str | Path | BytesIO`) -> None
   - **Polars**: (`path: str | Path | IO[bytes] | PartitionBy`, compression: str, `compression_level: int | None`, `statistics: bool | str | dict[str, bool]`, `row_group_size: int | None`, `data_page_size: int | None`, `maintain_order: bool`, `storage_options: StorageOptionsDict | None`, `credential_provider: CredentialProviderFunction | Literal['auto'] | None`, `retries: int | None`, `sync_on_close: SyncOnCloseMethod | None`, `metadata: ParquetMetadata | None`, `arrow_schema: ArrowSchemaExportable | None`, `mkdir: bool`, `lazy: bool`, `engine: EngineType`, `optimizations: QueryOptFlags`) -> LazyFrame | None
   - **pql**: (`path: str | Path`, `compression: str`) -> None
+- `unnest` (pl)
+  - **Polars***: (`columns: ColumnNameOrSelector | Collection[ColumnNameOrSelector]`, `*more_columns: ColumnNameOrSelector`, `separator: str | None`) -> LazyFrame
+  - **pql**: (`columns: IntoExprColumn | Iterable[IntoExprColumn]`, `*more_columns: IntoExprColumn`) -> Self
 
 ### [+] Extra Methods (pql-only) (8)
 

@@ -37,6 +37,7 @@ if TYPE_CHECKING:
 
 TEMP_NAME = "__pql_temp__"
 TEMP_COL = sql.col(TEMP_NAME)
+MAX_I64 = 9_223_372_036_854_775_807
 
 
 class JoinKeys[T: pc.Seq[str] | str](NamedTuple):
@@ -385,6 +386,64 @@ class LazyFrame(sql.CoreHandler[sql.Relation]):
         """Get the first n rows."""
         return self.limit(n)
 
+    def slice(self, offset: int, length: int | None = None) -> Self:
+        """Get a slice of rows."""
+        slice_idx_col = "__pql_slice_idx__"
+        slice_len_col = "__pql_slice_len__"
+
+        def _with_idx_and_len() -> Self:
+            return self.with_columns(
+                sql.row_number().over().sub(sql.lit(1)).alias(slice_idx_col),
+                sql.lit(1).count().over().alias(slice_len_col),
+            )
+
+        def _from_end_start(off: int) -> sql.SqlExpr:
+            return sql.col(slice_idx_col).ge(sql.col(slice_len_col).add(sql.lit(off)))
+
+        match (pc.Option(length), offset):
+            case (pc.Some(length), _) if length < 0:
+                msg = f"negative slice lengths ({length}) are invalid for LazyFrame"
+                raise ValueError(msg)
+            case (len_val, offset) if offset >= 0:
+                return (
+                    self.inner()
+                    .limit(len_val.unwrap_or(MAX_I64), offset=offset)
+                    .pipe(self._new)
+                )
+            case (pc.Some(0), _):
+                return self.limit(0)
+            case (pc.Some(length), offset):
+                return (
+                    _with_idx_and_len()
+                    .filter(
+                        _from_end_start(offset).and_(
+                            sql.col(slice_idx_col).lt(
+                                sql.col(slice_len_col)
+                                .add(sql.lit(offset))
+                                .add(sql.lit(length))
+                            )
+                        )
+                    )
+                    .drop(slice_idx_col, slice_len_col)
+                )
+            case (_, offset):
+                return (
+                    _with_idx_and_len()
+                    .filter(_from_end_start(offset))
+                    .drop(slice_idx_col, slice_len_col)
+                )
+
+    def tail(self, n: int = 5) -> Self:
+        """Get the last n rows."""
+        match n:
+            case val if val < 0:
+                msg = "`n` must be greater than or equal to 0"
+                raise ValueError(msg)
+            case 0:
+                return self.limit(0)
+            case _:
+                return self.slice(-n)
+
     def drop(self, *columns: str) -> Self:
         """Drop columns from the frame."""
         return self._select(sql.all(exclude=columns))
@@ -502,6 +561,10 @@ class LazyFrame(sql.CoreHandler[sql.Relation]):
     def first(self) -> Self:
         """Get the first row."""
         return self.head(1)
+
+    def last(self) -> Self:
+        """Get the last row."""
+        return self.tail(1)
 
     def count(self) -> Self:
         """Return the count of each column."""
