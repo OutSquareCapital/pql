@@ -13,6 +13,9 @@ from ._target import REL_TARGET, ReturnMeta, TargetSpec
 
 ARG = "arg"
 INNER = "inner"
+NEW = "_new"
+MAP = "map"
+INDENT = "    "
 
 
 @dataclass(slots=True)
@@ -206,7 +209,7 @@ class MethodInfo:
         )
 
         if self.returns_relation:
-            return _call_attr(Make.Name(Builtins.SELF), "_new", call)
+            return _call_attr(Make.Name(Builtins.SELF), NEW, call)
         return _wrap_return_expr(call, wrapper)
 
 
@@ -239,7 +242,7 @@ class AstSignature(NamedTuple):
             returns=self.returns,
         )
         ast.fix_missing_locations(rendered)
-        return indent(ast.unparse(rendered), "    ")
+        return indent(ast.unparse(rendered), INDENT)
 
     def render_overload(self) -> str:
         rendered = Make.FunctionDef(
@@ -250,7 +253,7 @@ class AstSignature(NamedTuple):
             returns=self.returns,
         )
         ast.fix_missing_locations(rendered)
-        return indent(ast.unparse(rendered), "    ")
+        return indent(ast.unparse(rendered), INDENT)
 
 
 def _to_expr(expr: str) -> ast.expr:
@@ -273,7 +276,7 @@ def _iter_map_inner(iterable_expr: ast.expr) -> ast.expr:
         args=ast.arguments(args=[Make.arg(ARG)]),
         body=_call_attr0(Make.Name(ARG), INNER),
     )
-    return _call_attr(iterable_expr, "map", lambda_expr)
+    return _call_attr(iterable_expr, MAP, lambda_expr)
 
 
 def _iter_from_name(name: str) -> ast.expr:
@@ -285,7 +288,7 @@ def _call_name(name: str, *args: ast.expr) -> ast.Call:
 
 
 def _iter_map_name(iterable_expr: ast.expr, fn_name: str) -> ast.expr:
-    return _call_attr(iterable_expr, "map", Make.Name(fn_name))
+    return _call_attr(iterable_expr, MAP, Make.Name(fn_name))
 
 
 def _call_attr(obj: ast.expr, attr: str, *args: ast.expr) -> ast.expr:
