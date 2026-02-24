@@ -3,10 +3,12 @@ from __future__ import annotations
 from functools import partial
 
 import polars as pl
+import pyochain as pc
 import pytest
 from polars.testing import assert_frame_equal
 
 import pql
+import pql._typing
 
 assert_eq = partial(assert_frame_equal, check_dtypes=False, check_row_order=False)
 
@@ -379,6 +381,62 @@ def test_fill_nan_with_value() -> None:
     result = pql.LazyFrame(df).fill_nan(0.0).collect()
     expected = df.lazy().fill_nan(0.0).collect()
     assert_eq(result, expected)
+
+
+def test_fill_null_with_value(sample_df: pl.DataFrame) -> None:
+    assert_eq(
+        pql.LazyFrame(sample_df).select("value", "age").fill_null(0).collect(),
+        sample_df.lazy().select("value", "age").fill_null(0).collect(),
+    )
+
+
+@pytest.mark.parametrize(
+    "strategy",
+    ["forward", "backward", "min", "max", "mean", "zero", "one"],
+)
+def test_fill_null_with_strategy(strategy: pql._typing.FillNullStrategy) -> None:
+    df = pl.DataFrame({"a": [1.0, None, None, 4.0, None]})
+    assert_eq(
+        pql.LazyFrame(df).fill_null(strategy=strategy).collect(),
+        df.lazy().fill_null(strategy=strategy).collect(),
+    )
+
+
+@pytest.mark.parametrize(
+    "strategy",
+    ["forward", "backward"],
+)
+def test_fill_null_with_strategy_limit(strategy: pql._typing.FillNullStrategy) -> None:
+    df = pl.DataFrame({"a": [1, None, None, 4, None]})
+    assert_eq(
+        pql.LazyFrame(df).fill_null(strategy=strategy, limit=1).collect(),
+        df.lazy().fill_null(strategy=strategy, limit=1).collect(),
+    )
+
+
+def test_fill_null_with_value_limit_error() -> None:
+    df = pl.DataFrame({"a": [1.0, None, None, 4.0]})
+    with pytest.raises(ValueError, match="can only specify `limit`"):
+        pql.LazyFrame(df).fill_null(0, limit=1).collect()
+
+
+@pytest.mark.parametrize("strategy", ["min", "max", "mean", "zero", "one"])
+def test_fill_null_with_non_directional_strategy_limit_error(
+    strategy: pql._typing.FillNullStrategy,
+) -> None:
+    df = pl.DataFrame({"a": [1.0, None, None, 4.0]})
+    with pytest.raises(ValueError, match="can only specify `limit`"):
+        pql.LazyFrame(df).fill_null(strategy=strategy, limit=1).collect()
+
+
+def test_fill_null_with_negative_limit_error() -> None:
+    df = pl.DataFrame({"a": [1.0, None, None, 4.0]})
+    with pytest.raises(
+        pc.ResultUnwrapError, match="Can't process negative `limit` value for fill_null"
+    ):
+        pql.LazyFrame(df).fill_null(strategy="forward", limit=-1).collect()
+    with pytest.raises(OverflowError, match="can't convert negative int to unsigned"):
+        df.lazy().fill_null(strategy="forward", limit=-1).collect()
 
 
 def test_shift() -> None:

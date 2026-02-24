@@ -6,7 +6,7 @@ This report shows the API coverage of pql compared to Polars.
 
 | Class       | Coverage        | Total     | Matched  | Missing | Mismatched | Extra   |
 | ----------- | --------------- | --------- | -------- | ------- | ---------- | ------- |
-| LazyFrame   | (57.7%, 34.9%)  | (26, 83)  | (15, 29) | (1, 34) | (10, 20)   | (32, 8) |
+| LazyFrame   | (57.7%, 34.9%)  | (26, 83)  | (15, 29) | (1, 33) | (10, 21)   | (33, 8) |
 | Expr        | (70.0%, 42.3%)  | (70, 213) | (49, 90) | (8, 94) | (13, 29)   | (58, 1) |
 | LazyGroupBy | (0.0%, 50.0%)   | (1, 16)   | (0, 8)   | (0, 4)  | (1, 4)     | (11, 0) |
 | Expr.str    | (100.0%, 38.3%) | (19, 47)  | (19, 18) | (0, 10) | (0, 19)    | (19, 1) |
@@ -17,7 +17,7 @@ This report shows the API coverage of pql compared to Polars.
 
 ## LazyFrame
 
-### [x] Missing Methods (35)
+### [x] Missing Methods (34)
 
 - `cache`
   - **Polars**: () -> LazyFrame
@@ -33,8 +33,6 @@ This report shows the API coverage of pql compared to Polars.
   - **Polars**: (subset: ColumnNameOrSelector | Collection[ColumnNameOrSelector] | None) -> LazyFrame
 - `dtypes`
   - **Polars**: ()
-- `fill_null`
-  - **Polars**: (value: Any | Expr | None, strategy: FillNullStrategy | None, limit: int | None, matches_supertype: bool) -> LazyFrame
 - `group_by_dynamic`
   - **Polars**: (index_column: IntoExpr, every: str | timedelta, period: str | timedelta | None, offset: str | timedelta | None, include_boundaries: bool, closed: ClosedInterval, label: Label, group_by: IntoExpr | Iterable[IntoExpr] | None, start_by: StartBy) -> LazyGroupBy
 - `inspect`
@@ -90,7 +88,7 @@ This report shows the API coverage of pql compared to Polars.
 - `with_columns_seq`
   - **Polars**: (*exprs: IntoExpr | Iterable[IntoExpr], **named_exprs: IntoExpr) -> LazyFrame
 
-### [!] Signature Mismatches (15)
+### [!] Signature Mismatches (16)
 
 - `cast` (pl)
   - **Polars***: (`dtypes: Mapping[ColumnNameOrSelector | PolarsDataType, PolarsDataType | PythonDataType] | PolarsDataType | pl.DataTypeExpr | Schema`, `strict: bool`) -> LazyFrame
@@ -113,6 +111,9 @@ This report shows the API coverage of pql compared to Polars.
 - `explain` (pl)
   - **Polars***: (`format: ExplainFormat`, `optimized: bool`, `type_coercion: bool`, `predicate_pushdown: bool`, `projection_pushdown: bool`, `simplify_expression: bool`, `slice_pushdown: bool`, `comm_subplan_elim: bool`, `comm_subexpr_elim: bool`, `cluster_with_columns: bool`, `collapse_joins: bool`, `streaming: bool`, `engine: EngineType`, `tree_format: bool | None`, `optimizations: QueryOptFlags`) -> str
   - **pql**: () -> str
+- `fill_null` (pl)
+  - **Polars***: (`value: Any | Expr | None`, strategy: FillNullStrategy | None, limit: int | None, `matches_supertype: bool`) -> LazyFrame
+  - **pql**: (`value: IntoExpr | None`, strategy: FillNullStrategy | None, limit: int | None) -> Self
 - `filter` (nw)
   - **Narwhals**: (`*predicates: IntoExpr | Iterable[IntoExpr]`, **constraints: Any) -> Self
   - **Polars**: (`*predicates: IntoExprColumn | Iterable[IntoExprColumn] | bool | list[bool]`, **constraints: Any) -> LazyFrame

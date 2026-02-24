@@ -760,16 +760,6 @@ def test_over_with_nulls_last() -> None:
 
 
 def test_fill_null() -> None:
-    with pytest.raises(
-        ValueError,
-        match="must specify either a fill `value` or `strategy`",
-    ):
-        pql.col("age").fill_null()
-    with pytest.raises(
-        ValueError,
-        match="must specify either a fill `value` or `strategy`",
-    ):
-        pl.col("age").fill_null()
     assert_eq_pl(pql.col("age").fill_null(0), pl.col("age").fill_null(0))
     assert_eq_pl(
         pql.col("age").fill_null(strategy="forward"),
@@ -815,6 +805,43 @@ def test_fill_null() -> None:
         pql.col("age").fill_null(strategy="one"),
         pl.col("age").fill_null(strategy="one"),
     )
+
+
+def test_fill_null_no_value_or_strategy() -> None:
+    msg = "must specify either a fill `value` or `strategy`"
+    with pytest.raises(ValueError, match=msg):
+        pql.col("age").fill_null()
+    with pytest.raises(ValueError, match=msg):
+        pl.col("age").fill_null()
+
+
+def test_fill_null_limit_negative() -> None:
+    with pytest.raises(
+        ValueError, match="Can't process negative `limit` value for fill_null"
+    ):
+        pql.col("age").fill_null(strategy="forward", limit=-1)
+    with pytest.raises(OverflowError, match="can't convert negative int to unsigned"):
+        pl.col("age").fill_null(strategy="forward", limit=-1)
+
+
+def test_fill_null_limit_invalid_strategy() -> None:
+    err = "can only specify `limit` when strategy is set to 'backward' or 'forward'"
+    with pytest.raises(ValueError, match=err):
+        pql.col("age").fill_null(strategy="min", limit=1)
+    with pytest.raises(ValueError, match=err):
+        pl.col("age").fill_null(strategy="min", limit=1)
+    with pytest.raises(ValueError, match=err):
+        pql.col("age").fill_null(0, limit=1)
+    with pytest.raises(ValueError, match=err):
+        pl.col("age").fill_null(0, limit=1)
+
+
+def test_fill_val_and_strat() -> None:
+    err = "cannot specify both `value` and `strategy`"
+    with pytest.raises(ValueError, match=err):
+        pql.col("age").fill_null(value=0, strategy="min")
+    with pytest.raises(ValueError, match=err):
+        pl.col("age").fill_null(value=0, strategy="min")
 
 
 def test_std() -> None:

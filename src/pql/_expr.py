@@ -10,6 +10,7 @@ from typing import TYPE_CHECKING, Any, NamedTuple, Self
 import pyochain as pc
 
 from . import _datatypes as dt, sql  # pyright: ignore[reportPrivateUsage]
+from ._computations import fill_nulls, round, shift
 
 if TYPE_CHECKING:
     from ._datatypes import DataType
@@ -516,14 +517,7 @@ class Expr(sql.CoreHandler[sql.SqlExpr]):
         return self._new(self.inner().is_in(*sql.try_iter(other).map(sql.into_expr)))
 
     def shift(self, n: int = 1) -> Self:
-        match n:
-            case 0:
-                return self
-            case n_val if n_val > 0:
-                expr = self.inner().lag(n_val)
-            case _:
-                expr = self.inner().lead(-n)
-        return self._as_window(expr.over())
+        return self._as_window(expr=self.inner().pipe(shift, n))
 
     def diff(self) -> Self:
         return self.sub(self.shift())
@@ -926,12 +920,7 @@ class Expr(sql.CoreHandler[sql.SqlExpr]):
 
     def round(self, decimals: int = 0, *, mode: RoundMode = "half_to_even") -> Self:
         """Round to given number of decimal places."""
-        match mode:
-            case "half_to_even":
-                rounded = self.inner().round_even(sql.lit(decimals))
-            case "half_away_from_zero":
-                rounded = self.inner().round(decimals)
-        return self._new(rounded)
+        return self._new(round(self.inner(), decimals, mode=mode))
 
     def sqrt(self) -> Self:
         """Compute the square root."""
@@ -1057,51 +1046,19 @@ class Expr(sql.CoreHandler[sql.SqlExpr]):
             sql.when(self.inner().isnan()).then(value).otherwise(self.inner())
         )
 
-    def fill_null(  # noqa: PLR0911,PLR0912,C901
+    def fill_null(
         self,
         value: IntoExpr | None = None,
         strategy: FillNullStrategy | None = None,
         limit: int | None = None,
     ) -> Self:
-        match (pc.Option(value), pc.Option(strategy)):
-            case (pc.Some(val), pc.NONE):
-                return self._new(sql.coalesce(self.inner(), val))
-            case (_, pc.Some("forward") | pc.Some("backward") as strat):
-                match pc.Option(limit):
-                    case pc.Some(lim) if lim <= 0:
-                        return self
-                    case pc.Some(lim):
-                        return self._new(
-                            pc.Iter(range(1, lim + 1))
-                            .map(
-                                lambda offset: (
-                                    self.shift(offset).inner()
-                                    if strategy == "forward"
-                                    else self.shift(-offset).inner()
-                                )
-                            )
-                            .insert(self.inner())
-                            .reduce(sql.coalesce)
-                        )
-                    case _:
-                        match strat:
-                            case pc.Some("forward"):
-                                return self.forward_fill()
-                            case _:
-                                return self.backward_fill()
-            case (_, pc.Some("min")):
-                return self._new(sql.coalesce(self.inner(), self.inner().min().over()))
-            case (_, pc.Some("max")):
-                return self._new(sql.coalesce(self.inner(), self.inner().max().over()))
-            case (_, pc.Some("mean")):
-                return self._new(sql.coalesce(self.inner(), self.inner().mean().over()))
-            case (_, pc.Some("zero")):
-                return self._new(sql.coalesce(self.inner(), 0))
-            case (_, pc.Some("one")):
-                return self._new(sql.coalesce(self.inner(), 1))
-            case _:
-                msg = "must specify either a fill `value` or `strategy`"
-                raise ValueError(msg)
+
+        return (
+            self.inner()
+            .pipe(fill_nulls, value, strategy, limit)
+            .map(self._new)
+            .unwrap()
+        )
 
     def hash(self, seed: int = 0) -> Self:
         """Compute a hash."""

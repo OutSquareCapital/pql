@@ -18,6 +18,7 @@ if TYPE_CHECKING:
 
     from ._typing import (
         AsofJoinStrategy,
+        FillNullStrategy,
         JoinKeysRes,
         JoinStrategy,
         OptIter,
@@ -554,6 +555,22 @@ class LazyFrame(sql.CoreHandler[sql.Relation]):
         """Fill NaN values."""
         return self._iter_slct(
             lambda c: sql.when(sql.col(c).isnan()).then(value).otherwise(c).alias(c)
+        )
+
+    def fill_null(
+        self,
+        value: IntoExpr | None = None,
+        strategy: FillNullStrategy | None = None,
+        limit: int | None = None,
+    ) -> Self:
+        """Fill null values."""
+        return self._iter_slct(
+            lambda c: (
+                Expr(sql.col(c))
+                .fill_null(value=value, strategy=strategy, limit=limit)
+                .inner()
+                .alias(c)
+            )
         )
 
     def shift(self, n: int = 1, *, fill_value: IntoExpr | None = None) -> Self:
