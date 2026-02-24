@@ -63,7 +63,7 @@ class TargetSpec:
             return ReturnMeta(
                 f"pc.{collection}{suffix}"
                 if suffix
-                else f"pc.{collection}[{Typing.ANY}]",
+                else f"pc.{collection.of_type(Typing.ANY)}",
                 pc.Some(f"pc.{collection}.from_ref"),
             )
 

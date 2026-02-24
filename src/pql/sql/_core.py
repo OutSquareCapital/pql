@@ -31,6 +31,19 @@ def try_iter[T](val: Iterable[T] | T) -> pc.Iter[T]:
             return pc.Iter[T].once(val)
 
 
+def try_chain[T](vals: T | Iterable[T], other_vals: Iterable[T]) -> pc.Iter[T]:
+    """Try to chain a value that may or may not be iterable with another iterable.
+
+    Args:
+        vals (T | Iterable[T]): The value to try to chain.
+        other_vals (Iterable[T]): The other iterable to chain with.
+
+    Returns:
+        pc.Iter[T]: An iterator over the chained values.
+    """
+    return try_iter(vals).chain(other_vals)
+
+
 def try_flatten[T](vals: T | Iterable[T]) -> pc.Iter[T]:
     """Try to flatten a value that may be nested iterables.
 

@@ -4,7 +4,7 @@ from functools import partial
 import duckdb
 import pyochain as pc
 
-from ._core import func, into_duckdb, try_iter
+from ._core import func, into_duckdb, try_chain
 from ._expr import SqlExpr
 from .typing import IntoExpr, IntoExprColumn
 
@@ -91,7 +91,7 @@ def coalesce(exprs: IntoExpr | Iterable[IntoExpr], *more_exprs: IntoExpr) -> Sql
     """Create a COALESCE expression."""
     return SqlExpr(
         duckdb.CoalesceOperator(
-            *try_iter(exprs).chain(more_exprs).map(lambda e: into_expr(e).inner())
+            *try_chain(exprs, more_exprs).map(lambda e: into_expr(e).inner())
         )
     )
 

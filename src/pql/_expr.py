@@ -5,6 +5,7 @@ from __future__ import annotations
 import re
 from collections.abc import Callable, Collection, Iterable
 from dataclasses import dataclass, field, replace
+from functools import partial
 from typing import TYPE_CHECKING, Any, NamedTuple, Self
 
 import pyochain as pc
@@ -876,9 +877,9 @@ class Expr(sql.CoreHandler[sql.SqlExpr]):
         descending: bool = False,
         nulls_last: bool = False,
     ) -> Self:
+        expr = partial(self.inner().over, descending=descending, nulls_last=nulls_last)
         return (
-            sql.try_iter(partition_by)
-            .chain(more_exprs)
+            sql.try_chain(partition_by, more_exprs)
             .map(lambda x: sql.into_expr(x, as_col=True))
             .into(
                 lambda partition_exprs: (
@@ -890,21 +891,8 @@ class Expr(sql.CoreHandler[sql.SqlExpr]):
                             .collect()
                         )
                     )
-                    .map(
-                        lambda x: self.inner().over(
-                            partition_exprs,
-                            x,
-                            descending=descending,
-                            nulls_last=nulls_last,
-                        )
-                    )
-                    .unwrap_or_else(
-                        lambda: self.inner().over(
-                            partition_exprs,
-                            descending=descending,
-                            nulls_last=nulls_last,
-                        )
-                    )
+                    .map(lambda order_exprs: expr(partition_exprs, order_exprs))
+                    .unwrap_or_else(lambda: expr(partition_exprs))
                 )
             )
             .pipe(self._as_window)
