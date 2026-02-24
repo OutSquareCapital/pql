@@ -4,6 +4,7 @@ from dataclasses import dataclass
 
 import pyochain as pc
 
+from .._utils import From
 from ._rules import NAMESPACE_SPECS, DateTime, NamespaceSpec, Typing
 
 
@@ -64,9 +65,9 @@ Functions are extracted from DuckDB's duckdb_functions() introspection.
 """
 
 from __future__ import annotations
-
-from {DateTime.module()} import {DateTime.DATE}, {DateTime.DATETIME}, {DateTime.TIME}, {DateTime.TIMEDELTA}
-from {Typing.module()} import {Typing.SELF}
+{From(DateTime).import_(DateTime.DATE, DateTime.DATETIME, DateTime.TIME, DateTime.TIMEDELTA)}
+{From(DateTime).import_(DateTime.DATE, DateTime.DATETIME, DateTime.TIME, DateTime.TIMEDELTA)}
+{From(Typing).import_(Typing.SELF)}
 
 from .._core import DuckHandler, NameSpaceHandler, func
 '''

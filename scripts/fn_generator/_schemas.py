@@ -4,6 +4,8 @@ from enum import StrEnum, auto
 import polars as pl
 import pyochain as pc
 
+from .._utils import Typing
+
 
 class SchemaName(StrEnum):
     MAIN = auto()
@@ -44,7 +46,7 @@ class DuckDbTypes(StrEnum):
     SMALLINT = "SMALLINT"
     STRUCT = "STRUCT"
     STRUCT_EMPTY = "STRUCT()"
-    GENERIC = "T"
+    GENERIC = Typing.T
     POINTER = "POINTER"
     TABLE = "TABLE"
     TIME = "TIME"

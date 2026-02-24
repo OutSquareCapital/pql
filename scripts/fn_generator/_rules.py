@@ -1,54 +1,48 @@
 import builtins
 import keyword
 from dataclasses import dataclass
-from enum import StrEnum
 
 import pyochain as pc
 
 from .._utils import Builtins, DateTime, Decimal, Pql, Typing
 from ._schemas import Categories, DuckDbTypes
 
-
-def _py_types(*args: StrEnum) -> str:
-    return pc.Iter(args).map(lambda pt: pt.value).join(" | ")
-
-
 CONVERSION_MAP: pc.Dict[str, str] = pc.Dict(
     {
-        DuckDbTypes.VARCHAR: _py_types(Builtins.STR),
-        DuckDbTypes.INTEGER: _py_types(Builtins.INT),
-        DuckDbTypes.BIGINT: _py_types(Builtins.INT),
-        DuckDbTypes.SMALLINT: _py_types(Builtins.INT),
-        DuckDbTypes.TINYINT: _py_types(Builtins.INT),
-        DuckDbTypes.HUGEINT: _py_types(Builtins.INT),
-        DuckDbTypes.UINTEGER: _py_types(Builtins.INT),
-        DuckDbTypes.UBIGINT: _py_types(Builtins.INT),
-        DuckDbTypes.USMALLINT: _py_types(Builtins.INT),
-        DuckDbTypes.UTINYINT: _py_types(Builtins.INT),
-        DuckDbTypes.UHUGEINT: _py_types(Builtins.INT),
-        DuckDbTypes.DOUBLE: _py_types(Builtins.FLOAT),
-        DuckDbTypes.FLOAT: _py_types(Builtins.FLOAT),
-        DuckDbTypes.DECIMAL: _py_types(Decimal.DECIMAL),
-        DuckDbTypes.BOOLEAN: _py_types(Builtins.BOOL),
-        DuckDbTypes.DATE: _py_types(DateTime.DATE),
-        DuckDbTypes.TIME: _py_types(DateTime.TIME),
-        DuckDbTypes.TIMESTAMP: _py_types(DateTime.DATETIME),
-        DuckDbTypes.INTERVAL: _py_types(DateTime.TIMEDELTA),
-        DuckDbTypes.BLOB: _py_types(
-            Builtins.BYTES, Builtins.BYTEARRAY, Builtins.MEMORYVIEW
+        DuckDbTypes.VARCHAR: Builtins.STR.value,
+        DuckDbTypes.INTEGER: Builtins.INT.value,
+        DuckDbTypes.BIGINT: Builtins.INT.value,
+        DuckDbTypes.SMALLINT: Builtins.INT.value,
+        DuckDbTypes.TINYINT: Builtins.INT.value,
+        DuckDbTypes.HUGEINT: Builtins.INT.value,
+        DuckDbTypes.UINTEGER: Builtins.INT.value,
+        DuckDbTypes.UBIGINT: Builtins.INT.value,
+        DuckDbTypes.USMALLINT: Builtins.INT.value,
+        DuckDbTypes.UTINYINT: Builtins.INT.value,
+        DuckDbTypes.UHUGEINT: Builtins.INT.value,
+        DuckDbTypes.DOUBLE: Builtins.FLOAT.value,
+        DuckDbTypes.FLOAT: Builtins.FLOAT.value,
+        DuckDbTypes.DECIMAL: Decimal.DECIMAL.value,
+        DuckDbTypes.BOOLEAN: Builtins.BOOL.value,
+        DuckDbTypes.DATE: DateTime.DATE.value,
+        DuckDbTypes.TIME: DateTime.TIME.value,
+        DuckDbTypes.TIMESTAMP: DateTime.DATETIME.value,
+        DuckDbTypes.INTERVAL: DateTime.TIMEDELTA.value,
+        DuckDbTypes.BLOB: Builtins.BYTES.into_union(
+            Builtins.BYTEARRAY, Builtins.MEMORYVIEW
         ),
-        DuckDbTypes.BIT: _py_types(
-            Builtins.BYTES, Builtins.BYTEARRAY, Builtins.MEMORYVIEW
+        DuckDbTypes.BIT: Builtins.BYTES.into_union(
+            Builtins.BYTEARRAY, Builtins.MEMORYVIEW
         ),
-        DuckDbTypes.UUID: _py_types(Builtins.STR),
-        DuckDbTypes.JSON: _py_types(Builtins.STR),
-        DuckDbTypes.ANY: _py_types(Typing.SELF),
-        DuckDbTypes.LIST: _py_types(Builtins.LIST),
-        DuckDbTypes.MAP: _py_types(Typing.SELF),
-        DuckDbTypes.STRUCT: _py_types(Builtins.DICT),
-        DuckDbTypes.ARRAY: _py_types(Builtins.LIST),
-        DuckDbTypes.UNION: _py_types(Typing.SELF),
-        DuckDbTypes.NULL: _py_types(Builtins.NONE),
+        DuckDbTypes.UUID: Builtins.STR.value,
+        DuckDbTypes.JSON: Builtins.STR.value,
+        DuckDbTypes.ANY: Typing.SELF.value,
+        DuckDbTypes.LIST: Builtins.LIST.value,
+        DuckDbTypes.MAP: Typing.SELF.value,
+        DuckDbTypes.STRUCT: Builtins.DICT.value,
+        DuckDbTypes.ARRAY: Builtins.LIST.value,
+        DuckDbTypes.UNION: Typing.SELF.value,
+        DuckDbTypes.NULL: Builtins.NONE.value,
     }
 )
 
@@ -64,7 +58,7 @@ def _duckdb_type_to_py(enum_type: DuckDbTypes) -> str:
             DuckDbTypes.GENERIC_ARRAY,
             DuckDbTypes.V_ARRAY,
         ):
-            return f"{Builtins.LIST}[{_base_py_for_value(inner.removesuffix('[]'))}]"
+            return Builtins.LIST.of_type(_base_py_for_value(inner.removesuffix("[]")))
         case arr if "[" in arr:
             return _base_py_for_value(arr.partition("[")[0])
         case _ as value:

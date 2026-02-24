@@ -1,6 +1,15 @@
 import pyochain as pc
 
-from .._utils import Builtins, CollectionsABC, DuckDB, Pql, Pyochain, Typing
+from .._utils import (
+    Builtins,
+    CollectionsABC,
+    DuckDB,
+    From,
+    Import,
+    Pql,
+    Pyochain,
+    Typing,
+)
 
 
 def header() -> str:
@@ -13,22 +22,21 @@ Do not edit manually.
 
 from __future__ import annotations
 
-from {Typing.module()} import TYPE_CHECKING, {Typing.ANY}, {Typing.LITERAL}, {Typing.SELF}, {Typing.SUPPORTS_INT}, {Typing.OVERLOAD}
-
-import {DuckDB.module()}
-import {Pyochain.module()} as pc
-from {DuckDB.module()} import ExplainType, RenderMode
+{From(Typing).import_(Typing.TYPE_CHECKING, Typing.ANY, Typing.LITERAL, Typing.SELF, Typing.SUPPORTS_INT, Typing.OVERLOAD)}
+{Import(DuckDB)}
+{Import(Pyochain).as_("pc")}
+{From(DuckDB).import_(DuckDB.EXPLAIN_TYPE, DuckDB.RENDER_MODE)}
 from .._core import {Pql.CORE_HANDLER}, {Pql.REL_HANDLER}, {Pql.TRY_ITER}, {Pql.INTO_DUCKDB}, {Pql.DUCK_HANDLER}
-if TYPE_CHECKING:
-    from {CollectionsABC.module()} import {CollectionsABC.CALLABLE}, {CollectionsABC.ITERABLE}
+if {Typing.TYPE_CHECKING}:
+    {From(CollectionsABC).import_(CollectionsABC.CALLABLE, CollectionsABC.ITERABLE)}
     import numpy as np
     import pandas  # pyright: ignore[reportMissingModuleSource]
     import polars
     import pyarrow as pa
     import torch
     import tensorflow  # pyright: ignore[reportMissingModuleSource]
-    from {DuckDB.module()} import sqltypes
-    from {Typing.module()} import {Typing.UNION}
+    {From(DuckDB).import_(DuckDB.SQLTYPES)}
+    {From(Typing).import_(Typing.UNION)}
 
     type ParquetFieldIdsType = {Builtins.DICT}[{Builtins.STR}, {Builtins.INT} | ParquetFieldIdsType]
 '''
@@ -56,12 +64,15 @@ EXPR_TYPE_SUBS = pc.Dict(
 
 PARAM_TYPE_FIXES = pc.Dict.from_kwargs(
     aggregate=pc.Dict.from_kwargs(
-        aggr_expr=f"{DuckDB.EXPRESSION} | {Builtins.STR} | {CollectionsABC.ITERABLE}[{DuckDB.EXPRESSION} | {Builtins.STR}]"
+        aggr_expr=DuckDB.EXPRESSION.into_union(
+            Builtins.STR,
+            CollectionsABC.ITERABLE.of_type(DuckDB.EXPRESSION, Builtins.STR),
+        )
     )
 )
 
 RETURN_TYPE_FIXES = pc.Dict.from_kwargs(
-    dtypes=f"{Builtins.LIST}[sqltypes.DuckDBPyType]"
+    dtypes=Builtins.LIST.of_type("sqltypes.DuckDBPyType")
 )
 
 KW_ONLY_FIXES = pc.Set({"write_csv", "write_parquet"})

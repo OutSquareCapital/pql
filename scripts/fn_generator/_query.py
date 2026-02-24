@@ -3,6 +3,7 @@ from collections.abc import Iterable
 
 import polars as pl
 
+from .._utils import Typing
 from ._rules import (
     CONVERTER,
     NAMESPACE_SPECS,
@@ -102,8 +103,8 @@ def _filters(lf: pl.LazyFrame, dk: DuckCols) -> pl.LazyFrame:
 def _return_type(namespace: pl.Expr) -> pl.Expr:
     return (
         pl.when(namespace.is_not_null())
-        .then(pl.lit("T"))
-        .otherwise(pl.lit("Self"))
+        .then(pl.lit(Typing.T))
+        .otherwise(pl.lit(Typing.SELF))
         .alias("self_type")
     )
 

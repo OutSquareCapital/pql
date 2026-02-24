@@ -4,6 +4,7 @@ import collections.abc as collections_abc
 import datetime
 import decimal
 import typing as ty
+from dataclasses import dataclass
 from enum import StrEnum, auto
 
 import duckdb
@@ -23,10 +24,35 @@ class KwordEnum(StrEnum):
     def into_iter(cls) -> pc.Iter[KwordEnum]:
         return pc.Iter(cls)
 
+    def of_type(self, *dtypes: str) -> str:
+        return f"{self.value}[{pc.Iter(dtypes).join(' | ')}]"
+
+    def into_union(self, *args: str) -> str:
+        return pc.Iter(args).insert(self).join(" | ")
+
 
 def get_attr(obj: object, name: str) -> pc.Option[object]:
     """Safe getattr returning Option."""
     return pc.Option(getattr(obj, name, None))
+
+
+@dataclass(slots=True)
+class From[T: KwordEnum]:
+    module: type[T]
+
+    def import_(self, *names: T) -> str:
+        return f"from {self.module.module()} import {pc.Iter(names).map(lambda n: n.value).join(', ')}"
+
+
+@dataclass(slots=True)
+class Import[T: KwordEnum]:
+    module: type[T]
+
+    def __str__(self) -> str:
+        return f"import {self.module.module()}"
+
+    def as_(self, alias: str) -> str:
+        return f"import {self.module.module()} as {alias}"
 
 
 class Dunders(KwordEnum):
@@ -70,6 +96,7 @@ class Builtins(KwordEnum):
     DICT = dict.__name__
     PROPERTY = property.__name__
     SELF = auto()
+    CLS = auto()
     STR = str.__name__
     BOOL = bool.__name__
     INT = int.__name__
@@ -87,6 +114,9 @@ class DateTime(KwordEnum):
 
 
 class DuckDB(KwordEnum):
+    SQLTYPES = auto()
+    EXPLAIN_TYPE = duckdb.ExplainType.__name__
+    RENDER_MODE = duckdb.RenderMode.__name__
     EXPRESSION = duckdb.Expression.__name__
     RELATION = duckdb.DuckDBPyRelation.__name__
 
@@ -96,6 +126,8 @@ class Decimal(KwordEnum):
 
 
 class Typing(KwordEnum):
+    TYPE_CHECKING = "TYPE_CHECKING"
+    T = "T"
     ANY = ty.Any.__name__
     LITERAL = ty.Literal.__name__
     SELF = ty.Self.__name__
