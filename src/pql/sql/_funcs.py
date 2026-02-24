@@ -71,9 +71,15 @@ def all(exclude: Iterable[IntoExprColumn] | None = None) -> SqlExpr:
     )
 
 
-def col(name: str) -> SqlExpr:
-    """Create a column expression."""
-    return SqlExpr(duckdb.ColumnExpression(name))
+class Col:
+    def __call__(self, name: str) -> SqlExpr:
+        return SqlExpr(duckdb.ColumnExpression(name))
+
+    def __getattr__(self, name: str) -> SqlExpr:
+        return self.__call__(name)
+
+
+col = Col()
 
 
 def lit(value: IntoExpr) -> SqlExpr:
