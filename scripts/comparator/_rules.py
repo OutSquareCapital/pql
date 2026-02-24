@@ -17,6 +17,7 @@ IGNORED_PARAMS_BY_CLASS_AND_METHOD: IgnoredParams = pc.Dict(
             sort=pc.Set(("maintain_order", "multithreaded")),
             join=pc.Set(("allow_parallel", "force_parallel")),
             join_asof=pc.Set(("allow_parallel", "force_parallel")),
+            collect=pc.Set(("backend", "kwargs")),
         ),
         Pql.EXPR_LIST_NAME_SPACE: pc.Dict.from_kwargs(eval=pc.Set(("parallel",))),
         Pql.EXPR_ARR_NAME_SPACE: pc.Dict.from_kwargs(eval=pc.Set(("parallel",))),

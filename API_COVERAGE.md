@@ -6,7 +6,7 @@ This report shows the API coverage of pql compared to Polars.
 
 | Class               | Coverage        | Total     | Matched  | Missing | Mismatched | Extra   |
 | ------------------- | --------------- | --------- | -------- | ------- | ---------- | ------- |
-| LazyFrame           | (57.7%, 34.9%)  | (26, 83)  | (15, 29) | (1, 32) | (10, 22)   | (34, 8) |
+| LazyFrame           | (61.5%, 34.9%)  | (26, 83)  | (16, 29) | (1, 32) | (9, 22)    | (34, 8) |
 | Expr                | (70.0%, 42.3%)  | (70, 213) | (49, 90) | (8, 94) | (13, 29)   | (58, 1) |
 | LazyGroupBy         | (0.0%, 50.0%)   | (1, 16)   | (0, 8)   | (0, 4)  | (1, 4)     | (11, 0) |
 | ExprStrNameSpace    | (100.0%, 38.3%) | (19, 47)  | (19, 18) | (0, 10) | (0, 19)    | (19, 1) |
@@ -86,15 +86,11 @@ This report shows the API coverage of pql compared to Polars.
 - `with_columns_seq`
   - **Polars**: (*exprs: IntoExpr | Iterable[IntoExpr], **named_exprs: IntoExpr) -> LazyFrame
 
-### [!] Signature Mismatches (17)
+### [!] Signature Mismatches (16)
 
 - `cast` (pl)
   - **Polars***: (`dtypes: Mapping[ColumnNameOrSelector | PolarsDataType, PolarsDataType | PythonDataType] | PolarsDataType | pl.DataTypeExpr | Schema`, `strict: bool`) -> LazyFrame
   - **pql**: (`dtypes: Mapping[str, DataType] | DataType`) -> Self
-- `collect` (nw)
-  - **Narwhals**: (`backend: IntoBackend[Polars | Pandas | Arrow] | None`, `**kwargs: Any`) -> DataFrame[Any]
-  - **Polars**: (`type_coercion: bool`, `predicate_pushdown: bool`, `projection_pushdown: bool`, `simplify_expression: bool`, `slice_pushdown: bool`, `comm_subplan_elim: bool`, `comm_subexpr_elim: bool`, `cluster_with_columns: bool`, `collapse_joins: bool`, `no_optimization: bool`, `engine: EngineType`, `background: bool`, `optimizations: QueryOptFlags`, `**_kwargs: Any`) -> DataFrame | InProcessQuery
-  - **pql**: () -> DataFrame
 - `describe` (pl)
   - **Polars***: (`percentiles: Sequence[float] | float | None`, `interpolation: QuantileMethod`) -> DataFrame
   - **pql**: () -> Self
