@@ -7,12 +7,15 @@ Same story for `SQLFrame`.
 
 ## Architecture
 
-Currently, the package is structured in two layers:
+The goal is to use as much as possible of the existing Expression/Relational API and functions from duckdb. raw SQL is only used when no other choice exist.
 
-- the **SQL layer** in `src/pql/sql` is the core of the package, where the SQL query is built and generated. It wraps the duckdb python API and provides a more user friendly interface to build SQL queries, as well as expanding significantly the API with more functions and features, thanks to code generation scripts from duckdb catalog for example.
-- the **polars layer** in `src/pql/{_frame.py, _expr.py}` is a wrapper around the SQL layer, that provides a polars like API to build SQL queries.
-It is designed to be as close as possible to the polars API, while still providing access to all the features of the SQL layer.
-This is the public API of the package, and the one that users should use to build their queries.
+The `sql` folder is the internal API to create duckdb Expressions.
+Roles:
+    - Wraps the duckdb API to provide better naming/usage ergonomics
+    - Extends the existing methods
+    - Handles conversion of raw inputs to duckdb expressions.
+
+Then the "surface" level modules are wrappers on top of this API, to provide the actual user-facing API.
 
 ## Scripts
 
