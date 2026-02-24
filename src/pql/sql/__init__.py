@@ -4,7 +4,7 @@ from duckdb import table as from_table, table_function as from_table_function
 
 from . import typing
 from ._code_gen import Relation
-from ._core import CoreHandler, try_chain, try_flatten, try_iter
+from ._core import CoreHandler
 from ._datatypes import (
     ArrayType,
     DecimalType,
@@ -77,9 +77,6 @@ __all__ = [
     "lit",
     "parse_dtype",
     "row_number",
-    "try_chain",
-    "try_flatten",
-    "try_iter",
     "typing",
     "unnest",
     "when",

@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 import duckdb
 import pyochain as pc
 
-from ._core import try_iter
+from .._args_iter import try_iter
 
 if TYPE_CHECKING:
     from ._expr import SqlExpr

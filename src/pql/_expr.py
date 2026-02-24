@@ -11,6 +11,7 @@ from typing import TYPE_CHECKING, Any, NamedTuple, Self
 import pyochain as pc
 
 from . import _datatypes as dt, sql  # pyright: ignore[reportPrivateUsage]
+from ._args_iter import try_chain, try_flatten, try_iter
 from ._computations import fill_nulls, round, shift
 
 if TYPE_CHECKING:
@@ -136,7 +137,7 @@ class ExprPlan:
         named_exprs: dict[str, IntoExpr] | None = None,
     ) -> Self:
         return cls(
-            sql.try_flatten(exprs)
+            try_flatten(exprs)
             .flat_map(lambda value: _resolve_projection(columns, value))  # pyright: ignore[reportArgumentType]
             .chain(
                 pc.Option(named_exprs)
@@ -230,7 +231,7 @@ def resolve_predicates(
     constraints: dict[str, IntoExpr] | None = None,
 ) -> pc.Iter[sql.SqlExpr]:
     return (
-        sql.try_flatten(predicates)
+        try_flatten(predicates)
         .map(lambda value: sql.into_expr(value, as_col=True))  # pyright: ignore[reportArgumentType]
         .chain(
             pc.Option(constraints)
@@ -515,7 +516,7 @@ class Expr(sql.CoreHandler[sql.SqlExpr]):
 
     def is_in(self, other: Collection[IntoExpr] | IntoExpr) -> Self:
         """Check if value is in an iterable of values."""
-        return self._new(self.inner().is_in(*sql.try_iter(other).map(sql.into_expr)))
+        return self._new(self.inner().is_in(*try_iter(other).map(sql.into_expr)))
 
     def shift(self, n: int = 1) -> Self:
         return self._as_window(expr=self.inner().pipe(shift, n))
@@ -879,14 +880,14 @@ class Expr(sql.CoreHandler[sql.SqlExpr]):
     ) -> Self:
         expr = partial(self.inner().over, descending=descending, nulls_last=nulls_last)
         return (
-            sql.try_chain(partition_by, more_exprs)
+            try_chain(partition_by, more_exprs)
             .map(lambda x: sql.into_expr(x, as_col=True))
             .into(
                 lambda partition_exprs: (
                     pc.Option(order_by)
                     .map(
                         lambda value: (
-                            sql.try_iter(value)
+                            try_iter(value)
                             .map(lambda x: sql.into_expr(x, as_col=True))
                             .collect()
                         )

@@ -4,7 +4,8 @@ from functools import partial
 import duckdb
 import pyochain as pc
 
-from ._core import func, into_duckdb, try_chain
+from .._args_iter import try_chain
+from ._core import func, into_duckdb
 from ._expr import SqlExpr
 from .typing import IntoExpr, IntoExprColumn
 
