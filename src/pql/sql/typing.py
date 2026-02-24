@@ -65,10 +65,7 @@ type NonNestedLiteral = (
     NumericLiteral | TemporalLiteral | str | bool | bytes | bytearray | memoryview
 )
 type PythonLiteral = (
-    NonNestedLiteral
-    | Sequence[PythonLiteral]
-    | dict[NonNestedLiteral, PythonLiteral]
-    | None
+    NonNestedLiteral | Sequence[PythonLiteral] | dict[str, PythonLiteral] | None
 )
 """Python literal types (can convert into a `lit` expression)."""
 type IntoExprColumn = str | ExprLike
