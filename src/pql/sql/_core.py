@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Concatenate, Self
+from typing import TYPE_CHECKING, Concatenate, Self
 
 import duckdb
 import pyochain as pc
@@ -10,7 +10,7 @@ import pyochain as pc
 from ._rel_conversions import frame_init_into_duckdb
 
 if TYPE_CHECKING:
-    from .typing import IntoRel
+    from .typing import IntoRel, PythonLiteral
 
 
 @dataclass(slots=True)
@@ -60,14 +60,16 @@ class DuckHandler(CoreHandler[duckdb.Expression]):
 
     __slots__ = ()
 
-    @staticmethod
-    def into_duckdb(expr: DuckHandler | duckdb.Expression) -> duckdb.Expression:
-        """Recursively convert an expression wrapper into a DuckDB expression."""
-        match expr:
-            case DuckHandler():
-                return expr.inner()
-            case _:
-                return expr
+
+def into_duckdb[T: PythonLiteral | duckdb.Expression](
+    value: T | DuckHandler,
+) -> T | duckdb.Expression:
+    """Convert a value to a DuckDB Expression if it's a SqlExpr, otherwise return it as is."""
+    match value:
+        case DuckHandler():
+            return value.inner()
+        case _:
+            return value
 
 
 class RelHandler(CoreHandler[duckdb.DuckDBPyRelation]):
@@ -93,20 +95,13 @@ class NameSpaceHandler[T: DuckHandler]:
         return self._parent.inner()
 
 
-def into_duckdb[T](value: T | DuckHandler) -> T | duckdb.Expression:
-    """Convert a value to a DuckDB Expression if it's a SqlExpr, otherwise return it as is."""
-    match value:
-        case DuckHandler():
-            return value.inner()
-        case _:
-            return value
-
-
-def func(name: str, *args: Any) -> duckdb.Expression:  # noqa: ANN401
+def func(
+    name: str, *args: PythonLiteral | duckdb.Expression | DuckHandler | None
+) -> duckdb.Expression:
     """Create a SQL function expression."""
     return (
         pc.Iter(args)
-        .filter(lambda a: a is not None)
+        .filter_map(pc.Option)
         .map(into_duckdb)
-        .into(lambda args: duckdb.FunctionExpression(name, *args))
+        .into(lambda cleaned: duckdb.FunctionExpression(name, *cleaned))  # pyright: ignore[reportArgumentType]
     )

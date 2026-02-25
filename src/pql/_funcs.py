@@ -4,7 +4,7 @@ import pyochain as pc
 
 from . import sql
 from ._expr import Expr, ExprMeta
-from .sql.typing import IntoExpr, IntoExprColumn
+from .sql.typing import IntoExprColumn, PythonLiteral
 
 
 class Col:
@@ -15,7 +15,7 @@ class Col:
         return self.__call__(name)
 
 
-def lit(value: IntoExpr) -> Expr:
+def lit(value: PythonLiteral) -> Expr:
     """Create a literal expression."""
     return Expr(sql.lit(value))
 

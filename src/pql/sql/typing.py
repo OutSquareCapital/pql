@@ -49,15 +49,7 @@ class NPArrayLike[S, D](Protocol):
 type IntoDict[K, V] = Mapping[K, V] | Iterable[tuple[K, V]]
 type ExprLike = SqlExpr | Expr
 """Types that are already expressions wrappers and can be used directly as expressions."""
-type ExprIntoVals = DuckHandler | duckdb.Expression
-type SeqIntoVals = (
-    Sequence[duckdb.Expression]
-    | Sequence[Mapping[str, PythonLiteral]]
-    | Sequence[PythonLiteral]
-)
-type IntoValues = ExprIntoVals | Mapping[str, Sequence[PythonLiteral]] | SeqIntoVals
-"""Types that can be converted into a `values` relation (either an expression, a mapping, or a sequence)."""
-type IntoRel = IntoFrame | IntoValues | NPArrayLike[Any, Any]
+
 """Inputs that can initialize a `LazyFrame`."""
 type NumericLiteral = int | float | Decimal
 type TemporalLiteral = date | time | datetime | timedelta
@@ -65,10 +57,26 @@ type BlobLiteral = bytes | bytearray | memoryview
 type NonNestedLiteral = (
     NumericLiteral | TemporalLiteral | str | bool | BlobLiteral | UUID
 )
-type PythonLiteral = (
-    NonNestedLiteral | Sequence[PythonLiteral] | dict[NonNestedLiteral, PythonLiteral]
+type NestedLiteral = (
+    list[PythonLiteral]
+    | dict[NonNestedLiteral, PythonLiteral]
+    | tuple[PythonLiteral, ...]
+    | NPArrayLike[Any, Any]
 )
+type PythonLiteral = NonNestedLiteral | NestedLiteral
 """Python literal types (can convert into a `lit` expression)."""
+type ExprIntoVals = DuckHandler | duckdb.Expression
+type SeqIntoVals = (
+    Sequence[duckdb.Expression]
+    | Sequence[Mapping[str, PythonLiteral]]
+    | Sequence[PythonLiteral]
+    | NPArrayLike[Any, Any]
+)
+
+type IntoValues = ExprIntoVals | Mapping[str, Sequence[PythonLiteral]] | SeqIntoVals
+"""Types that can be converted into a `values` relation (either an expression, a mapping, or a sequence)."""
+type IntoRel = IntoFrame | IntoValues
+""""Types that can be converted into a relation (either a frame or values)."""
 type IntoExprColumn = str | ExprLike
 """Inputs that can convert into a `col` expression."""
 type IntoExpr = PythonLiteral | IntoExprColumn

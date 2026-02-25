@@ -5,9 +5,9 @@ import duckdb
 import pyochain as pc
 
 from .._args_iter import try_chain
-from ._core import func, into_duckdb
+from ._core import func
 from ._expr import SqlExpr
-from .typing import IntoExpr, IntoExprColumn
+from .typing import IntoExpr, IntoExprColumn, PythonLiteral
 
 
 def row_number() -> SqlExpr:
@@ -83,9 +83,9 @@ class Col:
 col = Col()
 
 
-def lit(value: IntoExpr) -> SqlExpr:  # pyright: ignore[reportUnknownParameterType]
+def lit(value: PythonLiteral) -> SqlExpr:
     """Create a literal expression."""
-    return SqlExpr(duckdb.ConstantExpression(into_duckdb(value)))
+    return SqlExpr(duckdb.ConstantExpression(value))
 
 
 def coalesce(exprs: IntoExpr | Iterable[IntoExpr], *more_exprs: IntoExpr) -> SqlExpr:

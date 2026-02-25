@@ -22,7 +22,7 @@ def frame_init_into_duckdb(data: IntoRel) -> duckdb.DuckDBPyRelation:  # noqa: P
         case duckdb.Expression():
             return duckdb.values(data)
         case DuckHandler():
-            return duckdb.values(DuckHandler.into_duckdb(data))
+            return duckdb.values(data.inner())
         case Mapping():
             return from_mapping(data)
         case NPArrayLike():
