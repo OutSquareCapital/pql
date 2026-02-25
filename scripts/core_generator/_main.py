@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING
 import pyochain as pc
 
 from ._parse import extract_methods_from_stub
-from ._rules import header
+from ._sections import class_def, header
 from ._target import EXPR_TARGET, REL_TARGET
 
 if TYPE_CHECKING:
@@ -60,7 +60,11 @@ def _generate_target(stub_path: Path, target_name: str) -> str:
         extract_methods_from_stub(stub_path, target)
         .into(_resolve_overloads)
         .map(lambda m: m.generate_method())
-        .into(lambda methods: f"{target.class_def()}{methods.join(chr(10) * 2)}")
+        .into(
+            lambda methods: (
+                f"{class_def(target.wrapper_class, target.wrapper_base, target.stub_class)}{methods.join(chr(10) * 2)}"
+            )
+        )
     )
 
 

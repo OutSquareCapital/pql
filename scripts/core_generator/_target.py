@@ -1,6 +1,5 @@
 import inspect
 from dataclasses import dataclass, field
-from textwrap import dedent
 from typing import NamedTuple
 
 import duckdb
@@ -91,21 +90,6 @@ class TargetSpec:
 
     def rename_method(self, method_name: str) -> str:
         return self.method_renames.get_item(method_name).unwrap_or(method_name)
-
-    def class_def(self) -> str:
-        return dedent(f'''
-
-class {self.wrapper_class}({self.wrapper_base}):
-    """Wrapper around {self.stub_class} that uses SqlExpr instead of duckdb.Expression.
-
-    This is a composition-based wrapper: it stores a ``_expr: {self.stub_class}``
-    and delegates all method calls, converting SqlExpr <-> duckdb.Expression
-    at the boundary.
-    """
-
-    __slots__ = ()
-
-    ''')
 
     def get_runtime_docs(self) -> pc.Dict[str, str]:
         """Get docstrings from the runtime target DuckDB class."""
