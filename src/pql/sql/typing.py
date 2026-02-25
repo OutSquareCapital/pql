@@ -4,6 +4,7 @@ from collections.abc import Iterable, Iterator, Mapping, Sequence
 from datetime import date, datetime, time, timedelta
 from decimal import Decimal
 from typing import TYPE_CHECKING, Any, Protocol, runtime_checkable
+from uuid import UUID
 
 import duckdb
 from narwhals.typing import IntoFrame
@@ -60,12 +61,12 @@ type IntoRel = IntoFrame | IntoValues | NPArrayLike[Any, Any]
 """Inputs that can initialize a `LazyFrame`."""
 type NumericLiteral = int | float | Decimal
 type TemporalLiteral = date | time | datetime | timedelta
-
+type BlobLiteral = bytes | bytearray | memoryview
 type NonNestedLiteral = (
-    NumericLiteral | TemporalLiteral | str | bool | bytes | bytearray | memoryview
+    NumericLiteral | TemporalLiteral | str | bool | BlobLiteral | UUID
 )
 type PythonLiteral = (
-    NonNestedLiteral | Sequence[PythonLiteral] | dict[str, PythonLiteral] | None
+    NonNestedLiteral | Sequence[PythonLiteral] | dict[NonNestedLiteral, PythonLiteral]
 )
 """Python literal types (can convert into a `lit` expression)."""
 type IntoExprColumn = str | ExprLike
