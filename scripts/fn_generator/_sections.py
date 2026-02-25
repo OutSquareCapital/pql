@@ -4,8 +4,8 @@ from dataclasses import dataclass
 
 import pyochain as pc
 
-from .._utils import From
-from ._rules import NAMESPACE_SPECS, DateTime, NamespaceSpec, Typing
+from .._utils import DateTime, From
+from ._rules import NAMESPACE_SPECS, NamespaceSpec, Typing
 
 
 @dataclass(slots=True)

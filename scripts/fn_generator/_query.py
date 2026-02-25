@@ -4,6 +4,7 @@ from collections.abc import Iterable
 import polars as pl
 
 from .._utils import Typing
+from ._dtypes import FuncTypes
 from ._rules import (
     CONVERTER,
     NAMESPACE_SPECS,
@@ -13,14 +14,7 @@ from ._rules import (
     SPECIAL_CASES,
     DuckDbTypes,
 )
-from ._schemas import (
-    DuckCols,
-    FuncTypes,
-    ParamLens,
-    ParamLists,
-    Params,
-    PyCols,
-)
+from ._schemas import DuckCols, ParamLens, ParamLists, Params, PyCols
 from ._str_builder import EMPTY_STR, format_kwords
 
 
@@ -96,9 +90,7 @@ def run_qry(lf: pl.LazyFrame) -> pl.LazyFrame:
 def _filters(lf: pl.LazyFrame, dk: DuckCols) -> pl.LazyFrame:
     """First-step filter to remove unwanted functions."""
     return lf.select(dk.to_dict().keys()).filter(
-        dk.function_type.is_in(
-            {FuncTypes.TABLE, FuncTypes.TABLE_MACRO, FuncTypes.PRAGMA}
-        ).not_(),
+        dk.function_type.is_in(FuncTypes.unwanted()).not_(),
         dk.parameters.list.len().eq(0).and_(dk.varargs.is_null()).not_(),  # literals
         dk.function_name.is_in(SPECIAL_CASES).not_(),
         *PREFIXES.iter().map(

@@ -4,72 +4,10 @@ from dataclasses import dataclass
 
 import pyochain as pc
 
-from .._utils import Builtins, DateTime, Decimal, Pql, Typing
-from ._schemas import Categories, DuckDbTypes
+from .._utils import Builtins, Pql, Typing
+from ._dtypes import Categories, DuckDbTypes
 
-CONVERSION_MAP: pc.Dict[str, str] = pc.Dict(
-    {
-        DuckDbTypes.VARCHAR: Builtins.STR.value,
-        DuckDbTypes.INTEGER: Builtins.INT.value,
-        DuckDbTypes.BIGINT: Builtins.INT.value,
-        DuckDbTypes.SMALLINT: Builtins.INT.value,
-        DuckDbTypes.TINYINT: Builtins.INT.value,
-        DuckDbTypes.HUGEINT: Builtins.INT.value,
-        DuckDbTypes.UINTEGER: Builtins.INT.value,
-        DuckDbTypes.UBIGINT: Builtins.INT.value,
-        DuckDbTypes.USMALLINT: Builtins.INT.value,
-        DuckDbTypes.UTINYINT: Builtins.INT.value,
-        DuckDbTypes.UHUGEINT: Builtins.INT.value,
-        DuckDbTypes.DOUBLE: Builtins.FLOAT.value,
-        DuckDbTypes.FLOAT: Builtins.FLOAT.value,
-        DuckDbTypes.DECIMAL: Decimal.DECIMAL.value,
-        DuckDbTypes.BOOLEAN: Builtins.BOOL.value,
-        DuckDbTypes.DATE: DateTime.DATE.value,
-        DuckDbTypes.TIME: DateTime.TIME.value,
-        DuckDbTypes.TIMESTAMP: DateTime.DATETIME.value,
-        DuckDbTypes.INTERVAL: DateTime.TIMEDELTA.value,
-        DuckDbTypes.BLOB: Builtins.BYTES.into_union(
-            Builtins.BYTEARRAY, Builtins.MEMORYVIEW
-        ),
-        DuckDbTypes.BIT: Builtins.BYTES.into_union(
-            Builtins.BYTEARRAY, Builtins.MEMORYVIEW
-        ),
-        DuckDbTypes.UUID: Builtins.STR.value,
-        DuckDbTypes.JSON: Builtins.STR.value,
-        DuckDbTypes.ANY: Typing.SELF.value,
-        DuckDbTypes.LIST: Pql.SEQ_LITERAL.value,
-        DuckDbTypes.MAP: Builtins.DICT.value,
-        DuckDbTypes.STRUCT: Builtins.DICT.value,
-        DuckDbTypes.ARRAY: Pql.SEQ_LITERAL.value,
-        DuckDbTypes.UNION: Typing.SELF.value,
-        DuckDbTypes.NULL: Builtins.NONE.value,
-    }
-)
-
-_GENERIC_CONTAINER = pc.Set(
-    (DuckDbTypes.ANY_ARRAY, DuckDbTypes.GENERIC_ARRAY, DuckDbTypes.V_ARRAY)
-)
-
-
-def _duckdb_type_to_py(enum_type: DuckDbTypes) -> str:
-    def _base_py_for_value(value: str) -> str:
-        return (
-            CONVERSION_MAP.get_item(value)
-            .filter(lambda x: x != Typing.SELF.value)
-            .unwrap_or("")
-        )
-
-    match enum_type.value:
-        case inner if inner.endswith("[]") and enum_type not in _GENERIC_CONTAINER:
-            element_type = _base_py_for_value(inner.removesuffix("[]"))
-            return Pql.SEQ_LITERAL.of_type(element_type)
-        case arr if "[" in arr:
-            return _base_py_for_value(arr.partition("[")[0])
-        case _ as value:
-            return _base_py_for_value(value)
-
-
-CONVERTER = pc.Iter(DuckDbTypes).map(lambda t: (t, _duckdb_type_to_py(t))).collect(dict)
+CONVERTER = pc.Iter(DuckDbTypes).map(lambda t: (t, t.into_py())).collect(dict)
 """DuckDB type -> Python type hint mapping."""
 
 SHADOWERS = (
