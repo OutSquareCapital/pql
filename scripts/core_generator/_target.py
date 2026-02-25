@@ -6,14 +6,7 @@ import duckdb
 import pyochain as pc
 
 from .._utils import Builtins, DuckDB, Dunders, Pql, Pyochain, Typing
-from ._rules import (
-    EXPR_TYPE_SUBS,
-    KW_ONLY_FIXES,
-    PARAM_TYPE_FIXES,
-    PYTYPING_REWRITES,
-    RETURN_TYPE_FIXES,
-    TYPE_SUBS,
-)
+from ._rules import EXPR_TYPE_SUBS, PYTYPING_REWRITES, TYPE_SUBS
 
 
 class ReturnMeta(NamedTuple):
@@ -28,11 +21,6 @@ class TargetSpec:
     wrapper_base: str
     type_subs: pc.Dict[DuckDB, Pql | Typing]
     wrapped_return_type: str
-    param_type_fixes: pc.Dict[str, pc.Dict[str, str]] = field(
-        default_factory=pc.Dict[str, pc.Dict[str, str]].new
-    )
-    return_type_fixes: pc.Dict[str, str] = field(default_factory=pc.Dict[str, str].new)
-    kw_only_fixes: pc.Set[str] = field(default_factory=pc.Set[str].new)
     skip_methods: pc.Set[str] = field(default_factory=pc.Set[str].new)
     method_renames: pc.Dict[str, str] = field(default_factory=pc.Dict[str, str].new)
 
@@ -74,19 +62,6 @@ class TargetSpec:
                 return _build(Pyochain.DICT, rewritten.removeprefix(Builtins.DICT))
             case _:
                 return ReturnMeta(rewritten, pc.NONE)
-
-    def fix_param(self, method_name: str, param_name: str, annotation: str) -> str:
-        return (
-            self.param_type_fixes.get_item(method_name)
-            .and_then(lambda params: params.get_item(param_name))
-            .unwrap_or(annotation)
-        )
-
-    def fix_return(self, method_name: str, return_type: str) -> str:
-        return self.return_type_fixes.get_item(method_name).unwrap_or(return_type)
-
-    def fix_kw_only(self, method_name: str) -> bool:
-        return self.kw_only_fixes.contains(method_name)
 
     def rename_method(self, method_name: str) -> str:
         return self.method_renames.get_item(method_name).unwrap_or(method_name)
@@ -132,9 +107,6 @@ REL_TARGET = TargetSpec(
     wrapper_base=Pql.REL_HANDLER,
     type_subs=TYPE_SUBS,
     wrapped_return_type=DuckDB.RELATION,
-    param_type_fixes=PARAM_TYPE_FIXES,
-    return_type_fixes=RETURN_TYPE_FIXES,
-    kw_only_fixes=KW_ONLY_FIXES,
 )
 
 EXPR_TARGET = TargetSpec(

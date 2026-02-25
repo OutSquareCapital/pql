@@ -57,16 +57,13 @@ def _parse_method(
                 MethodInfo(
                     name=node.name,
                     params=regular_args.into(
-                        _get_params, defaults, node, num_no_default, target
+                        _get_params, defaults, node, num_no_default
                     ),
-                    vararg=pc.Option(node.args.vararg).map(
-                        lambda v: _to_param(node.name, v, target)
-                    ),
-                    return_type=target.fix_return(
-                        node.name,
+                    vararg=pc.Option(node.args.vararg).map(_to_param),
+                    return_type=(
                         pc.Option(node.returns)
                         .map(ast.unparse)
-                        .unwrap_or(Builtins.NONE),
+                        .unwrap_or(Builtins.NONE)
                     ),
                     is_overload=_check_decorator(Typing.OVERLOAD),
                     is_property=_check_decorator(Builtins.PROPERTY),
@@ -84,22 +81,18 @@ def _get_params(
     defaults: pc.Vec[ast.expr],
     node: ast.FunctionDef,
     num_no_default: int,
-    target: TargetSpec,
 ) -> pc.Seq[ParamInfo]:
     return (
         regular_args.iter()
         .enumerate()
         .map_star(
             lambda i, arg: _to_param(
-                node.name,
                 arg,
-                target,
                 (
                     pc.NONE
                     if i < num_no_default
                     else pc.Some(ast.unparse(defaults[i - num_no_default]))
                 ),
-                is_kw_only=target.fix_kw_only(node.name) and i > 0,
             )
         )
         .chain(
@@ -107,11 +100,7 @@ def _get_params(
             .zip(node.args.kw_defaults, strict=False)
             .map_star(
                 lambda arg, default: _to_param(
-                    node.name,
-                    arg,
-                    target,
-                    pc.Option(default).map(ast.unparse),
-                    is_kw_only=True,
+                    arg, pc.Option(default).map(ast.unparse), is_kw_only=True
                 )
             )
         )
@@ -120,20 +109,11 @@ def _get_params(
 
 
 def _to_param(
-    method_name: str,
-    arg: ast.arg,
-    target: TargetSpec,
-    default: pc.Option[str] = pc.NONE,
-    *,
-    is_kw_only: bool = False,
+    arg: ast.arg, default: pc.Option[str] = pc.NONE, *, is_kw_only: bool = False
 ) -> ParamInfo:
     return ParamInfo(
         arg.arg,
-        target.fix_param(
-            method_name,
-            arg.arg,
-            pc.Option(arg.annotation).map(ast.unparse).unwrap_or(Typing.ANY),
-        ),
+        pc.Option(arg.annotation).map(ast.unparse).unwrap_or(Typing.ANY),
         default,
         is_kw_only,
     )

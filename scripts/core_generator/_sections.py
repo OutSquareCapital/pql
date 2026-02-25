@@ -34,8 +34,6 @@ if {Typing.TYPE_CHECKING}:
     import pandas  # pyright: ignore[reportMissingModuleSource]
     import polars
     import pyarrow as pa
-    import torch
-    import tensorflow  # pyright: ignore[reportMissingModuleSource]
     {From(DuckDB).import_(DuckDB.SQLTYPES)}
     {From(Typing).import_(Typing.UNION)}
 

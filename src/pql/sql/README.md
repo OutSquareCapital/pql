@@ -19,11 +19,7 @@ Once an issue is fixed by duckdb itself, all related fix code and doc should be 
 
 |   #     |Fonction/Propriété                       | Actual                                             | Expected                       | Fixed|
 |---------|-----------------------------------------|----------------------------------------------------|--------------------------------|-----------|
-| **209** | `Relation.aggregate()` param `aggr_expr`| `Expression \| str`                                | + `Iterable[Expression \| str]`| **X**     |
-| **210** | `StarExpression()` param `exclude`      | `Expression \| str \| tuple[str]`                  | `Iterable[Expression \| str]`  | **X**     |
-| **260** | `Relation.dtypes` property return       | `List[str]`                                        | `list[DuckDBPyType]`           | **X**     |
 | **279** | `read_csv()` param `path_or_buffer`     | `str \| bytes \| PathLike[str] \| PathLike[bytes]` | +`IO[str] \| IO[bytes]`        | **-**     |
-| **314** | `.write_{csv, parquet}`                 | no kword marker after first arg                    | same as `to_{csv, parquet}`    | **X**     |  
 
 ### Manual type ignores
 
@@ -33,7 +29,5 @@ Adding type programmaticaly is awkward due to auto code formatting from Ruff, he
 
 Those are:
 
-- `Relation.aggregate()` param `aggr_expr` (rule above)
-- `Relation.dtypes` return (rule above)
 - `Expression.__eq__()` return (incompatible override)
 - `Expression.__ne__()` return (incompatible override)
