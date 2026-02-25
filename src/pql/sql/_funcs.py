@@ -83,7 +83,7 @@ class Col:
 col = Col()
 
 
-def lit(value: IntoExpr) -> SqlExpr:
+def lit(value: IntoExpr) -> SqlExpr:  # pyright: ignore[reportUnknownParameterType]
     """Create a literal expression."""
     return SqlExpr(duckdb.ConstantExpression(into_duckdb(value)))
 
