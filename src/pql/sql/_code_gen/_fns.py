@@ -10,9 +10,12 @@ Functions are extracted from DuckDB's duckdb_functions() introspection.
 from __future__ import annotations
 
 from datetime import date, datetime, time, timedelta
-from typing import Self
+from typing import TYPE_CHECKING, Self
 
 from .._core import DuckHandler, NameSpaceHandler, func
+
+if TYPE_CHECKING:
+    from ..typing import SeqLiteral
 
 
 class Fns(DuckHandler):
@@ -98,13 +101,13 @@ class Fns(DuckHandler):
         """
         return self._new(func("approx_count_distinct", self.inner()))
 
-    def approx_quantile(self, pos: Self | float | list[float]) -> Self:
+    def approx_quantile(self, pos: Self | SeqLiteral[float] | float) -> Self:
         """Computes the approximate quantile using T-Digest.
 
         **SQL name**: *approx_quantile*
 
         Args:
-            pos (Self | float | list[float]): `FLOAT | FLOAT[]` expression
+            pos (Self | SeqLiteral[float] | float): `FLOAT | FLOAT[]` expression
 
         Examples:
             approx_quantile(x, 0.5)
@@ -2330,7 +2333,7 @@ class Fns(DuckHandler):
         """
         return self._new(func("product", self.inner()))
 
-    def quantile(self, pos: Self | float | list[float] | None = None) -> Self:
+    def quantile(self, pos: Self | SeqLiteral[float] | float | None = None) -> Self:
         """Returns the exact quantile number between 0 and 1 .
 
         If pos is a LIST of FLOATs, then the result is a LIST of the corresponding exact quantiles.
@@ -2341,7 +2344,7 @@ class Fns(DuckHandler):
             quantile_disc
 
         Args:
-            pos (Self | float | list[float] | None): `DOUBLE | DOUBLE[]` expression
+            pos (Self | SeqLiteral[float] | float | None): `DOUBLE | DOUBLE[]` expression
 
         Examples:
             quantile_disc(x, 0.5)
@@ -2351,7 +2354,7 @@ class Fns(DuckHandler):
         """
         return self._new(func("quantile", self.inner(), pos))
 
-    def quantile_cont(self, pos: Self | float | list[float]) -> Self:
+    def quantile_cont(self, pos: Self | SeqLiteral[float] | float) -> Self:
         """Returns the interpolated quantile number between 0 and 1 .
 
         If pos is a LIST of FLOATs, then the result is a LIST of the corresponding interpolated quantiles.
@@ -2359,7 +2362,7 @@ class Fns(DuckHandler):
         **SQL name**: *quantile_cont*
 
         Args:
-            pos (Self | float | list[float]): `DOUBLE | DOUBLE[]` expression
+            pos (Self | SeqLiteral[float] | float): `DOUBLE | DOUBLE[]` expression
 
         Examples:
             quantile_cont(x, 0.5)
@@ -2369,7 +2372,9 @@ class Fns(DuckHandler):
         """
         return self._new(func("quantile_cont", self.inner(), pos))
 
-    def quantile_disc(self, pos: Self | float | list[float] | None = None) -> Self:
+    def quantile_disc(
+        self, pos: Self | SeqLiteral[float] | float | None = None
+    ) -> Self:
         """Returns the exact quantile number between 0 and 1 .
 
         If pos is a LIST of FLOATs, then the result is a LIST of the corresponding exact quantiles.
@@ -2380,7 +2385,7 @@ class Fns(DuckHandler):
             quantile
 
         Args:
-            pos (Self | float | list[float] | None): `DOUBLE | DOUBLE[]` expression
+            pos (Self | SeqLiteral[float] | float | None): `DOUBLE | DOUBLE[]` expression
 
         Examples:
             quantile_disc(x, 0.5)
@@ -2606,7 +2611,7 @@ class Fns(DuckHandler):
 
     def reservoir_quantile(
         self,
-        quantile: Self | float | list[float],
+        quantile: Self | SeqLiteral[float] | float,
         sample_size: Self | int | None = None,
     ) -> Self:
         """Gives the approximate quantile using reservoir sampling, the sample size is optional and uses 8192 as a default size.
@@ -2614,7 +2619,7 @@ class Fns(DuckHandler):
         **SQL name**: *reservoir_quantile*
 
         Args:
-            quantile (Self | float | list[float]): `DOUBLE | DOUBLE[]` expression
+            quantile (Self | SeqLiteral[float] | float): `DOUBLE | DOUBLE[]` expression
             sample_size (Self | int | None): `INTEGER` expression
 
         Examples:
@@ -3353,7 +3358,7 @@ class Fns(DuckHandler):
         """
         return self._new(func("trunc", self.inner(), col1))
 
-    def try_strptime(self, format_arg: Self | list[str] | str) -> Self:
+    def try_strptime(self, format_arg: Self | SeqLiteral[str] | str) -> Self:
         """Converts the `string` text to timestamp according to the format string.
 
         Returns `NULL` on failure.
@@ -3361,7 +3366,7 @@ class Fns(DuckHandler):
         **SQL name**: *try_strptime*
 
         Args:
-            format_arg (Self | list[str] | str): `VARCHAR | VARCHAR[]` expression
+            format_arg (Self | SeqLiteral[str] | str): `VARCHAR | VARCHAR[]` expression
 
         Examples:
             try_strptime('Wed, 1 January 1992 - 08:38:40 PM', '%a, %-d %B %Y - %I:%M:%S %p')
@@ -3918,13 +3923,13 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("list_contains", self.inner(), element))
 
-    def cosine_distance(self, list2: T | list[float]) -> T:
+    def cosine_distance(self, list2: T | SeqLiteral[float]) -> T:
         """Computes the cosine distance between two same-sized lists.
 
         **SQL name**: *list_cosine_distance*
 
         Args:
-            list2 (T | list[float]): `DOUBLE[] | FLOAT[]` expression
+            list2 (T | SeqLiteral[float]): `DOUBLE[] | FLOAT[]` expression
 
         Examples:
             list_cosine_distance([1, 2, 3], [1, 2, 3])
@@ -3934,13 +3939,13 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("list_cosine_distance", self.inner(), list2))
 
-    def cosine_similarity(self, list2: T | list[float]) -> T:
+    def cosine_similarity(self, list2: T | SeqLiteral[float]) -> T:
         """Computes the cosine similarity between two same-sized lists.
 
         **SQL name**: *list_cosine_similarity*
 
         Args:
-            list2 (T | list[float]): `DOUBLE[] | FLOAT[]` expression
+            list2 (T | SeqLiteral[float]): `DOUBLE[] | FLOAT[]` expression
 
         Examples:
             list_cosine_similarity([1, 2, 3], [1, 2, 3])
@@ -3960,13 +3965,13 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("list_count", self.inner()))
 
-    def distance(self, list2: T | list[float]) -> T:
+    def distance(self, list2: T | SeqLiteral[float]) -> T:
         """Calculates the Euclidean distance between two points with coordinates given in two inputs lists of equal length.
 
         **SQL name**: *list_distance*
 
         Args:
-            list2 (T | list[float]): `DOUBLE[] | FLOAT[]` expression
+            list2 (T | SeqLiteral[float]): `DOUBLE[] | FLOAT[]` expression
 
         Examples:
             list_distance([1, 2, 3], [1, 2, 5])
@@ -3994,7 +3999,7 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("list_distinct", self.inner()))
 
-    def dot_product(self, list2: T | list[float]) -> T:
+    def dot_product(self, list2: T | SeqLiteral[float]) -> T:
         """Computes the inner product between two same-sized lists.
 
         **SQL name**: *list_dot_product*
@@ -4003,7 +4008,7 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
             list_inner_product
 
         Args:
-            list2 (T | list[float]): `DOUBLE[] | FLOAT[]` expression
+            list2 (T | SeqLiteral[float]): `DOUBLE[] | FLOAT[]` expression
 
         Examples:
             list_dot_product([1, 2, 3], [1, 2, 3])
@@ -4240,7 +4245,7 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("list_indexof", self.inner(), element))
 
-    def inner_product(self, list2: T | list[float]) -> T:
+    def inner_product(self, list2: T | SeqLiteral[float]) -> T:
         """Computes the inner product between two same-sized lists.
 
         **SQL name**: *list_inner_product*
@@ -4249,7 +4254,7 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
             list_dot_product
 
         Args:
-            list2 (T | list[float]): `DOUBLE[] | FLOAT[]` expression
+            list2 (T | SeqLiteral[float]): `DOUBLE[] | FLOAT[]` expression
 
         Examples:
             list_inner_product([1, 2, 3], [1, 2, 3])
@@ -4384,7 +4389,7 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("list_mode", self.inner()))
 
-    def negative_dot_product(self, list2: T | list[float]) -> T:
+    def negative_dot_product(self, list2: T | SeqLiteral[float]) -> T:
         """Computes the negative inner product between two same-sized lists.
 
         **SQL name**: *list_negative_dot_product*
@@ -4393,7 +4398,7 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
             list_negative_inner_product
 
         Args:
-            list2 (T | list[float]): `DOUBLE[] | FLOAT[]` expression
+            list2 (T | SeqLiteral[float]): `DOUBLE[] | FLOAT[]` expression
 
         Examples:
             list_negative_dot_product([1, 2, 3], [1, 2, 3])
@@ -4403,7 +4408,7 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("list_negative_dot_product", self.inner(), list2))
 
-    def negative_inner_product(self, list2: T | list[float]) -> T:
+    def negative_inner_product(self, list2: T | SeqLiteral[float]) -> T:
         """Computes the negative inner product between two same-sized lists.
 
         **SQL name**: *list_negative_inner_product*
@@ -4412,7 +4417,7 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
             list_negative_dot_product
 
         Args:
-            list2 (T | list[float]): `DOUBLE[] | FLOAT[]` expression
+            list2 (T | SeqLiteral[float]): `DOUBLE[] | FLOAT[]` expression
 
         Examples:
             list_negative_inner_product([1, 2, 3], [1, 2, 3])
@@ -4579,7 +4584,7 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("list_reverse_sort", self.inner(), col1))
 
-    def select(self, index_list: T | list[int]) -> T:
+    def select(self, index_list: T | SeqLiteral[int]) -> T:
         """Returns a list based on the elements selected by the `index_list`.
 
         **SQL name**: *list_select*
@@ -4588,7 +4593,7 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
             array_select
 
         Args:
-            index_list (T | list[int]): `BIGINT[]` expression
+            index_list (T | SeqLiteral[int]): `BIGINT[]` expression
 
         Examples:
             list_select([10, 20, 30, 40], [1, 4])
@@ -4793,7 +4798,7 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("list_var_samp", self.inner()))
 
-    def where(self, mask_list: T | list[bool]) -> T:
+    def where(self, mask_list: T | SeqLiteral[bool]) -> T:
         """Returns a list with the `BOOLEAN`s in `mask_list` applied as a mask to the `value_list`.
 
         **SQL name**: *list_where*
@@ -4802,7 +4807,7 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
             array_where
 
         Args:
-            mask_list (T | list[bool]): `BOOLEAN[]` expression
+            mask_list (T | SeqLiteral[bool]): `BOOLEAN[]` expression
 
         Examples:
             list_where([10, 20, 30, 40], [true, false, false, true])
@@ -5095,7 +5100,7 @@ class RegexFns[T: Fns](NameSpaceHandler[T]):
     def extract_name_list(
         self,
         regex: T | str,
-        name_list: T | list[str] | None = None,
+        name_list: T | SeqLiteral[str] | None = None,
         options: T | str | None = None,
     ) -> T:
         r"""If `string` contains the `regex` pattern, returns the capturing groups as a struct with corresponding names from `name_list`; otherwise, returns a struct with the same keys and empty strings as values.
@@ -5106,7 +5111,7 @@ class RegexFns[T: Fns](NameSpaceHandler[T]):
 
         Args:
             regex (T | str): `VARCHAR` expression
-            name_list (T | list[str] | None): `VARCHAR[]` expression
+            name_list (T | SeqLiteral[str] | None): `VARCHAR[]` expression
             options (T | str | None): `VARCHAR` expression
 
         Examples:
@@ -7650,7 +7655,7 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("array_reverse_sort", self.inner(), col1))
 
-    def select(self, index_list: T | list[int]) -> T:
+    def select(self, index_list: T | SeqLiteral[int]) -> T:
         """Returns a list based on the elements selected by the `index_list`.
 
         **SQL name**: *array_select*
@@ -7659,7 +7664,7 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
             list_select
 
         Args:
-            index_list (T | list[int]): `BIGINT[]` expression
+            index_list (T | SeqLiteral[int]): `BIGINT[]` expression
 
         Examples:
             array_select([10, 20, 30, 40], [1, 4])
@@ -7806,7 +7811,7 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("array_value", self.inner(), *args))
 
-    def where(self, mask_list: T | list[bool]) -> T:
+    def where(self, mask_list: T | SeqLiteral[bool]) -> T:
         """Returns a list with the `BOOLEAN`s in `mask_list` applied as a mask to the `value_list`.
 
         **SQL name**: *array_where*
@@ -7815,7 +7820,7 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
             list_where
 
         Args:
-            mask_list (T | list[bool]): `BOOLEAN[]` expression
+            mask_list (T | SeqLiteral[bool]): `BOOLEAN[]` expression
 
         Examples:
             array_where([10, 20, 30, 40], [true, false, false, true])
@@ -7867,13 +7872,13 @@ class JsonFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("json_array", self.inner(), *args))
 
-    def array_length(self, col1: T | list[str] | str | None = None) -> T:
+    def array_length(self, col1: T | SeqLiteral[str] | str | None = None) -> T:
         """SQL json_array_length function.
 
         **SQL name**: *json_array_length*
 
         Args:
-            col1 (T | list[str] | str | None): `VARCHAR | VARCHAR[]` expression
+            col1 (T | SeqLiteral[str] | str | None): `VARCHAR | VARCHAR[]` expression
 
         Returns:
             T
@@ -7903,65 +7908,65 @@ class JsonFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("json_deserialize_sql", self.inner()))
 
-    def exists(self, col1: T | list[str] | str) -> T:
+    def exists(self, col1: T | SeqLiteral[str] | str) -> T:
         """SQL json_exists function.
 
         **SQL name**: *json_exists*
 
         Args:
-            col1 (T | list[str] | str): `VARCHAR | VARCHAR[]` expression
+            col1 (T | SeqLiteral[str] | str): `VARCHAR | VARCHAR[]` expression
 
         Returns:
             T
         """
         return self._new(func("json_exists", self.inner(), col1))
 
-    def extract(self, col1: T | int | list[str] | str) -> T:
+    def extract(self, col1: T | SeqLiteral[str] | int | str) -> T:
         """SQL json_extract function.
 
         **SQL name**: *json_extract*
 
         Args:
-            col1 (T | int | list[str] | str): `BIGINT | VARCHAR | VARCHAR[]` expression
+            col1 (T | SeqLiteral[str] | int | str): `BIGINT | VARCHAR | VARCHAR[]` expression
 
         Returns:
             T
         """
         return self._new(func("json_extract", self.inner(), col1))
 
-    def extract_path(self, col1: T | int | list[str] | str) -> T:
+    def extract_path(self, col1: T | SeqLiteral[str] | int | str) -> T:
         """SQL json_extract_path function.
 
         **SQL name**: *json_extract_path*
 
         Args:
-            col1 (T | int | list[str] | str): `BIGINT | VARCHAR | VARCHAR[]` expression
+            col1 (T | SeqLiteral[str] | int | str): `BIGINT | VARCHAR | VARCHAR[]` expression
 
         Returns:
             T
         """
         return self._new(func("json_extract_path", self.inner(), col1))
 
-    def extract_path_text(self, col1: T | int | list[str] | str) -> T:
+    def extract_path_text(self, col1: T | SeqLiteral[str] | int | str) -> T:
         """SQL json_extract_path_text function.
 
         **SQL name**: *json_extract_path_text*
 
         Args:
-            col1 (T | int | list[str] | str): `BIGINT | VARCHAR | VARCHAR[]` expression
+            col1 (T | SeqLiteral[str] | int | str): `BIGINT | VARCHAR | VARCHAR[]` expression
 
         Returns:
             T
         """
         return self._new(func("json_extract_path_text", self.inner(), col1))
 
-    def extract_string(self, col1: T | int | list[str] | str) -> T:
+    def extract_string(self, col1: T | SeqLiteral[str] | int | str) -> T:
         """SQL json_extract_string function.
 
         **SQL name**: *json_extract_string*
 
         Args:
-            col1 (T | int | list[str] | str): `BIGINT | VARCHAR | VARCHAR[]` expression
+            col1 (T | SeqLiteral[str] | int | str): `BIGINT | VARCHAR | VARCHAR[]` expression
 
         Returns:
             T
@@ -8001,13 +8006,13 @@ class JsonFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("json_group_structure", self.inner()))
 
-    def keys(self, col1: T | list[str] | str | None = None) -> T:
+    def keys(self, col1: T | SeqLiteral[str] | str | None = None) -> T:
         """SQL json_keys function.
 
         **SQL name**: *json_keys*
 
         Args:
-            col1 (T | list[str] | str | None): `VARCHAR | VARCHAR[]` expression
+            col1 (T | SeqLiteral[str] | str | None): `VARCHAR | VARCHAR[]` expression
 
         Returns:
             T
@@ -8158,13 +8163,13 @@ class JsonFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("json_transform_strict", self.inner(), col1))
 
-    def type(self, col1: T | list[str] | str | None = None) -> T:
+    def type(self, col1: T | SeqLiteral[str] | str | None = None) -> T:
         """SQL json_type function.
 
         **SQL name**: *json_type*
 
         Args:
-            col1 (T | list[str] | str | None): `VARCHAR | VARCHAR[]` expression
+            col1 (T | SeqLiteral[str] | str | None): `VARCHAR | VARCHAR[]` expression
 
         Returns:
             T
@@ -8181,13 +8186,13 @@ class JsonFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("json_valid", self.inner()))
 
-    def value(self, col1: T | int | list[str] | str) -> T:
+    def value(self, col1: T | SeqLiteral[str] | int | str) -> T:
         """SQL json_value function.
 
         **SQL name**: *json_value*
 
         Args:
-            col1 (T | int | list[str] | str): `BIGINT | VARCHAR | VARCHAR[]` expression
+            col1 (T | SeqLiteral[str] | int | str): `BIGINT | VARCHAR | VARCHAR[]` expression
 
         Returns:
             T

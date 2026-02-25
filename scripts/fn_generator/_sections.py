@@ -67,7 +67,10 @@ Functions are extracted from DuckDB's duckdb_functions() introspection.
 from __future__ import annotations
 {From(DateTime).import_(DateTime.DATE, DateTime.DATETIME, DateTime.TIME, DateTime.TIMEDELTA)}
 {From(DateTime).import_(DateTime.DATE, DateTime.DATETIME, DateTime.TIME, DateTime.TIMEDELTA)}
-{From(Typing).import_(Typing.SELF)}
+{From(Typing).import_(Typing.SELF, Typing.TYPE_CHECKING)}
 
 from .._core import DuckHandler, NameSpaceHandler, func
+
+if TYPE_CHECKING:
+    from ..typing import SeqLiteral
 '''

@@ -24,8 +24,11 @@ class KwordEnum(StrEnum):
     def into_iter(cls) -> pc.Iter[KwordEnum]:
         return pc.Iter(cls)
 
-    def of_type(self, *dtypes: str) -> str:
-        return f"{self.value}[{pc.Iter(dtypes).join(' | ')}]"
+    def of_type(self, *dtypes: str, has_ellipsis: bool = False) -> str:
+        type_union = pc.Iter(dtypes).join(" | ")
+        if has_ellipsis:
+            type_union = f"{type_union}, ..."
+        return f"{self.value}[{type_union}]"
 
     def into_union(self, *args: str) -> str:
         return pc.Iter(args).insert(self).join(" | ")
@@ -78,6 +81,7 @@ class Pql(KwordEnum):
     EXPR_STRUCT_NAME_SPACE = "ExprStructNameSpace"
     EXPR_NAME_NAME_SPACE = "ExprNameNameSpace"
     EXPR_ARR_NAME_SPACE = "ExprArrNameSpace"
+    SEQ_LITERAL = "SeqLiteral"
 
 
 class Pyochain(KwordEnum):
@@ -92,6 +96,7 @@ class Pyochain(KwordEnum):
 class Builtins(KwordEnum):
     NONE = "None"
     LIST = list.__name__
+    TUPLE = tuple.__name__
     DICT = dict.__name__
     PROPERTY = property.__name__
     SELF = auto()

@@ -50,13 +50,14 @@ type IntoDict[K, V] = Mapping[K, V] | Iterable[tuple[K, V]]
 type ExprLike = SqlExpr | Expr
 """Types that are already expressions wrappers and can be used directly as expressions."""
 
-"""Inputs that can initialize a `LazyFrame`."""
 type NumericLiteral = int | float | Decimal
 type TemporalLiteral = date | time | datetime | timedelta
 type BlobLiteral = bytes | bytearray | memoryview
 type NonNestedLiteral = (
     NumericLiteral | TemporalLiteral | str | bool | BlobLiteral | UUID
 )
+type SeqLiteral[T: NonNestedLiteral] = list[T] | tuple[T, ...]
+"""Sequence of non-nested literals of the same type."""
 type NestedLiteral = (
     list[PythonLiteral]
     | dict[NonNestedLiteral, PythonLiteral]

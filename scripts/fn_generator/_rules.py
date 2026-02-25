@@ -37,28 +37,32 @@ CONVERSION_MAP: pc.Dict[str, str] = pc.Dict(
         DuckDbTypes.UUID: Builtins.STR.value,
         DuckDbTypes.JSON: Builtins.STR.value,
         DuckDbTypes.ANY: Typing.SELF.value,
-        DuckDbTypes.LIST: Builtins.LIST.value,
-        DuckDbTypes.MAP: Typing.SELF.value,
+        DuckDbTypes.LIST: Pql.SEQ_LITERAL.value,
+        DuckDbTypes.MAP: Builtins.DICT.value,
         DuckDbTypes.STRUCT: Builtins.DICT.value,
-        DuckDbTypes.ARRAY: Builtins.LIST.value,
+        DuckDbTypes.ARRAY: Pql.SEQ_LITERAL.value,
         DuckDbTypes.UNION: Typing.SELF.value,
         DuckDbTypes.NULL: Builtins.NONE.value,
     }
 )
 
+_GENERIC_CONTAINER = pc.Set(
+    (DuckDbTypes.ANY_ARRAY, DuckDbTypes.GENERIC_ARRAY, DuckDbTypes.V_ARRAY)
+)
+
 
 def _duckdb_type_to_py(enum_type: DuckDbTypes) -> str:
     def _base_py_for_value(value: str) -> str:
-        mapped = CONVERSION_MAP.get_item(value).unwrap_or(Typing.SELF.value)
-        return "" if mapped == Typing.SELF.value else mapped
+        return (
+            CONVERSION_MAP.get_item(value)
+            .filter(lambda x: x != Typing.SELF.value)
+            .unwrap_or("")
+        )
 
     match enum_type.value:
-        case inner if inner.endswith("[]") and enum_type not in (
-            DuckDbTypes.ANY_ARRAY,
-            DuckDbTypes.GENERIC_ARRAY,
-            DuckDbTypes.V_ARRAY,
-        ):
-            return Builtins.LIST.of_type(_base_py_for_value(inner.removesuffix("[]")))
+        case inner if inner.endswith("[]") and enum_type not in _GENERIC_CONTAINER:
+            element_type = _base_py_for_value(inner.removesuffix("[]"))
+            return Pql.SEQ_LITERAL.of_type(element_type)
         case arr if "[" in arr:
             return _base_py_for_value(arr.partition("[")[0])
         case _ as value:
