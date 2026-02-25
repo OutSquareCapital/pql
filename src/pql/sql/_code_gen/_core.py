@@ -21,8 +21,6 @@ if TYPE_CHECKING:
     import pandas as pd  # pyright: ignore[reportMissingModuleSource]
     import polars as pl
     import pyarrow as pa
-    import tensorflow as tf  # pyright: ignore[reportMissingModuleSource]
-    import torch
     from duckdb import sqltypes
 
     type ParquetFieldIdsType = dict[str, int | ParquetFieldIdsType]
@@ -62,27 +60,26 @@ class Relation(RelHandler):
 
     def aggregate(
         self,
-        aggr_expr: DuckHandler | str | Iterable[DuckHandler | str],
+        aggr_expr: str | Iterable[DuckHandler | str],
         group_expr: DuckHandler | str = "",
     ) -> Self:
         """Compute the aggregate aggr_expr by the optional groups group_expr on the relation."""
         return self._new(
             self.inner().aggregate(
-                try_iter(aggr_expr).map(into_duckdb),  # pyright: ignore[reportArgumentType]
-                into_duckdb(group_expr),
+                try_iter(aggr_expr).map(into_duckdb), into_duckdb(group_expr)
             )
         )
 
     def any_value(
         self,
-        column: str,
+        expression: str,
         groups: str = "",
         window_spec: str = "",
         projected_columns: str = "",
     ) -> Self:
-        """Returns the first non-null value from a given column."""
+        """Returns the first non-null value from a given expression."""
         return self._new(
-            self.inner().any_value(column, groups, window_spec, projected_columns)
+            self.inner().any_value(expression, groups, window_spec, projected_columns)
         )
 
     def apply(
@@ -135,95 +132,105 @@ class Relation(RelHandler):
         )
 
     def arrow(self, batch_size: SupportsInt = 1000000) -> pa.RecordBatchReader:
-        """Execute and return an Arrow Record Batch Reader that yields all rows."""
+        """Alias of to_arrow_reader(). We recommend using to_arrow_reader() instead."""
         return self.inner().arrow(batch_size)
+
+    def to_arrow_reader(
+        self, batch_size: SupportsInt = 1000000
+    ) -> pa.RecordBatchReader:
+        """Execute and return an Arrow Record Batch Reader that yields all rows."""
+        return self.inner().to_arrow_reader(batch_size)
+
+    def to_arrow_table(self, batch_size: SupportsInt = 1000000) -> pa.Table:
+        """Execute and fetch all rows as an Arrow Table."""
+        return self.inner().to_arrow_table(batch_size)
 
     def avg(
         self,
-        column: str,
+        expression: str,
         groups: str = "",
         window_spec: str = "",
         projected_columns: str = "",
     ) -> Self:
-        """Computes the average on a given column."""
+        """Computes the average of a given expression."""
         return self._new(
-            self.inner().avg(column, groups, window_spec, projected_columns)
+            self.inner().avg(expression, groups, window_spec, projected_columns)
         )
 
     def bit_and(
         self,
-        column: str,
+        expression: str,
         groups: str = "",
         window_spec: str = "",
         projected_columns: str = "",
     ) -> Self:
-        """Computes the bitwise AND of all bits present in a given column."""
+        """Computes the bitwise AND of all bits present in a given expression."""
         return self._new(
-            self.inner().bit_and(column, groups, window_spec, projected_columns)
+            self.inner().bit_and(expression, groups, window_spec, projected_columns)
         )
 
     def bit_or(
         self,
-        column: str,
+        expression: str,
         groups: str = "",
         window_spec: str = "",
         projected_columns: str = "",
     ) -> Self:
-        """Computes the bitwise OR of all bits present in a given column."""
+        """Computes the bitwise OR of all bits present in a given expression."""
         return self._new(
-            self.inner().bit_or(column, groups, window_spec, projected_columns)
+            self.inner().bit_or(expression, groups, window_spec, projected_columns)
         )
 
     def bit_xor(
         self,
-        column: str,
+        expression: str,
         groups: str = "",
         window_spec: str = "",
         projected_columns: str = "",
     ) -> Self:
-        """Computes the bitwise XOR of all bits present in a given column."""
+        """Computes the bitwise XOR of all bits present in a given expression."""
         return self._new(
-            self.inner().bit_xor(column, groups, window_spec, projected_columns)
+            self.inner().bit_xor(expression, groups, window_spec, projected_columns)
         )
 
     def bitstring_agg(
         self,
-        column: str,
+        expression: str,
         min: int | None = None,
         max: int | None = None,
         groups: str = "",
         window_spec: str = "",
         projected_columns: str = "",
     ) -> Self:
-        """Computes a bitstring with bits set for each distinct value in a given column."""
+        """Computes a bitstring with bits set for each distinct value in a given expression."""
         return self._new(
             self.inner().bitstring_agg(
-                column, min, max, groups, window_spec, projected_columns
+                expression, min, max, groups, window_spec, projected_columns
             )
         )
 
     def bool_and(
         self,
-        column: str,
+        expression: str,
         groups: str = "",
         window_spec: str = "",
         projected_columns: str = "",
     ) -> Self:
-        """Computes the logical AND of all values present in a given column."""
+        """Computes the logical AND of all values present in a given expression."""
         return self._new(
-            self.inner().bool_and(column, groups, window_spec, projected_columns)
+            self.inner().bool_and(expression, groups, window_spec, projected_columns)
         )
 
     def bool_or(
         self,
-        column: str,
+        expression: str,
         groups: str = "",
         window_spec: str = "",
         projected_columns: str = "",
     ) -> Self:
-        """Computes the logical OR of all values present in a given column."""
+        """Computes the logical OR of all values present in a given expression."""
         return self._new(
-            self.inner().bool_or(column, groups, window_spec, projected_columns)
+            self.inner().bool_or(expression, groups, window_spec, projected_columns)
         )
 
     def close(self) -> None:
@@ -232,14 +239,14 @@ class Relation(RelHandler):
 
     def count(
         self,
-        column: str,
+        expression: str,
         groups: str = "",
         window_spec: str = "",
         projected_columns: str = "",
     ) -> Self:
-        """Computes the number of elements present in a given column."""
+        """Computes the number of elements present in a given expression."""
         return self._new(
-            self.inner().count(column, groups, window_spec, projected_columns)
+            self.inner().count(expression, groups, window_spec, projected_columns)
         )
 
     def create(self, table_name: str) -> None:
@@ -287,14 +294,14 @@ class Relation(RelHandler):
 
     def favg(
         self,
-        column: str,
+        expression: str,
         groups: str = "",
         window_spec: str = "",
         projected_columns: str = "",
     ) -> Self:
-        """Computes the average of all values present in a given column using a more accurate floating point summation (Kahan Sum)."""
+        """Computes the average of all values present in a given expression using a more accurate floating point summation (Kahan Sum)."""
         return self._new(
-            self.inner().favg(column, groups, window_spec, projected_columns)
+            self.inner().favg(expression, groups, window_spec, projected_columns)
         )
 
     def fetch_arrow_reader(
@@ -345,46 +352,48 @@ class Relation(RelHandler):
         """Filter the relation object by the filter in filter_expr."""
         return self._new(self.inner().filter(into_duckdb(filter_expr)))
 
-    def first(self, column: str, groups: str = "", projected_columns: str = "") -> Self:
-        """Returns the first value of a given column."""
-        return self._new(self.inner().first(column, groups, projected_columns))
+    def first(
+        self, expression: str, groups: str = "", projected_columns: str = ""
+    ) -> Self:
+        """Returns the first value of a given expression."""
+        return self._new(self.inner().first(expression, groups, projected_columns))
 
     def first_value(
-        self, column: str, window_spec: str = "", projected_columns: str = ""
+        self, expression: str, window_spec: str = "", projected_columns: str = ""
     ) -> Self:
         """Computes the first value within the group or partition."""
         return self._new(
-            self.inner().first_value(column, window_spec, projected_columns)
+            self.inner().first_value(expression, window_spec, projected_columns)
         )
 
     def fsum(
         self,
-        column: str,
+        expression: str,
         groups: str = "",
         window_spec: str = "",
         projected_columns: str = "",
     ) -> Self:
-        """Computes the sum of all values present in a given column using a more accurate floating point summation (Kahan Sum)."""
+        """Computes the sum of all values present in a given expression using a more accurate floating point summation (Kahan Sum)."""
         return self._new(
-            self.inner().fsum(column, groups, window_spec, projected_columns)
+            self.inner().fsum(expression, groups, window_spec, projected_columns)
         )
 
     def geomean(
-        self, column: str, groups: str = "", projected_columns: str = ""
+        self, expression: str, groups: str = "", projected_columns: str = ""
     ) -> Self:
-        """Computes the geometric mean over all values present in a given column."""
-        return self._new(self.inner().geomean(column, groups, projected_columns))
+        """Computes the geometric mean over all values present in a given expression."""
+        return self._new(self.inner().geomean(expression, groups, projected_columns))
 
     def histogram(
         self,
-        column: str,
+        expression: str,
         groups: str = "",
         window_spec: str = "",
         projected_columns: str = "",
     ) -> Self:
-        """Computes the histogram over all values present in a given column."""
+        """Computes the histogram over all values present in a given expression."""
         return self._new(
-            self.inner().histogram(column, groups, window_spec, projected_columns)
+            self.inner().histogram(expression, groups, window_spec, projected_columns)
         )
 
     def insert(self, values: list[object]) -> None:
@@ -409,7 +418,7 @@ class Relation(RelHandler):
 
     def lag(
         self,
-        column: str,
+        expression: str,
         window_spec: str,
         offset: SupportsInt = 1,
         default_value: str = "NULL",
@@ -419,7 +428,7 @@ class Relation(RelHandler):
         """Computes the lag within the partition."""
         return self._new(
             self.inner().lag(
-                column,
+                expression,
                 window_spec,
                 offset,
                 default_value,
@@ -428,21 +437,23 @@ class Relation(RelHandler):
             )
         )
 
-    def last(self, column: str, groups: str = "", projected_columns: str = "") -> Self:
-        """Returns the last value of a given column."""
-        return self._new(self.inner().last(column, groups, projected_columns))
+    def last(
+        self, expression: str, groups: str = "", projected_columns: str = ""
+    ) -> Self:
+        """Returns the last value of a given expression."""
+        return self._new(self.inner().last(expression, groups, projected_columns))
 
     def last_value(
-        self, column: str, window_spec: str = "", projected_columns: str = ""
+        self, expression: str, window_spec: str = "", projected_columns: str = ""
     ) -> Self:
         """Computes the last value within the group or partition."""
         return self._new(
-            self.inner().last_value(column, window_spec, projected_columns)
+            self.inner().last_value(expression, window_spec, projected_columns)
         )
 
     def lead(
         self,
-        column: str,
+        expression: str,
         window_spec: str,
         offset: SupportsInt = 1,
         default_value: str = "NULL",
@@ -452,7 +463,7 @@ class Relation(RelHandler):
         """Computes the lead within the partition."""
         return self._new(
             self.inner().lead(
-                column,
+                expression,
                 window_spec,
                 offset,
                 default_value,
@@ -467,14 +478,14 @@ class Relation(RelHandler):
 
     def list(
         self,
-        column: str,
+        expression: str,
         groups: str = "",
         window_spec: str = "",
         projected_columns: str = "",
     ) -> Self:
-        """Returns a list containing all values present in a given column."""
+        """Returns a list containing all values present in a given expression."""
         return self._new(
-            self.inner().list(column, groups, window_spec, projected_columns)
+            self.inner().list(expression, groups, window_spec, projected_columns)
         )
 
     def map(
@@ -488,62 +499,62 @@ class Relation(RelHandler):
 
     def max(
         self,
-        column: str,
+        expression: str,
         groups: str = "",
         window_spec: str = "",
         projected_columns: str = "",
     ) -> Self:
-        """Returns the maximum value present in a given column."""
+        """Returns the maximum value present in a given expression."""
         return self._new(
-            self.inner().max(column, groups, window_spec, projected_columns)
+            self.inner().max(expression, groups, window_spec, projected_columns)
         )
 
     def mean(
         self,
-        column: str,
+        expression: str,
         groups: str = "",
         window_spec: str = "",
         projected_columns: str = "",
     ) -> Self:
-        """Computes the average on a given column."""
+        """Computes the average of a given expression."""
         return self._new(
-            self.inner().mean(column, groups, window_spec, projected_columns)
+            self.inner().mean(expression, groups, window_spec, projected_columns)
         )
 
     def median(
         self,
-        column: str,
+        expression: str,
         groups: str = "",
         window_spec: str = "",
         projected_columns: str = "",
     ) -> Self:
-        """Computes the median over all values present in a given column."""
+        """Computes the median over all values present in a given expression."""
         return self._new(
-            self.inner().median(column, groups, window_spec, projected_columns)
+            self.inner().median(expression, groups, window_spec, projected_columns)
         )
 
     def min(
         self,
-        column: str,
+        expression: str,
         groups: str = "",
         window_spec: str = "",
         projected_columns: str = "",
     ) -> Self:
-        """Returns the minimum value present in a given column."""
+        """Returns the minimum value present in a given expression."""
         return self._new(
-            self.inner().min(column, groups, window_spec, projected_columns)
+            self.inner().min(expression, groups, window_spec, projected_columns)
         )
 
     def mode(
         self,
-        column: str,
+        expression: str,
         groups: str = "",
         window_spec: str = "",
         projected_columns: str = "",
     ) -> Self:
-        """Computes the mode over all values present in a given column."""
+        """Computes the mode over all values present in a given expression."""
         return self._new(
-            self.inner().mode(column, groups, window_spec, projected_columns)
+            self.inner().mode(expression, groups, window_spec, projected_columns)
         )
 
     def n_tile(
@@ -556,7 +567,7 @@ class Relation(RelHandler):
 
     def nth_value(
         self,
-        column: str,
+        expression: str,
         window_spec: str,
         offset: SupportsInt,
         ignore_nulls: bool = False,
@@ -565,7 +576,7 @@ class Relation(RelHandler):
         """Computes the nth value within the partition."""
         return self._new(
             self.inner().nth_value(
-                column, window_spec, offset, ignore_nulls, projected_columns
+                expression, window_spec, offset, ignore_nulls, projected_columns
             )
         )
 
@@ -595,14 +606,14 @@ class Relation(RelHandler):
 
     def product(
         self,
-        column: str,
+        expression: str,
         groups: str = "",
         window_spec: str = "",
         projected_columns: str = "",
     ) -> Self:
-        """Returns the product of all values present in a given column."""
+        """Returns the product of all values present in a given expression."""
         return self._new(
-            self.inner().product(column, groups, window_spec, projected_columns)
+            self.inner().product(expression, groups, window_spec, projected_columns)
         )
 
     def project(self, *args: str | DuckHandler, groups: str = "") -> Self:
@@ -613,44 +624,44 @@ class Relation(RelHandler):
 
     def quantile(
         self,
-        column: str,
+        expression: str,
         q: float | list[float] = 0.5,
         groups: str = "",
         window_spec: str = "",
         projected_columns: str = "",
     ) -> Self:
-        """Computes the exact quantile value for a given column."""
+        """Computes the exact quantile value for a given expression."""
         return self._new(
-            self.inner().quantile(column, q, groups, window_spec, projected_columns)
+            self.inner().quantile(expression, q, groups, window_spec, projected_columns)
         )
 
     def quantile_cont(
         self,
-        column: str,
+        expression: str,
         q: float | list[float] = 0.5,
         groups: str = "",
         window_spec: str = "",
         projected_columns: str = "",
     ) -> Self:
-        """Computes the interpolated quantile value for a given column."""
+        """Computes the interpolated quantile value for a given expression."""
         return self._new(
             self.inner().quantile_cont(
-                column, q, groups, window_spec, projected_columns
+                expression, q, groups, window_spec, projected_columns
             )
         )
 
     def quantile_disc(
         self,
-        column: str,
+        expression: str,
         q: float | list[float] = 0.5,
         groups: str = "",
         window_spec: str = "",
         projected_columns: str = "",
     ) -> Self:
-        """Computes the exact quantile value for a given column."""
+        """Computes the exact quantile value for a given expression."""
         return self._new(
             self.inner().quantile_disc(
-                column, q, groups, window_spec, projected_columns
+                expression, q, groups, window_spec, projected_columns
             )
         )
 
@@ -665,9 +676,6 @@ class Relation(RelHandler):
     def rank_dense(self, window_spec: str, projected_columns: str = "") -> Self:
         """Computes the dense rank within the partition."""
         return self._new(self.inner().rank_dense(window_spec, projected_columns))
-
-    def record_batch(self, batch_size: SupportsInt = 1000000) -> pa.RecordBatchReader:
-        return self.inner().record_batch(batch_size)
 
     def row_number(self, window_spec: str, projected_columns: str = "") -> Self:
         """Computes the row number within the partition."""
@@ -719,84 +727,82 @@ class Relation(RelHandler):
 
     def std(
         self,
-        column: str,
+        expression: str,
         groups: str = "",
         window_spec: str = "",
         projected_columns: str = "",
     ) -> Self:
-        """Computes the sample standard deviation for a given column."""
+        """Computes the sample standard deviation for a given expression."""
         return self._new(
-            self.inner().std(column, groups, window_spec, projected_columns)
+            self.inner().std(expression, groups, window_spec, projected_columns)
         )
 
     def stddev(
         self,
-        column: str,
+        expression: str,
         groups: str = "",
         window_spec: str = "",
         projected_columns: str = "",
     ) -> Self:
-        """Computes the sample standard deviation for a given column."""
+        """Computes the sample standard deviation for a given expression."""
         return self._new(
-            self.inner().stddev(column, groups, window_spec, projected_columns)
+            self.inner().stddev(expression, groups, window_spec, projected_columns)
         )
 
     def stddev_pop(
         self,
-        column: str,
+        expression: str,
         groups: str = "",
         window_spec: str = "",
         projected_columns: str = "",
     ) -> Self:
-        """Computes the population standard deviation for a given column."""
+        """Computes the population standard deviation for a given expression."""
         return self._new(
-            self.inner().stddev_pop(column, groups, window_spec, projected_columns)
+            self.inner().stddev_pop(expression, groups, window_spec, projected_columns)
         )
 
     def stddev_samp(
         self,
-        column: str,
+        expression: str,
         groups: str = "",
         window_spec: str = "",
         projected_columns: str = "",
     ) -> Self:
-        """Computes the sample standard deviation for a given column."""
+        """Computes the sample standard deviation for a given expression."""
         return self._new(
-            self.inner().stddev_samp(column, groups, window_spec, projected_columns)
+            self.inner().stddev_samp(expression, groups, window_spec, projected_columns)
         )
 
     def string_agg(
         self,
-        column: str,
+        expression: str,
         sep: str = ",",
         groups: str = "",
         window_spec: str = "",
         projected_columns: str = "",
     ) -> Self:
-        """Concatenates the values present in a given column with a separator."""
+        """Concatenates the values present in a given expression with a separator."""
         return self._new(
-            self.inner().string_agg(column, sep, groups, window_spec, projected_columns)
+            self.inner().string_agg(
+                expression, sep, groups, window_spec, projected_columns
+            )
         )
 
     def sum(
         self,
-        column: str,
+        expression: str,
         groups: str = "",
         window_spec: str = "",
         projected_columns: str = "",
     ) -> Self:
-        """Computes the sum of all values present in a given column."""
+        """Computes the sum of all values present in a given expression."""
         return self._new(
-            self.inner().sum(column, groups, window_spec, projected_columns)
+            self.inner().sum(expression, groups, window_spec, projected_columns)
         )
 
-    def tf(self) -> pc.Dict[str, tf.Tensor]:
+    def tf(self) -> pc.Dict[str, Any]:
         """Fetch a result as dict of TensorFlow Tensors."""
         return pc.Dict.from_ref(self.inner().tf())
-
-    def to_arrow_table(self, batch_size: SupportsInt = 1000000) -> pa.Table:
-        """Execute and fetch all rows as an Arrow Table."""
-        return self.inner().to_arrow_table(batch_size)
 
     def to_csv(
         self,
@@ -884,7 +890,7 @@ class Relation(RelHandler):
         """Creates a view named view_name that refers to the relation object."""
         return self._new(self.inner().to_view(view_name, replace))
 
-    def torch(self) -> pc.Dict[str, torch.Tensor]:
+    def torch(self) -> pc.Dict[str, Any]:
         """Fetch a result as dict of PyTorch Tensors."""
         return pc.Dict.from_ref(self.inner().torch())
 
@@ -902,56 +908,56 @@ class Relation(RelHandler):
         """Update the given relation with the provided expressions."""
         return self.inner().update(into_duckdb(set), condition=into_duckdb(condition))
 
-    def value_counts(self, column: str, groups: str = "") -> Self:
-        """Computes the number of elements present in a given column, also projecting the original column."""
-        return self._new(self.inner().value_counts(column, groups))
+    def value_counts(self, expression: str, groups: str = "") -> Self:
+        """Computes the number of elements present in a given expression, also projecting the original expression."""
+        return self._new(self.inner().value_counts(expression, groups))
 
     def var(
         self,
-        column: str,
+        expression: str,
         groups: str = "",
         window_spec: str = "",
         projected_columns: str = "",
     ) -> Self:
-        """Computes the sample variance for a given column."""
+        """Computes the sample variance for a given expression."""
         return self._new(
-            self.inner().var(column, groups, window_spec, projected_columns)
+            self.inner().var(expression, groups, window_spec, projected_columns)
         )
 
     def var_pop(
         self,
-        column: str,
+        expression: str,
         groups: str = "",
         window_spec: str = "",
         projected_columns: str = "",
     ) -> Self:
-        """Computes the population variance for a given column."""
+        """Computes the population variance for a given expression."""
         return self._new(
-            self.inner().var_pop(column, groups, window_spec, projected_columns)
+            self.inner().var_pop(expression, groups, window_spec, projected_columns)
         )
 
     def var_samp(
         self,
-        column: str,
+        expression: str,
         groups: str = "",
         window_spec: str = "",
         projected_columns: str = "",
     ) -> Self:
-        """Computes the sample variance for a given column."""
+        """Computes the sample variance for a given expression."""
         return self._new(
-            self.inner().var_samp(column, groups, window_spec, projected_columns)
+            self.inner().var_samp(expression, groups, window_spec, projected_columns)
         )
 
     def variance(
         self,
-        column: str,
+        expression: str,
         groups: str = "",
         window_spec: str = "",
         projected_columns: str = "",
     ) -> Self:
-        """Computes the sample variance for a given column."""
+        """Computes the sample variance for a given expression."""
         return self._new(
-            self.inner().variance(column, groups, window_spec, projected_columns)
+            self.inner().variance(expression, groups, window_spec, projected_columns)
         )
 
     def write_csv(
@@ -1048,7 +1054,7 @@ class Relation(RelHandler):
     @property
     def dtypes(self) -> pc.Vec[sqltypes.DuckDBPyType]:
         """Return a list containing the types of the columns of the relation."""
-        return pc.Vec.from_ref(self.inner().dtypes)  # pyright: ignore[reportReturnType]
+        return pc.Vec.from_ref(self.inner().dtypes)
 
     @property
     def shape(self) -> tuple[int, int]:
