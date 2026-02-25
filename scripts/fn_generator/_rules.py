@@ -12,13 +12,11 @@ CONVERTER = pc.Iter(DuckDbTypes).map(lambda t: (t, t.into_py())).collect(dict)
 
 SHADOWERS = (
     Pql.into_iter()
-    .chain(Typing)
-    .chain(Builtins)
+    .chain(Typing, Builtins)
     .map(lambda s: s.value)
-    .chain(dir(builtins))
+    .chain(dir(builtins), keyword.kwlist)
     .insert("l")
     .collect(pc.Set)
-    .union(pc.Set(keyword.kwlist))
 )
 """Names that should be renamed to avoid shadowing."""
 
