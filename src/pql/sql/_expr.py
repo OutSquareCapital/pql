@@ -74,6 +74,27 @@ class SqlExpr(Expression, Fns):
         """Access enum functions."""
         return SqlExprEnumNameSpace(self)
 
+    def var(self, ddof: int) -> Self:
+        match ddof:
+            case 0:
+                return self.var_pop()
+            case _:
+                return self.var_samp()
+
+    def std(self, ddof: int) -> Self:
+        match ddof:
+            case 0:
+                return self.stddev_pop()
+            case _:
+                return self.stddev_samp()
+
+    def kurtosis(self, *, bias: bool = True) -> Self:
+        match bias:
+            case True:
+                return self.kurtosis_pop()
+            case False:
+                return self.kurtosis_samp()
+
     def log(self, x: Self | float | None = None) -> Self:
         """Computes the logarithm of x to base b.
 
@@ -88,19 +109,6 @@ class SqlExpr(Expression, Fns):
             Self
         """
         return self._new(func("log", x, self.inner()))
-
-    def implode(self) -> Self:
-        """Returns a LIST containing all the values of a column.
-
-        **SQL name**: *list*
-
-        See Also:
-            array_agg
-
-        Returns:
-            Self
-        """
-        return self._new(func("list", self.inner()))
 
     def greatest(self, *args: Self) -> Self:
         """Returns the largest value.
@@ -135,19 +143,6 @@ class SqlExpr(Expression, Fns):
             Self
         """
         return self._new(func("least", self.inner(), *args))
-
-    def to_map(self, values: Self) -> Self:
-        """Creates a map from a set of keys and values.
-
-        **SQL name**: *map*
-
-        Args:
-            values (Self): `V[]` expression
-
-        Returns:
-            Self
-        """
-        return self._new(func("map", self.inner(), values))
 
     def __str__(self) -> str:
         return self.inner().__str__()
@@ -466,6 +461,22 @@ class SqlExprStringNameSpace(StringFns[SqlExpr]):
 class SqlExprListNameSpace(ListFns[SqlExpr]):
     """List function namespace for SQL expressions."""
 
+    def std(self, ddof: int = 1) -> SqlExpr:
+        """Compute the standard deviation of the lists in the column."""
+        match ddof:
+            case 0:
+                return self.stddev_pop()
+            case _:
+                return self.stddev_samp()
+
+    def var(self, ddof: int = 1) -> SqlExpr:
+        """Compute the variance of the lists in the column."""
+        match ddof:
+            case 0:
+                return self.var_pop()
+            case _:
+                return self.var_samp()
+
 
 @dataclass(slots=True)
 class SqlExprStructNameSpace(StructFns[SqlExpr]):
@@ -485,16 +496,6 @@ class SqlExprArrayNameSpace(ArrayFns[SqlExpr]):
 @dataclass(slots=True)
 class SqlExprJsonNameSpace(JsonFns[SqlExpr]):
     """JSON function namespace for SQL expressions."""
-
-    def parse(self) -> SqlExpr:
-        """Parse and minify json.
-
-        **SQL name**: *json*
-
-        Returns:
-            Self
-        """
-        return self._new(func("json", self.inner()))
 
 
 @dataclass(slots=True)

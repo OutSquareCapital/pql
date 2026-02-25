@@ -1478,6 +1478,22 @@ class Fns(DuckHandler):
         """
         return self._new(func("hour", self.inner()))
 
+    def implode(self) -> Self:
+        """Returns a LIST containing all the values of a column.
+
+        **SQL name**: *list*
+
+        See Also:
+            array_agg
+
+        Examples:
+            list(A)
+
+        Returns:
+            Self
+        """
+        return self._new(func("list", self.inner()))
+
     def in_search_path(self, schema_name: Self | str) -> Self:
         """Returns whether or not the database/schema are in the search path.
 
@@ -1601,16 +1617,6 @@ class Fns(DuckHandler):
         """
         return self._new(func("kahan_sum", self.inner()))
 
-    def kurtosis(self) -> Self:
-        """Returns the excess kurtosis (Fisher's definition) of all input values, with a bias correction according to the sample size.
-
-        **SQL name**: *kurtosis*
-
-        Returns:
-            Self
-        """
-        return self._new(func("kurtosis", self.inner()))
-
     def kurtosis_pop(self) -> Self:
         """Returns the excess kurtosis (Fisher's definition) of all input values, without bias correction.
 
@@ -1620,6 +1626,16 @@ class Fns(DuckHandler):
             Self
         """
         return self._new(func("kurtosis_pop", self.inner()))
+
+    def kurtosis_samp(self) -> Self:
+        """Returns the excess kurtosis (Fisher's definition) of all input values, with a bias correction according to the sample size.
+
+        **SQL name**: *kurtosis*
+
+        Returns:
+            Self
+        """
+        return self._new(func("kurtosis", self.inner()))
 
     def last(self) -> Self:
         """Returns the last value of a column.
@@ -3174,6 +3190,22 @@ class Fns(DuckHandler):
             Self
         """
         return self._new(func("to_json", self.inner(), *args))
+
+    def to_map(self, values: Self) -> Self:
+        """Creates a map from a set of keys and values.
+
+        **SQL name**: *map*
+
+        Args:
+            values (Self): `V[]` expression
+
+        Examples:
+            map(['key1', 'key2'], ['val1', 'val2'])
+
+        Returns:
+            Self
+        """
+        return self._new(func("map", self.inner(), values))
 
     def to_microseconds(self) -> Self:
         """Construct a microsecond interval.
@@ -6947,6 +6979,9 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
 
         **SQL name**: *array_agg*
 
+        See Also:
+            list
+
         Examples:
             array_agg(A)
 
@@ -8005,6 +8040,16 @@ class JsonFns[T: Fns](NameSpaceHandler[T]):
             T
         """
         return self._new(func("json_object", self.inner(), *args))
+
+    def parse(self) -> T:
+        """SQL json function.
+
+        **SQL name**: *json*
+
+        Returns:
+            T
+        """
+        return self._new(func("json", self.inner()))
 
     def pretty(self) -> T:
         """SQL json_pretty function.

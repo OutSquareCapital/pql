@@ -661,10 +661,7 @@ class Expr(sql.CoreHandler[sql.SqlExpr]):
     ) -> Self:
         """Compute rolling mean."""
         return self._rolling_agg(
-            window_size=window_size,
-            min_samples=min_samples,
-            center=center,
-            agg=lambda expr: expr.max(),
+            lambda expr: expr.max(), window_size, min_samples, center=center
         )
 
     def rolling_min(
@@ -676,10 +673,7 @@ class Expr(sql.CoreHandler[sql.SqlExpr]):
     ) -> Self:
         """Compute rolling mean."""
         return self._rolling_agg(
-            window_size=window_size,
-            min_samples=min_samples,
-            center=center,
-            agg=lambda expr: expr.min(),
+            lambda expr: expr.min(), window_size, min_samples, center=center
         )
 
     def rolling_mean(
@@ -691,10 +685,7 @@ class Expr(sql.CoreHandler[sql.SqlExpr]):
     ) -> Self:
         """Compute rolling mean."""
         return self._rolling_agg(
-            window_size=window_size,
-            min_samples=min_samples,
-            center=center,
-            agg=lambda expr: expr.mean(),
+            lambda expr: expr.mean(), window_size, min_samples, center=center
         )
 
     def rolling_median(
@@ -706,10 +697,7 @@ class Expr(sql.CoreHandler[sql.SqlExpr]):
     ) -> Self:
         """Compute rolling mean."""
         return self._rolling_agg(
-            window_size=window_size,
-            min_samples=min_samples,
-            center=center,
-            agg=lambda expr: expr.median(),
+            lambda expr: expr.median(), window_size, min_samples, center=center
         )
 
     def rolling_sum(
@@ -734,10 +722,7 @@ class Expr(sql.CoreHandler[sql.SqlExpr]):
     ) -> Self:
         """Compute rolling std."""
         return self._rolling_agg(
-            lambda expr: expr.stddev_pop() if ddof == 0 else expr.stddev_samp(),
-            window_size,
-            min_samples,
-            center=center,
+            lambda expr: expr.std(ddof), window_size, min_samples, center=center
         )
 
     def rolling_var(
@@ -750,32 +735,19 @@ class Expr(sql.CoreHandler[sql.SqlExpr]):
     ) -> Self:
         """Compute rolling variance."""
         return self._rolling_agg(
-            lambda expr: expr.var_pop() if ddof == 0 else expr.var_samp(),
-            window_size,
-            min_samples,
-            center=center,
+            lambda expr: expr.var(ddof), window_size, min_samples, center=center
         )
 
     def std(self, ddof: int = 1) -> Self:
         """Compute the standard deviation."""
-        match ddof:
-            case 0:
-                expr = self.inner().stddev_pop()
-            case _:
-                expr = self.inner().stddev_samp()
-        return self._as_scalar(expr)
+        return self._as_scalar(self.inner().std(ddof))
 
     def var(self, ddof: int = 1) -> Self:
         """Compute the variance."""
-        match ddof:
-            case 0:
-                expr = self.inner().var_pop()
-            case _:
-                expr = self.inner().var_samp()
-        return self._as_scalar(expr)
+        return self._as_scalar(self.inner().var(ddof))
 
     def kurtosis(self, *, fisher: bool = True, bias: bool = True) -> Self:
-        base = self.inner().kurtosis_pop() if bias else self.inner().kurtosis()
+        base = self.inner().kurtosis(bias=bias)
         match fisher:
             case True:
                 return self._as_scalar(base)
@@ -1529,19 +1501,11 @@ class ExprArrayNameSpace(ExprNameSpaceBase):
 
     def std(self, ddof: int = 1) -> Expr:
         """Compute the standard deviation of the arrays in the column."""
-        match ddof:
-            case 0:
-                return self._new(self.inner().list.stddev_pop())
-            case _:
-                return self._new(self.inner().list.stddev_samp())
+        return self._new(self.inner().list.std(ddof))
 
     def var(self, ddof: int = 1) -> Expr:
         """Compute the variance of the arrays in the column."""
-        match ddof:
-            case 0:
-                return self._new(self.inner().list.var_pop())
-            case _:
-                return self._new(self.inner().list.var_samp())
+        return self._new(self.inner().list.var(ddof))
 
     def sort(self, *, descending: bool = False, nulls_last: bool = False) -> Expr:
         """Sort the lists of the column."""
@@ -1659,19 +1623,11 @@ class ExprListNameSpace(ExprNameSpaceBase):
 
     def std(self, ddof: int = 1) -> Expr:
         """Compute the standard deviation of the lists in the column."""
-        match ddof:
-            case 0:
-                return self._new(self.inner().list.stddev_pop())
-            case _:
-                return self._new(self.inner().list.stddev_samp())
+        return self._new(self.inner().list.std(ddof))
 
     def var(self, ddof: int = 1) -> Expr:
         """Compute the variance of the lists in the column."""
-        match ddof:
-            case 0:
-                return self._new(self.inner().list.var_pop())
-            case _:
-                return self._new(self.inner().list.var_samp())
+        return self._new(self.inner().list.var(ddof))
 
     def sort(self, *, descending: bool = False, nulls_last: bool = False) -> Expr:
         """Sort the lists of the column."""
