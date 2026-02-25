@@ -63,7 +63,7 @@ type NestedLiteral = (
     | tuple[PythonLiteral, ...]
     | NPArrayLike[Any, Any]
 )
-type PythonLiteral = NonNestedLiteral | NestedLiteral
+type PythonLiteral = NonNestedLiteral | NestedLiteral | None
 """Python literal types (can convert into a `lit` expression)."""
 type ExprIntoVals = DuckHandler | duckdb.Expression
 type SeqIntoVals = (
