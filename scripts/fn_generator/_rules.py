@@ -79,6 +79,18 @@ SHADOWERS = (
     .union(pc.Set(keyword.kwlist))
 )
 """Names that should be renamed to avoid shadowing."""
+
+RENAME_RULES = pc.Dict.from_ref(
+    {
+        "list": "implode",
+        "json": "json_parse",
+        "map": "to_map",
+        "kurtosis": "kurtosis_samp",
+    }
+)
+"""Explicit SQL function name -> generated Python method name mapping."""
+
+
 SPECIAL_CASES = pc.Set(
     {
         # "raw" operators
@@ -112,7 +124,7 @@ SPECIAL_CASES = pc.Set(
         "!__postfix",
         "!",
         "…",
-        # Aliased operators
+        # Already exist in duckdb Expression methods
         "mod",
         "pow",
         "power",
@@ -120,11 +132,7 @@ SPECIAL_CASES = pc.Set(
         "subtract",
         "multiply",
         "divide",
-        # Conflicting names
         "alias",  # conflicts with duckdb alias method
-        "list",  # conflict with namespace, renamed to implode
-        "json",  # conflict with namespace, renamed to parse
-        "map",  # conflict with namespace, renamed to to_map
         # Misc
         "log",  # Need to swap argument order to take self.inner() as value and not as base
         "strftime",  # Need custom "str" prefix rule, but this rule will also take "struct" funcs in string namespace, so better to just special case it

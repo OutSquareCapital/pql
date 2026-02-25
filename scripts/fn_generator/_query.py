@@ -8,6 +8,7 @@ from ._rules import (
     CONVERTER,
     NAMESPACE_SPECS,
     PREFIXES,
+    RENAME_RULES,
     SHADOWERS,
     SPECIAL_CASES,
     DuckDbTypes,
@@ -51,9 +52,15 @@ def run_qry(lf: pl.LazyFrame) -> pl.LazyFrame:
                 how="left",
             )
         )
-        .with_columns(dk.categories.pipe(_namespace_specs, dk.function_name))
+        .with_columns(
+            dk.function_name.alias(py.sql_name.meta.output_name()),
+            dk.function_name.replace_strict(
+                RENAME_RULES, default=dk.function_name, return_dtype=pl.String
+            ).alias(py.raw_name.meta.output_name()),
+        )
+        .with_columns(dk.categories.pipe(_namespace_specs, py.raw_name))
         .explode("namespace")
-        .with_columns(_py_name(dk, py), py.namespace.pipe(_return_type))
+        .with_columns(_py_name(py.raw_name, py), py.namespace.pipe(_return_type))
         .with_row_index("sig_id")
         .explode("parameters", "parameter_types")
         .with_columns(
@@ -109,10 +116,10 @@ def _return_type(namespace: pl.Expr) -> pl.Expr:
     )
 
 
-def _py_name(dk: DuckCols, py: PyCols) -> pl.Expr:
+def _py_name(raw_name: pl.Expr, py: PyCols) -> pl.Expr:
     return (
         pl.concat_str(
-            dk.function_name,
+            raw_name,
             pl.when(py.suffixes.is_not_null()).then(
                 pl.concat_str(pl.lit("_"), py.suffixes)
             ),
@@ -303,7 +310,7 @@ def _to_func(
             .str.replace_all(r"\. ", ".\n\n        ")
             .str.strip_chars_end(".")
         )
-        .otherwise(pl.format("SQL {} function", dk.function_name)),
+        .otherwise(pl.format("SQL {} function", py.sql_name)),
         see_also_section=pl.when(py.aliases.list.len().gt(0)).then(
             format_kwords(
                 "\n\n        See Also:\n            {aliases}",
@@ -332,8 +339,7 @@ def _to_func(
                 ignore_nulls=True,
             )
         ),
-        sql_name=dk.function_name,
-        dk_name=dk.function_name,
+        sql_name=py.sql_name,
         dk_args=pl.when(has_params.gt(1)).then(
             format_kwords(", {args}", args=p_lists.names.list.slice(1).list.join(", "))
         ),
@@ -352,5 +358,5 @@ def _txt() -> str:
         Returns:
             {self_type}
         """
-        return self._new(func("{dk_name}", self.inner(){dk_args}{dk_varargs}))
+        return self._new(func("{sql_name}", self.inner(){dk_args}{dk_varargs}))
         '''
