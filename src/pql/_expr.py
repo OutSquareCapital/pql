@@ -11,7 +11,7 @@ from typing import TYPE_CHECKING, Any, NamedTuple, Self
 import pyochain as pc
 
 from . import _datatypes as dt, sql  # pyright: ignore[reportPrivateUsage]
-from ._args_iter import try_chain, try_flatten, try_iter
+from ._args_iter import try_chain, try_iter
 from ._computations import fill_nulls, round, shift
 
 if TYPE_CHECKING:
@@ -133,29 +133,29 @@ class ExprPlan:
     def from_inputs(
         cls,
         columns: pc.Seq[str],
-        exprs: Iterable[IntoExpr | Iterable[IntoExpr]],
+        exprs: pc.Iter[IntoExpr],
         named_exprs: dict[str, IntoExpr] | None = None,
     ) -> Self:
-        return cls(
-            try_flatten(exprs)
-            .flat_map(lambda value: _resolve_projection(columns, value))  # pyright: ignore[reportArgumentType]
-            .chain(
-                pc.Option(named_exprs)
-                .map(
-                    lambda mapping: (
-                        pc.Dict.from_ref(mapping)
-                        .items()
-                        .iter()
-                        .map_star(
-                            lambda k, v: _resolve_projection(
-                                columns, v, alias_override=pc.Some(k)
-                            )
+        expr_map = (
+            pc.Option(named_exprs)
+            .map(
+                lambda mapping: (
+                    pc.Dict.from_ref(mapping)
+                    .items()
+                    .iter()
+                    .map_star(
+                        lambda k, v: _resolve_projection(
+                            columns, v, alias_override=pc.Some(k)
                         )
-                        .flatten()
                     )
+                    .flatten()
                 )
-                .unwrap_or(pc.Iter[ExprProjection].new())
             )
+            .unwrap_or(pc.Iter[ExprProjection].new())
+        )
+        return cls(
+            exprs.flat_map(lambda value: _resolve_projection(columns, value))
+            .chain(expr_map)
             .collect()
         )
 
@@ -183,11 +183,9 @@ class ExprPlan:
 
 
 def _resolve_projection(
-    columns: pc.Seq[str],
-    value: IntoExpr,
-    *,
-    alias_override: pc.Option[str] = pc.NONE,
+    columns: pc.Seq[str], value: IntoExpr, *, alias_override: pc.Option[str] = pc.NONE
 ) -> pc.Iter[ExprProjection]:
+    into_expr = pc.Iter[ExprProjection].once
     match value:
         case Expr() as expr:
             base_names = (
@@ -207,7 +205,7 @@ def _resolve_projection(
                         )
                     )
                 case False:
-                    return pc.Iter[ExprProjection].once(
+                    return into_expr(
                         ExprProjection(
                             expr.inner(),
                             expr.meta.from_projection(output_names.first()),
@@ -216,7 +214,7 @@ def _resolve_projection(
         case _:
             resolved = sql.into_expr(value, as_col=True)
             resolved_meta = ExprMeta.__from_expr__(resolved)
-            return pc.Iter[ExprProjection].once(
+            return into_expr(
                 ExprProjection(
                     resolved,
                     resolved_meta.from_projection(
@@ -224,30 +222,6 @@ def _resolve_projection(
                     ),
                 )
             )
-
-
-def resolve_predicates(
-    predicates: Iterable[IntoExprColumn | Iterable[IntoExprColumn]],
-    constraints: dict[str, IntoExpr] | None = None,
-) -> pc.Iter[sql.SqlExpr]:
-    return (
-        try_flatten(predicates)
-        .map(lambda value: sql.into_expr(value, as_col=True))  # pyright: ignore[reportArgumentType]
-        .chain(
-            pc.Option(constraints)
-            .map(
-                lambda mapping: (
-                    pc.Dict.from_ref(mapping)
-                    .items()
-                    .iter()
-                    .map_star(
-                        lambda name, value: sql.col(name).eq(sql.into_expr(value))
-                    )
-                )
-            )
-            .unwrap_or(pc.Iter[sql.SqlExpr].new())
-        )
-    )
 
 
 @dataclass(slots=True, init=False)
@@ -1659,11 +1633,16 @@ class ExprStructNameSpace(ExprNameSpaceBase):
         return self._new(self.inner().to_json())
 
     def with_fields(
-        self, *exprs: IntoExpr | Iterable[IntoExpr], **named_exprs: IntoExpr
+        self,
+        expr: IntoExpr | Iterable[IntoExpr],
+        *more_exprs: IntoExpr,
+        **named_exprs: IntoExpr,
     ) -> Expr:
         """Return a new struct with updated or additional fields."""
         return (
-            ExprPlan.from_inputs(pc.Seq[str].new(), exprs, named_exprs)
+            ExprPlan.from_inputs(
+                pc.Seq[str].new(), try_chain(expr, more_exprs), named_exprs
+            )
             .aliased_sql()
             .into(lambda args: self._new(self.inner().struct.insert(*args)))
         )

@@ -11,7 +11,7 @@ import pyochain as pc
 from . import sql
 from ._args_iter import try_chain, try_flatten, try_iter
 from ._datatypes import DataType
-from ._expr import Expr, ExprPlan, resolve_predicates
+from ._expr import Expr, ExprPlan
 
 if TYPE_CHECKING:
     import polars as pl
@@ -169,17 +169,22 @@ class LazyGroupBy:
         )
 
     def agg(
-        self, *aggs: IntoExpr | Iterable[IntoExpr], **named_aggs: IntoExpr
+        self,
+        aggregate: IntoExpr | Iterable[IntoExpr],
+        *more_aggregates: IntoExpr,
+        **named_aggs: IntoExpr,
     ) -> LazyFrame:
         return (
             self._keys.iter()
             .chain(
                 ExprPlan.from_inputs(
-                    self._frame.columns, aggs, named_exprs=named_aggs
+                    self._frame.columns,
+                    try_chain(aggregate, more_aggregates),
+                    named_exprs=named_aggs,
                 ).aliased_sql()
             )
             .into(self._frame.inner().aggregate, self._group_expr)
-            .pipe(self._frame._new)  # pyright: ignore[reportPrivateUsage]
+            .pipe(self._frame.__class__)
         )
 
 
@@ -282,10 +287,15 @@ class LazyFrame(sql.CoreHandler[sql.Relation]):
         return self.inner().pl()
 
     def select(
-        self, *exprs: IntoExpr | Iterable[IntoExpr], **named_exprs: IntoExpr
+        self,
+        expr: IntoExpr | Iterable[IntoExpr],
+        *more_exprs: IntoExpr,
+        **named_exprs: IntoExpr,
     ) -> Self:
         """Select columns or expressions."""
-        plan = ExprPlan.from_inputs(self.columns, exprs, named_exprs)
+        plan = ExprPlan.from_inputs(
+            self.columns, try_chain(expr, more_exprs), named_exprs
+        )
         match plan.can_use_unique():
             case True:
                 return self.inner().unique(plan.unique().join(", ")).pipe(self._new)
@@ -297,12 +307,15 @@ class LazyFrame(sql.CoreHandler[sql.Relation]):
                         return plan.aliased_sql().into(self._select)
 
     def with_columns(
-        self, *exprs: IntoExpr | Iterable[IntoExpr], **named_exprs: IntoExpr
+        self,
+        expr: IntoExpr | Iterable[IntoExpr],
+        *more_exprs: IntoExpr,
+        **named_exprs: IntoExpr,
     ) -> Self:
         """Add or replace columns."""
         cols = self.columns
         return (
-            ExprPlan.from_inputs(self.columns, exprs, named_exprs)
+            ExprPlan.from_inputs(self.columns, try_chain(expr, more_exprs), named_exprs)
             .to_updates()
             .into(
                 lambda updates: (
@@ -325,11 +338,30 @@ class LazyFrame(sql.CoreHandler[sql.Relation]):
 
     def filter(
         self,
-        *predicates: IntoExprColumn | Iterable[IntoExprColumn],
+        predicate: IntoExprColumn | Iterable[IntoExprColumn],
+        *more_predicates: IntoExprColumn,
         **constraints: IntoExpr,
     ) -> Self:
         """Filter rows based on predicates and equality constraints."""
-        return resolve_predicates(predicates, constraints).into(self._filter)
+        return (
+            try_chain(predicate, more_predicates)
+            .map(lambda value: sql.into_expr(value, as_col=True))
+            .chain(
+                pc.Option(constraints)
+                .map(
+                    lambda mapping: (
+                        pc.Dict.from_ref(mapping)
+                        .items()
+                        .iter()
+                        .map_star(
+                            lambda name, value: sql.col(name).eq(sql.into_expr(value))
+                        )
+                    )
+                )
+                .unwrap_or(pc.Iter[sql.SqlExpr].new())
+            )
+            .into(self._filter)
+        )
 
     def sort(
         self,
@@ -357,7 +389,7 @@ class LazyFrame(sql.CoreHandler[sql.Relation]):
                 case (True, True):
                     return col.desc().nulls_last()
                 case (True, False):
-                    return col.desc().nulls_first()
+                    return col.desc()
                 case (False, True):
                     return col.asc().nulls_last()
                 case (False, False):
