@@ -1,8 +1,11 @@
+
 # pql vs Polars API Comparison Report
 
-This report shows the API coverage of pql compared to Polars.
+This report shows the API coverage of pql compared to other libraries.
 
 ## Summary
+
+The first value of each tuple is for `Polars` and the second value is for `Narwhals`.
 
 | Class               | Coverage        | Total     | Matched  | Missing | Mismatched | Extra   |
 | ------------------- | --------------- | --------- | -------- | ------- | ---------- | ------- |
@@ -10,10 +13,10 @@ This report shows the API coverage of pql compared to Polars.
 | Expr                | (70.0%, 42.3%)  | (70, 213) | (49, 90) | (8, 94) | (13, 29)   | (58, 1) |
 | LazyGroupBy         | (0.0%, 50.0%)   | (1, 16)   | (0, 8)   | (0, 4)  | (1, 4)     | (11, 0) |
 | ExprStrNameSpace    | (100.0%, 38.3%) | (19, 47)  | (19, 18) | (0, 10) | (0, 19)    | (19, 1) |
-| ExprListNameSpace   | (90.0%, 44.2%)  | (10, 43)  | (9, 19)  | (0, 21) | (1, 3)     | (13, 1) |
+| ExprListNameSpace   | (90.0%, 46.5%)  | (10, 43)  | (9, 20)  | (0, 20) | (1, 3)     | (14, 1) |
 | ExprStructNameSpace | (100.0%, 40.0%) | (1, 5)    | (1, 2)   | (0, 2)  | (0, 1)     | (3, 1)  |
 | ExprNameNameSpace   | (100.0%, 70.0%) | (6, 10)   | (6, 7)   | (0, 3)  | (0, 0)     | (2, 1)  |
-| ExprArrNameSpace    | (100.0%, 54.8%) | (0, 31)   | (0, 17)  | (0, 10) | (0, 4)     | (23, 2) |
+| ExprArrNameSpace    | (100.0%, 54.8%) | (0, 31)   | (0, 17)  | (0, 10) | (0, 4)     | (24, 3) |
 
 ## LazyFrame
 
@@ -489,7 +492,7 @@ This report shows the API coverage of pql compared to Polars.
 
 ## ExprListNameSpace
 
-### [x] Missing Methods (21)
+### [x] Missing Methods (20)
 
 - `agg`
   - **Polars**: (expr: Expr) -> Expr
@@ -503,8 +506,6 @@ This report shows the API coverage of pql compared to Polars.
   - **Polars**: (n: int, null_behavior: NullBehavior) -> Expr
 - `explode`
   - **Polars**: (empty_as_null: bool, keep_nulls: bool) -> Expr
-- `filter`
-  - **Polars**: (predicate: Expr) -> Expr
 - `gather`
   - **Polars**: (indices: Expr | Series | list[int] | list[list[int]], null_on_oob: bool) -> Expr
 - `gather_every`
@@ -613,7 +614,8 @@ This report shows the API coverage of pql compared to Polars.
   - **Polars***: (`maintain_order: bool`) -> Expr
   - **pql**: () -> Expr
 
-### [+] Extra Methods (pql-only) (2)
+### [+] Extra Methods (pql-only) (3)
 
 - `drop_nulls`
+- `filter`
 - `inner`

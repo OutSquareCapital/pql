@@ -236,3 +236,10 @@ def test_join() -> None:
         pql.col("str_vals").arr.join("-", ignore_nulls=False),
         pl.col("str_vals").arr.join("-", ignore_nulls=False),
     )
+
+
+def test_filter() -> None:
+    assert_eq_pl(
+        pql.col("x").arr.filter(pql.element().gt(3)),
+        pl.col("x").cast(pl.List(pl.UInt16)).list.filter(pl.element().gt(3)),
+    )

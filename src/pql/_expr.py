@@ -1013,7 +1013,6 @@ class Expr(sql.CoreHandler[sql.SqlExpr]):
         strategy: FillNullStrategy | None = None,
         limit: int | None = None,
     ) -> Self:
-
         return (
             self.inner()
             .pipe(fill_nulls, value, strategy, limit)
@@ -1417,6 +1416,9 @@ class ExprArrayNameSpace(ExprNameSpaceBase):
         """Run an expression against each array element."""
         return self._new(self.inner().arr.transform(sql.fn_once(expr.inner())))
 
+    def filter(self, predicate: Expr) -> Expr:
+        return self._new(self.inner().arr.filter(sql.fn_once(predicate.inner())))
+
     def len(self) -> Expr:
         """Return the number of elements in each array."""
         return self._new(self.inner().arr.length())
@@ -1525,8 +1527,6 @@ class ExprArrayNameSpace(ExprNameSpaceBase):
 class ExprListNameSpace(ExprNameSpaceBase):
     """List operations namespace (equivalent to pl.Expr.list)."""
 
-    # TODO: reduce, agg, filter
-
     def all(self) -> Expr:
         """Return whether all values in the list are true."""
         return self._new(self.inner().list.bool_and())
@@ -1538,6 +1538,9 @@ class ExprListNameSpace(ExprNameSpaceBase):
     def eval(self, expr: Expr) -> Expr:
         """Run an expression against each list element."""
         return self._new(self.inner().list.transform(sql.fn_once(expr.inner())))
+
+    def filter(self, predicate: Expr) -> Expr:
+        return self._new(self.inner().list.filter(sql.fn_once(predicate.inner())))
 
     def len(self) -> Expr:
         """Return the number of elements in each list."""

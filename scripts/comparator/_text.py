@@ -48,13 +48,16 @@ class ComparisonReport:
 
 
 def header() -> pc.Iter[str]:
-    return pc.Iter(
-        (
-            "# pql vs Polars API Comparison Report\n",
-            "This report shows the API coverage of pql compared to Polars.\n",
-            "## Summary\n",
-        )
-    )
+    txt = """
+# pql vs Polars API Comparison Report.
+
+This report shows the API coverage of pql compared to other libraries.
+
+## Summary
+
+The first value of each tuple is for `Polars` and the second value is for `Narwhals`.
+"""
+    return pc.Iter.once(txt)
 
 
 def _summary_header() -> pc.Seq[str]:

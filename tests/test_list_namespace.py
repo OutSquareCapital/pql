@@ -219,3 +219,10 @@ def test_join() -> None:
         pql.col("str_vals").list.join("-", ignore_nulls=False),
         pl.col("str_vals").list.join("-", ignore_nulls=False),
     )
+
+
+def test_filter() -> None:
+    assert_eq_pl(
+        pql.col("x").list.filter(pql.element().gt(3)),
+        pl.col("x").list.filter(pl.element().gt(3)),
+    )
