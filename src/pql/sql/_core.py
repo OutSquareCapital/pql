@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Concatenate, Self
+from typing import TYPE_CHECKING, Any, Concatenate, Self
 
 import duckdb
 import pyochain as pc
@@ -10,7 +10,7 @@ import pyochain as pc
 from ._rel_conversions import frame_init_into_duckdb
 
 if TYPE_CHECKING:
-    from .typing import IntoRel, PythonLiteral
+    from .typing import IntoRel, NonNestedLiteral, PythonLiteral, SeqLiteral
 
 
 @dataclass(slots=True)
@@ -96,7 +96,8 @@ class NameSpaceHandler[T: DuckHandler]:
 
 
 def func(
-    name: str, *args: PythonLiteral | duckdb.Expression | DuckHandler | None
+    name: str,
+    *args: NonNestedLiteral | SeqLiteral[Any] | duckdb.Expression | DuckHandler | None,
 ) -> duckdb.Expression:
     """Create a SQL function expression."""
     return (
