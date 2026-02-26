@@ -6,7 +6,7 @@ import pyochain as pc
 if TYPE_CHECKING:
     from ._frame import JoinKeys
 type TimeUnit = Literal["s", "ms", "us", "ns"]
-type JoinStrategy = Literal["inner", "left", "full", "cross", "semi", "anti"]
+type JoinStrategy = Literal["inner", "left", "right", "outer", "semi", "anti", "cross"]
 type AsofJoinStrategy = Literal["backward", "forward", "nearest"]
 type UniqueKeepStrategy = Literal["any", "none", "first", "last"]
 type TransferEncoding = Literal["hex", "base64"]

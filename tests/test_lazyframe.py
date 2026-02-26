@@ -45,7 +45,8 @@ def test_properties(sample_df: pl.DataFrame) -> None:
 
 
 def test_repr(sample_df: pl.DataFrame) -> None:
-    assert "LazyFrame" in repr(pql.LazyFrame(sample_df))
+    lf = pql.LazyFrame(sample_df)
+    assert repr(lf) == repr(lf.inner()) == repr(lf.inner().inner())
 
 
 def test_clone(sample_df: pl.DataFrame) -> None:
@@ -669,11 +670,12 @@ def test_join_left() -> None:
     )
 
 
-def test_join_full() -> None:
+def test_join_outer() -> None:
+    """outer=full for polars."""
     left = pl.DataFrame({"id": [1, 2, 3], "a": [10, 20, 30]})
     right = pl.DataFrame({"id": [2, 3, 4], "b": [200, 300, 400]})
     assert_eq(
-        pql.LazyFrame(left).join(pql.LazyFrame(right), on="id", how="full").collect(),
+        pql.LazyFrame(left).join(pql.LazyFrame(right), on="id", how="outer").collect(),
         left.lazy().join(right.lazy(), on="id", how="full").collect(),
     )
 

@@ -228,9 +228,6 @@ class LazyFrame(sql.CoreHandler[sql.Relation]):
     def from_sequence(cls, data: SeqIntoVals) -> Self:
         return cls(sql.from_sequence(data))
 
-    def __repr__(self) -> str:
-        return f"LazyFrame\n{self.inner()}\n"
-
     def _select(
         self, exprs: IntoExprColumn | Iterable[IntoExprColumn], groups: str = ""
     ) -> Self:
@@ -747,7 +744,6 @@ class LazyFrame(sql.CoreHandler[sql.Relation]):
         on_opt = pc.Option(on).map(lambda value: try_iter(value).collect())
         left_on_opt = pc.Option(left_on).map(lambda value: try_iter(value).collect())
         right_on_opt = pc.Option(right_on).map(lambda value: try_iter(value).collect())
-        native_how = "outer" if how == "full" else how
 
         def _validate_cross() -> pc.Result[None, ValueError]:
             match (on_opt, left_on_opt, right_on_opt):
@@ -785,14 +781,14 @@ class LazyFrame(sql.CoreHandler[sql.Relation]):
                             )
                         )
                         .reduce(sql.SqlExpr.and_),
-                        how=native_how,
+                        how=how,
                     )
                 )
 
         def _rhs_expr(name: str) -> pc.Option[sql.SqlExpr]:
             col_in_lhs = name in self.columns
             is_join_key = name in right_on_set
-            match (native_how == "outer", col_in_lhs, is_join_key):
+            match (how == "outer", col_in_lhs, is_join_key):
                 case (False, _, True):
                     return pc.NONE
                 case (False, True, False) | (True, True, _):
@@ -800,7 +796,7 @@ class LazyFrame(sql.CoreHandler[sql.Relation]):
                 case _:
                     return pc.Some(sql.col(f'rhs."{name}"'))
 
-        match native_how:
+        match how:
             case "inner" | "left" | "cross" | "outer":
                 return (
                     self.columns.iter()

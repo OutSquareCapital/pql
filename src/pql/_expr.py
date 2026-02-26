@@ -293,9 +293,6 @@ class Expr(sql.CoreHandler[sql.SqlExpr]):
             .otherwise(_NONE)
         )
 
-    def __repr__(self) -> str:
-        return f"Expr({self.inner()})"
-
     @property
     def str(self) -> ExprStringNameSpace:
         """Access string operations."""
