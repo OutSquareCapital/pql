@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING, Any, NamedTuple, Self
 import pyochain as pc
 
 from . import sql
-from ._args_iter import try_chain, try_flatten, try_iter
+from ._args_iter import check_by_arg, try_chain, try_flatten, try_iter
 from ._datatypes import DataType
 from ._expr import Expr, ExprPlan
 
@@ -371,41 +371,17 @@ class LazyFrame(sql.CoreHandler[sql.Relation]):
         nulls_last: bool | Sequence[bool] = False,
     ) -> Self:
         """Sort by columns."""
-
-        def _args_iter(
-            sort_exprs: pc.Seq[sql.SqlExpr], name: str, *, arg: bool | Sequence[bool]
-        ) -> pc.Result[pc.Iter[bool], ValueError]:
-            match arg:
-                case bool():
-                    return pc.Ok(pc.Iter.once(arg).cycle().take(sort_exprs.length()))
-                case Sequence():
-                    if len(arg) != sort_exprs.length():
-                        msg = f"the length of `{name}` ({len(arg)}) does not match the length of `by` ({sort_exprs.length()})"
-                        return pc.Err(ValueError(msg))
-                    return pc.Ok(pc.Iter(arg))
-
-        def _make_order(col: sql.SqlExpr, desc: bool, nl: bool) -> sql.SqlExpr:  # noqa: FBT001
-            match (desc, nl):
-                case (True, True):
-                    return col.desc().nulls_last()
-                case (True, False):
-                    return col.desc()
-                case (False, True):
-                    return col.asc().nulls_last()
-                case (False, False):
-                    return col.asc()
-
         return (
             try_chain(by, more_by)
             .map(lambda v: sql.into_expr(v, as_col=True))
             .collect()
             .into(
                 lambda sort_exprs: sort_exprs.iter().zip(
-                    _args_iter(sort_exprs, "descending", arg=descending).unwrap(),
-                    _args_iter(sort_exprs, "nulls_last", arg=nulls_last).unwrap(),
+                    check_by_arg(sort_exprs, "descending", arg=descending).unwrap(),
+                    check_by_arg(sort_exprs, "nulls_last", arg=nulls_last).unwrap(),
                 )
             )
-            .map_star(_make_order)
+            .map_star(lambda expr, desc, nls: expr.set_order(desc=desc, nulls_last=nls))
             .into(lambda x: self.inner().sort(*x))
             .pipe(self._new)
         )

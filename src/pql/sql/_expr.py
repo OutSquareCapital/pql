@@ -255,6 +255,18 @@ class SqlExpr(Expression, Fns):
             )
         )
 
+    def set_order(self, *, desc: bool, nulls_last: bool) -> Self:
+        """Set the ordering of the expression. Syntactic sugar for use in parameterized functions."""
+        match (desc, nulls_last):
+            case (True, True):
+                return self.desc().nulls_last()
+            case (True, False):
+                return self.desc()
+            case (False, True):
+                return self.asc().nulls_last()
+            case (False, False):
+                return self.asc()
+
     def cume_dist(self) -> Self:
         """The cumulative distribution: (number of partition rows preceding or peer with current row) / total partition rows.
 
