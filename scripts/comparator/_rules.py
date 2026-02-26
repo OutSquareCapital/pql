@@ -10,17 +10,29 @@ class RefBackend(StrEnum):
     POLARS = auto()
 
 
+def _args(*args: str) -> pc.Set[str]:
+    return pc.Set(args)
+
+
+class _Arg(StrEnum):
+    ALLOW_PARALLEL = auto()
+    PARALLEL = auto()
+    FORCE_PARALLEL = auto()
+    MULTITHREADED = auto()
+
+
 type IgnoredParams = pc.Dict[Pql, pc.Dict[str, pc.Set[str]]]
 IGNORED_PARAMS_BY_CLASS_AND_METHOD: IgnoredParams = pc.Dict(
     {
         Pql.LAZY_FRAME: pc.Dict.from_kwargs(
-            sort=pc.Set(("maintain_order", "multithreaded")),
-            join=pc.Set(("allow_parallel", "force_parallel")),
-            join_asof=pc.Set(("allow_parallel", "force_parallel")),
-            collect=pc.Set(("backend", "kwargs")),
+            sort=_args("maintain_order", _Arg.MULTITHREADED),
+            join=_args(_Arg.ALLOW_PARALLEL, _Arg.FORCE_PARALLEL),
+            join_asof=_args(_Arg.ALLOW_PARALLEL, _Arg.FORCE_PARALLEL),
+            collect=_args("backend", "kwargs"),
         ),
-        Pql.EXPR_LIST_NAME_SPACE: pc.Dict.from_kwargs(eval=pc.Set(("parallel",))),
-        Pql.EXPR_ARR_NAME_SPACE: pc.Dict.from_kwargs(eval=pc.Set(("parallel",))),
+        Pql.EXPR: pc.Dict.from_kwargs(sort_by=_args(_Arg.MULTITHREADED)),
+        Pql.EXPR_LIST_NAME_SPACE: pc.Dict.from_kwargs(eval=_args(_Arg.PARALLEL)),
+        Pql.EXPR_ARR_NAME_SPACE: pc.Dict.from_kwargs(eval=_args(_Arg.PARALLEL)),
     }
 )
 

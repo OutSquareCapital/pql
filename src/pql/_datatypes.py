@@ -200,8 +200,8 @@ class Union(ComplexDataType[sql.UnionType]):
     _fields: pc.Option[pc.Seq[DataType]] = field(default_factory=lambda: pc.NONE)
 
     def __init__(self, fields: Iterable[DataType]) -> None:
-        self.raw = sql.UnionType.new(
-            pc.Iter(fields).iter().map(lambda f: f.raw.to_duckdb())
+        self.raw = (
+            pc.Iter(fields).map(lambda f: f.raw.to_duckdb()).into(sql.UnionType.new)
         )
 
     @property
@@ -291,11 +291,12 @@ class Struct(ComplexDataType[sql.StructType]):
     _fields: pc.Option[pc.Dict[str, DataType]] = field(default_factory=lambda: pc.NONE)
 
     def __init__(self, fields: IntoDict[str, DataType]) -> None:
-        self.raw = sql.StructType.new(
+        self.raw = (
             pc.Dict(fields)
             .items()
             .iter()
             .map_star(lambda name, col: (name, col.raw.to_duckdb()))
+            .into(sql.StructType.new)
         )
 
     @property
