@@ -564,12 +564,25 @@ class LazyFrame(sql.CoreHandler[sql.Relation]):
         )
 
     def explain(self) -> str:
-        """Generate SQL string."""
-        import sqlparse as sp
+        """Generate SQL string.
+
+        If `sqlparse` is installed, the SQL output will be formatted for better readability.
+        """
+
+        def _try_import() -> pc.Option[Any]:
+            try:
+                import sqlparse
+
+                return pc.Some(sqlparse)
+            except ImportError:
+                return pc.NONE
 
         qry = self.inner().sql_query()
-
-        return sp.format(qry, reindent_aligned=True, keyword_case="upper")
+        return (
+            _try_import()
+            .map(lambda sp: sp.format(qry, reindent_aligned=True, keyword_case="upper"))
+            .unwrap_or(qry)
+        )
 
     def unnest(
         self,

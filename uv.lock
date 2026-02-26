@@ -775,7 +775,6 @@ dependencies = [
     { name = "duckdb" },
     { name = "narwhals" },
     { name = "pyochain" },
-    { name = "sqlparse" },
 ]
 
 [package.dev-dependencies]
@@ -792,6 +791,7 @@ dev = [
     { name = "pytest-cov" },
     { name = "pytz" },
     { name = "ruff" },
+    { name = "sqlparse" },
     { name = "typer" },
 ]
 
@@ -800,7 +800,6 @@ requires-dist = [
     { name = "duckdb", specifier = ">=1.5.0.dev0" },
     { name = "narwhals", specifier = ">=2.16.0" },
     { name = "pyochain", specifier = ">=0.9.2" },
-    { name = "sqlparse", specifier = ">=0.5.5" },
 ]
 
 [package.metadata.requires-dev]
@@ -817,6 +816,7 @@ dev = [
     { name = "pytest-cov", specifier = ">=7.0.0" },
     { name = "pytz", specifier = ">=2025.2" },
     { name = "ruff", specifier = ">=0.14.14" },
+    { name = "sqlparse", specifier = ">=0.5.5" },
     { name = "typer", specifier = ">=0.21.1" },
 ]
 
