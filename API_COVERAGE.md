@@ -5,7 +5,7 @@ This report shows the API coverage of pql compared to other libraries.
 
 ## Summary
 
-The first value of each tuple is for `Polars` and the second value is for `Narwhals`.
+The first value of each tuple is for `Narwhals` and the second value is for `Polars`.
 
 | Class               | Coverage        | Total     | Matched  | Missing | Mismatched | Extra   |
 | ------------------- | --------------- | --------- | -------- | ------- | ---------- | ------- |
