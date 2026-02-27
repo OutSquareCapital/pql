@@ -1,0 +1,185 @@
+[
+    {
+        "id": 1,
+        "name": "Alice Johnson",
+        "age": 28,
+        "salary": 75000,
+        "department": "Engineering",
+        "is_active": true,
+        "join_date": "2020-01-15",
+        "tags": [
+            "tag1",
+            "tag2",
+            "tag3"
+        ],
+        "info": {
+            "role": "engineer",
+            "level": "senior"
+        },
+        "info_for_map": "role=engineer,level=senior"
+    },
+    {
+        "id": 2,
+        "name": "Bob Smith",
+        "age": 35,
+        "salary": 85000,
+        "department": "Sales",
+        "is_active": true,
+        "join_date": "2019-06-20",
+        "tags": [
+            "tag1",
+            "tag4"
+        ],
+        "info": {
+            "role": "sales",
+            "level": "expert"
+        },
+        "info_for_map": "role=sales,level=expert"
+    },
+    {
+        "id": 3,
+        "name": "Charlie Brown",
+        "age": 42,
+        "salary": 95000,
+        "department": "Engineering",
+        "is_active": false,
+        "join_date": "2018-03-10",
+        "tags": [
+            "tag2",
+            "tag5"
+        ],
+        "info": {
+            "role": "engineer",
+            "level": "expert"
+        },
+        "info_for_map": "role=engineer,level=expert"
+    },
+    {
+        "id": 4,
+        "name": "Diana Prince",
+        "age": 31,
+        "salary": 80000,
+        "department": "Marketing",
+        "is_active": true,
+        "join_date": "2021-02-01",
+        "tags": [
+            "tag3",
+            "tag4",
+            "tag6"
+        ],
+        "info": {
+            "role": "marketing",
+            "level": "mid"
+        },
+        "info_for_map": "role=marketing,level=mid"
+    },
+    {
+        "id": 5,
+        "name": "Evan Davis",
+        "age": 26,
+        "salary": 65000,
+        "department": "Sales",
+        "is_active": true,
+        "join_date": "2022-08-15",
+        "tags": [
+            "tag1"
+        ],
+        "info": {
+            "role": "sales",
+            "level": "junior"
+        },
+        "info_for_map": "role=sales,level=junior"
+    },
+    {
+        "id": 6,
+        "name": "Fiona Green",
+        "age": 39,
+        "salary": 105000,
+        "department": "Engineering",
+        "is_active": true,
+        "join_date": "2017-11-30",
+        "tags": [
+            "tag2",
+            "tag5",
+            "tag7"
+        ],
+        "info": {
+            "role": "engineer",
+            "level": "expert"
+        },
+        "info_for_map": "role=engineer,level=expert"
+    },
+    {
+        "id": 7,
+        "name": "George Wilson",
+        "age": 29,
+        "salary": 70000,
+        "department": "Marketing",
+        "is_active": false,
+        "join_date": "2021-05-22",
+        "tags": [
+            "tag6"
+        ],
+        "info": {
+            "role": "marketing",
+            "level": "mid"
+        },
+        "info_for_map": "role=marketing,level=mid"
+    },
+    {
+        "id": 8,
+        "name": "Hannah Lee",
+        "age": 33,
+        "salary": 82000,
+        "department": "Sales",
+        "is_active": true,
+        "join_date": "2020-09-10",
+        "tags": [
+            "tag1",
+            "tag4"
+        ],
+        "info": {
+            "role": "sales",
+            "level": "senior"
+        },
+        "info_for_map": "role=sales,level=senior"
+    },
+    {
+        "id": 9,
+        "name": "Ivan Martinez",
+        "age": 45,
+        "salary": 110000,
+        "department": "Engineering",
+        "is_active": true,
+        "join_date": "2016-04-05",
+        "tags": [
+            "tag2",
+            "tag5",
+            "tag7",
+            "tag8"
+        ],
+        "info": {
+            "role": "engineer",
+            "level": "expert"
+        },
+        "info_for_map": "role=engineer,level=expert"
+    },
+    {
+        "id": 10,
+        "name": "Julia Brown",
+        "age": 27,
+        "salary": 68000,
+        "department": "Marketing",
+        "is_active": true,
+        "join_date": "2022-01-18",
+        "tags": [
+            "tag3",
+            "tag6"
+        ],
+        "info": {
+            "role": "marketing",
+            "level": "junior"
+        },
+        "info_for_map": "role=marketing,level=junior"
+    }
+]

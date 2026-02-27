@@ -1,0 +1,11 @@
+id;name;age;salary;department;is_active;join_date;tags;info;info_for_map
+1;Alice Johnson;28;75000;Engineering;true;2020-01-15;"[""tag1"",""tag2"",""tag3""]";"{""role"":""engineer"",""level"":""senior""}";"{role=engineer,level=senior}"
+2;Bob Smith;35;85000;Sales;true;2019-06-20;"[""tag1"",""tag4""]";"{""role"":""sales"",""level"":""expert""}";"{role=sales,level=expert}"
+3;Charlie Brown;42;95000;Engineering;false;2018-03-10;"[""tag2"",""tag5""]";"{""role"":""engineer"",""level"":""expert""}";"{role=engineer,level=expert}"
+4;Diana Prince;31;80000;Marketing;true;2021-02-01;"[""tag3"",""tag4"",""tag6""]";"{""role"":""marketing"",""level"":""mid""}";"{role=marketing,level=mid}"
+5;Evan Davis;26;65000;Sales;true;2022-08-15;"[""tag1""]";"{""role"":""sales"",""level"":""junior""}";"{role=sales,level=junior}"
+6;Fiona Green;39;105000;Engineering;true;2017-11-30;"[""tag2"",""tag5"",""tag7""]";"{""role"":""engineer"",""level"":""expert""}";"{role=engineer,level=expert}"
+7;George Wilson;29;70000;Marketing;false;2021-05-22;"[""tag6""]";"{""role"":""marketing"",""level"":""mid""}";"{role=marketing,level=mid}"
+8;Hannah Lee;33;82000;Sales;true;2020-09-10;"[""tag1"",""tag4""]";"{""role"":""sales"",""level"":""senior""}";"{role=sales,level=senior}"
+9;Ivan Martinez;45;110000;Engineering;true;2016-04-05;"[""tag2"",""tag5"",""tag7"",""tag8""]";"{""role"":""engineer"",""level"":""expert""}";"{role=engineer,level=expert}"
+10;Julia Brown;27;68000;Marketing;true;2022-01-18;"[""tag3"",""tag6""]";"{""role"":""marketing"",""level"":""junior""}";"{role=marketing,level=junior}"
