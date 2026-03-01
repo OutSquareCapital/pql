@@ -3,7 +3,7 @@ from __future__ import annotations
 from collections.abc import Iterable
 from dataclasses import dataclass
 from datetime import date, datetime
-from typing import Self
+from typing import TYPE_CHECKING, Self
 
 import pyochain as pc
 
@@ -22,6 +22,9 @@ from ._code_gen import (
 )
 from ._core import func
 from ._window import over_expr
+
+if TYPE_CHECKING:
+    from .typing import IntoExprColumn
 
 
 class SqlExpr(Expression, Fns):
@@ -147,94 +150,10 @@ class SqlExpr(Expression, Fns):
     def __str__(self) -> str:
         return self.inner().__str__()
 
-    def add(self, other: Self) -> Self:
-        return self.__add__(other)
-
-    def and_(self, other: Self) -> Self:
-        return self.__and__(other)
-
-    def div(self, other: Self) -> Self:
-        return self.__div__(other)
-
-    def eq(self, other: Self) -> Self:
-        return self.__eq__(other)
-
-    def floordiv(self, other: Self) -> Self:
-        return self.__floordiv__(other)
-
-    def ge(self, other: Self) -> Self:
-        return self.__ge__(other)
-
-    def gt(self, other: Self) -> Self:
-        return self.__gt__(other)
-
-    def not_(self) -> Self:
-        return self.__invert__()
-
-    def le(self, other: Self) -> Self:
-        return self.__le__(other)
-
-    def lt(self, other: Self) -> Self:
-        return self.__lt__(other)
-
-    def mod(self, other: Self) -> Self:
-        return self.__mod__(other)
-
-    def mul(self, other: Self) -> Self:
-        return self.__mul__(other)
-
-    def ne(self, other: Self) -> Self:
-        return self.__ne__(other)
-
-    def neg(self) -> Self:
-        return self.__neg__()
-
-    def or_(self, other: Self) -> Self:
-        return self.__or__(other)
-
-    def pow(self, other: Self) -> Self:
-        return self.__pow__(other)
-
-    def radd(self, other: Self) -> Self:
-        return self.__radd__(other)
-
-    def rand(self, other: Self) -> Self:
-        return self.__rand__(other)
-
-    def rdiv(self, other: Self) -> Self:
-        return self.__rdiv__(other)
-
-    def rfloordiv(self, other: Self) -> Self:
-        return self.__rfloordiv__(other)
-
-    def rmod(self, other: Self) -> Self:
-        return self.__rmod__(other)
-
-    def rmul(self, other: Self) -> Self:
-        return self.__rmul__(other)
-
-    def ror(self, other: Self) -> Self:
-        return self.__ror__(other)
-
-    def rpow(self, other: Self) -> Self:
-        return self.__rpow__(other)
-
-    def rsub(self, other: Self) -> Self:
-        return self.__rsub__(other)
-
-    def rtruediv(self, other: Self) -> Self:
-        return self.__rtruediv__(other)
-
-    def sub(self, other: Self) -> Self:
-        return self.__sub__(other)
-
-    def truediv(self, other: Self) -> Self:
-        return self.__truediv__(other)
-
     def over(  # noqa: PLR0913
         self,
-        partition_by: Iterable[SqlExpr] | SqlExpr | None = None,
-        order_by: Iterable[SqlExpr] | SqlExpr | None = None,
+        partition_by: Iterable[IntoExprColumn] | IntoExprColumn | None = None,
+        order_by: Iterable[IntoExprColumn] | IntoExprColumn | None = None,
         rows_start: int | None = None,
         rows_end: int | None = None,
         *,
