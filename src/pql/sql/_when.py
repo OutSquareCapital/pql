@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 import duckdb
 
 from ._expr import SqlExpr
-from ._funcs import into_expr
+from ._funcs import into_duckdb
 
 if TYPE_CHECKING:
     from .typing import IntoExpr
@@ -22,34 +22,27 @@ class When:
 
     def then(self, value: IntoExpr) -> Then:
         """Attach the value for the initial WHEN condition."""
-        return Then(
-            duckdb.CaseExpression(
-                into_expr(self._when, as_col=True).inner(),
-                into_expr(value, as_col=True).inner(),
-            )
-        )
+        return Then(duckdb.CaseExpression(into_duckdb(self._when), into_duckdb(value)))
 
 
 @dataclass(slots=True)
 class Then(SqlExpr):
     def when(self, predicate: IntoExpr) -> ChainedWhen:
-        return ChainedWhen(self, into_expr(predicate, as_col=True))
+        return ChainedWhen(self, predicate)
 
     def otherwise(self, statement: IntoExpr) -> SqlExpr:
-        return SqlExpr(
-            self.inner().otherwise(into_expr(statement, as_col=True).inner())
-        )
+        return SqlExpr(self.inner().otherwise(into_duckdb(statement)))
 
 
 @dataclass(slots=True)
 class ChainedWhen:
     _chained_when: SqlExpr
-    _predicate: SqlExpr
+    _predicate: IntoExpr
 
     def then(self, statement: IntoExpr) -> ChainedThen:
         return ChainedThen(
             self._chained_when.inner().when(
-                self._predicate.inner(), into_expr(statement, as_col=True).inner()
+                into_duckdb(self._predicate), into_duckdb(statement)
             )
         )
 
@@ -57,9 +50,7 @@ class ChainedWhen:
 @dataclass(slots=True)
 class ChainedThen(SqlExpr):
     def when(self, predicate: IntoExpr) -> ChainedWhen:
-        return ChainedWhen(self, into_expr(predicate, as_col=True))
+        return ChainedWhen(self, predicate)
 
     def otherwise(self, statement: IntoExpr) -> SqlExpr:
-        return SqlExpr(
-            self.inner().otherwise(into_expr(statement, as_col=True).inner())
-        )
+        return SqlExpr(self.inner().otherwise(into_duckdb(statement)))

@@ -5,7 +5,7 @@ import duckdb
 import pyochain as pc
 
 from .._args_iter import try_chain
-from ._core import func
+from ._core import DuckHandler, func, into_duckdb
 from ._expr import SqlExpr
 from .typing import IntoExpr, IntoExprColumn, PythonLiteral
 
@@ -59,14 +59,14 @@ def element() -> SqlExpr:
     return ELEMENT
 
 
-def fn_once(rhs: SqlExpr) -> SqlExpr:
-    return SqlExpr(LAMBDA_EXPR(rhs.inner()))
+def fn_once(rhs: IntoExpr) -> SqlExpr:
+    return SqlExpr(LAMBDA_EXPR(into_duckdb(rhs)))
 
 
 def all(exclude: Iterable[IntoExprColumn] | None = None) -> SqlExpr:
     return (
         pc.Option(exclude)
-        .map(lambda x: pc.Iter(x).map(lambda e: into_expr(e, as_col=True).inner()))
+        .map(lambda x: pc.Iter(x).map(into_duckdb))
         .map(lambda exc: SqlExpr(duckdb.StarExpression(exclude=exc)))
         .unwrap_or(SqlExpr(duckdb.StarExpression()))
     )
@@ -91,9 +91,7 @@ def lit(value: PythonLiteral) -> SqlExpr:
 def coalesce(exprs: IntoExpr | Iterable[IntoExpr], *more_exprs: IntoExpr) -> SqlExpr:
     """Create a COALESCE expression."""
     return SqlExpr(
-        duckdb.CoalesceOperator(
-            *try_chain(exprs, more_exprs).map(lambda e: into_expr(e).inner())
-        )
+        duckdb.CoalesceOperator(*try_chain(exprs, more_exprs).map(into_duckdb))
     )
 
 
@@ -112,8 +110,12 @@ def into_expr(value: IntoExpr, *, as_col: bool = False) -> SqlExpr:
     match value:
         case SqlExpr():
             return value
+        case DuckHandler():
+            return SqlExpr(value.inner())
         case Expr():
             return value.inner()
+        case duckdb.Expression():
+            return SqlExpr(value)
         case str() if as_col:
             return col(value)
         case _:
