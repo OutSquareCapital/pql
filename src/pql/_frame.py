@@ -596,15 +596,11 @@ class LazyFrame(sql.CoreHandler[sql.Relation]):
 
     def std(self, ddof: int = 1) -> Self:
         """Aggregate the standard deviation of each column."""
-        return self._iter_agg(
-            sql.SqlExpr.stddev_samp if ddof == 1 else sql.SqlExpr.stddev_pop
-        )
+        return self._iter_agg(lambda x: x.std(ddof))
 
     def var(self, ddof: int = 1) -> Self:
         """Aggregate the variance of each column."""
-        return self._iter_agg(
-            sql.SqlExpr.var_samp if ddof == 1 else sql.SqlExpr.var_pop
-        )
+        return self._iter_agg(lambda x: x.var(ddof))
 
     def null_count(self) -> Self:
         """Return the null count of each column."""
@@ -991,10 +987,7 @@ class LazyFrame(sql.CoreHandler[sql.Relation]):
     ) -> Self:
         """Insert row index based on order_by."""
         return self._select(
-            (
-                sql.row_number().over(order_by=try_iter(order_by)).sub(1).alias(name),
-                sql.all(),
-            )
+            (sql.row_number().over(order_by=order_by).sub(1).alias(name), sql.all())
         )
 
     def top_k(
