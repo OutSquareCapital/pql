@@ -71,7 +71,7 @@ class ParamInfo:
     is_kw_only: bool = False
 
     def forward_vararg(self, target: TargetSpec) -> ast.Starred:
-        """Return the `*args` AST node passed to the wrapped DuckDB call, mapping each item only when the rewritten annotation requires `into_col`, `into_duckdb`, or `.inner()`."""
+        """Return the `*args` AST node passed to the wrapped DuckDB call, mapping each item only when the rewritten annotation requires `into_duckdb` or `.inner()`."""
         rewritten = target.rewrite_type(self.annotation)
         it = Node.ref("pc").attr(Pyochain.ITER).call(self.name)
         match target:
@@ -93,7 +93,7 @@ class ParamInfo:
                 return Node.ref(self.name).starred()
 
     def forward_arg(self, target: TargetSpec) -> ast.expr:
-        """Return the AST node for the argument passed to the wrapped DuckDB call, applying `into_col`, `into_duckdb`, iterable mapping, or `.inner()` only when required by the rewritten annotation."""
+        """Return the AST node for the argument passed to the wrapped DuckDB call, applying `into_duckdb`, iterable mapping, or `.inner()` only when required by the rewritten annotation."""
         rewritten = target.rewrite_type(self.annotation)
         name_e = Node.ref(self.name)
         if CollectionsABC.ITERABLE in rewritten and (
