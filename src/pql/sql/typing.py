@@ -10,6 +10,7 @@ from narwhals.typing import IntoFrame
 
 if TYPE_CHECKING:
     from _duckdb._typing import (  # pyright: ignore[reportMissingModuleSource]
+        BlobLiteral as DuckBlobLit,
         IntoExpr as DuckIntoExpr,
         IntoExprColumn as DuckIntoExprColumn,
         NestedLiteral as DuckNestedLit,
@@ -69,7 +70,7 @@ class NPArrayLike[S: tuple[Any, ...], D](NPProtocol, Protocol):
 type IntoDict[K, V] = Mapping[K, V] | Iterable[tuple[K, V]]
 type ExprLike = SqlExpr | Expr | DuckHandler
 """Types that are already expressions wrappers and can be used directly as expressions."""
-
+type BlobLiteral = DuckBlobLit
 type NonNestedLiteral = DuckNonNestedLit
 type SeqLiteral[T: NonNestedLiteral] = list[T] | tuple[T, ...]
 """Sequence of non-nested literals of the same type."""

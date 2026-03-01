@@ -4,7 +4,7 @@ from dataclasses import dataclass
 
 import pyochain as pc
 
-from .._utils import DateTime, From
+from .._utils import DateTime, From, Pql
 from ._rules import NAMESPACE_SPECS, NamespaceSpec, Typing
 
 
@@ -72,5 +72,5 @@ from __future__ import annotations
 from .._core import DuckHandler, NameSpaceHandler, func
 
 if TYPE_CHECKING:
-    from ..typing import SeqLiteral
+    from ..typing import SeqLiteral, {Pql.BLOB_LITERAL}, {Pql.INTO_EXPR_COLUMN}, {Pql.INTO_EXPR}
 '''

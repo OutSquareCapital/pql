@@ -3,7 +3,7 @@ from collections.abc import Iterable
 
 import polars as pl
 
-from .._utils import Typing
+from .._utils import Pql, Typing
 from ._dtypes import FuncTypes
 from ._rules import (
     CONVERTER,
@@ -61,7 +61,7 @@ def run_qry(lf: pl.LazyFrame) -> pl.LazyFrame:
             pl.int_range(pl.len()).over("sig_id").alias("param_idx"),
             dk.parameters.pipe(_to_param_names),
             dk.varargs.pipe(_convert_duckdb_type_to_python)
-            .pipe(_make_type_union, py.self_type)
+            .pipe(_make_type_union)
             .alias("py_varargs_type"),
         )
         .group_by(py.namespace, py.name, params.idx, maintain_order=True)
@@ -70,7 +70,7 @@ def run_qry(lf: pl.LazyFrame) -> pl.LazyFrame:
             dk.parameter_types.pipe(_into_union),
             dk.parameter_types.pipe(_convert_duckdb_type_to_python)
             .pipe(_into_union)
-            .pipe(_make_type_union, py.self_type.first())
+            .pipe(_make_type_union)
             .alias("py_types"),
         )
         .group_by(py.namespace, py.name, maintain_order=True)
@@ -191,13 +191,16 @@ def _joined_parts(
     )
 
 
-def _make_type_union(py_type: pl.Expr, self_type: pl.Expr) -> pl.Expr:
+def _make_type_union(py_type: pl.Expr) -> pl.Expr:
+    into_expr_col = pl.lit(Pql.INTO_EXPR_COLUMN)
     return (
         pl.when(py_type.eq(EMPTY_STR))
-        .then(self_type)
+        .then(into_expr_col)
+        .when(py_type.eq(Pql.INTO_EXPR))
+        .then(pl.lit(Pql.INTO_EXPR))
         .otherwise(
             format_kwords(
-                "{self_type} | {py_type}", self_type=self_type, py_type=py_type
+                "{self_type} | {py_type}", self_type=into_expr_col, py_type=py_type
             )
         )
     )

@@ -96,7 +96,7 @@ class DuckDbTypes(StrEnum):
         def _base_py_for_value(value: str) -> str:
             return (
                 CONVERSION_MAP.get_item(value)
-                .filter(lambda x: x != Typing.SELF.value)
+                .filter(lambda x: x != Pql.INTO_EXPR_COLUMN.value)
                 .unwrap_or("")
             )
 
@@ -194,20 +194,18 @@ CONVERSION_MAP: pc.Dict[str, str] = pc.Dict(
         DuckDbTypes.TIME: DateTime.TIME.value,
         DuckDbTypes.TIMESTAMP: DateTime.DATETIME.value,
         DuckDbTypes.INTERVAL: DateTime.TIMEDELTA.value,
-        DuckDbTypes.BLOB: Builtins.BYTES.into_union(
-            Builtins.BYTEARRAY, Builtins.MEMORYVIEW
-        ),
+        DuckDbTypes.BLOB: Pql.BLOB_LITERAL.value,
         DuckDbTypes.BIT: Builtins.BYTES.into_union(
             Builtins.BYTEARRAY, Builtins.MEMORYVIEW
         ),
         DuckDbTypes.UUID: Builtins.STR.value,
         DuckDbTypes.JSON: Builtins.STR.value,
-        DuckDbTypes.ANY: Typing.SELF.value,
+        DuckDbTypes.ANY: Pql.INTO_EXPR.value,
         DuckDbTypes.LIST: Pql.SEQ_LITERAL.value,
         DuckDbTypes.MAP: Builtins.DICT.value,
         DuckDbTypes.STRUCT: Builtins.DICT.value,
         DuckDbTypes.ARRAY: Pql.SEQ_LITERAL.value,
-        DuckDbTypes.UNION: Typing.SELF.value,
+        DuckDbTypes.UNION: Pql.INTO_EXPR.value,
         DuckDbTypes.NULL: Builtins.NONE.value,
     }
 )

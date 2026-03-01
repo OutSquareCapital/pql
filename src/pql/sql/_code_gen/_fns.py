@@ -15,7 +15,7 @@ from typing import TYPE_CHECKING, Self
 from .._core import DuckHandler, NameSpaceHandler, func
 
 if TYPE_CHECKING:
-    from ..typing import SeqLiteral
+    from ..typing import BlobLiteral, IntoExpr, IntoExprColumn, SeqLiteral
 
 
 class Fns(DuckHandler):
@@ -60,13 +60,13 @@ class Fns(DuckHandler):
         """
         return self._new(func("acosh", self.inner()))
 
-    def age(self, timestamp: Self | datetime | None = None) -> Self:
+    def age(self, timestamp: IntoExprColumn | datetime | None = None) -> Self:
         """Subtract arguments, resulting in the time difference between the two timestamps.
 
         **SQL name**: *age*
 
         Args:
-            timestamp (Self | datetime | None): `TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
+            timestamp (IntoExprColumn | datetime | None): `TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
 
         Examples:
             age(TIMESTAMP '2001-04-10', TIMESTAMP '1992-09-20')
@@ -101,13 +101,13 @@ class Fns(DuckHandler):
         """
         return self._new(func("approx_count_distinct", self.inner()))
 
-    def approx_quantile(self, pos: Self | SeqLiteral[float] | float) -> Self:
+    def approx_quantile(self, pos: IntoExprColumn | SeqLiteral[float] | float) -> Self:
         """Computes the approximate quantile using T-Digest.
 
         **SQL name**: *approx_quantile*
 
         Args:
-            pos (Self | SeqLiteral[float] | float): `FLOAT | FLOAT[]` expression
+            pos (IntoExprColumn | SeqLiteral[float] | float): `FLOAT | FLOAT[]` expression
 
         Examples:
             approx_quantile(x, 0.5)
@@ -117,13 +117,13 @@ class Fns(DuckHandler):
         """
         return self._new(func("approx_quantile", self.inner(), pos))
 
-    def approx_top_k(self, k: Self | int) -> Self:
+    def approx_top_k(self, k: IntoExprColumn | int) -> Self:
         """Finds the k approximately most occurring values in the data set.
 
         **SQL name**: *approx_top_k*
 
         Args:
-            k (Self | int): `BIGINT` expression
+            k (IntoExprColumn | int): `BIGINT` expression
 
         Examples:
             approx_top_k(x, 5)
@@ -153,8 +153,8 @@ class Fns(DuckHandler):
 
     def arg_max(
         self,
-        val: Self | bytes | bytearray | memoryview | date | datetime | float | str,
-        col2: Self | int | None = None,
+        val: IntoExprColumn | BlobLiteral | IntoExpr | date | datetime | float | str,
+        col2: IntoExprColumn | int | None = None,
     ) -> Self:
         """Finds the row with the maximum val.
 
@@ -166,8 +166,8 @@ class Fns(DuckHandler):
             argmax, max_by
 
         Args:
-            val (Self | bytes | bytearray | memoryview | date | datetime | float | int | str): `ANY | BIGINT | BLOB | DATE | DOUBLE | HUGEINT | INTEGER | TIMESTAMP | TIMESTAMP WITH TIME ZONE | VARCHAR` expression
-            col2 (Self | int | None): `BIGINT` expression
+            val (IntoExprColumn | BlobLiteral | IntoExpr | date | datetime | float | int | str): `ANY | BIGINT | BLOB | DATE | DOUBLE | HUGEINT | INTEGER | TIMESTAMP | TIMESTAMP WITH TIME ZONE | VARCHAR` expression
+            col2 (IntoExprColumn | int | None): `BIGINT` expression
 
         Examples:
             arg_max(A, B)
@@ -179,7 +179,7 @@ class Fns(DuckHandler):
 
     def arg_max_null(
         self,
-        val: Self | bytes | bytearray | memoryview | date | datetime | float | str,
+        val: IntoExprColumn | BlobLiteral | IntoExpr | date | datetime | float | str,
     ) -> Self:
         """Finds the row with the maximum val.
 
@@ -188,7 +188,7 @@ class Fns(DuckHandler):
         **SQL name**: *arg_max_null*
 
         Args:
-            val (Self | bytes | bytearray | memoryview | date | datetime | float | int | str): `ANY | BIGINT | BLOB | DATE | DOUBLE | HUGEINT | INTEGER | TIMESTAMP | TIMESTAMP WITH TIME ZONE | VARCHAR` expression
+            val (IntoExprColumn | BlobLiteral | IntoExpr | date | datetime | float | int | str): `ANY | BIGINT | BLOB | DATE | DOUBLE | HUGEINT | INTEGER | TIMESTAMP | TIMESTAMP WITH TIME ZONE | VARCHAR` expression
 
         Examples:
             arg_max_null(A, B)
@@ -200,8 +200,8 @@ class Fns(DuckHandler):
 
     def arg_min(
         self,
-        val: Self | bytes | bytearray | memoryview | date | datetime | float | str,
-        col2: Self | int | None = None,
+        val: IntoExprColumn | BlobLiteral | IntoExpr | date | datetime | float | str,
+        col2: IntoExprColumn | int | None = None,
     ) -> Self:
         """Finds the row with the minimum val.
 
@@ -213,8 +213,8 @@ class Fns(DuckHandler):
             argmin, min_by
 
         Args:
-            val (Self | bytes | bytearray | memoryview | date | datetime | float | int | str): `ANY | BIGINT | BLOB | DATE | DOUBLE | HUGEINT | INTEGER | TIMESTAMP | TIMESTAMP WITH TIME ZONE | VARCHAR` expression
-            col2 (Self | int | None): `BIGINT` expression
+            val (IntoExprColumn | BlobLiteral | IntoExpr | date | datetime | float | int | str): `ANY | BIGINT | BLOB | DATE | DOUBLE | HUGEINT | INTEGER | TIMESTAMP | TIMESTAMP WITH TIME ZONE | VARCHAR` expression
+            col2 (IntoExprColumn | int | None): `BIGINT` expression
 
         Examples:
             arg_min(A, B)
@@ -226,7 +226,7 @@ class Fns(DuckHandler):
 
     def arg_min_null(
         self,
-        val: Self | bytes | bytearray | memoryview | date | datetime | float | str,
+        val: IntoExprColumn | BlobLiteral | IntoExpr | date | datetime | float | str,
     ) -> Self:
         """Finds the row with the minimum val.
 
@@ -235,7 +235,7 @@ class Fns(DuckHandler):
         **SQL name**: *arg_min_null*
 
         Args:
-            val (Self | bytes | bytearray | memoryview | date | datetime | float | int | str): `ANY | BIGINT | BLOB | DATE | DOUBLE | HUGEINT | INTEGER | TIMESTAMP | TIMESTAMP WITH TIME ZONE | VARCHAR` expression
+            val (IntoExprColumn | BlobLiteral | IntoExpr | date | datetime | float | int | str): `ANY | BIGINT | BLOB | DATE | DOUBLE | HUGEINT | INTEGER | TIMESTAMP | TIMESTAMP WITH TIME ZONE | VARCHAR` expression
 
         Examples:
             arg_min_null(A, B)
@@ -247,8 +247,8 @@ class Fns(DuckHandler):
 
     def argmax(
         self,
-        val: Self | bytes | bytearray | memoryview | date | datetime | float | str,
-        col2: Self | int | None = None,
+        val: IntoExprColumn | BlobLiteral | IntoExpr | date | datetime | float | str,
+        col2: IntoExprColumn | int | None = None,
     ) -> Self:
         """Finds the row with the maximum val.
 
@@ -260,8 +260,8 @@ class Fns(DuckHandler):
             arg_max, max_by
 
         Args:
-            val (Self | bytes | bytearray | memoryview | date | datetime | float | int | str): `ANY | BIGINT | BLOB | DATE | DOUBLE | HUGEINT | INTEGER | TIMESTAMP | TIMESTAMP WITH TIME ZONE | VARCHAR` expression
-            col2 (Self | int | None): `BIGINT` expression
+            val (IntoExprColumn | BlobLiteral | IntoExpr | date | datetime | float | int | str): `ANY | BIGINT | BLOB | DATE | DOUBLE | HUGEINT | INTEGER | TIMESTAMP | TIMESTAMP WITH TIME ZONE | VARCHAR` expression
+            col2 (IntoExprColumn | int | None): `BIGINT` expression
 
         Examples:
             argmax(A, B)
@@ -273,8 +273,8 @@ class Fns(DuckHandler):
 
     def argmin(
         self,
-        val: Self | bytes | bytearray | memoryview | date | datetime | float | str,
-        col2: Self | int | None = None,
+        val: IntoExprColumn | BlobLiteral | IntoExpr | date | datetime | float | str,
+        col2: IntoExprColumn | int | None = None,
     ) -> Self:
         """Finds the row with the minimum val.
 
@@ -286,8 +286,8 @@ class Fns(DuckHandler):
             arg_min, min_by
 
         Args:
-            val (Self | bytes | bytearray | memoryview | date | datetime | float | int | str): `ANY | BIGINT | BLOB | DATE | DOUBLE | HUGEINT | INTEGER | TIMESTAMP | TIMESTAMP WITH TIME ZONE | VARCHAR` expression
-            col2 (Self | int | None): `BIGINT` expression
+            val (IntoExprColumn | BlobLiteral | IntoExpr | date | datetime | float | int | str): `ANY | BIGINT | BLOB | DATE | DOUBLE | HUGEINT | INTEGER | TIMESTAMP | TIMESTAMP WITH TIME ZONE | VARCHAR` expression
+            col2 (IntoExprColumn | int | None): `BIGINT` expression
 
         Examples:
             argmin(A, B)
@@ -336,13 +336,13 @@ class Fns(DuckHandler):
         """
         return self._new(func("atan", self.inner()))
 
-    def atan2(self, x: Self | float) -> Self:
+    def atan2(self, x: IntoExprColumn | float) -> Self:
         """Computes the arctangent (y, x).
 
         **SQL name**: *atan2*
 
         Args:
-            x (Self | float): `DOUBLE` expression
+            x (IntoExprColumn | float): `DOUBLE` expression
 
         Examples:
             atan2(1.0, 0.0)
@@ -449,7 +449,9 @@ class Fns(DuckHandler):
         """
         return self._new(func("bit_or", self.inner()))
 
-    def bit_position(self, bitstring: Self | bytes | bytearray | memoryview) -> Self:
+    def bit_position(
+        self, bitstring: IntoExprColumn | bytes | bytearray | memoryview
+    ) -> Self:
         """Returns first starting index of the specified substring within bits, or zero if it is not present.
 
         The first (leftmost) bit is indexed 1.
@@ -457,7 +459,7 @@ class Fns(DuckHandler):
         **SQL name**: *bit_position*
 
         Args:
-            bitstring (Self | bytes | bytearray | memoryview): `BIT` expression
+            bitstring (IntoExprColumn | bytes | bytearray | memoryview): `BIT` expression
 
         Examples:
             bit_position('010'::BIT, '1110101'::BIT)
@@ -480,13 +482,13 @@ class Fns(DuckHandler):
         """
         return self._new(func("bit_xor", self.inner()))
 
-    def bitstring(self, length: Self | int) -> Self:
+    def bitstring(self, length: IntoExprColumn | int) -> Self:
         """Pads the bitstring until the specified length.
 
         **SQL name**: *bitstring*
 
         Args:
-            length (Self | int): `INTEGER` expression
+            length (IntoExprColumn | int): `INTEGER` expression
 
         Examples:
             bitstring('1010'::BIT, 7)
@@ -497,15 +499,17 @@ class Fns(DuckHandler):
         return self._new(func("bitstring", self.inner(), length))
 
     def bitstring_agg(
-        self, col1: Self | int | None = None, col2: Self | int | None = None
+        self,
+        col1: IntoExprColumn | int | None = None,
+        col2: IntoExprColumn | int | None = None,
     ) -> Self:
         """Returns a bitstring with bits set for each distinct value.
 
         **SQL name**: *bitstring_agg*
 
         Args:
-            col1 (Self | int | None): `BIGINT | HUGEINT | INTEGER | SMALLINT | TINYINT | UBIGINT | UHUGEINT | UINTEGER | USMALLINT | UTINYINT` expression
-            col2 (Self | int | None): `BIGINT | HUGEINT | INTEGER | SMALLINT | TINYINT | UBIGINT | UHUGEINT | UINTEGER | USMALLINT | UTINYINT` expression
+            col1 (IntoExprColumn | int | None): `BIGINT | HUGEINT | INTEGER | SMALLINT | TINYINT | UBIGINT | UHUGEINT | UINTEGER | USMALLINT | UTINYINT` expression
+            col2 (IntoExprColumn | int | None): `BIGINT | HUGEINT | INTEGER | SMALLINT | TINYINT | UBIGINT | UHUGEINT | UINTEGER | USMALLINT | UTINYINT` expression
 
         Examples:
             bitstring_agg(A)
@@ -541,13 +545,13 @@ class Fns(DuckHandler):
         """
         return self._new(func("bool_or", self.inner()))
 
-    def can_cast_implicitly(self, target_type: Self) -> Self:
+    def can_cast_implicitly(self, target_type: IntoExpr) -> Self:
         """Whether or not we can implicitly cast from the source type to the other type.
 
         **SQL name**: *can_cast_implicitly*
 
         Args:
-            target_type (Self): `ANY` expression
+            target_type (IntoExpr): `ANY` expression
 
         Examples:
             can_cast_implicitly(NULL::INTEGER, NULL::BIGINT)
@@ -557,13 +561,13 @@ class Fns(DuckHandler):
         """
         return self._new(func("can_cast_implicitly", self.inner(), target_type))
 
-    def cardinality(self, *args: Self) -> Self:
+    def cardinality(self, *args: IntoExpr) -> Self:
         """Returns the size of the map (or the number of entries in the map).
 
         **SQL name**: *cardinality*
 
         Args:
-            *args (Self): `ANY` expression
+            *args (IntoExpr): `ANY` expression
 
         Examples:
             cardinality( map([4, 2], ['a', 'b']) );
@@ -573,13 +577,13 @@ class Fns(DuckHandler):
         """
         return self._new(func("cardinality", self.inner(), *args))
 
-    def cast_to_type(self, type_arg: Self) -> Self:
+    def cast_to_type(self, type_arg: IntoExpr) -> Self:
         """Casts the first argument to the type of the second argument.
 
         **SQL name**: *cast_to_type*
 
         Args:
-            type_arg (Self): `ANY` expression
+            type_arg (IntoExpr): `ANY` expression
 
         Examples:
             cast_to_type('42', NULL::INTEGER)
@@ -679,33 +683,33 @@ class Fns(DuckHandler):
         """
         return self._new(func("character_length", self.inner()))
 
-    def col_description(self, column_number: Self) -> Self:
+    def col_description(self, column_number: IntoExpr) -> Self:
         """SQL col_description function.
 
         **SQL name**: *col_description*
 
         Args:
-            column_number (Self): `ANY` expression
+            column_number (IntoExpr): `ANY` expression
 
         Returns:
             Self
         """
         return self._new(func("col_description", self.inner(), column_number))
 
-    def combine(self, col1: Self) -> Self:
+    def combine(self, col1: IntoExpr) -> Self:
         """SQL combine function.
 
         **SQL name**: *combine*
 
         Args:
-            col1 (Self): `ANY` expression
+            col1 (IntoExpr): `ANY` expression
 
         Returns:
             Self
         """
         return self._new(func("combine", self.inner(), col1))
 
-    def constant_or_null(self, arg2: Self, *args: Self) -> Self:
+    def constant_or_null(self, arg2: IntoExpr, *args: IntoExpr) -> Self:
         """If arg2 is NULL, return NULL.
 
         Otherwise, return arg1.
@@ -713,8 +717,8 @@ class Fns(DuckHandler):
         **SQL name**: *constant_or_null*
 
         Args:
-            arg2 (Self): `ANY` expression
-            *args (Self): `ANY` expression
+            arg2 (IntoExpr): `ANY` expression
+            *args (IntoExpr): `ANY` expression
 
         Examples:
             constant_or_null(42, NULL)
@@ -724,26 +728,26 @@ class Fns(DuckHandler):
         """
         return self._new(func("constant_or_null", self.inner(), arg2, *args))
 
-    def contains(self, col1: Self) -> Self:
+    def contains(self, col1: IntoExpr) -> Self:
         """SQL contains function.
 
         **SQL name**: *contains*
 
         Args:
-            col1 (Self): `ANY | K | T` expression
+            col1 (IntoExpr): `ANY | K | T` expression
 
         Returns:
             Self
         """
         return self._new(func("contains", self.inner(), col1))
 
-    def corr(self, x: Self | float) -> Self:
+    def corr(self, x: IntoExprColumn | float) -> Self:
         """Returns the correlation coefficient for non-NULL pairs in a group.
 
         **SQL name**: *corr*
 
         Args:
-            x (Self | float): `DOUBLE` expression
+            x (IntoExprColumn | float): `DOUBLE` expression
 
         Examples:
             COVAR_POP(y, x) / (STDDEV_POP(x) * STDDEV_POP(y))
@@ -837,13 +841,13 @@ class Fns(DuckHandler):
         """
         return self._new(func("countif", self.inner()))
 
-    def covar_pop(self, x: Self | float) -> Self:
+    def covar_pop(self, x: IntoExprColumn | float) -> Self:
         """Returns the population covariance of input values.
 
         **SQL name**: *covar_pop*
 
         Args:
-            x (Self | float): `DOUBLE` expression
+            x (IntoExprColumn | float): `DOUBLE` expression
 
         Examples:
             (SUM(x*y) - SUM(x) * SUM(y) / COUNT(*)) / COUNT(*)
@@ -853,13 +857,13 @@ class Fns(DuckHandler):
         """
         return self._new(func("covar_pop", self.inner(), x))
 
-    def covar_samp(self, x: Self | float) -> Self:
+    def covar_samp(self, x: IntoExprColumn | float) -> Self:
         """Returns the sample covariance for non-NULL pairs in a group.
 
         **SQL name**: *covar_samp*
 
         Args:
-            x (Self | float): `DOUBLE` expression
+            x (IntoExprColumn | float): `DOUBLE` expression
 
         Examples:
             (SUM(x*y) - SUM(x) * SUM(y) / COUNT(*)) / (COUNT(*) - 1)
@@ -869,13 +873,13 @@ class Fns(DuckHandler):
         """
         return self._new(func("covar_samp", self.inner(), x))
 
-    def create_sort_key(self, *args: Self) -> Self:
+    def create_sort_key(self, *args: IntoExpr) -> Self:
         """Constructs a binary-comparable sort key based on a set of input parameters and sort qualifiers.
 
         **SQL name**: *create_sort_key*
 
         Args:
-            *args (Self): `ANY` expression
+            *args (IntoExpr): `ANY` expression
 
         Examples:
             create_sort_key('A', 'DESC')
@@ -941,7 +945,7 @@ class Fns(DuckHandler):
         """
         return self._new(func("degrees", self.inner()))
 
-    def element_at(self, key: Self) -> Self:
+    def element_at(self, key: IntoExprColumn) -> Self:
         """Returns a list containing the value for a given key or an empty list if the key is not contained in the map.
 
         The type of the key provided in the second parameter must match the type of the map's keys else an error is returned.
@@ -952,7 +956,7 @@ class Fns(DuckHandler):
             map_extract
 
         Args:
-            key (Self): `K` expression
+            key (IntoExprColumn): `K` expression
 
         Examples:
             element_at(map(['key'], ['val']), 'key')
@@ -1041,9 +1045,9 @@ class Fns(DuckHandler):
 
     def equi_width_bins(
         self,
-        max_arg: Self | datetime | float,
-        bin_count: Self | int,
-        nice_rounding: Self | bool,
+        max_arg: IntoExprColumn | IntoExpr | datetime | float,
+        bin_count: IntoExprColumn | int,
+        nice_rounding: IntoExprColumn | bool,
     ) -> Self:
         """Generates bin_count equi-width bins between the min and max.
 
@@ -1052,9 +1056,9 @@ class Fns(DuckHandler):
         **SQL name**: *equi_width_bins*
 
         Args:
-            max_arg (Self | datetime | float | int): `ANY | BIGINT | DOUBLE | TIMESTAMP` expression
-            bin_count (Self | int): `BIGINT` expression
-            nice_rounding (Self | bool): `BOOLEAN` expression
+            max_arg (IntoExprColumn | IntoExpr | datetime | float | int): `ANY | BIGINT | DOUBLE | TIMESTAMP` expression
+            bin_count (IntoExprColumn | int): `BIGINT` expression
+            nice_rounding (IntoExprColumn | bool): `BOOLEAN` expression
 
         Examples:
             equi_width_bins(0, 10, 2, true)
@@ -1146,13 +1150,13 @@ class Fns(DuckHandler):
         """
         return self._new(func("favg", self.inner()))
 
-    def fdiv(self, y: Self) -> Self:
+    def fdiv(self, y: IntoExpr) -> Self:
         """SQL fdiv function.
 
         **SQL name**: *fdiv*
 
         Args:
-            y (Self): `ANY` expression
+            y (IntoExpr): `ANY` expression
 
         Returns:
             Self
@@ -1200,65 +1204,65 @@ class Fns(DuckHandler):
         """
         return self._new(func("floor", self.inner()))
 
-    def fmod(self, y: Self) -> Self:
+    def fmod(self, y: IntoExpr) -> Self:
         """SQL fmod function.
 
         **SQL name**: *fmod*
 
         Args:
-            y (Self): `ANY` expression
+            y (IntoExpr): `ANY` expression
 
         Returns:
             Self
         """
         return self._new(func("fmod", self.inner(), y))
 
-    def format_pg_type(self, type_name: Self) -> Self:
+    def format_pg_type(self, type_name: IntoExpr) -> Self:
         """SQL format_pg_type function.
 
         **SQL name**: *format_pg_type*
 
         Args:
-            type_name (Self): `ANY` expression
+            type_name (IntoExpr): `ANY` expression
 
         Returns:
             Self
         """
         return self._new(func("format_pg_type", self.inner(), type_name))
 
-    def format_type(self, typemod: Self) -> Self:
+    def format_type(self, typemod: IntoExpr) -> Self:
         """SQL format_type function.
 
         **SQL name**: *format_type*
 
         Args:
-            typemod (Self): `ANY` expression
+            typemod (IntoExpr): `ANY` expression
 
         Returns:
             Self
         """
         return self._new(func("format_type", self.inner(), typemod))
 
-    def from_json(self, col1: Self | str) -> Self:
+    def from_json(self, col1: IntoExprColumn | str) -> Self:
         """SQL from_json function.
 
         **SQL name**: *from_json*
 
         Args:
-            col1 (Self | str): `VARCHAR` expression
+            col1 (IntoExprColumn | str): `VARCHAR` expression
 
         Returns:
             Self
         """
         return self._new(func("from_json", self.inner(), col1))
 
-    def from_json_strict(self, col1: Self | str) -> Self:
+    def from_json_strict(self, col1: IntoExprColumn | str) -> Self:
         """SQL from_json_strict function.
 
         **SQL name**: *from_json_strict*
 
         Args:
-            col1 (Self | str): `VARCHAR` expression
+            col1 (IntoExprColumn | str): `VARCHAR` expression
 
         Returns:
             Self
@@ -1294,7 +1298,7 @@ class Fns(DuckHandler):
         """
         return self._new(func("gamma", self.inner()))
 
-    def gcd(self, y: Self | int) -> Self:
+    def gcd(self, y: IntoExprColumn | int) -> Self:
         """Computes the greatest common divisor of x and y.
 
         **SQL name**: *gcd*
@@ -1303,7 +1307,7 @@ class Fns(DuckHandler):
             greatest_common_divisor
 
         Args:
-            y (Self | int): `BIGINT | HUGEINT` expression
+            y (IntoExprColumn | int): `BIGINT | HUGEINT` expression
 
         Examples:
             gcd(42, 57)
@@ -1313,13 +1317,13 @@ class Fns(DuckHandler):
         """
         return self._new(func("gcd", self.inner(), y))
 
-    def generate_subscripts(self, dim: Self) -> Self:
+    def generate_subscripts(self, dim: IntoExpr) -> Self:
         """SQL generate_subscripts function.
 
         **SQL name**: *generate_subscripts*
 
         Args:
-            dim (Self): `ANY` expression
+            dim (IntoExpr): `ANY` expression
 
         Returns:
             Self
@@ -1346,13 +1350,13 @@ class Fns(DuckHandler):
         """
         return self._new(func("geometric_mean", self.inner()))
 
-    def get_bit(self, index: Self | int) -> Self:
+    def get_bit(self, index: IntoExprColumn | int) -> Self:
         """Extracts the nth bit from bitstring; the first (leftmost) bit is indexed 0.
 
         **SQL name**: *get_bit*
 
         Args:
-            index (Self | int): `INTEGER` expression
+            index (IntoExprColumn | int): `INTEGER` expression
 
         Examples:
             get_bit('0110010'::BIT, 2)
@@ -1382,7 +1386,7 @@ class Fns(DuckHandler):
         """
         return self._new(func("getvariable", self.inner()))
 
-    def greatest_common_divisor(self, y: Self | int) -> Self:
+    def greatest_common_divisor(self, y: IntoExprColumn | int) -> Self:
         """Computes the greatest common divisor of x and y.
 
         **SQL name**: *greatest_common_divisor*
@@ -1391,7 +1395,7 @@ class Fns(DuckHandler):
             gcd
 
         Args:
-            y (Self | int): `BIGINT | HUGEINT` expression
+            y (IntoExprColumn | int): `BIGINT | HUGEINT` expression
 
         Examples:
             greatest_common_divisor(42, 57)
@@ -1401,7 +1405,7 @@ class Fns(DuckHandler):
         """
         return self._new(func("greatest_common_divisor", self.inner(), y))
 
-    def group_concat(self, arg: Self | str | None = None) -> Self:
+    def group_concat(self, arg: IntoExprColumn | str | None = None) -> Self:
         """Concatenates the column string values with an optional separator.
 
         **SQL name**: *group_concat*
@@ -1410,7 +1414,7 @@ class Fns(DuckHandler):
             listagg, string_agg
 
         Args:
-            arg (Self | str | None): `VARCHAR` expression
+            arg (IntoExprColumn | str | None): `VARCHAR` expression
 
         Examples:
             group_concat(A, '-')
@@ -1436,13 +1440,13 @@ class Fns(DuckHandler):
         """
         return self._new(func("hex", self.inner()))
 
-    def histogram(self, col1: Self | None = None) -> Self:
+    def histogram(self, col1: IntoExpr | None = None) -> Self:
         """Returns a LIST of STRUCTs with the fields bucket and count.
 
         **SQL name**: *histogram*
 
         Args:
-            col1 (Self | None): `ANY[]` expression
+            col1 (IntoExpr | None): `ANY[]` expression
 
         Examples:
             histogram(A)
@@ -1452,13 +1456,13 @@ class Fns(DuckHandler):
         """
         return self._new(func("histogram", self.inner(), col1))
 
-    def histogram_exact(self, bins: Self) -> Self:
+    def histogram_exact(self, bins: IntoExpr) -> Self:
         """Returns a LIST of STRUCTs with the fields bucket and count matching the buckets exactly.
 
         **SQL name**: *histogram_exact*
 
         Args:
-            bins (Self): `ANY[]` expression
+            bins (IntoExpr): `ANY[]` expression
 
         Examples:
             histogram_exact(A, [0, 1, 2])
@@ -1497,13 +1501,13 @@ class Fns(DuckHandler):
         """
         return self._new(func("list", self.inner()))
 
-    def in_search_path(self, schema_name: Self | str) -> Self:
+    def in_search_path(self, schema_name: IntoExprColumn | str) -> Self:
         """Returns whether or not the database/schema are in the search path.
 
         **SQL name**: *in_search_path*
 
         Args:
-            schema_name (Self | str): `VARCHAR` expression
+            schema_name (IntoExprColumn | str): `VARCHAR` expression
 
         Examples:
             in_search_path('memory', 'main')
@@ -1668,7 +1672,7 @@ class Fns(DuckHandler):
         """
         return self._new(func("last_day", self.inner()))
 
-    def lcm(self, y: Self | int) -> Self:
+    def lcm(self, y: IntoExprColumn | int) -> Self:
         """Computes the least common multiple of x and y.
 
         **SQL name**: *lcm*
@@ -1677,7 +1681,7 @@ class Fns(DuckHandler):
             least_common_multiple
 
         Args:
-            y (Self | int): `BIGINT | HUGEINT` expression
+            y (IntoExprColumn | int): `BIGINT | HUGEINT` expression
 
         Examples:
             lcm(42, 57)
@@ -1687,7 +1691,7 @@ class Fns(DuckHandler):
         """
         return self._new(func("lcm", self.inner(), y))
 
-    def least_common_multiple(self, y: Self | int) -> Self:
+    def least_common_multiple(self, y: IntoExprColumn | int) -> Self:
         """Computes the least common multiple of x and y.
 
         **SQL name**: *least_common_multiple*
@@ -1696,7 +1700,7 @@ class Fns(DuckHandler):
             lcm
 
         Args:
-            y (Self | int): `BIGINT | HUGEINT` expression
+            y (IntoExprColumn | int): `BIGINT | HUGEINT` expression
 
         Examples:
             least_common_multiple(42, 57)
@@ -1751,7 +1755,7 @@ class Fns(DuckHandler):
         """
         return self._new(func("lgamma", self.inner()))
 
-    def listagg(self, arg: Self | str | None = None) -> Self:
+    def listagg(self, arg: IntoExprColumn | str | None = None) -> Self:
         """Concatenates the column string values with an optional separator.
 
         **SQL name**: *listagg*
@@ -1760,7 +1764,7 @@ class Fns(DuckHandler):
             group_concat, string_agg
 
         Args:
-            arg (Self | str | None): `VARCHAR` expression
+            arg (IntoExprColumn | str | None): `VARCHAR` expression
 
         Examples:
             listagg(A, '-')
@@ -1837,15 +1841,17 @@ class Fns(DuckHandler):
         return self._new(func("make_date", self.inner()))
 
     def make_date_month_day(
-        self, month: Self | int | None = None, day: Self | int | None = None
+        self,
+        month: IntoExprColumn | int | None = None,
+        day: IntoExprColumn | int | None = None,
     ) -> Self:
         """The date for the given parts.
 
         **SQL name**: *make_date*
 
         Args:
-            month (Self | int | None): `BIGINT` expression
-            day (Self | int | None): `BIGINT` expression
+            month (IntoExprColumn | int | None): `BIGINT` expression
+            day (IntoExprColumn | int | None): `BIGINT` expression
 
         Examples:
             make_date(1992, 9, 20)
@@ -1855,14 +1861,16 @@ class Fns(DuckHandler):
         """
         return self._new(func("make_date", self.inner(), month, day))
 
-    def make_time(self, minute: Self | int, seconds: Self | float) -> Self:
+    def make_time(
+        self, minute: IntoExprColumn | int, seconds: IntoExprColumn | float
+    ) -> Self:
         """The time for the given parts.
 
         **SQL name**: *make_time*
 
         Args:
-            minute (Self | int): `BIGINT` expression
-            seconds (Self | float): `DOUBLE` expression
+            minute (IntoExprColumn | int): `BIGINT` expression
+            seconds (IntoExprColumn | float): `DOUBLE` expression
 
         Examples:
             make_time(13, 34, 27.123456)
@@ -1874,22 +1882,22 @@ class Fns(DuckHandler):
 
     def make_timestamp(
         self,
-        month: Self | int | None = None,
-        day: Self | int | None = None,
-        hour: Self | int | None = None,
-        minute: Self | int | None = None,
-        seconds: Self | float | None = None,
+        month: IntoExprColumn | int | None = None,
+        day: IntoExprColumn | int | None = None,
+        hour: IntoExprColumn | int | None = None,
+        minute: IntoExprColumn | int | None = None,
+        seconds: IntoExprColumn | float | None = None,
     ) -> Self:
         """The timestamp for the given parts.
 
         **SQL name**: *make_timestamp*
 
         Args:
-            month (Self | int | None): `BIGINT` expression
-            day (Self | int | None): `BIGINT` expression
-            hour (Self | int | None): `BIGINT` expression
-            minute (Self | int | None): `BIGINT` expression
-            seconds (Self | float | None): `DOUBLE` expression
+            month (IntoExprColumn | int | None): `BIGINT` expression
+            day (IntoExprColumn | int | None): `BIGINT` expression
+            hour (IntoExprColumn | int | None): `BIGINT` expression
+            minute (IntoExprColumn | int | None): `BIGINT` expression
+            seconds (IntoExprColumn | float | None): `DOUBLE` expression
 
         Examples:
             make_timestamp(1992, 9, 20, 13, 34, 27.123456)
@@ -1929,24 +1937,24 @@ class Fns(DuckHandler):
 
     def make_timestamptz(
         self,
-        col1: Self | int | None = None,
-        col2: Self | int | None = None,
-        col3: Self | int | None = None,
-        col4: Self | int | None = None,
-        col5: Self | float | None = None,
-        col6: Self | str | None = None,
+        col1: IntoExprColumn | int | None = None,
+        col2: IntoExprColumn | int | None = None,
+        col3: IntoExprColumn | int | None = None,
+        col4: IntoExprColumn | int | None = None,
+        col5: IntoExprColumn | float | None = None,
+        col6: IntoExprColumn | str | None = None,
     ) -> Self:
         """SQL make_timestamptz function.
 
         **SQL name**: *make_timestamptz*
 
         Args:
-            col1 (Self | int | None): `BIGINT` expression
-            col2 (Self | int | None): `BIGINT` expression
-            col3 (Self | int | None): `BIGINT` expression
-            col4 (Self | int | None): `BIGINT` expression
-            col5 (Self | float | None): `DOUBLE` expression
-            col6 (Self | str | None): `VARCHAR` expression
+            col1 (IntoExprColumn | int | None): `BIGINT` expression
+            col2 (IntoExprColumn | int | None): `BIGINT` expression
+            col3 (IntoExprColumn | int | None): `BIGINT` expression
+            col4 (IntoExprColumn | int | None): `BIGINT` expression
+            col5 (IntoExprColumn | float | None): `DOUBLE` expression
+            col6 (IntoExprColumn | str | None): `VARCHAR` expression
 
         Returns:
             Self
@@ -1955,13 +1963,13 @@ class Fns(DuckHandler):
             func("make_timestamptz", self.inner(), col1, col2, col3, col4, col5, col6)
         )
 
-    def max(self, col1: Self | int | None = None) -> Self:
+    def max(self, col1: IntoExprColumn | int | None = None) -> Self:
         """Returns the maximum value present in arg.
 
         **SQL name**: *max*
 
         Args:
-            col1 (Self | int | None): `BIGINT` expression
+            col1 (IntoExprColumn | int | None): `BIGINT` expression
 
         Examples:
             max(A)
@@ -1973,8 +1981,8 @@ class Fns(DuckHandler):
 
     def max_by(
         self,
-        val: Self | bytes | bytearray | memoryview | date | datetime | float | str,
-        col2: Self | int | None = None,
+        val: IntoExprColumn | BlobLiteral | IntoExpr | date | datetime | float | str,
+        col2: IntoExprColumn | int | None = None,
     ) -> Self:
         """Finds the row with the maximum val.
 
@@ -1986,8 +1994,8 @@ class Fns(DuckHandler):
             arg_max, argmax
 
         Args:
-            val (Self | bytes | bytearray | memoryview | date | datetime | float | int | str): `ANY | BIGINT | BLOB | DATE | DOUBLE | HUGEINT | INTEGER | TIMESTAMP | TIMESTAMP WITH TIME ZONE | VARCHAR` expression
-            col2 (Self | int | None): `BIGINT` expression
+            val (IntoExprColumn | BlobLiteral | IntoExpr | date | datetime | float | int | str): `ANY | BIGINT | BLOB | DATE | DOUBLE | HUGEINT | INTEGER | TIMESTAMP | TIMESTAMP WITH TIME ZONE | VARCHAR` expression
+            col2 (IntoExprColumn | int | None): `BIGINT` expression
 
         Examples:
             max_by(A, B)
@@ -2117,13 +2125,13 @@ class Fns(DuckHandler):
         """
         return self._new(func("millisecond", self.inner()))
 
-    def min(self, col1: Self | int | None = None) -> Self:
+    def min(self, col1: IntoExprColumn | int | None = None) -> Self:
         """Returns the minimum value present in arg.
 
         **SQL name**: *min*
 
         Args:
-            col1 (Self | int | None): `BIGINT` expression
+            col1 (IntoExprColumn | int | None): `BIGINT` expression
 
         Examples:
             min(A)
@@ -2135,8 +2143,8 @@ class Fns(DuckHandler):
 
     def min_by(
         self,
-        val: Self | bytes | bytearray | memoryview | date | datetime | float | str,
-        col2: Self | int | None = None,
+        val: IntoExprColumn | BlobLiteral | IntoExpr | date | datetime | float | str,
+        col2: IntoExprColumn | int | None = None,
     ) -> Self:
         """Finds the row with the minimum val.
 
@@ -2148,8 +2156,8 @@ class Fns(DuckHandler):
             arg_min, argmin
 
         Args:
-            val (Self | bytes | bytearray | memoryview | date | datetime | float | int | str): `ANY | BIGINT | BLOB | DATE | DOUBLE | HUGEINT | INTEGER | TIMESTAMP | TIMESTAMP WITH TIME ZONE | VARCHAR` expression
-            col2 (Self | int | None): `BIGINT` expression
+            val (IntoExprColumn | BlobLiteral | IntoExpr | date | datetime | float | int | str): `ANY | BIGINT | BLOB | DATE | DOUBLE | HUGEINT | INTEGER | TIMESTAMP | TIMESTAMP WITH TIME ZONE | VARCHAR` expression
+            col2 (IntoExprColumn | int | None): `BIGINT` expression
 
         Examples:
             min_by(A, B)
@@ -2223,13 +2231,13 @@ class Fns(DuckHandler):
         """
         return self._new(func("nanosecond", self.inner()))
 
-    def nextafter(self, y: Self | float) -> Self:
+    def nextafter(self, y: IntoExprColumn | float) -> Self:
         """Returns the next floating point value after x in the direction of y.
 
         **SQL name**: *nextafter*
 
         Args:
-            y (Self | float): `DOUBLE | FLOAT` expression
+            y (IntoExprColumn | float): `DOUBLE | FLOAT` expression
 
         Examples:
             nextafter(1::float, 2::float)
@@ -2265,26 +2273,26 @@ class Fns(DuckHandler):
         """
         return self._new(func("normalized_interval", self.inner()))
 
-    def nullif(self, b: Self) -> Self:
+    def nullif(self, b: IntoExpr) -> Self:
         """SQL nullif function.
 
         **SQL name**: *nullif*
 
         Args:
-            b (Self): `ANY` expression
+            b (IntoExpr): `ANY` expression
 
         Returns:
             Self
         """
         return self._new(func("nullif", self.inner(), b))
 
-    def obj_description(self, catalog_name: Self) -> Self:
+    def obj_description(self, catalog_name: IntoExpr) -> Self:
         """SQL obj_description function.
 
         **SQL name**: *obj_description*
 
         Args:
-            catalog_name (Self): `ANY` expression
+            catalog_name (IntoExpr): `ANY` expression
 
         Returns:
             Self
@@ -2304,13 +2312,13 @@ class Fns(DuckHandler):
         """
         return self._new(func("octet_length", self.inner()))
 
-    def parse_duckdb_log_message(self, message: Self | str) -> Self:
+    def parse_duckdb_log_message(self, message: IntoExprColumn | str) -> Self:
         """Parse the message into the expected logical type.
 
         **SQL name**: *parse_duckdb_log_message*
 
         Args:
-            message (Self | str): `VARCHAR` expression
+            message (IntoExprColumn | str): `VARCHAR` expression
 
         Examples:
             parse_duckdb_log_message('FileSystem', log_message)
@@ -2333,7 +2341,9 @@ class Fns(DuckHandler):
         """
         return self._new(func("product", self.inner()))
 
-    def quantile(self, pos: Self | SeqLiteral[float] | float | None = None) -> Self:
+    def quantile(
+        self, pos: IntoExprColumn | SeqLiteral[float] | float | None = None
+    ) -> Self:
         """Returns the exact quantile number between 0 and 1 .
 
         If pos is a LIST of FLOATs, then the result is a LIST of the corresponding exact quantiles.
@@ -2344,7 +2354,7 @@ class Fns(DuckHandler):
             quantile_disc
 
         Args:
-            pos (Self | SeqLiteral[float] | float | None): `DOUBLE | DOUBLE[]` expression
+            pos (IntoExprColumn | SeqLiteral[float] | float | None): `DOUBLE | DOUBLE[]` expression
 
         Examples:
             quantile_disc(x, 0.5)
@@ -2354,7 +2364,7 @@ class Fns(DuckHandler):
         """
         return self._new(func("quantile", self.inner(), pos))
 
-    def quantile_cont(self, pos: Self | SeqLiteral[float] | float) -> Self:
+    def quantile_cont(self, pos: IntoExprColumn | SeqLiteral[float] | float) -> Self:
         """Returns the interpolated quantile number between 0 and 1 .
 
         If pos is a LIST of FLOATs, then the result is a LIST of the corresponding interpolated quantiles.
@@ -2362,7 +2372,7 @@ class Fns(DuckHandler):
         **SQL name**: *quantile_cont*
 
         Args:
-            pos (Self | SeqLiteral[float] | float): `DOUBLE | DOUBLE[]` expression
+            pos (IntoExprColumn | SeqLiteral[float] | float): `DOUBLE | DOUBLE[]` expression
 
         Examples:
             quantile_cont(x, 0.5)
@@ -2373,7 +2383,7 @@ class Fns(DuckHandler):
         return self._new(func("quantile_cont", self.inner(), pos))
 
     def quantile_disc(
-        self, pos: Self | SeqLiteral[float] | float | None = None
+        self, pos: IntoExprColumn | SeqLiteral[float] | float | None = None
     ) -> Self:
         """Returns the exact quantile number between 0 and 1 .
 
@@ -2385,7 +2395,7 @@ class Fns(DuckHandler):
             quantile
 
         Args:
-            pos (Self | SeqLiteral[float] | float | None): `DOUBLE | DOUBLE[]` expression
+            pos (IntoExprColumn | SeqLiteral[float] | float | None): `DOUBLE | DOUBLE[]` expression
 
         Examples:
             quantile_disc(x, 0.5)
@@ -2421,39 +2431,39 @@ class Fns(DuckHandler):
         """
         return self._new(func("radians", self.inner()))
 
-    def regr_avgx(self, x: Self | float) -> Self:
+    def regr_avgx(self, x: IntoExprColumn | float) -> Self:
         """Returns the average of the independent variable for non-NULL pairs in a group, where x is the independent variable and y is the dependent variable.
 
         **SQL name**: *regr_avgx*
 
         Args:
-            x (Self | float): `DOUBLE` expression
+            x (IntoExprColumn | float): `DOUBLE` expression
 
         Returns:
             Self
         """
         return self._new(func("regr_avgx", self.inner(), x))
 
-    def regr_avgy(self, x: Self | float) -> Self:
+    def regr_avgy(self, x: IntoExprColumn | float) -> Self:
         """Returns the average of the dependent variable for non-NULL pairs in a group, where x is the independent variable and y is the dependent variable.
 
         **SQL name**: *regr_avgy*
 
         Args:
-            x (Self | float): `DOUBLE` expression
+            x (IntoExprColumn | float): `DOUBLE` expression
 
         Returns:
             Self
         """
         return self._new(func("regr_avgy", self.inner(), x))
 
-    def regr_count(self, x: Self | float) -> Self:
+    def regr_count(self, x: IntoExprColumn | float) -> Self:
         """Returns the number of non-NULL number pairs in a group.
 
         **SQL name**: *regr_count*
 
         Args:
-            x (Self | float): `DOUBLE` expression
+            x (IntoExprColumn | float): `DOUBLE` expression
 
         Examples:
             (SUM(x*y) - SUM(x) * SUM(y) / COUNT(*)) / COUNT(*)
@@ -2463,13 +2473,13 @@ class Fns(DuckHandler):
         """
         return self._new(func("regr_count", self.inner(), x))
 
-    def regr_intercept(self, x: Self | float) -> Self:
+    def regr_intercept(self, x: IntoExprColumn | float) -> Self:
         """Returns the intercept of the univariate linear regression line for non-NULL pairs in a group.
 
         **SQL name**: *regr_intercept*
 
         Args:
-            x (Self | float): `DOUBLE` expression
+            x (IntoExprColumn | float): `DOUBLE` expression
 
         Examples:
             AVG(y)-REGR_SLOPE(y, x)*AVG(x)
@@ -2479,26 +2489,26 @@ class Fns(DuckHandler):
         """
         return self._new(func("regr_intercept", self.inner(), x))
 
-    def regr_r2(self, x: Self | float) -> Self:
+    def regr_r2(self, x: IntoExprColumn | float) -> Self:
         """Returns the coefficient of determination for non-NULL pairs in a group.
 
         **SQL name**: *regr_r2*
 
         Args:
-            x (Self | float): `DOUBLE` expression
+            x (IntoExprColumn | float): `DOUBLE` expression
 
         Returns:
             Self
         """
         return self._new(func("regr_r2", self.inner(), x))
 
-    def regr_slope(self, x: Self | float) -> Self:
+    def regr_slope(self, x: IntoExprColumn | float) -> Self:
         """Returns the slope of the linear regression line for non-NULL pairs in a group.
 
         **SQL name**: *regr_slope*
 
         Args:
-            x (Self | float): `DOUBLE` expression
+            x (IntoExprColumn | float): `DOUBLE` expression
 
         Examples:
             COVAR_POP(x, y) / VAR_POP(x)
@@ -2508,13 +2518,13 @@ class Fns(DuckHandler):
         """
         return self._new(func("regr_slope", self.inner(), x))
 
-    def regr_sxx(self, x: Self | float) -> Self:
+    def regr_sxx(self, x: IntoExprColumn | float) -> Self:
         """SQL regr_sxx function.
 
         **SQL name**: *regr_sxx*
 
         Args:
-            x (Self | float): `DOUBLE` expression
+            x (IntoExprColumn | float): `DOUBLE` expression
 
         Examples:
             REGR_COUNT(y, x) * VAR_POP(x)
@@ -2524,13 +2534,13 @@ class Fns(DuckHandler):
         """
         return self._new(func("regr_sxx", self.inner(), x))
 
-    def regr_sxy(self, x: Self | float) -> Self:
+    def regr_sxy(self, x: IntoExprColumn | float) -> Self:
         """Returns the population covariance of input values.
 
         **SQL name**: *regr_sxy*
 
         Args:
-            x (Self | float): `DOUBLE` expression
+            x (IntoExprColumn | float): `DOUBLE` expression
 
         Examples:
             REGR_COUNT(y, x) * COVAR_POP(y, x)
@@ -2540,13 +2550,13 @@ class Fns(DuckHandler):
         """
         return self._new(func("regr_sxy", self.inner(), x))
 
-    def regr_syy(self, x: Self | float) -> Self:
+    def regr_syy(self, x: IntoExprColumn | float) -> Self:
         """SQL regr_syy function.
 
         **SQL name**: *regr_syy*
 
         Args:
-            x (Self | float): `DOUBLE` expression
+            x (IntoExprColumn | float): `DOUBLE` expression
 
         Examples:
             REGR_COUNT(y, x) * VAR_POP(y)
@@ -2556,15 +2566,17 @@ class Fns(DuckHandler):
         """
         return self._new(func("regr_syy", self.inner(), x))
 
-    def remap_struct(self, target_type: Self, mapping: Self, defaults: Self) -> Self:
+    def remap_struct(
+        self, target_type: IntoExpr, mapping: IntoExpr, defaults: IntoExpr
+    ) -> Self:
         """Map a struct to another struct type, potentially re-ordering, renaming and casting members and filling in defaults for missing values.
 
         **SQL name**: *remap_struct*
 
         Args:
-            target_type (Self): `ANY` expression
-            mapping (Self): `ANY` expression
-            defaults (Self): `ANY` expression
+            target_type (IntoExpr): `ANY` expression
+            mapping (IntoExpr): `ANY` expression
+            defaults (IntoExpr): `ANY` expression
 
         Examples:
             remap_struct({'i': 1, 'j': 2}, NULL::ROW(v1 INT, v2 INT, v3 INT), {'v1': 'j', 'v3': 'i'}, {'v2': NULL::INTEGER})
@@ -2576,13 +2588,13 @@ class Fns(DuckHandler):
             func("remap_struct", self.inner(), target_type, mapping, defaults)
         )
 
-    def repeat(self, count: Self | int) -> Self:
+    def repeat(self, count: IntoExprColumn | int) -> Self:
         r"""Repeats the `blob` `count` number of times.
 
         **SQL name**: *repeat*
 
         Args:
-            count (Self | int): `BIGINT` expression
+            count (IntoExprColumn | int): `BIGINT` expression
 
         Examples:
             repeat('\xaa\xbb'::BLOB, 5)
@@ -2592,14 +2604,14 @@ class Fns(DuckHandler):
         """
         return self._new(func("repeat", self.inner(), count))
 
-    def replace_type(self, type1: Self, type2: Self) -> Self:
+    def replace_type(self, type1: IntoExpr, type2: IntoExpr) -> Self:
         """Casts all fields of type1 to type2.
 
         **SQL name**: *replace_type*
 
         Args:
-            type1 (Self): `ANY` expression
-            type2 (Self): `ANY` expression
+            type1 (IntoExpr): `ANY` expression
+            type2 (IntoExpr): `ANY` expression
 
         Examples:
             replace_type({duck: 3.141592653589793::DOUBLE}, NULL::DOUBLE, NULL::DECIMAL(15,2))
@@ -2611,16 +2623,16 @@ class Fns(DuckHandler):
 
     def reservoir_quantile(
         self,
-        quantile: Self | SeqLiteral[float] | float,
-        sample_size: Self | int | None = None,
+        quantile: IntoExprColumn | SeqLiteral[float] | float,
+        sample_size: IntoExprColumn | int | None = None,
     ) -> Self:
         """Gives the approximate quantile using reservoir sampling, the sample size is optional and uses 8192 as a default size.
 
         **SQL name**: *reservoir_quantile*
 
         Args:
-            quantile (Self | SeqLiteral[float] | float): `DOUBLE | DOUBLE[]` expression
-            sample_size (Self | int | None): `INTEGER` expression
+            quantile (IntoExprColumn | SeqLiteral[float] | float): `DOUBLE | DOUBLE[]` expression
+            sample_size (IntoExprColumn | int | None): `INTEGER` expression
 
         Examples:
             reservoir_quantile(A, 0.5, 1024)
@@ -2632,13 +2644,13 @@ class Fns(DuckHandler):
             func("reservoir_quantile", self.inner(), quantile, sample_size)
         )
 
-    def round(self, precision: Self | int | None = None) -> Self:
+    def round(self, precision: IntoExprColumn | int | None = None) -> Self:
         """Rounds x to s decimal places.
 
         **SQL name**: *round*
 
         Args:
-            precision (Self | int | None): `INTEGER` expression
+            precision (IntoExprColumn | int | None): `INTEGER` expression
 
         Examples:
             round(42.4332, 2)
@@ -2648,39 +2660,39 @@ class Fns(DuckHandler):
         """
         return self._new(func("round", self.inner(), precision))
 
-    def round_even(self, n: Self) -> Self:
+    def round_even(self, n: IntoExpr) -> Self:
         """SQL round_even function.
 
         **SQL name**: *round_even*
 
         Args:
-            n (Self): `ANY` expression
+            n (IntoExpr): `ANY` expression
 
         Returns:
             Self
         """
         return self._new(func("round_even", self.inner(), n))
 
-    def roundbankers(self, n: Self) -> Self:
+    def roundbankers(self, n: IntoExpr) -> Self:
         """SQL roundbankers function.
 
         **SQL name**: *roundbankers*
 
         Args:
-            n (Self): `ANY` expression
+            n (IntoExpr): `ANY` expression
 
         Returns:
             Self
         """
         return self._new(func("roundbankers", self.inner(), n))
 
-    def row(self, *args: Self) -> Self:
+    def row(self, *args: IntoExpr) -> Self:
         """Create an unnamed STRUCT (tuple) containing the argument values.
 
         **SQL name**: *row*
 
         Args:
-            *args (Self): `ANY` expression
+            *args (IntoExpr): `ANY` expression
 
         Examples:
             row(i, i % 4, i / 4)
@@ -2690,13 +2702,13 @@ class Fns(DuckHandler):
         """
         return self._new(func("row", self.inner(), *args))
 
-    def row_to_json(self, *args: Self) -> Self:
+    def row_to_json(self, *args: IntoExpr) -> Self:
         """SQL row_to_json function.
 
         **SQL name**: *row_to_json*
 
         Args:
-            *args (Self): `ANY` expression
+            *args (IntoExpr): `ANY` expression
 
         Returns:
             Self
@@ -2726,7 +2738,9 @@ class Fns(DuckHandler):
         """
         return self._new(func("sem", self.inner()))
 
-    def set_bit(self, index: Self | int, new_value: Self | int) -> Self:
+    def set_bit(
+        self, index: IntoExprColumn | int, new_value: IntoExprColumn | int
+    ) -> Self:
         """Sets the nth bit in bitstring to newvalue; the first (leftmost) bit is indexed 0.
 
         Returns a new bitstring.
@@ -2734,8 +2748,8 @@ class Fns(DuckHandler):
         **SQL name**: *set_bit*
 
         Args:
-            index (Self | int): `INTEGER` expression
-            new_value (Self | int): `INTEGER` expression
+            index (IntoExprColumn | int): `INTEGER` expression
+            new_value (IntoExprColumn | int): `INTEGER` expression
 
         Examples:
             set_bit('0110010'::BIT, 2, 0)
@@ -2784,13 +2798,13 @@ class Fns(DuckHandler):
         """
         return self._new(func("sha256", self.inner()))
 
-    def shobj_description(self, catalog_name: Self) -> Self:
+    def shobj_description(self, catalog_name: IntoExpr) -> Self:
         """SQL shobj_description function.
 
         **SQL name**: *shobj_description*
 
         Args:
-            catalog_name (Self): `ANY` expression
+            catalog_name (IntoExpr): `ANY` expression
 
         Returns:
             Self
@@ -2862,14 +2876,14 @@ class Fns(DuckHandler):
         """
         return self._new(func("skewness", self.inner()))
 
-    def split_part(self, delimiter: Self, position: Self) -> Self:
+    def split_part(self, delimiter: IntoExpr, position: IntoExpr) -> Self:
         """SQL split_part function.
 
         **SQL name**: *split_part*
 
         Args:
-            delimiter (Self): `ANY` expression
-            position (Self): `ANY` expression
+            delimiter (IntoExpr): `ANY` expression
+            position (IntoExpr): `ANY` expression
 
         Returns:
             Self
@@ -3021,8 +3035,8 @@ class Fns(DuckHandler):
 
     def time_bucket(
         self,
-        timestamp: Self | date | datetime,
-        origin: Self | date | datetime | str | timedelta | None = None,
+        timestamp: IntoExprColumn | date | datetime,
+        origin: IntoExprColumn | date | datetime | str | timedelta | None = None,
     ) -> Self:
         """Truncate TIMESTAMPTZ by the specified interval bucket_width.
 
@@ -3033,8 +3047,8 @@ class Fns(DuckHandler):
         **SQL name**: *time_bucket*
 
         Args:
-            timestamp (Self | date | datetime): `DATE | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
-            origin (Self | date | datetime | str | timedelta | None): `DATE | INTERVAL | TIMESTAMP | TIMESTAMP WITH TIME ZONE | VARCHAR` expression
+            timestamp (IntoExprColumn | date | datetime): `DATE | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
+            origin (IntoExprColumn | date | datetime | str | timedelta | None): `DATE | INTERVAL | TIMESTAMP | TIMESTAMP WITH TIME ZONE | VARCHAR` expression
 
         Examples:
             time_bucket(INTERVAL '2 weeks', TIMESTAMP '1992-04-20 15:26:00-07', TIMESTAMP '1992-04-01 00:00:00-07')
@@ -3057,13 +3071,13 @@ class Fns(DuckHandler):
         """
         return self._new(func("timetz_byte_comparable", self.inner()))
 
-    def timezone(self, col1: Self | datetime | None = None) -> Self:
+    def timezone(self, col1: IntoExprColumn | datetime | None = None) -> Self:
         """Extract the timezone component from a date or timestamp.
 
         **SQL name**: *timezone*
 
         Args:
-            col1 (Self | datetime | None): `TIME WITH TIME ZONE | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
+            col1 (IntoExprColumn | datetime | None): `TIME WITH TIME ZONE | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
 
         Examples:
             timezone(timestamp '2021-08-03 11:59:44.123456')
@@ -3183,26 +3197,26 @@ class Fns(DuckHandler):
         """
         return self._new(func("to_hours", self.inner()))
 
-    def to_json(self, *args: Self) -> Self:
+    def to_json(self, *args: IntoExpr) -> Self:
         """SQL to_json function.
 
         **SQL name**: *to_json*
 
         Args:
-            *args (Self): `ANY` expression
+            *args (IntoExpr): `ANY` expression
 
         Returns:
             Self
         """
         return self._new(func("to_json", self.inner(), *args))
 
-    def to_map(self, values: Self) -> Self:
+    def to_map(self, values: IntoExprColumn) -> Self:
         """Creates a map from a set of keys and values.
 
         **SQL name**: *map*
 
         Args:
-            values (Self): `V[]` expression
+            values (IntoExprColumn): `V[]` expression
 
         Examples:
             map(['key1', 'key2'], ['val1', 'val2'])
@@ -3342,13 +3356,13 @@ class Fns(DuckHandler):
         """
         return self._new(func("to_years", self.inner()))
 
-    def trunc(self, col1: Self | int | None = None) -> Self:
+    def trunc(self, col1: IntoExprColumn | int | None = None) -> Self:
         """Truncates the number.
 
         **SQL name**: *trunc*
 
         Args:
-            col1 (Self | int | None): `INTEGER` expression
+            col1 (IntoExprColumn | int | None): `INTEGER` expression
 
         Examples:
             trunc(17.4)
@@ -3358,7 +3372,7 @@ class Fns(DuckHandler):
         """
         return self._new(func("trunc", self.inner(), col1))
 
-    def try_strptime(self, format_arg: Self | SeqLiteral[str] | str) -> Self:
+    def try_strptime(self, format_arg: IntoExprColumn | SeqLiteral[str] | str) -> Self:
         """Converts the `string` text to timestamp according to the format string.
 
         Returns `NULL` on failure.
@@ -3366,7 +3380,7 @@ class Fns(DuckHandler):
         **SQL name**: *try_strptime*
 
         Args:
-            format_arg (Self | SeqLiteral[str] | str): `VARCHAR | VARCHAR[]` expression
+            format_arg (IntoExprColumn | SeqLiteral[str] | str): `VARCHAR | VARCHAR[]` expression
 
         Examples:
             try_strptime('Wed, 1 January 1992 - 08:38:40 PM', '%a, %-d %B %Y - %I:%M:%S %p')
@@ -3389,7 +3403,7 @@ class Fns(DuckHandler):
         """
         return self._new(func("typeof", self.inner()))
 
-    def union_extract(self, tag: Self | str) -> Self:
+    def union_extract(self, tag: IntoExprColumn | str) -> Self:
         """Extract the value with the named tags from the union.
 
         NULL if the tag is not currently selected.
@@ -3397,7 +3411,7 @@ class Fns(DuckHandler):
         **SQL name**: *union_extract*
 
         Args:
-            tag (Self | str): `VARCHAR` expression
+            tag (IntoExprColumn | str): `VARCHAR` expression
 
         Examples:
             union_extract(s, 'k')
@@ -3420,7 +3434,7 @@ class Fns(DuckHandler):
         """
         return self._new(func("union_tag", self.inner()))
 
-    def union_value(self, *args: Self) -> Self:
+    def union_value(self, *args: IntoExpr) -> Self:
         """Create a single member UNION containing the argument value.
 
         The tag of the value will be the bound variable name.
@@ -3428,7 +3442,7 @@ class Fns(DuckHandler):
         **SQL name**: *union_value*
 
         Args:
-            *args (Self): `ANY` expression
+            *args (IntoExpr): `ANY` expression
 
         Examples:
             union_value(k := 'hello')
@@ -3506,13 +3520,13 @@ class Fns(DuckHandler):
         """
         return self._new(func("variance", self.inner()))
 
-    def variant_extract(self, col1: Self | int | str) -> Self:
+    def variant_extract(self, col1: IntoExprColumn | int | str) -> Self:
         """SQL variant_extract function.
 
         **SQL name**: *variant_extract*
 
         Args:
-            col1 (Self | int | str): `UINTEGER | VARCHAR` expression
+            col1 (IntoExprColumn | int | str): `UINTEGER | VARCHAR` expression
 
         Returns:
             Self
@@ -3545,13 +3559,13 @@ class Fns(DuckHandler):
         """
         return self._new(func("vector_type", self.inner()))
 
-    def wavg(self, weight: Self) -> Self:
+    def wavg(self, weight: IntoExpr) -> Self:
         """SQL wavg function.
 
         **SQL name**: *wavg*
 
         Args:
-            weight (Self): `ANY` expression
+            weight (IntoExpr): `ANY` expression
 
         Returns:
             Self
@@ -3597,26 +3611,26 @@ class Fns(DuckHandler):
         """
         return self._new(func("weekofyear", self.inner()))
 
-    def weighted_avg(self, weight: Self) -> Self:
+    def weighted_avg(self, weight: IntoExpr) -> Self:
         """SQL weighted_avg function.
 
         **SQL name**: *weighted_avg*
 
         Args:
-            weight (Self): `ANY` expression
+            weight (IntoExpr): `ANY` expression
 
         Returns:
             Self
         """
         return self._new(func("weighted_avg", self.inner(), weight))
 
-    def write_log(self, *args: Self) -> Self:
+    def write_log(self, *args: IntoExpr) -> Self:
         """Writes to the logger.
 
         **SQL name**: *write_log*
 
         Args:
-            *args (Self): `ANY` expression
+            *args (IntoExpr): `ANY` expression
 
         Examples:
             write_log('Hello')
@@ -3626,13 +3640,13 @@ class Fns(DuckHandler):
         """
         return self._new(func("write_log", self.inner(), *args))
 
-    def xor(self, right: Self | bytes | bytearray | memoryview | int) -> Self:
+    def xor(self, right: IntoExprColumn | bytes | bytearray | memoryview | int) -> Self:
         """Bitwise XOR.
 
         **SQL name**: *xor*
 
         Args:
-            right (Self | bytes | bytearray | memoryview | int): `BIGINT | BIT | HUGEINT | INTEGER | SMALLINT | TINYINT | UBIGINT | UHUGEINT | UINTEGER | USMALLINT | UTINYINT` expression
+            right (IntoExprColumn | bytes | bytearray | memoryview | int): `BIGINT | BIT | HUGEINT | INTEGER | SMALLINT | TINYINT | UBIGINT | UHUGEINT | UINTEGER | USMALLINT | UTINYINT` expression
 
         Examples:
             xor(17, 5)
@@ -3672,7 +3686,7 @@ class Fns(DuckHandler):
 class ListFns[T: Fns](NameSpaceHandler[T]):
     """Mixin providing auto-generated DuckDB list functions as methods."""
 
-    def aggr(self, function_name: T | str, *args: T) -> T:
+    def aggr(self, function_name: IntoExprColumn | str, *args: IntoExpr) -> T:
         """Executes the aggregate function `function_name` on the elements of `list`.
 
         **SQL name**: *list_aggr*
@@ -3681,8 +3695,8 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
             aggregate, array_aggr, array_aggregate, list_aggregate
 
         Args:
-            function_name (T | str): `VARCHAR` expression
-            *args (T): `ANY` expression
+            function_name (IntoExprColumn | str): `VARCHAR` expression
+            *args (IntoExpr): `ANY` expression
 
         Examples:
             list_aggregate([1, 2, NULL], 'min')
@@ -3692,7 +3706,7 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("list_aggr", self.inner(), function_name, *args))
 
-    def aggregate(self, function_name: T | str, *args: T) -> T:
+    def aggregate(self, function_name: IntoExprColumn | str, *args: IntoExpr) -> T:
         """Executes the aggregate function `function_name` on the elements of `list`.
 
         **SQL name**: *aggregate*
@@ -3701,8 +3715,8 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
             array_aggr, array_aggregate, list_aggr, list_aggregate
 
         Args:
-            function_name (T | str): `VARCHAR` expression
-            *args (T): `ANY` expression
+            function_name (IntoExprColumn | str): `VARCHAR` expression
+            *args (IntoExpr): `ANY` expression
 
         Examples:
             aggregate([1, 2, NULL], 'min')
@@ -3722,20 +3736,20 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("list_any_value", self.inner()))
 
-    def append(self, e: T) -> T:
+    def append(self, e: IntoExpr) -> T:
         """SQL list_append function.
 
         **SQL name**: *list_append*
 
         Args:
-            e (T): `ANY` expression
+            e (IntoExpr): `ANY` expression
 
         Returns:
             T
         """
         return self._new(func("list_append", self.inner(), e))
 
-    def apply(self, lambda_arg: T) -> T:
+    def apply(self, lambda_arg: IntoExprColumn) -> T:
         """Returns a list that is the result of applying the `lambda` function to each element of the input `list`.
 
         The return type is defined by the return type of the `lambda` function.
@@ -3746,7 +3760,7 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
             array_apply, array_transform, list_apply, list_transform
 
         Args:
-            lambda_arg (T): `LAMBDA` expression
+            lambda_arg (IntoExprColumn): `LAMBDA` expression
 
         Examples:
             apply([1, 2, 3], lambda x : x + 1)
@@ -3826,7 +3840,7 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("list_bool_or", self.inner()))
 
-    def cat(self, *args: T) -> T:
+    def cat(self, *args: IntoExpr) -> T:
         """Concatenates lists.
 
         `NULL` inputs are skipped.
@@ -3839,7 +3853,7 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
             array_cat, array_concat, list_concat
 
         Args:
-            *args (T): `ANY[]` expression
+            *args (IntoExpr): `ANY[]` expression
 
         Examples:
             list_cat([2, 3], [4, 5, 6], [7])
@@ -3881,7 +3895,7 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("character_length", self.inner()))
 
-    def concat(self, *args: T) -> T:
+    def concat(self, *args: IntoExpr) -> T:
         """Concatenates lists.
 
         `NULL` inputs are skipped.
@@ -3894,7 +3908,7 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
             array_cat, array_concat, list_cat
 
         Args:
-            *args (T): `ANY[]` expression
+            *args (IntoExpr): `ANY[]` expression
 
         Examples:
             list_concat([2, 3], [4, 5, 6], [7])
@@ -3904,7 +3918,7 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("list_concat", self.inner(), *args))
 
-    def contains(self, element: T) -> T:
+    def contains(self, element: IntoExprColumn) -> T:
         """Returns true if the list contains the element.
 
         **SQL name**: *list_contains*
@@ -3913,7 +3927,7 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
             array_contains, array_has, list_has
 
         Args:
-            element (T): `T` expression
+            element (IntoExprColumn): `T` expression
 
         Examples:
             list_contains([1, 2, NULL], 1)
@@ -3923,13 +3937,13 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("list_contains", self.inner(), element))
 
-    def cosine_distance(self, list2: T | SeqLiteral[float]) -> T:
+    def cosine_distance(self, list2: IntoExprColumn | SeqLiteral[float]) -> T:
         """Computes the cosine distance between two same-sized lists.
 
         **SQL name**: *list_cosine_distance*
 
         Args:
-            list2 (T | SeqLiteral[float]): `DOUBLE[] | FLOAT[]` expression
+            list2 (IntoExprColumn | SeqLiteral[float]): `DOUBLE[] | FLOAT[]` expression
 
         Examples:
             list_cosine_distance([1, 2, 3], [1, 2, 3])
@@ -3939,13 +3953,13 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("list_cosine_distance", self.inner(), list2))
 
-    def cosine_similarity(self, list2: T | SeqLiteral[float]) -> T:
+    def cosine_similarity(self, list2: IntoExprColumn | SeqLiteral[float]) -> T:
         """Computes the cosine similarity between two same-sized lists.
 
         **SQL name**: *list_cosine_similarity*
 
         Args:
-            list2 (T | SeqLiteral[float]): `DOUBLE[] | FLOAT[]` expression
+            list2 (IntoExprColumn | SeqLiteral[float]): `DOUBLE[] | FLOAT[]` expression
 
         Examples:
             list_cosine_similarity([1, 2, 3], [1, 2, 3])
@@ -3965,13 +3979,13 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("list_count", self.inner()))
 
-    def distance(self, list2: T | SeqLiteral[float]) -> T:
+    def distance(self, list2: IntoExprColumn | SeqLiteral[float]) -> T:
         """Calculates the Euclidean distance between two points with coordinates given in two inputs lists of equal length.
 
         **SQL name**: *list_distance*
 
         Args:
-            list2 (T | SeqLiteral[float]): `DOUBLE[] | FLOAT[]` expression
+            list2 (IntoExprColumn | SeqLiteral[float]): `DOUBLE[] | FLOAT[]` expression
 
         Examples:
             list_distance([1, 2, 3], [1, 2, 5])
@@ -3999,7 +4013,7 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("list_distinct", self.inner()))
 
-    def dot_product(self, list2: T | SeqLiteral[float]) -> T:
+    def dot_product(self, list2: IntoExprColumn | SeqLiteral[float]) -> T:
         """Computes the inner product between two same-sized lists.
 
         **SQL name**: *list_dot_product*
@@ -4008,7 +4022,7 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
             list_inner_product
 
         Args:
-            list2 (T | SeqLiteral[float]): `DOUBLE[] | FLOAT[]` expression
+            list2 (IntoExprColumn | SeqLiteral[float]): `DOUBLE[] | FLOAT[]` expression
 
         Examples:
             list_dot_product([1, 2, 3], [1, 2, 3])
@@ -4018,7 +4032,7 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("list_dot_product", self.inner(), list2))
 
-    def element(self, index: T | int) -> T:
+    def element(self, index: IntoExprColumn | int) -> T:
         """Extract the `index`th (1-based) value from the list.
 
         **SQL name**: *list_element*
@@ -4027,7 +4041,7 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
             list_extract
 
         Args:
-            index (T | int): `BIGINT` expression
+            index (IntoExprColumn | int): `BIGINT` expression
 
         Examples:
             list_element([4, 5, 6], 3)
@@ -4047,7 +4061,7 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("list_entropy", self.inner()))
 
-    def extract(self, index: T | int) -> T:
+    def extract(self, index: IntoExprColumn | int) -> T:
         """Extract the `index`th (1-based) value from the list.
 
         **SQL name**: *list_extract*
@@ -4056,7 +4070,7 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
             list_element
 
         Args:
-            index (T | int): `BIGINT` expression
+            index (IntoExprColumn | int): `BIGINT` expression
 
         Examples:
             list_extract([4, 5, 6], 3)
@@ -4066,7 +4080,7 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("list_extract", self.inner(), index))
 
-    def filter(self, lambda_arg: T) -> T:
+    def filter(self, lambda_arg: IntoExprColumn) -> T:
         """Constructs a list from those elements of the input `list` for which the `lambda` function returns `true`.
 
         DuckDB must be able to cast the `lambda` function's return type to `BOOL`.
@@ -4079,7 +4093,7 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
             array_filter, list_filter
 
         Args:
-            lambda_arg (T): `LAMBDA` expression
+            lambda_arg (IntoExprColumn): `LAMBDA` expression
 
         Examples:
             filter([3, 4, 5], lambda x : x > 4)
@@ -4114,16 +4128,16 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
 
     def generate_series(
         self,
-        stop: T | datetime | int | None = None,
-        step: T | int | timedelta | None = None,
+        stop: IntoExprColumn | datetime | int | None = None,
+        step: IntoExprColumn | int | timedelta | None = None,
     ) -> T:
         """Creates a list of values between `start` and `stop` - the stop parameter is inclusive.
 
         **SQL name**: *generate_series*
 
         Args:
-            stop (T | datetime | int | None): `BIGINT | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
-            step (T | int | timedelta | None): `BIGINT | INTERVAL` expression
+            stop (IntoExprColumn | datetime | int | None): `BIGINT | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
+            step (IntoExprColumn | int | timedelta | None): `BIGINT | INTERVAL` expression
 
         Examples:
             generate_series(2, 5, 3)
@@ -4133,7 +4147,11 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("generate_series", self.inner(), stop, step))
 
-    def grade_up(self, col1: T | str | None = None, col2: T | str | None = None) -> T:
+    def grade_up(
+        self,
+        col1: IntoExprColumn | str | None = None,
+        col2: IntoExprColumn | str | None = None,
+    ) -> T:
         """Works like list_sort, but the results are the indexes that correspond to the position in the original list instead of the actual values.
 
         **SQL name**: *grade_up*
@@ -4142,8 +4160,8 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
             array_grade_up, list_grade_up
 
         Args:
-            col1 (T | str | None): `VARCHAR` expression
-            col2 (T | str | None): `VARCHAR` expression
+            col1 (IntoExprColumn | str | None): `VARCHAR` expression
+            col2 (IntoExprColumn | str | None): `VARCHAR` expression
 
         Examples:
             grade_up([3, 6, 1, 2])
@@ -4153,7 +4171,7 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("grade_up", self.inner(), col1, col2))
 
-    def has(self, element: T) -> T:
+    def has(self, element: IntoExprColumn) -> T:
         """Returns true if the list contains the element.
 
         **SQL name**: *list_has*
@@ -4162,7 +4180,7 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
             array_contains, array_has, list_contains
 
         Args:
-            element (T): `T` expression
+            element (IntoExprColumn): `T` expression
 
         Examples:
             list_has([1, 2, NULL], 1)
@@ -4172,7 +4190,7 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("list_has", self.inner(), element))
 
-    def has_all(self, list2: T) -> T:
+    def has_all(self, list2: IntoExprColumn) -> T:
         """Returns true if all elements of list2 are in list1.
 
         NULLs are ignored.
@@ -4183,7 +4201,7 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
             array_has_all
 
         Args:
-            list2 (T): `T[]` expression
+            list2 (IntoExprColumn): `T[]` expression
 
         Examples:
             list_has_all([1, 2, 3], [2, 3])
@@ -4193,7 +4211,7 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("list_has_all", self.inner(), list2))
 
-    def has_any(self, list2: T) -> T:
+    def has_any(self, list2: IntoExprColumn) -> T:
         """Returns true if the lists have any element in common.
 
         NULLs are ignored.
@@ -4204,7 +4222,7 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
             array_has_any
 
         Args:
-            list2 (T): `T[]` expression
+            list2 (IntoExprColumn): `T[]` expression
 
         Examples:
             list_has_any([1, 2, 3], [2, 3, 4])
@@ -4224,7 +4242,7 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("list_histogram", self.inner()))
 
-    def indexof(self, element: T) -> T:
+    def indexof(self, element: IntoExprColumn) -> T:
         """Returns the index of the `element` if the `list` contains the `element`.
 
         If the `element` is not found, it returns `NULL`.
@@ -4235,7 +4253,7 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
             array_indexof, array_position, list_position
 
         Args:
-            element (T): `T` expression
+            element (IntoExprColumn): `T` expression
 
         Examples:
             list_indexof([1, 2, NULL], 2)
@@ -4245,7 +4263,7 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("list_indexof", self.inner(), element))
 
-    def inner_product(self, list2: T | SeqLiteral[float]) -> T:
+    def inner_product(self, list2: IntoExprColumn | SeqLiteral[float]) -> T:
         """Computes the inner product between two same-sized lists.
 
         **SQL name**: *list_inner_product*
@@ -4254,7 +4272,7 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
             list_dot_product
 
         Args:
-            list2 (T | SeqLiteral[float]): `DOUBLE[] | FLOAT[]` expression
+            list2 (IntoExprColumn | SeqLiteral[float]): `DOUBLE[] | FLOAT[]` expression
 
         Examples:
             list_inner_product([1, 2, 3], [1, 2, 3])
@@ -4264,13 +4282,13 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("list_inner_product", self.inner(), list2))
 
-    def intersect(self, l2: T) -> T:
+    def intersect(self, l2: IntoExpr) -> T:
         """SQL list_intersect function.
 
         **SQL name**: *list_intersect*
 
         Args:
-            l2 (T): `ANY` expression
+            l2 (IntoExpr): `ANY` expression
 
         Returns:
             T
@@ -4389,7 +4407,7 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("list_mode", self.inner()))
 
-    def negative_dot_product(self, list2: T | SeqLiteral[float]) -> T:
+    def negative_dot_product(self, list2: IntoExprColumn | SeqLiteral[float]) -> T:
         """Computes the negative inner product between two same-sized lists.
 
         **SQL name**: *list_negative_dot_product*
@@ -4398,7 +4416,7 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
             list_negative_inner_product
 
         Args:
-            list2 (T | SeqLiteral[float]): `DOUBLE[] | FLOAT[]` expression
+            list2 (IntoExprColumn | SeqLiteral[float]): `DOUBLE[] | FLOAT[]` expression
 
         Examples:
             list_negative_dot_product([1, 2, 3], [1, 2, 3])
@@ -4408,7 +4426,7 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("list_negative_dot_product", self.inner(), list2))
 
-    def negative_inner_product(self, list2: T | SeqLiteral[float]) -> T:
+    def negative_inner_product(self, list2: IntoExprColumn | SeqLiteral[float]) -> T:
         """Computes the negative inner product between two same-sized lists.
 
         **SQL name**: *list_negative_inner_product*
@@ -4417,7 +4435,7 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
             list_negative_dot_product
 
         Args:
-            list2 (T | SeqLiteral[float]): `DOUBLE[] | FLOAT[]` expression
+            list2 (IntoExprColumn | SeqLiteral[float]): `DOUBLE[] | FLOAT[]` expression
 
         Examples:
             list_negative_inner_product([1, 2, 3], [1, 2, 3])
@@ -4427,7 +4445,7 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("list_negative_inner_product", self.inner(), list2))
 
-    def pack(self, *args: T) -> T:
+    def pack(self, *args: IntoExprColumn) -> T:
         """Creates a LIST containing the argument values.
 
         **SQL name**: *list_pack*
@@ -4436,7 +4454,7 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
             list_value
 
         Args:
-            *args (T): `T` expression
+            *args (IntoExprColumn): `T` expression
 
         Examples:
             list_pack(4, 5, 6)
@@ -4446,7 +4464,7 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("list_pack", self.inner(), *args))
 
-    def position(self, element: T) -> T:
+    def position(self, element: IntoExprColumn) -> T:
         """Returns the index of the `element` if the `list` contains the `element`.
 
         If the `element` is not found, it returns `NULL`.
@@ -4457,7 +4475,7 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
             array_indexof, array_position, list_indexof
 
         Args:
-            element (T): `T` expression
+            element (IntoExprColumn): `T` expression
 
         Examples:
             list_position([1, 2, NULL], 2)
@@ -4467,13 +4485,13 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("list_position", self.inner(), element))
 
-    def prepend(self, l_arg: T) -> T:
+    def prepend(self, l_arg: IntoExpr) -> T:
         """SQL list_prepend function.
 
         **SQL name**: *list_prepend*
 
         Args:
-            l_arg (T): `ANY` expression
+            l_arg (IntoExpr): `ANY` expression
 
         Returns:
             T
@@ -4492,16 +4510,16 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
 
     def range(
         self,
-        stop: T | datetime | int | None = None,
-        step: T | int | timedelta | None = None,
+        stop: IntoExprColumn | datetime | int | None = None,
+        step: IntoExprColumn | int | timedelta | None = None,
     ) -> T:
         """Creates a list of values between `start` and `stop` - the stop parameter is exclusive.
 
         **SQL name**: *range*
 
         Args:
-            stop (T | datetime | int | None): `BIGINT | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
-            step (T | int | timedelta | None): `BIGINT | INTERVAL` expression
+            stop (IntoExprColumn | datetime | int | None): `BIGINT | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
+            step (IntoExprColumn | int | timedelta | None): `BIGINT | INTERVAL` expression
 
         Examples:
             range(2, 5, 3)
@@ -4511,7 +4529,9 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("range", self.inner(), stop, step))
 
-    def reduce(self, lambda_arg: T, initial_value: T | None = None) -> T:
+    def reduce(
+        self, lambda_arg: IntoExprColumn, initial_value: IntoExpr | None = None
+    ) -> T:
         """Reduces all elements of the input `list` into a single scalar value by executing the `lambda` function on a running result and the next list element.
 
         The `lambda` function has an optional `initial_value` argument.
@@ -4522,8 +4542,8 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
             array_reduce, reduce
 
         Args:
-            lambda_arg (T): `LAMBDA` expression
-            initial_value (T | None): `ANY` expression
+            lambda_arg (IntoExprColumn): `LAMBDA` expression
+            initial_value (IntoExpr | None): `ANY` expression
 
         Examples:
             list_reduce([1, 2, 3], lambda x, y : x + y)
@@ -4533,7 +4553,7 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("list_reduce", self.inner(), lambda_arg, initial_value))
 
-    def resize(self, size: T, value: T | None = None) -> T:
+    def resize(self, size: IntoExpr, value: IntoExpr | None = None) -> T:
         """Resizes the `list` to contain `size` elements.
 
         Initializes new elements with `value` or `NULL` if `value` is not set.
@@ -4544,8 +4564,8 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
             array_resize
 
         Args:
-            size (T): `ANY` expression
-            value (T | None): `ANY` expression
+            size (IntoExpr): `ANY` expression
+            value (IntoExpr | None): `ANY` expression
 
         Examples:
             list_resize([1, 2, 3], 5, 0)
@@ -4565,7 +4585,7 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("list_reverse", self.inner()))
 
-    def reverse_sort(self, col1: T | str | None = None) -> T:
+    def reverse_sort(self, col1: IntoExprColumn | str | None = None) -> T:
         """Sorts the elements of the list in reverse order.
 
         **SQL name**: *list_reverse_sort*
@@ -4574,7 +4594,7 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
             array_reverse_sort
 
         Args:
-            col1 (T | str | None): `VARCHAR` expression
+            col1 (IntoExprColumn | str | None): `VARCHAR` expression
 
         Examples:
             list_reverse_sort([3, 6, 1, 2])
@@ -4584,7 +4604,7 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("list_reverse_sort", self.inner(), col1))
 
-    def select(self, index_list: T | SeqLiteral[int]) -> T:
+    def select(self, index_list: IntoExprColumn | SeqLiteral[int]) -> T:
         """Returns a list based on the elements selected by the `index_list`.
 
         **SQL name**: *list_select*
@@ -4593,7 +4613,7 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
             array_select
 
         Args:
-            index_list (T | SeqLiteral[int]): `BIGINT[]` expression
+            index_list (IntoExprColumn | SeqLiteral[int]): `BIGINT[]` expression
 
         Examples:
             list_select([10, 20, 30, 40], [1, 4])
@@ -4623,7 +4643,9 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("list_skewness", self.inner()))
 
-    def slice(self, begin: T, end: T, step: T | int | None = None) -> T:
+    def slice(
+        self, begin: IntoExpr, end: IntoExpr, step: IntoExprColumn | int | None = None
+    ) -> T:
         """Extracts a sublist or substring using slice conventions.
 
         Negative values are accepted.
@@ -4634,9 +4656,9 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
             array_slice
 
         Args:
-            begin (T): `ANY` expression
-            end (T): `ANY` expression
-            step (T | int | None): `BIGINT` expression
+            begin (IntoExpr): `ANY` expression
+            end (IntoExpr): `ANY` expression
+            step (IntoExprColumn | int | None): `BIGINT` expression
 
         Examples:
             list_slice([4, 5, 6], 2, 3)
@@ -4646,7 +4668,11 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("list_slice", self.inner(), begin, end, step))
 
-    def sort(self, col1: T | str | None = None, col2: T | str | None = None) -> T:
+    def sort(
+        self,
+        col1: IntoExprColumn | str | None = None,
+        col2: IntoExprColumn | str | None = None,
+    ) -> T:
         """Sorts the elements of the list.
 
         **SQL name**: *list_sort*
@@ -4655,8 +4681,8 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
             array_sort
 
         Args:
-            col1 (T | str | None): `VARCHAR` expression
-            col2 (T | str | None): `VARCHAR` expression
+            col1 (IntoExprColumn | str | None): `VARCHAR` expression
+            col2 (IntoExprColumn | str | None): `VARCHAR` expression
 
         Examples:
             list_sort([3, 6, 1, 2])
@@ -4706,7 +4732,7 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("list_sum", self.inner()))
 
-    def transform(self, lambda_arg: T) -> T:
+    def transform(self, lambda_arg: IntoExprColumn) -> T:
         """Returns a list that is the result of applying the `lambda` function to each element of the input `list`.
 
         The return type is defined by the return type of the `lambda` function.
@@ -4717,7 +4743,7 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
             apply, array_apply, array_transform, list_apply
 
         Args:
-            lambda_arg (T): `LAMBDA` expression
+            lambda_arg (IntoExprColumn): `LAMBDA` expression
 
         Examples:
             list_transform([1, 2, 3], lambda x : x + 1)
@@ -4743,13 +4769,13 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("list_unique", self.inner()))
 
-    def unpivot_list(self, *args: T) -> T:
+    def unpivot_list(self, *args: IntoExpr) -> T:
         """Identical to list_value, but generated as part of unpivot for better error messages.
 
         **SQL name**: *unpivot_list*
 
         Args:
-            *args (T): `ANY` expression
+            *args (IntoExpr): `ANY` expression
 
         Examples:
             unpivot_list(4, 5, 6)
@@ -4759,7 +4785,7 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("unpivot_list", self.inner(), *args))
 
-    def value(self, *args: T) -> T:
+    def value(self, *args: IntoExprColumn) -> T:
         """Creates a LIST containing the argument values.
 
         **SQL name**: *list_value*
@@ -4768,7 +4794,7 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
             list_pack
 
         Args:
-            *args (T): `T` expression
+            *args (IntoExprColumn): `T` expression
 
         Examples:
             list_value(4, 5, 6)
@@ -4798,7 +4824,7 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("list_var_samp", self.inner()))
 
-    def where(self, mask_list: T | SeqLiteral[bool]) -> T:
+    def where(self, mask_list: IntoExprColumn | SeqLiteral[bool]) -> T:
         """Returns a list with the `BOOLEAN`s in `mask_list` applied as a mask to the `value_list`.
 
         **SQL name**: *list_where*
@@ -4807,7 +4833,7 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
             array_where
 
         Args:
-            mask_list (T | SeqLiteral[bool]): `BOOLEAN[]` expression
+            mask_list (IntoExprColumn | SeqLiteral[bool]): `BOOLEAN[]` expression
 
         Examples:
             list_where([10, 20, 30, 40], [true, false, false, true])
@@ -4817,7 +4843,7 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("list_where", self.inner(), mask_list))
 
-    def zip(self, *args: T) -> T:
+    def zip(self, *args: IntoExpr) -> T:
         """Zips n `LIST`s to a new `LIST` whose length will be that of the longest list.
 
         Its elements are structs of n elements from each list `list_1`, …, `list_n`, missing elements are replaced with `NULL`.
@@ -4830,7 +4856,7 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
             array_zip
 
         Args:
-            *args (T): `ANY` expression
+            *args (IntoExpr): `ANY` expression
 
         Examples:
             list_zip([1, 2], [3, 4], [5, 6])
@@ -4846,13 +4872,13 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
 class StructFns[T: Fns](NameSpaceHandler[T]):
     """Mixin providing auto-generated DuckDB struct functions as methods."""
 
-    def concat(self, *args: T) -> T:
+    def concat(self, *args: IntoExpr) -> T:
         """Merge the multiple STRUCTs into a single STRUCT.
 
         **SQL name**: *struct_concat*
 
         Args:
-            *args (T): `ANY` expression
+            *args (IntoExpr): `ANY` expression
 
         Examples:
             struct_concat(struct_pack(i := 4), struct_pack(s := 'string'))
@@ -4862,7 +4888,7 @@ class StructFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("struct_concat", self.inner(), *args))
 
-    def contains(self, entry: T) -> T:
+    def contains(self, entry: IntoExpr) -> T:
         """Check if an unnamed STRUCT contains the value.
 
         **SQL name**: *struct_contains*
@@ -4871,7 +4897,7 @@ class StructFns[T: Fns](NameSpaceHandler[T]):
             struct_has
 
         Args:
-            entry (T): `ANY` expression
+            entry (IntoExpr): `ANY` expression
 
         Examples:
             struct_contains(ROW(3, 3, 0), 3)
@@ -4881,13 +4907,13 @@ class StructFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("struct_contains", self.inner(), entry))
 
-    def extract(self, entry: T | int | str) -> T:
+    def extract(self, entry: IntoExprColumn | int | str) -> T:
         """Extract the named entry from the STRUCT.
 
         **SQL name**: *struct_extract*
 
         Args:
-            entry (T | int | str): `BIGINT | VARCHAR` expression
+            entry (IntoExprColumn | int | str): `BIGINT | VARCHAR` expression
 
         Examples:
             struct_extract({'i': 3, 'v2': 3, 'v3': 0}, 'i')
@@ -4897,13 +4923,13 @@ class StructFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("struct_extract", self.inner(), entry))
 
-    def extract_at(self, entry: T | int) -> T:
+    def extract_at(self, entry: IntoExprColumn | int) -> T:
         """Extract the entry from the STRUCT by position (starts at 1!).
 
         **SQL name**: *struct_extract_at*
 
         Args:
-            entry (T | int): `BIGINT` expression
+            entry (IntoExprColumn | int): `BIGINT` expression
 
         Examples:
             struct_extract_at({'i': 3, 'v2': 3, 'v3': 0}, 2)
@@ -4913,7 +4939,7 @@ class StructFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("struct_extract_at", self.inner(), entry))
 
-    def has(self, entry: T) -> T:
+    def has(self, entry: IntoExpr) -> T:
         """Check if an unnamed STRUCT contains the value.
 
         **SQL name**: *struct_has*
@@ -4922,7 +4948,7 @@ class StructFns[T: Fns](NameSpaceHandler[T]):
             struct_contains
 
         Args:
-            entry (T): `ANY` expression
+            entry (IntoExpr): `ANY` expression
 
         Examples:
             struct_has(ROW(3, 3, 0), 3)
@@ -4932,7 +4958,7 @@ class StructFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("struct_has", self.inner(), entry))
 
-    def indexof(self, entry: T) -> T:
+    def indexof(self, entry: IntoExpr) -> T:
         """Get the position of the entry in an unnamed STRUCT, starting at 1.
 
         **SQL name**: *struct_indexof*
@@ -4941,7 +4967,7 @@ class StructFns[T: Fns](NameSpaceHandler[T]):
             struct_position
 
         Args:
-            entry (T): `ANY` expression
+            entry (IntoExpr): `ANY` expression
 
         Examples:
             struct_indexof(ROW(3, 3, 0), 3)
@@ -4951,7 +4977,7 @@ class StructFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("struct_indexof", self.inner(), entry))
 
-    def insert(self, *args: T) -> T:
+    def insert(self, *args: IntoExpr) -> T:
         """Adds field(s)/value(s) to an existing STRUCT with the argument values.
 
         The entry name(s) will be the bound variable name(s).
@@ -4959,7 +4985,7 @@ class StructFns[T: Fns](NameSpaceHandler[T]):
         **SQL name**: *struct_insert*
 
         Args:
-            *args (T): `ANY` expression
+            *args (IntoExpr): `ANY` expression
 
         Examples:
             struct_insert({'a': 1}, b := 2)
@@ -4969,7 +4995,7 @@ class StructFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("struct_insert", self.inner(), *args))
 
-    def pack(self, *args: T) -> T:
+    def pack(self, *args: IntoExpr) -> T:
         """Create a STRUCT containing the argument values.
 
         The entry name will be the bound variable name.
@@ -4977,7 +5003,7 @@ class StructFns[T: Fns](NameSpaceHandler[T]):
         **SQL name**: *struct_pack*
 
         Args:
-            *args (T): `ANY` expression
+            *args (IntoExpr): `ANY` expression
 
         Examples:
             struct_pack(i := 4, s := 'string')
@@ -4987,7 +5013,7 @@ class StructFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("struct_pack", self.inner(), *args))
 
-    def position(self, entry: T) -> T:
+    def position(self, entry: IntoExpr) -> T:
         """Get the position of the entry in an unnamed STRUCT, starting at 1.
 
         **SQL name**: *struct_position*
@@ -4996,7 +5022,7 @@ class StructFns[T: Fns](NameSpaceHandler[T]):
             struct_indexof
 
         Args:
-            entry (T): `ANY` expression
+            entry (IntoExpr): `ANY` expression
 
         Examples:
             struct_position(ROW(3, 3, 0), 3)
@@ -5006,7 +5032,7 @@ class StructFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("struct_position", self.inner(), entry))
 
-    def update(self, *args: T) -> T:
+    def update(self, *args: IntoExpr) -> T:
         """Changes field(s)/value(s) to an existing STRUCT with the argument values.
 
         The entry name(s) will be the bound variable name(s).
@@ -5014,7 +5040,7 @@ class StructFns[T: Fns](NameSpaceHandler[T]):
         **SQL name**: *struct_update*
 
         Args:
-            *args (T): `ANY` expression
+            *args (IntoExpr): `ANY` expression
 
         Examples:
             struct_update({'a': 1}, a := 2)
@@ -5043,9 +5069,9 @@ class RegexFns[T: Fns](NameSpaceHandler[T]):
 
     def extract(
         self,
-        regex: T | str,
-        group: T | int | None = None,
-        options: T | str | None = None,
+        regex: IntoExprColumn | str,
+        group: IntoExprColumn | int | None = None,
+        options: IntoExprColumn | str | None = None,
     ) -> T:
         """If `string` contains the `regex` pattern, returns the capturing group specified by optional parameter `group`; otherwise, returns the empty string.
 
@@ -5058,9 +5084,9 @@ class RegexFns[T: Fns](NameSpaceHandler[T]):
         **SQL name**: *regexp_extract*
 
         Args:
-            regex (T | str): `VARCHAR` expression
-            group (T | int | None): `INTEGER` expression
-            options (T | str | None): `VARCHAR` expression
+            regex (IntoExprColumn | str): `VARCHAR` expression
+            group (IntoExprColumn | int | None): `INTEGER` expression
+            options (IntoExprColumn | str | None): `VARCHAR` expression
 
         Examples:
             regexp_extract('abcde', '[a-z]{3}')
@@ -5072,9 +5098,9 @@ class RegexFns[T: Fns](NameSpaceHandler[T]):
 
     def extract_all(
         self,
-        regex: T | str,
-        group: T | int | None = None,
-        options: T | str | None = None,
+        regex: IntoExprColumn | str,
+        group: IntoExprColumn | int | None = None,
+        options: IntoExprColumn | str | None = None,
     ) -> T:
         r"""Finds non-overlapping occurrences of the `regex` in the `string` and returns the corresponding values of the capturing `group`.
 
@@ -5083,9 +5109,9 @@ class RegexFns[T: Fns](NameSpaceHandler[T]):
         **SQL name**: *regexp_extract_all*
 
         Args:
-            regex (T | str): `VARCHAR` expression
-            group (T | int | None): `INTEGER` expression
-            options (T | str | None): `VARCHAR` expression
+            regex (IntoExprColumn | str): `VARCHAR` expression
+            group (IntoExprColumn | int | None): `INTEGER` expression
+            options (IntoExprColumn | str | None): `VARCHAR` expression
 
         Examples:
             regexp_extract_all('Peter: 33, Paul:14', '(\w+):\s*(\d+)', 2)
@@ -5099,9 +5125,9 @@ class RegexFns[T: Fns](NameSpaceHandler[T]):
 
     def extract_name_list(
         self,
-        regex: T | str,
-        name_list: T | SeqLiteral[str] | None = None,
-        options: T | str | None = None,
+        regex: IntoExprColumn | str,
+        name_list: IntoExprColumn | SeqLiteral[str] | None = None,
+        options: IntoExprColumn | str | None = None,
     ) -> T:
         r"""If `string` contains the `regex` pattern, returns the capturing groups as a struct with corresponding names from `name_list`; otherwise, returns a struct with the same keys and empty strings as values.
 
@@ -5110,9 +5136,9 @@ class RegexFns[T: Fns](NameSpaceHandler[T]):
         **SQL name**: *regexp_extract*
 
         Args:
-            regex (T | str): `VARCHAR` expression
-            name_list (T | SeqLiteral[str] | None): `VARCHAR[]` expression
-            options (T | str | None): `VARCHAR` expression
+            regex (IntoExprColumn | str): `VARCHAR` expression
+            name_list (IntoExprColumn | SeqLiteral[str] | None): `VARCHAR[]` expression
+            options (IntoExprColumn | str | None): `VARCHAR` expression
 
         Examples:
             regexp_extract('2023-04-15', '(\d+)-(\d+)-(\d+)', ['y', 'm', 'd'])
@@ -5124,7 +5150,9 @@ class RegexFns[T: Fns](NameSpaceHandler[T]):
             func("regexp_extract", self.inner(), regex, name_list, options)
         )
 
-    def full_match(self, regex: T | str, col2: T | str | None = None) -> T:
+    def full_match(
+        self, regex: IntoExprColumn | str, col2: IntoExprColumn | str | None = None
+    ) -> T:
         """Returns `true` if the entire `string` matches the `regex`.
 
         A set of optional regex `options` can be set.
@@ -5132,8 +5160,8 @@ class RegexFns[T: Fns](NameSpaceHandler[T]):
         **SQL name**: *regexp_full_match*
 
         Args:
-            regex (T | str): `VARCHAR` expression
-            col2 (T | str | None): `VARCHAR` expression
+            regex (IntoExprColumn | str): `VARCHAR` expression
+            col2 (IntoExprColumn | str | None): `VARCHAR` expression
 
         Examples:
             regexp_full_match('anabanana', '(an)*')
@@ -5143,7 +5171,9 @@ class RegexFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("regexp_full_match", self.inner(), regex, col2))
 
-    def matches(self, regex: T | str, options: T | str | None = None) -> T:
+    def matches(
+        self, regex: IntoExprColumn | str, options: IntoExprColumn | str | None = None
+    ) -> T:
         """Returns `true` if `string` contains the `regex`, `false` otherwise.
 
         A set of optional regex `options` can be set.
@@ -5151,8 +5181,8 @@ class RegexFns[T: Fns](NameSpaceHandler[T]):
         **SQL name**: *regexp_matches*
 
         Args:
-            regex (T | str): `VARCHAR` expression
-            options (T | str | None): `VARCHAR` expression
+            regex (IntoExprColumn | str): `VARCHAR` expression
+            options (IntoExprColumn | str | None): `VARCHAR` expression
 
         Examples:
             regexp_matches('anabanana', '(an)*')
@@ -5163,7 +5193,10 @@ class RegexFns[T: Fns](NameSpaceHandler[T]):
         return self._new(func("regexp_matches", self.inner(), regex, options))
 
     def replace(
-        self, regex: T | str, replacement: T | str, options: T | str | None = None
+        self,
+        regex: IntoExprColumn | str,
+        replacement: IntoExprColumn | str,
+        options: IntoExprColumn | str | None = None,
     ) -> T:
         """If `string` contains the `regex`, replaces the matching part with `replacement`.
 
@@ -5172,9 +5205,9 @@ class RegexFns[T: Fns](NameSpaceHandler[T]):
         **SQL name**: *regexp_replace*
 
         Args:
-            regex (T | str): `VARCHAR` expression
-            replacement (T | str): `VARCHAR` expression
-            options (T | str | None): `VARCHAR` expression
+            regex (IntoExprColumn | str): `VARCHAR` expression
+            replacement (IntoExprColumn | str): `VARCHAR` expression
+            options (IntoExprColumn | str | None): `VARCHAR` expression
 
         Examples:
             regexp_replace('hello', '[lo]', '-')
@@ -5186,7 +5219,9 @@ class RegexFns[T: Fns](NameSpaceHandler[T]):
             func("regexp_replace", self.inner(), regex, replacement, options)
         )
 
-    def split_to_array(self, regex: T | str, options: T | str | None = None) -> T:
+    def split_to_array(
+        self, regex: IntoExprColumn | str, options: IntoExprColumn | str | None = None
+    ) -> T:
         """Splits the `string` along the `regex`.
 
         A set of optional regex `options` can be set.
@@ -5197,8 +5232,8 @@ class RegexFns[T: Fns](NameSpaceHandler[T]):
             str_split_regex, string_split_regex
 
         Args:
-            regex (T | str): `VARCHAR` expression
-            options (T | str | None): `VARCHAR` expression
+            regex (IntoExprColumn | str): `VARCHAR` expression
+            options (IntoExprColumn | str | None): `VARCHAR` expression
 
         Examples:
             regexp_split_to_array('hello world; 42', ';? ')
@@ -5208,13 +5243,13 @@ class RegexFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("regexp_split_to_array", self.inner(), regex, options))
 
-    def split_to_table(self, pattern: T) -> T:
+    def split_to_table(self, pattern: IntoExpr) -> T:
         """SQL regexp_split_to_table function.
 
         **SQL name**: *regexp_split_to_table*
 
         Args:
-            pattern (T): `ANY` expression
+            pattern (IntoExpr): `ANY` expression
 
         Returns:
             T
@@ -5225,7 +5260,7 @@ class RegexFns[T: Fns](NameSpaceHandler[T]):
 class StringFns[T: Fns](NameSpaceHandler[T]):
     """Mixin providing auto-generated DuckDB string functions as methods."""
 
-    def agg(self, arg: T | str | None = None) -> T:
+    def agg(self, arg: IntoExprColumn | str | None = None) -> T:
         """Concatenates the column string values with an optional separator.
 
         **SQL name**: *string_agg*
@@ -5234,7 +5269,7 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
             group_concat, listagg
 
         Args:
-            arg (T | str | None): `VARCHAR` expression
+            arg (IntoExprColumn | str | None): `VARCHAR` expression
 
         Examples:
             string_agg(A, '-')
@@ -5258,7 +5293,10 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         return self._new(func("ascii", self.inner()))
 
     def bar(
-        self, min_arg: T | float, max_arg: T | float, width: T | float | None = None
+        self,
+        min_arg: IntoExprColumn | float,
+        max_arg: IntoExprColumn | float,
+        width: IntoExprColumn | float | None = None,
     ) -> T:
         """Draws a band whose width is proportional to (`x - min`) and equal to `width` characters when `x` = `max`.
 
@@ -5267,9 +5305,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         **SQL name**: *bar*
 
         Args:
-            min_arg (T | float): `DOUBLE` expression
-            max_arg (T | float): `DOUBLE` expression
-            width (T | float | None): `DOUBLE` expression
+            min_arg (IntoExprColumn | float): `DOUBLE` expression
+            max_arg (IntoExprColumn | float): `DOUBLE` expression
+            width (IntoExprColumn | float | None): `DOUBLE` expression
 
         Examples:
             bar(5, 0, 20, 10)
@@ -5369,7 +5407,7 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("chr", self.inner()))
 
-    def concat_ws(self, string: T, *args: T) -> T:
+    def concat_ws(self, string: IntoExpr, *args: IntoExpr) -> T:
         """Concatenates many strings, separated by `separator`.
 
         `NULL` inputs are skipped.
@@ -5377,8 +5415,8 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         **SQL name**: *concat_ws*
 
         Args:
-            string (T): `ANY` expression
-            *args (T): `ANY` expression
+            string (IntoExpr): `ANY` expression
+            *args (IntoExpr): `ANY` expression
 
         Examples:
             concat_ws(', ', 'Banana', 'Apple', 'Melon')
@@ -5388,13 +5426,13 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("concat_ws", self.inner(), string, *args))
 
-    def contains(self, search_string: T | str) -> T:
+    def contains(self, search_string: IntoExprColumn | str) -> T:
         """Returns `true` if `search_string` is found within `string`.
 
         **SQL name**: *contains*
 
         Args:
-            search_string (T | str): `VARCHAR` expression
+            search_string (IntoExprColumn | str): `VARCHAR` expression
 
         Examples:
             contains('abc', 'a')
@@ -5404,7 +5442,7 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("contains", self.inner(), search_string))
 
-    def damerau_levenshtein(self, s2: T | str) -> T:
+    def damerau_levenshtein(self, s2: IntoExprColumn | str) -> T:
         """Extension of Levenshtein distance to also include transposition of adjacent characters as an allowed edit operation.
 
         In other words, the minimum number of edit operations (insertions, deletions, substitutions or transpositions) required to change one string to another.
@@ -5414,7 +5452,7 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         **SQL name**: *damerau_levenshtein*
 
         Args:
-            s2 (T | str): `VARCHAR` expression
+            s2 (IntoExprColumn | str): `VARCHAR` expression
 
         Examples:
             damerau_levenshtein('duckdb', 'udckbd')
@@ -5424,7 +5462,7 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("damerau_levenshtein", self.inner(), s2))
 
-    def editdist3(self, s2: T | str) -> T:
+    def editdist3(self, s2: IntoExprColumn | str) -> T:
         """The minimum number of single-character edits (insertions, deletions or substitutions) required to change one string to the other.
 
         Characters of different cases (e.g., `a` and `A`) are considered different.
@@ -5435,7 +5473,7 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
             levenshtein
 
         Args:
-            s2 (T | str): `VARCHAR` expression
+            s2 (IntoExprColumn | str): `VARCHAR` expression
 
         Examples:
             editdist3('duck', 'db')
@@ -5445,7 +5483,7 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("editdist3", self.inner(), s2))
 
-    def ends_with(self, search_string: T | str) -> T:
+    def ends_with(self, search_string: IntoExprColumn | str) -> T:
         """Returns `true` if `string` ends with `search_string`.
 
         **SQL name**: *ends_with*
@@ -5454,7 +5492,7 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
             suffix
 
         Args:
-            search_string (T | str): `VARCHAR` expression
+            search_string (IntoExprColumn | str): `VARCHAR` expression
 
         Examples:
             ends_with('abc', 'bc')
@@ -5464,13 +5502,13 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("ends_with", self.inner(), search_string))
 
-    def format(self, *args: T) -> T:
+    def format(self, *args: IntoExpr) -> T:
         """Formats a string using the fmt syntax.
 
         **SQL name**: *format*
 
         Args:
-            *args (T): `ANY` expression
+            *args (IntoExpr): `ANY` expression
 
         Examples:
             format('Benchmark "{}" took {} seconds', 'CSV', 42)
@@ -5570,7 +5608,7 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("from_hex", self.inner()))
 
-    def hamming(self, s2: T | str) -> T:
+    def hamming(self, s2: IntoExprColumn | str) -> T:
         """The Hamming distance between to strings, i.e., the number of positions with different characters for two strings of equal length.
 
         Strings must be of equal length.
@@ -5583,7 +5621,7 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
             mismatches
 
         Args:
-            s2 (T | str): `VARCHAR` expression
+            s2 (IntoExprColumn | str): `VARCHAR` expression
 
         Examples:
             hamming('duck', 'luck')
@@ -5593,7 +5631,7 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("hamming", self.inner(), s2))
 
-    def hash(self, *args: T) -> T:
+    def hash(self, *args: IntoExpr) -> T:
         """Returns a `UBIGINT` with the hash of the `value`.
 
         Note that this is not a cryptographic hash.
@@ -5601,7 +5639,7 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         **SQL name**: *hash*
 
         Args:
-            *args (T): `ANY` expression
+            *args (IntoExpr): `ANY` expression
 
         Examples:
             hash('🦆')
@@ -5627,7 +5665,11 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("hex", self.inner()))
 
-    def ilike_escape(self, like_specifier: T | str, escape_character: T | str) -> T:
+    def ilike_escape(
+        self,
+        like_specifier: IntoExprColumn | str,
+        escape_character: IntoExprColumn | str,
+    ) -> T:
         """Returns `true` if the `string` matches the `like_specifier` (see Pattern Matching) using case-insensitive matching.
 
         `escape_character` is used to search for wildcard characters in the `string`.
@@ -5635,8 +5677,8 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         **SQL name**: *ilike_escape*
 
         Args:
-            like_specifier (T | str): `VARCHAR` expression
-            escape_character (T | str): `VARCHAR` expression
+            like_specifier (IntoExprColumn | str): `VARCHAR` expression
+            escape_character (IntoExprColumn | str): `VARCHAR` expression
 
         Examples:
             ilike_escape('A%c', 'a$%C', '$')
@@ -5648,7 +5690,7 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
             func("ilike_escape", self.inner(), like_specifier, escape_character)
         )
 
-    def instr(self, search_string: T | str) -> T:
+    def instr(self, search_string: IntoExprColumn | str) -> T:
         """Returns location of first occurrence of `search_string` in `string`, counting from 1.
 
         Returns 0 if no match found.
@@ -5659,7 +5701,7 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
             position, strpos
 
         Args:
-            search_string (T | str): `VARCHAR` expression
+            search_string (IntoExprColumn | str): `VARCHAR` expression
 
         Examples:
             instr('test test', 'es')
@@ -5669,7 +5711,7 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("instr", self.inner(), search_string))
 
-    def jaccard(self, s2: T | str) -> T:
+    def jaccard(self, s2: IntoExprColumn | str) -> T:
         """The Jaccard similarity between two strings.
 
         Characters of different cases (e.g., `a` and `A`) are considered different.
@@ -5679,7 +5721,7 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         **SQL name**: *jaccard*
 
         Args:
-            s2 (T | str): `VARCHAR` expression
+            s2 (IntoExprColumn | str): `VARCHAR` expression
 
         Examples:
             jaccard('duck', 'luck')
@@ -5689,7 +5731,11 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("jaccard", self.inner(), s2))
 
-    def jaro_similarity(self, s2: T | str, score_cutoff: T | float | None = None) -> T:
+    def jaro_similarity(
+        self,
+        s2: IntoExprColumn | str,
+        score_cutoff: IntoExprColumn | float | None = None,
+    ) -> T:
         """The Jaro similarity between two strings.
 
         Characters of different cases (e.g., `a` and `A`) are considered different.
@@ -5703,8 +5749,8 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         **SQL name**: *jaro_similarity*
 
         Args:
-            s2 (T | str): `VARCHAR` expression
-            score_cutoff (T | float | None): `DOUBLE` expression
+            s2 (IntoExprColumn | str): `VARCHAR` expression
+            score_cutoff (IntoExprColumn | float | None): `DOUBLE` expression
 
         Examples:
             jaro_similarity('duck', 'duckdb')
@@ -5715,7 +5761,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         return self._new(func("jaro_similarity", self.inner(), s2, score_cutoff))
 
     def jaro_winkler_similarity(
-        self, s2: T | str, score_cutoff: T | float | None = None
+        self,
+        s2: IntoExprColumn | str,
+        score_cutoff: IntoExprColumn | float | None = None,
     ) -> T:
         """The Jaro-Winkler similarity between two strings.
 
@@ -5730,8 +5778,8 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         **SQL name**: *jaro_winkler_similarity*
 
         Args:
-            s2 (T | str): `VARCHAR` expression
-            score_cutoff (T | float | None): `DOUBLE` expression
+            s2 (IntoExprColumn | str): `VARCHAR` expression
+            score_cutoff (IntoExprColumn | float | None): `DOUBLE` expression
 
         Examples:
             jaro_winkler_similarity('duck', 'duckdb')
@@ -5759,13 +5807,13 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("lcase", self.inner()))
 
-    def left(self, count: T | int) -> T:
+    def left(self, count: IntoExprColumn | int) -> T:
         """Extracts the left-most count characters.
 
         **SQL name**: *left*
 
         Args:
-            count (T | int): `BIGINT` expression
+            count (IntoExprColumn | int): `BIGINT` expression
 
         Examples:
             left('Hello🦆', 2)
@@ -5775,13 +5823,13 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("left", self.inner(), count))
 
-    def left_grapheme(self, count: T | int) -> T:
+    def left_grapheme(self, count: IntoExprColumn | int) -> T:
         """Extracts the left-most count grapheme clusters.
 
         **SQL name**: *left_grapheme*
 
         Args:
-            count (T | int): `BIGINT` expression
+            count (IntoExprColumn | int): `BIGINT` expression
 
         Examples:
             left_grapheme('🤦🏼‍♂️🤦🏽‍♀️', 1)
@@ -5836,7 +5884,7 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("length_grapheme", self.inner()))
 
-    def levenshtein(self, s2: T | str) -> T:
+    def levenshtein(self, s2: IntoExprColumn | str) -> T:
         """The minimum number of single-character edits (insertions, deletions or substitutions) required to change one string to the other.
 
         Characters of different cases (e.g., `a` and `A`) are considered different.
@@ -5847,7 +5895,7 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
             editdist3
 
         Args:
-            s2 (T | str): `VARCHAR` expression
+            s2 (IntoExprColumn | str): `VARCHAR` expression
 
         Examples:
             levenshtein('duck', 'db')
@@ -5857,7 +5905,11 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("levenshtein", self.inner(), s2))
 
-    def like_escape(self, like_specifier: T | str, escape_character: T | str) -> T:
+    def like_escape(
+        self,
+        like_specifier: IntoExprColumn | str,
+        escape_character: IntoExprColumn | str,
+    ) -> T:
         """Returns `true` if the `string` matches the `like_specifier` (see Pattern Matching) using case-sensitive matching.
 
         `escape_character` is used to search for wildcard characters in the `string`.
@@ -5865,8 +5917,8 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         **SQL name**: *like_escape*
 
         Args:
-            like_specifier (T | str): `VARCHAR` expression
-            escape_character (T | str): `VARCHAR` expression
+            like_specifier (IntoExprColumn | str): `VARCHAR` expression
+            escape_character (IntoExprColumn | str): `VARCHAR` expression
 
         Examples:
             like_escape('a%c', 'a$%c', '$')
@@ -5894,7 +5946,7 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("lower", self.inner()))
 
-    def lpad(self, count: T | int, character: T | str) -> T:
+    def lpad(self, count: IntoExprColumn | int, character: IntoExprColumn | str) -> T:
         """Pads the `string` with the `character` on the left until it has `count` characters.
 
         Truncates the `string` on the right if it has more than `count` characters.
@@ -5902,8 +5954,8 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         **SQL name**: *lpad*
 
         Args:
-            count (T | int): `INTEGER` expression
-            character (T | str): `VARCHAR` expression
+            count (IntoExprColumn | int): `INTEGER` expression
+            character (IntoExprColumn | str): `VARCHAR` expression
 
         Examples:
             lpad('hello', 8, '>')
@@ -5913,7 +5965,7 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("lpad", self.inner(), count, character))
 
-    def ltrim(self, characters: T | str | None = None) -> T:
+    def ltrim(self, characters: IntoExprColumn | str | None = None) -> T:
         """Removes any occurrences of any of the `characters` from the left side of the `string`.
 
         `characters` defaults to `space`.
@@ -5921,7 +5973,7 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         **SQL name**: *ltrim*
 
         Args:
-            characters (T | str | None): `VARCHAR` expression
+            characters (IntoExprColumn | str | None): `VARCHAR` expression
 
         Examples:
             ltrim('    test  ')
@@ -5958,7 +6010,7 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("md5_number", self.inner()))
 
-    def mismatches(self, s2: T | str) -> T:
+    def mismatches(self, s2: IntoExprColumn | str) -> T:
         """The Hamming distance between to strings, i.e., the number of positions with different characters for two strings of equal length.
 
         Strings must be of equal length.
@@ -5971,7 +6023,7 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
             hamming
 
         Args:
-            s2 (T | str): `VARCHAR` expression
+            s2 (IntoExprColumn | str): `VARCHAR` expression
 
         Examples:
             mismatches('duck', 'luck')
@@ -5996,7 +6048,11 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("nfc_normalize", self.inner()))
 
-    def not_ilike_escape(self, like_specifier: T | str, escape_character: T | str) -> T:
+    def not_ilike_escape(
+        self,
+        like_specifier: IntoExprColumn | str,
+        escape_character: IntoExprColumn | str,
+    ) -> T:
         """Returns `false` if the `string` matches the `like_specifier` (see Pattern Matching) using case-insensitive matching.
 
         `escape_character` is used to search for wildcard characters in the `string`.
@@ -6004,8 +6060,8 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         **SQL name**: *not_ilike_escape*
 
         Args:
-            like_specifier (T | str): `VARCHAR` expression
-            escape_character (T | str): `VARCHAR` expression
+            like_specifier (IntoExprColumn | str): `VARCHAR` expression
+            escape_character (IntoExprColumn | str): `VARCHAR` expression
 
         Examples:
             not_ilike_escape('A%c', 'a$%C', '$')
@@ -6017,7 +6073,11 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
             func("not_ilike_escape", self.inner(), like_specifier, escape_character)
         )
 
-    def not_like_escape(self, like_specifier: T | str, escape_character: T | str) -> T:
+    def not_like_escape(
+        self,
+        like_specifier: IntoExprColumn | str,
+        escape_character: IntoExprColumn | str,
+    ) -> T:
         """Returns `false` if the `string` matches the `like_specifier` (see Pattern Matching) using case-sensitive matching.
 
         `escape_character` is used to search for wildcard characters in the `string`.
@@ -6025,8 +6085,8 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         **SQL name**: *not_like_escape*
 
         Args:
-            like_specifier (T | str): `VARCHAR` expression
-            escape_character (T | str): `VARCHAR` expression
+            like_specifier (IntoExprColumn | str): `VARCHAR` expression
+            escape_character (IntoExprColumn | str): `VARCHAR` expression
 
         Examples:
             not_like_escape('a%c', 'a$%c', '$')
@@ -6054,7 +6114,7 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("ord", self.inner()))
 
-    def parse_dirname(self, separator: T | str | None = None) -> T:
+    def parse_dirname(self, separator: IntoExprColumn | str | None = None) -> T:
         """Returns the top-level directory name from the given `path`.
 
         `separator` options: `system`, `both_slash` (default), `forward_slash`, `backslash`.
@@ -6062,7 +6122,7 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         **SQL name**: *parse_dirname*
 
         Args:
-            separator (T | str | None): `VARCHAR` expression
+            separator (IntoExprColumn | str | None): `VARCHAR` expression
 
         Examples:
             parse_dirname('path/to/file.csv', 'system')
@@ -6072,7 +6132,7 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("parse_dirname", self.inner(), separator))
 
-    def parse_dirpath(self, separator: T | str | None = None) -> T:
+    def parse_dirpath(self, separator: IntoExprColumn | str | None = None) -> T:
         """Returns the head of the `path` (the pathname until the last slash) similarly to Python's `os.path.dirname`.
 
         `separator` options: `system`, `both_slash` (default), `forward_slash`, `backslash`.
@@ -6080,7 +6140,7 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         **SQL name**: *parse_dirpath*
 
         Args:
-            separator (T | str | None): `VARCHAR` expression
+            separator (IntoExprColumn | str | None): `VARCHAR` expression
 
         Examples:
             parse_dirpath('path/to/file.csv', 'forward_slash')
@@ -6092,8 +6152,8 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
 
     def parse_filename(
         self,
-        trim_extension: T | bool | str | None = None,
-        separator: T | str | None = None,
+        trim_extension: IntoExprColumn | bool | str | None = None,
+        separator: IntoExprColumn | str | None = None,
     ) -> T:
         """Returns the last component of the `path` similarly to Python's `os.path.basename` function.
 
@@ -6104,8 +6164,8 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         **SQL name**: *parse_filename*
 
         Args:
-            trim_extension (T | bool | str | None): `BOOLEAN | VARCHAR` expression
-            separator (T | str | None): `VARCHAR` expression
+            trim_extension (IntoExprColumn | bool | str | None): `BOOLEAN | VARCHAR` expression
+            separator (IntoExprColumn | str | None): `VARCHAR` expression
 
         Examples:
             parse_filename('path/to/file.csv', true, 'forward_slash')
@@ -6117,7 +6177,7 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
             func("parse_filename", self.inner(), trim_extension, separator)
         )
 
-    def parse_path(self, separator: T | str | None = None) -> T:
+    def parse_path(self, separator: IntoExprColumn | str | None = None) -> T:
         """Returns a list of the components (directories and filename) in the `path` similarly to Python's `pathlib.parts` function.
 
         `separator` options: `system`, `both_slash` (default), `forward_slash`, `backslash`.
@@ -6125,7 +6185,7 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         **SQL name**: *parse_path*
 
         Args:
-            separator (T | str | None): `VARCHAR` expression
+            separator (IntoExprColumn | str | None): `VARCHAR` expression
 
         Examples:
             parse_path('path/to/file.csv', 'system')
@@ -6135,7 +6195,7 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("parse_path", self.inner(), separator))
 
-    def position(self, search_string: T | str) -> T:
+    def position(self, search_string: IntoExprColumn | str) -> T:
         """Returns location of first occurrence of `search_string` in `string`, counting from 1.
 
         Returns 0 if no match found.
@@ -6146,7 +6206,7 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
             instr, strpos
 
         Args:
-            search_string (T | str): `VARCHAR` expression
+            search_string (IntoExprColumn | str): `VARCHAR` expression
 
         Examples:
             position('b' IN 'abc')
@@ -6156,13 +6216,13 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("position", self.inner(), search_string))
 
-    def prefix(self, search_string: T | str) -> T:
+    def prefix(self, search_string: IntoExprColumn | str) -> T:
         """Returns `true` if `string` starts with `search_string`.
 
         **SQL name**: *prefix*
 
         Args:
-            search_string (T | str): `VARCHAR` expression
+            search_string (IntoExprColumn | str): `VARCHAR` expression
 
         Examples:
             prefix('abc', 'ab')
@@ -6172,13 +6232,13 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("prefix", self.inner(), search_string))
 
-    def printf(self, *args: T) -> T:
+    def printf(self, *args: IntoExpr) -> T:
         """Formats a `string` using printf syntax.
 
         **SQL name**: *printf*
 
         Args:
-            *args (T): `ANY` expression
+            *args (IntoExpr): `ANY` expression
 
         Examples:
             printf('Benchmark "%s" took %d seconds', 'CSV', 42)
@@ -6188,13 +6248,13 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("printf", self.inner(), *args))
 
-    def repeat(self, count: T | int) -> T:
+    def repeat(self, count: IntoExprColumn | int) -> T:
         """Repeats the `string` `count` number of times.
 
         **SQL name**: *repeat*
 
         Args:
-            count (T | int): `BIGINT` expression
+            count (IntoExprColumn | int): `BIGINT` expression
 
         Examples:
             repeat('A', 5)
@@ -6204,14 +6264,14 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("repeat", self.inner(), count))
 
-    def replace(self, source: T | str, target: T | str) -> T:
+    def replace(self, source: IntoExprColumn | str, target: IntoExprColumn | str) -> T:
         """Replaces any occurrences of the `source` with `target` in `string`.
 
         **SQL name**: *replace*
 
         Args:
-            source (T | str): `VARCHAR` expression
-            target (T | str): `VARCHAR` expression
+            source (IntoExprColumn | str): `VARCHAR` expression
+            target (IntoExprColumn | str): `VARCHAR` expression
 
         Examples:
             replace('hello', 'l', '-')
@@ -6234,13 +6294,13 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("reverse", self.inner()))
 
-    def right(self, count: T | int) -> T:
+    def right(self, count: IntoExprColumn | int) -> T:
         """Extract the right-most `count` characters.
 
         **SQL name**: *right*
 
         Args:
-            count (T | int): `BIGINT` expression
+            count (IntoExprColumn | int): `BIGINT` expression
 
         Examples:
             right('Hello🦆', 3)
@@ -6250,13 +6310,13 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("right", self.inner(), count))
 
-    def right_grapheme(self, count: T | int) -> T:
+    def right_grapheme(self, count: IntoExprColumn | int) -> T:
         """Extracts the right-most `count` grapheme clusters.
 
         **SQL name**: *right_grapheme*
 
         Args:
-            count (T | int): `BIGINT` expression
+            count (IntoExprColumn | int): `BIGINT` expression
 
         Examples:
             right_grapheme('🤦🏼‍♂️🤦🏽‍♀️', 1)
@@ -6266,7 +6326,7 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("right_grapheme", self.inner(), count))
 
-    def rpad(self, count: T | int, character: T | str) -> T:
+    def rpad(self, count: IntoExprColumn | int, character: IntoExprColumn | str) -> T:
         """Pads the `string` with the `character` on the right until it has `count` characters.
 
         Truncates the `string` on the right if it has more than `count` characters.
@@ -6274,8 +6334,8 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         **SQL name**: *rpad*
 
         Args:
-            count (T | int): `INTEGER` expression
-            character (T | str): `VARCHAR` expression
+            count (IntoExprColumn | int): `INTEGER` expression
+            character (IntoExprColumn | str): `VARCHAR` expression
 
         Examples:
             rpad('hello', 10, '<')
@@ -6285,7 +6345,7 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("rpad", self.inner(), count, character))
 
-    def rtrim(self, characters: T | str | None = None) -> T:
+    def rtrim(self, characters: IntoExprColumn | str | None = None) -> T:
         """Removes any occurrences of any of the `characters` from the right side of the `string`.
 
         `characters` defaults to `space`.
@@ -6293,7 +6353,7 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         **SQL name**: *rtrim*
 
         Args:
-            characters (T | str | None): `VARCHAR` expression
+            characters (IntoExprColumn | str | None): `VARCHAR` expression
 
         Examples:
             rtrim('    test  ')
@@ -6330,7 +6390,7 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("sha256", self.inner()))
 
-    def split(self, separator: T | str) -> T:
+    def split(self, separator: IntoExprColumn | str) -> T:
         """Splits the `string` along the `separator`.
 
         **SQL name**: *split*
@@ -6339,7 +6399,7 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
             str_split, string_split, string_to_array
 
         Args:
-            separator (T | str): `VARCHAR` expression
+            separator (IntoExprColumn | str): `VARCHAR` expression
 
         Examples:
             split('hello-world', '-')
@@ -6349,7 +6409,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("split", self.inner(), separator))
 
-    def split_regex(self, regex: T | str, options: T | str | None = None) -> T:
+    def split_regex(
+        self, regex: IntoExprColumn | str, options: IntoExprColumn | str | None = None
+    ) -> T:
         """Splits the `string` along the `regex`.
 
         A set of optional regex `options` can be set.
@@ -6360,8 +6422,8 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
             regexp_split_to_array, str_split_regex
 
         Args:
-            regex (T | str): `VARCHAR` expression
-            options (T | str | None): `VARCHAR` expression
+            regex (IntoExprColumn | str): `VARCHAR` expression
+            options (IntoExprColumn | str | None): `VARCHAR` expression
 
         Examples:
             string_split_regex('hello world; 42', ';? ')
@@ -6371,13 +6433,13 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("string_split_regex", self.inner(), regex, options))
 
-    def starts_with(self, search_string: T | str) -> T:
+    def starts_with(self, search_string: IntoExprColumn | str) -> T:
         """Returns `true` if `string` begins with `search_string`.
 
         **SQL name**: *starts_with*
 
         Args:
-            search_string (T | str): `VARCHAR` expression
+            search_string (IntoExprColumn | str): `VARCHAR` expression
 
         Examples:
             starts_with('abc', 'a')
@@ -6413,7 +6475,7 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("strlen", self.inner()))
 
-    def strpos(self, search_string: T | str) -> T:
+    def strpos(self, search_string: IntoExprColumn | str) -> T:
         """Returns location of first occurrence of `search_string` in `string`, counting from 1.
 
         Returns 0 if no match found.
@@ -6424,7 +6486,7 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
             instr, position
 
         Args:
-            search_string (T | str): `VARCHAR` expression
+            search_string (IntoExprColumn | str): `VARCHAR` expression
 
         Examples:
             strpos('test test', 'es')
@@ -6434,7 +6496,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("strpos", self.inner(), search_string))
 
-    def substr(self, start: T | int, length: T | int | None = None) -> T:
+    def substr(
+        self, start: IntoExprColumn | int, length: IntoExprColumn | int | None = None
+    ) -> T:
         """Extracts substring starting from character `start` up to the end of the string.
 
         If optional argument `length` is set, extracts a substring of `length` characters instead.
@@ -6447,8 +6511,8 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
             substring
 
         Args:
-            start (T | int): `BIGINT` expression
-            length (T | int | None): `BIGINT` expression
+            start (IntoExprColumn | int): `BIGINT` expression
+            length (IntoExprColumn | int | None): `BIGINT` expression
 
         Examples:
             substring('Hello', 2)
@@ -6459,7 +6523,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("substr", self.inner(), start, length))
 
-    def substring(self, start: T | int, length: T | int | None = None) -> T:
+    def substring(
+        self, start: IntoExprColumn | int, length: IntoExprColumn | int | None = None
+    ) -> T:
         """Extracts substring starting from character `start` up to the end of the string.
 
         If optional argument `length` is set, extracts a substring of `length` characters instead.
@@ -6472,8 +6538,8 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
             substr
 
         Args:
-            start (T | int): `BIGINT` expression
-            length (T | int | None): `BIGINT` expression
+            start (IntoExprColumn | int): `BIGINT` expression
+            length (IntoExprColumn | int | None): `BIGINT` expression
 
         Examples:
             substring('Hello', 2)
@@ -6484,7 +6550,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("substring", self.inner(), start, length))
 
-    def substring_grapheme(self, start: T | int, length: T | int | None = None) -> T:
+    def substring_grapheme(
+        self, start: IntoExprColumn | int, length: IntoExprColumn | int | None = None
+    ) -> T:
         """Extracts substring starting from grapheme clusters `start` up to the end of the string.
 
         If optional argument `length` is set, extracts a substring of `length` grapheme clusters instead.
@@ -6494,8 +6562,8 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         **SQL name**: *substring_grapheme*
 
         Args:
-            start (T | int): `BIGINT` expression
-            length (T | int | None): `BIGINT` expression
+            start (IntoExprColumn | int): `BIGINT` expression
+            length (IntoExprColumn | int | None): `BIGINT` expression
 
         Examples:
             substring_grapheme('🦆🤦🏼‍♂️🤦🏽‍♀️🦆', 3)
@@ -6506,7 +6574,7 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("substring_grapheme", self.inner(), start, length))
 
-    def suffix(self, search_string: T | str) -> T:
+    def suffix(self, search_string: IntoExprColumn | str) -> T:
         """Returns `true` if `string` ends with `search_string`.
 
         **SQL name**: *suffix*
@@ -6515,7 +6583,7 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
             ends_with
 
         Args:
-            search_string (T | str): `VARCHAR` expression
+            search_string (IntoExprColumn | str): `VARCHAR` expression
 
         Examples:
             suffix('abc', 'bc')
@@ -6525,7 +6593,7 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("suffix", self.inner(), search_string))
 
-    def to_array(self, separator: T | str) -> T:
+    def to_array(self, separator: IntoExprColumn | str) -> T:
         """Splits the `string` along the `separator`.
 
         **SQL name**: *string_to_array*
@@ -6534,7 +6602,7 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
             split, str_split, string_split
 
         Args:
-            separator (T | str): `VARCHAR` expression
+            separator (IntoExprColumn | str): `VARCHAR` expression
 
         Examples:
             string_to_array('hello-world', '-')
@@ -6544,14 +6612,18 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("string_to_array", self.inner(), separator))
 
-    def to_base(self, radix: T | int, min_length: T | int | None = None) -> T:
+    def to_base(
+        self,
+        radix: IntoExprColumn | int,
+        min_length: IntoExprColumn | int | None = None,
+    ) -> T:
         """Converts `number` to a string in the given base `radix`, optionally padding with leading zeros to `min_length`.
 
         **SQL name**: *to_base*
 
         Args:
-            radix (T | int): `INTEGER` expression
-            min_length (T | int | None): `INTEGER` expression
+            radix (IntoExprColumn | int): `INTEGER` expression
+            min_length (IntoExprColumn | int | None): `INTEGER` expression
 
         Examples:
             to_base(42, 16, 5)
@@ -6609,7 +6681,7 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("to_hex", self.inner()))
 
-    def translate(self, from_arg: T | str, to: T | str) -> T:
+    def translate(self, from_arg: IntoExprColumn | str, to: IntoExprColumn | str) -> T:
         """Replaces each character in `string` that matches a character in the `from` set with the corresponding character in the `to` set.
 
         If `from` is longer than `to`, occurrences of the extra characters in `from` are deleted.
@@ -6617,8 +6689,8 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         **SQL name**: *translate*
 
         Args:
-            from_arg (T | str): `VARCHAR` expression
-            to (T | str): `VARCHAR` expression
+            from_arg (IntoExprColumn | str): `VARCHAR` expression
+            to (IntoExprColumn | str): `VARCHAR` expression
 
         Examples:
             translate('12345', '143', 'ax')
@@ -6628,7 +6700,7 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("translate", self.inner(), from_arg, to))
 
-    def trim(self, characters: T | str | None = None) -> T:
+    def trim(self, characters: IntoExprColumn | str | None = None) -> T:
         """Removes any occurrences of any of the `characters` from either side of the `string`.
 
         `characters` defaults to `space`.
@@ -6636,7 +6708,7 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         **SQL name**: *trim*
 
         Args:
-            characters (T | str | None): `VARCHAR` expression
+            characters (IntoExprColumn | str | None): `VARCHAR` expression
 
         Examples:
             trim('    test  ')
@@ -6757,13 +6829,13 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
 class DateTimeFns[T: Fns](NameSpaceHandler[T]):
     """Mixin providing auto-generated DuckDB datetime functions as methods."""
 
-    def add(self, interval: T) -> T:
+    def add(self, interval: IntoExpr) -> T:
         """SQL date_add function.
 
         **SQL name**: *date_add*
 
         Args:
-            interval (T): `ANY` expression
+            interval (IntoExpr): `ANY` expression
 
         Returns:
             T
@@ -6771,15 +6843,17 @@ class DateTimeFns[T: Fns](NameSpaceHandler[T]):
         return self._new(func("date_add", self.inner(), interval))
 
     def datediff(
-        self, startdate: T | date | datetime | time, enddate: T | date | datetime | time
+        self,
+        startdate: IntoExprColumn | date | datetime | time,
+        enddate: IntoExprColumn | date | datetime | time,
     ) -> T:
         """The number of partition boundaries between the timestamps.
 
         **SQL name**: *datediff*
 
         Args:
-            startdate (T | date | datetime | time): `DATE | TIME | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
-            enddate (T | date | datetime | time): `DATE | TIME | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
+            startdate (IntoExprColumn | date | datetime | time): `DATE | TIME | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
+            enddate (IntoExprColumn | date | datetime | time): `DATE | TIME | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
 
         Examples:
             datediff('hour', TIMESTAMPTZ '1992-09-30 23:59:59', TIMESTAMPTZ '1992-10-01 01:58:00')
@@ -6789,13 +6863,13 @@ class DateTimeFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("datediff", self.inner(), startdate, enddate))
 
-    def datepart(self, col1: T | date | datetime | time | timedelta) -> T:
+    def datepart(self, col1: IntoExprColumn | date | datetime | time | timedelta) -> T:
         """Get subfield (equivalent to extract).
 
         **SQL name**: *datepart*
 
         Args:
-            col1 (T | date | datetime | time | timedelta): `DATE | INTERVAL | TIME | TIME_NS | TIME WITH TIME ZONE | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
+            col1 (IntoExprColumn | date | datetime | time | timedelta): `DATE | INTERVAL | TIME | TIME_NS | TIME WITH TIME ZONE | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
 
         Examples:
             datepart('minute', TIMESTAMP '1992-09-20 20:38:40')
@@ -6806,15 +6880,17 @@ class DateTimeFns[T: Fns](NameSpaceHandler[T]):
         return self._new(func("datepart", self.inner(), col1))
 
     def datesub(
-        self, startdate: T | date | datetime | time, enddate: T | date | datetime | time
+        self,
+        startdate: IntoExprColumn | date | datetime | time,
+        enddate: IntoExprColumn | date | datetime | time,
     ) -> T:
         """The number of complete partitions between the timestamps.
 
         **SQL name**: *datesub*
 
         Args:
-            startdate (T | date | datetime | time): `DATE | TIME | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
-            enddate (T | date | datetime | time): `DATE | TIME | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
+            startdate (IntoExprColumn | date | datetime | time): `DATE | TIME | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
+            enddate (IntoExprColumn | date | datetime | time): `DATE | TIME | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
 
         Examples:
             datesub('hour', TIMESTAMPTZ '1992-09-30 23:59:59', TIMESTAMPTZ '1992-10-01 01:58:00')
@@ -6824,13 +6900,13 @@ class DateTimeFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("datesub", self.inner(), startdate, enddate))
 
-    def datetrunc(self, timestamp: T | date | datetime | timedelta) -> T:
+    def datetrunc(self, timestamp: IntoExprColumn | date | datetime | timedelta) -> T:
         """Truncate to specified precision.
 
         **SQL name**: *datetrunc*
 
         Args:
-            timestamp (T | date | datetime | timedelta): `DATE | INTERVAL | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
+            timestamp (IntoExprColumn | date | datetime | timedelta): `DATE | INTERVAL | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
 
         Examples:
             datetrunc('hour', TIMESTAMPTZ '1992-09-20 20:38:40')
@@ -6906,15 +6982,17 @@ class DateTimeFns[T: Fns](NameSpaceHandler[T]):
         return self._new(func("dayofyear", self.inner()))
 
     def diff(
-        self, startdate: T | date | datetime | time, enddate: T | date | datetime | time
+        self,
+        startdate: IntoExprColumn | date | datetime | time,
+        enddate: IntoExprColumn | date | datetime | time,
     ) -> T:
         """The number of partition boundaries between the timestamps.
 
         **SQL name**: *date_diff*
 
         Args:
-            startdate (T | date | datetime | time): `DATE | TIME | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
-            enddate (T | date | datetime | time): `DATE | TIME | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
+            startdate (IntoExprColumn | date | datetime | time): `DATE | TIME | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
+            enddate (IntoExprColumn | date | datetime | time): `DATE | TIME | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
 
         Examples:
             date_diff('hour', TIMESTAMPTZ '1992-09-30 23:59:59', TIMESTAMPTZ '1992-10-01 01:58:00')
@@ -6924,13 +7002,13 @@ class DateTimeFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("date_diff", self.inner(), startdate, enddate))
 
-    def part(self, col1: T | date | datetime | time | timedelta) -> T:
+    def part(self, col1: IntoExprColumn | date | datetime | time | timedelta) -> T:
         """Get subfield (equivalent to extract).
 
         **SQL name**: *date_part*
 
         Args:
-            col1 (T | date | datetime | time | timedelta): `DATE | INTERVAL | TIME | TIME_NS | TIME WITH TIME ZONE | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
+            col1 (IntoExprColumn | date | datetime | time | timedelta): `DATE | INTERVAL | TIME | TIME_NS | TIME WITH TIME ZONE | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
 
         Examples:
             date_part('minute', TIMESTAMP '1992-09-20 20:38:40')
@@ -6941,15 +7019,17 @@ class DateTimeFns[T: Fns](NameSpaceHandler[T]):
         return self._new(func("date_part", self.inner(), col1))
 
     def sub(
-        self, startdate: T | date | datetime | time, enddate: T | date | datetime | time
+        self,
+        startdate: IntoExprColumn | date | datetime | time,
+        enddate: IntoExprColumn | date | datetime | time,
     ) -> T:
         """The number of complete partitions between the timestamps.
 
         **SQL name**: *date_sub*
 
         Args:
-            startdate (T | date | datetime | time): `DATE | TIME | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
-            enddate (T | date | datetime | time): `DATE | TIME | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
+            startdate (IntoExprColumn | date | datetime | time): `DATE | TIME | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
+            enddate (IntoExprColumn | date | datetime | time): `DATE | TIME | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
 
         Examples:
             date_sub('hour', TIMESTAMPTZ '1992-09-30 23:59:59', TIMESTAMPTZ '1992-10-01 01:58:00')
@@ -6959,13 +7039,13 @@ class DateTimeFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("date_sub", self.inner(), startdate, enddate))
 
-    def trunc(self, timestamp: T | date | datetime | timedelta) -> T:
+    def trunc(self, timestamp: IntoExprColumn | date | datetime | timedelta) -> T:
         """Truncate to specified precision.
 
         **SQL name**: *date_trunc*
 
         Args:
-            timestamp (T | date | datetime | timedelta): `DATE | INTERVAL | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
+            timestamp (IntoExprColumn | date | datetime | timedelta): `DATE | INTERVAL | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
 
         Examples:
             date_trunc('hour', TIMESTAMPTZ '1992-09-20 20:38:40')
@@ -6995,7 +7075,7 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("array_agg", self.inner()))
 
-    def aggr(self, function_name: T | str, *args: T) -> T:
+    def aggr(self, function_name: IntoExprColumn | str, *args: IntoExpr) -> T:
         """Executes the aggregate function `function_name` on the elements of `list`.
 
         **SQL name**: *array_aggr*
@@ -7004,8 +7084,8 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
             aggregate, array_aggregate, list_aggr, list_aggregate
 
         Args:
-            function_name (T | str): `VARCHAR` expression
-            *args (T): `ANY` expression
+            function_name (IntoExprColumn | str): `VARCHAR` expression
+            *args (IntoExpr): `ANY` expression
 
         Examples:
             array_aggr([1, 2, NULL], 'min')
@@ -7015,7 +7095,7 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("array_aggr", self.inner(), function_name, *args))
 
-    def aggregate(self, function_name: T | str, *args: T) -> T:
+    def aggregate(self, function_name: IntoExprColumn | str, *args: IntoExpr) -> T:
         """Executes the aggregate function `function_name` on the elements of `list`.
 
         **SQL name**: *array_aggregate*
@@ -7024,8 +7104,8 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
             aggregate, array_aggr, list_aggr, list_aggregate
 
         Args:
-            function_name (T | str): `VARCHAR` expression
-            *args (T): `ANY` expression
+            function_name (IntoExprColumn | str): `VARCHAR` expression
+            *args (IntoExpr): `ANY` expression
 
         Examples:
             array_aggregate([1, 2, NULL], 'min')
@@ -7035,20 +7115,20 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("array_aggregate", self.inner(), function_name, *args))
 
-    def append(self, el: T) -> T:
+    def append(self, el: IntoExpr) -> T:
         """SQL array_append function.
 
         **SQL name**: *array_append*
 
         Args:
-            el (T): `ANY` expression
+            el (IntoExpr): `ANY` expression
 
         Returns:
             T
         """
         return self._new(func("array_append", self.inner(), el))
 
-    def apply(self, lambda_arg: T) -> T:
+    def apply(self, lambda_arg: IntoExprColumn) -> T:
         """Returns a list that is the result of applying the `lambda` function to each element of the input `list`.
 
         The return type is defined by the return type of the `lambda` function.
@@ -7059,7 +7139,7 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
             apply, array_transform, list_apply, list_transform
 
         Args:
-            lambda_arg (T): `LAMBDA` expression
+            lambda_arg (IntoExprColumn): `LAMBDA` expression
 
         Examples:
             array_apply([1, 2, 3], lambda x : x + 1)
@@ -7069,7 +7149,7 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("array_apply", self.inner(), lambda_arg))
 
-    def cat(self, *args: T) -> T:
+    def cat(self, *args: IntoExpr) -> T:
         """Concatenates lists.
 
         `NULL` inputs are skipped.
@@ -7082,7 +7162,7 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
             array_concat, list_cat, list_concat
 
         Args:
-            *args (T): `ANY[]` expression
+            *args (IntoExpr): `ANY[]` expression
 
         Examples:
             array_cat([2, 3], [4, 5, 6], [7])
@@ -7092,7 +7172,7 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("array_cat", self.inner(), *args))
 
-    def concat(self, *args: T) -> T:
+    def concat(self, *args: IntoExpr) -> T:
         """Concatenates lists.
 
         `NULL` inputs are skipped.
@@ -7105,7 +7185,7 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
             array_cat, list_cat, list_concat
 
         Args:
-            *args (T): `ANY[]` expression
+            *args (IntoExpr): `ANY[]` expression
 
         Examples:
             array_concat([2, 3], [4, 5, 6], [7])
@@ -7115,7 +7195,7 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("array_concat", self.inner(), *args))
 
-    def contains(self, element: T) -> T:
+    def contains(self, element: IntoExprColumn) -> T:
         """Returns true if the list contains the element.
 
         **SQL name**: *array_contains*
@@ -7124,7 +7204,7 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
             array_has, list_contains, list_has
 
         Args:
-            element (T): `T` expression
+            element (IntoExprColumn): `T` expression
 
         Examples:
             array_contains([1, 2, NULL], 1)
@@ -7134,7 +7214,7 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("array_contains", self.inner(), element))
 
-    def cosine_distance(self, array2: T | float) -> T:
+    def cosine_distance(self, array2: IntoExprColumn | float) -> T:
         """Computes the cosine distance between two arrays of the same size.
 
         The array elements can not be `NULL`.
@@ -7144,7 +7224,7 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
         **SQL name**: *array_cosine_distance*
 
         Args:
-            array2 (T | float): `DOUBLE[ANY] | FLOAT[ANY]` expression
+            array2 (IntoExprColumn | float): `DOUBLE[ANY] | FLOAT[ANY]` expression
 
         Examples:
             array_cosine_distance(array_value(1.0::FLOAT, 2.0::FLOAT, 3.0::FLOAT), array_value(2.0::FLOAT, 3.0::FLOAT, 4.0::FLOAT))
@@ -7154,7 +7234,7 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("array_cosine_distance", self.inner(), array2))
 
-    def cosine_similarity(self, array2: T | float) -> T:
+    def cosine_similarity(self, array2: IntoExprColumn | float) -> T:
         """Computes the cosine similarity between two arrays of the same size.
 
         The array elements can not be `NULL`.
@@ -7164,7 +7244,7 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
         **SQL name**: *array_cosine_similarity*
 
         Args:
-            array2 (T | float): `DOUBLE[ANY] | FLOAT[ANY]` expression
+            array2 (IntoExprColumn | float): `DOUBLE[ANY] | FLOAT[ANY]` expression
 
         Examples:
             array_cosine_similarity(array_value(1.0::FLOAT, 2.0::FLOAT, 3.0::FLOAT), array_value(2.0::FLOAT, 3.0::FLOAT, 4.0::FLOAT))
@@ -7174,7 +7254,7 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("array_cosine_similarity", self.inner(), array2))
 
-    def cross_product(self, array: T | float) -> T:
+    def cross_product(self, array: IntoExprColumn | float) -> T:
         """Computes the cross product of two arrays of size 3.
 
         The array elements can not be `NULL`.
@@ -7182,7 +7262,7 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
         **SQL name**: *array_cross_product*
 
         Args:
-            array (T | float): `DOUBLE[3] | FLOAT[3]` expression
+            array (IntoExprColumn | float): `DOUBLE[3] | FLOAT[3]` expression
 
         Examples:
             array_cross_product(array_value(1.0::FLOAT, 2.0::FLOAT, 3.0::FLOAT), array_value(2.0::FLOAT, 3.0::FLOAT, 4.0::FLOAT))
@@ -7192,7 +7272,7 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("array_cross_product", self.inner(), array))
 
-    def distance(self, array2: T | float) -> T:
+    def distance(self, array2: IntoExprColumn | float) -> T:
         """Computes the distance between two arrays of the same size.
 
         The array elements can not be `NULL`.
@@ -7202,7 +7282,7 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
         **SQL name**: *array_distance*
 
         Args:
-            array2 (T | float): `DOUBLE[ANY] | FLOAT[ANY]` expression
+            array2 (IntoExprColumn | float): `DOUBLE[ANY] | FLOAT[ANY]` expression
 
         Examples:
             array_distance(array_value(1.0::FLOAT, 2.0::FLOAT, 3.0::FLOAT), array_value(2.0::FLOAT, 3.0::FLOAT, 4.0::FLOAT))
@@ -7230,7 +7310,7 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("array_distinct", self.inner()))
 
-    def dot_product(self, array2: T | float) -> T:
+    def dot_product(self, array2: IntoExprColumn | float) -> T:
         """Computes the inner product between two arrays of the same size.
 
         The array elements can not be `NULL`.
@@ -7243,7 +7323,7 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
             array_inner_product
 
         Args:
-            array2 (T | float): `DOUBLE[ANY] | FLOAT[ANY]` expression
+            array2 (IntoExprColumn | float): `DOUBLE[ANY] | FLOAT[ANY]` expression
 
         Examples:
             array_dot_product(array_value(1.0::FLOAT, 2.0::FLOAT, 3.0::FLOAT), array_value(2.0::FLOAT, 3.0::FLOAT, 4.0::FLOAT))
@@ -7253,20 +7333,20 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("array_dot_product", self.inner(), array2))
 
-    def extract(self, col1: T | int | str) -> T:
+    def extract(self, col1: IntoExprColumn | int | str) -> T:
         """Extracts a single character from a `string` using a (1-based) `index`.
 
         **SQL name**: *array_extract*
 
         Args:
-            col1 (T | int | str): `BIGINT | VARCHAR` expression
+            col1 (IntoExprColumn | int | str): `BIGINT | VARCHAR` expression
 
         Returns:
             T
         """
         return self._new(func("array_extract", self.inner(), col1))
 
-    def filter(self, lambda_arg: T) -> T:
+    def filter(self, lambda_arg: IntoExprColumn) -> T:
         """Constructs a list from those elements of the input `list` for which the `lambda` function returns `true`.
 
         DuckDB must be able to cast the `lambda` function's return type to `BOOL`.
@@ -7279,7 +7359,7 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
             filter, list_filter
 
         Args:
-            lambda_arg (T): `LAMBDA` expression
+            lambda_arg (IntoExprColumn): `LAMBDA` expression
 
         Examples:
             array_filter([3, 4, 5], lambda x : x > 4)
@@ -7289,7 +7369,11 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("array_filter", self.inner(), lambda_arg))
 
-    def grade_up(self, col1: T | str | None = None, col2: T | str | None = None) -> T:
+    def grade_up(
+        self,
+        col1: IntoExprColumn | str | None = None,
+        col2: IntoExprColumn | str | None = None,
+    ) -> T:
         """Works like list_sort, but the results are the indexes that correspond to the position in the original list instead of the actual values.
 
         **SQL name**: *array_grade_up*
@@ -7298,8 +7382,8 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
             grade_up, list_grade_up
 
         Args:
-            col1 (T | str | None): `VARCHAR` expression
-            col2 (T | str | None): `VARCHAR` expression
+            col1 (IntoExprColumn | str | None): `VARCHAR` expression
+            col2 (IntoExprColumn | str | None): `VARCHAR` expression
 
         Examples:
             array_grade_up([3, 6, 1, 2])
@@ -7309,7 +7393,7 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("array_grade_up", self.inner(), col1, col2))
 
-    def has(self, element: T) -> T:
+    def has(self, element: IntoExprColumn) -> T:
         """Returns true if the list contains the element.
 
         **SQL name**: *array_has*
@@ -7318,7 +7402,7 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
             array_contains, list_contains, list_has
 
         Args:
-            element (T): `T` expression
+            element (IntoExprColumn): `T` expression
 
         Examples:
             array_has([1, 2, NULL], 1)
@@ -7328,7 +7412,7 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("array_has", self.inner(), element))
 
-    def has_all(self, list2: T) -> T:
+    def has_all(self, list2: IntoExprColumn) -> T:
         """Returns true if all elements of list2 are in list1.
 
         NULLs are ignored.
@@ -7339,7 +7423,7 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
             list_has_all
 
         Args:
-            list2 (T): `T[]` expression
+            list2 (IntoExprColumn): `T[]` expression
 
         Examples:
             array_has_all([1, 2, 3], [2, 3])
@@ -7349,7 +7433,7 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("array_has_all", self.inner(), list2))
 
-    def has_any(self, list2: T) -> T:
+    def has_any(self, list2: IntoExprColumn) -> T:
         """Returns true if the lists have any element in common.
 
         NULLs are ignored.
@@ -7360,7 +7444,7 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
             list_has_any
 
         Args:
-            list2 (T): `T[]` expression
+            list2 (IntoExprColumn): `T[]` expression
 
         Examples:
             array_has_any([1, 2, 3], [2, 3, 4])
@@ -7370,7 +7454,7 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("array_has_any", self.inner(), list2))
 
-    def indexof(self, element: T) -> T:
+    def indexof(self, element: IntoExprColumn) -> T:
         """Returns the index of the `element` if the `list` contains the `element`.
 
         If the `element` is not found, it returns `NULL`.
@@ -7381,7 +7465,7 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
             array_position, list_indexof, list_position
 
         Args:
-            element (T): `T` expression
+            element (IntoExprColumn): `T` expression
 
         Examples:
             array_indexof([1, 2, NULL], 2)
@@ -7391,7 +7475,7 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("array_indexof", self.inner(), element))
 
-    def inner_product(self, array2: T | float) -> T:
+    def inner_product(self, array2: IntoExprColumn | float) -> T:
         """Computes the inner product between two arrays of the same size.
 
         The array elements can not be `NULL`.
@@ -7404,7 +7488,7 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
             array_dot_product
 
         Args:
-            array2 (T | float): `DOUBLE[ANY] | FLOAT[ANY]` expression
+            array2 (IntoExprColumn | float): `DOUBLE[ANY] | FLOAT[ANY]` expression
 
         Examples:
             array_inner_product(array_value(1.0::FLOAT, 2.0::FLOAT, 3.0::FLOAT), array_value(2.0::FLOAT, 3.0::FLOAT, 4.0::FLOAT))
@@ -7414,13 +7498,13 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("array_inner_product", self.inner(), array2))
 
-    def intersect(self, l2: T) -> T:
+    def intersect(self, l2: IntoExpr) -> T:
         """SQL array_intersect function.
 
         **SQL name**: *array_intersect*
 
         Args:
-            l2 (T): `ANY` expression
+            l2 (IntoExpr): `ANY` expression
 
         Returns:
             T
@@ -7440,13 +7524,13 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("array_length", self.inner()))
 
-    def length_dimension(self, dimension: T | int | None = None) -> T:
+    def length_dimension(self, dimension: IntoExprColumn | int | None = None) -> T:
         """`array_length` for lists with dimensions other than 1 not implemented.
 
         **SQL name**: *array_length*
 
         Args:
-            dimension (T | int | None): `BIGINT` expression
+            dimension (IntoExprColumn | int | None): `BIGINT` expression
 
         Examples:
             array_length([1, 2, 3])
@@ -7456,7 +7540,7 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("array_length", self.inner(), dimension))
 
-    def negative_dot_product(self, array2: T | float) -> T:
+    def negative_dot_product(self, array2: IntoExprColumn | float) -> T:
         """Computes the negative inner product between two arrays of the same size.
 
         The array elements can not be `NULL`.
@@ -7469,7 +7553,7 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
             array_negative_inner_product
 
         Args:
-            array2 (T | float): `DOUBLE[ANY] | FLOAT[ANY]` expression
+            array2 (IntoExprColumn | float): `DOUBLE[ANY] | FLOAT[ANY]` expression
 
         Examples:
             array_negative_dot_product(array_value(1.0::FLOAT, 2.0::FLOAT, 3.0::FLOAT), array_value(2.0::FLOAT, 3.0::FLOAT, 4.0::FLOAT))
@@ -7479,7 +7563,7 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("array_negative_dot_product", self.inner(), array2))
 
-    def negative_inner_product(self, array2: T | float) -> T:
+    def negative_inner_product(self, array2: IntoExprColumn | float) -> T:
         """Computes the negative inner product between two arrays of the same size.
 
         The array elements can not be `NULL`.
@@ -7492,7 +7576,7 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
             array_negative_dot_product
 
         Args:
-            array2 (T | float): `DOUBLE[ANY] | FLOAT[ANY]` expression
+            array2 (IntoExprColumn | float): `DOUBLE[ANY] | FLOAT[ANY]` expression
 
         Examples:
             array_negative_inner_product(array_value(1.0::FLOAT, 2.0::FLOAT, 3.0::FLOAT), array_value(2.0::FLOAT, 3.0::FLOAT, 4.0::FLOAT))
@@ -7522,7 +7606,7 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("array_pop_front", self.inner()))
 
-    def position(self, element: T) -> T:
+    def position(self, element: IntoExprColumn) -> T:
         """Returns the index of the `element` if the `list` contains the `element`.
 
         If the `element` is not found, it returns `NULL`.
@@ -7533,7 +7617,7 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
             array_indexof, list_indexof, list_position
 
         Args:
-            element (T): `T` expression
+            element (IntoExprColumn): `T` expression
 
         Examples:
             array_position([1, 2, NULL], 2)
@@ -7543,46 +7627,48 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("array_position", self.inner(), element))
 
-    def prepend(self, arr: T) -> T:
+    def prepend(self, arr: IntoExpr) -> T:
         """SQL array_prepend function.
 
         **SQL name**: *array_prepend*
 
         Args:
-            arr (T): `ANY` expression
+            arr (IntoExpr): `ANY` expression
 
         Returns:
             T
         """
         return self._new(func("array_prepend", self.inner(), arr))
 
-    def push_back(self, e: T) -> T:
+    def push_back(self, e: IntoExpr) -> T:
         """SQL array_push_back function.
 
         **SQL name**: *array_push_back*
 
         Args:
-            e (T): `ANY` expression
+            e (IntoExpr): `ANY` expression
 
         Returns:
             T
         """
         return self._new(func("array_push_back", self.inner(), e))
 
-    def push_front(self, e: T) -> T:
+    def push_front(self, e: IntoExpr) -> T:
         """SQL array_push_front function.
 
         **SQL name**: *array_push_front*
 
         Args:
-            e (T): `ANY` expression
+            e (IntoExpr): `ANY` expression
 
         Returns:
             T
         """
         return self._new(func("array_push_front", self.inner(), e))
 
-    def reduce(self, lambda_arg: T, initial_value: T | None = None) -> T:
+    def reduce(
+        self, lambda_arg: IntoExprColumn, initial_value: IntoExpr | None = None
+    ) -> T:
         """Reduces all elements of the input `list` into a single scalar value by executing the `lambda` function on a running result and the next list element.
 
         The `lambda` function has an optional `initial_value` argument.
@@ -7593,8 +7679,8 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
             list_reduce, reduce
 
         Args:
-            lambda_arg (T): `LAMBDA` expression
-            initial_value (T | None): `ANY` expression
+            lambda_arg (IntoExprColumn): `LAMBDA` expression
+            initial_value (IntoExpr | None): `ANY` expression
 
         Examples:
             array_reduce([1, 2, 3], lambda x, y : x + y)
@@ -7604,7 +7690,7 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("array_reduce", self.inner(), lambda_arg, initial_value))
 
-    def resize(self, size: T, value: T | None = None) -> T:
+    def resize(self, size: IntoExpr, value: IntoExpr | None = None) -> T:
         """Resizes the `list` to contain `size` elements.
 
         Initializes new elements with `value` or `NULL` if `value` is not set.
@@ -7615,8 +7701,8 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
             list_resize
 
         Args:
-            size (T): `ANY` expression
-            value (T | None): `ANY` expression
+            size (IntoExpr): `ANY` expression
+            value (IntoExpr | None): `ANY` expression
 
         Examples:
             array_resize([1, 2, 3], 5, 0)
@@ -7636,7 +7722,7 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("array_reverse", self.inner()))
 
-    def reverse_sort(self, col1: T | str | None = None) -> T:
+    def reverse_sort(self, col1: IntoExprColumn | str | None = None) -> T:
         """Sorts the elements of the list in reverse order.
 
         **SQL name**: *array_reverse_sort*
@@ -7645,7 +7731,7 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
             list_reverse_sort
 
         Args:
-            col1 (T | str | None): `VARCHAR` expression
+            col1 (IntoExprColumn | str | None): `VARCHAR` expression
 
         Examples:
             array_reverse_sort([3, 6, 1, 2])
@@ -7655,7 +7741,7 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("array_reverse_sort", self.inner(), col1))
 
-    def select(self, index_list: T | SeqLiteral[int]) -> T:
+    def select(self, index_list: IntoExprColumn | SeqLiteral[int]) -> T:
         """Returns a list based on the elements selected by the `index_list`.
 
         **SQL name**: *array_select*
@@ -7664,7 +7750,7 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
             list_select
 
         Args:
-            index_list (T | SeqLiteral[int]): `BIGINT[]` expression
+            index_list (IntoExprColumn | SeqLiteral[int]): `BIGINT[]` expression
 
         Examples:
             array_select([10, 20, 30, 40], [1, 4])
@@ -7674,7 +7760,9 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("array_select", self.inner(), index_list))
 
-    def slice(self, begin: T, end: T, step: T | int | None = None) -> T:
+    def slice(
+        self, begin: IntoExpr, end: IntoExpr, step: IntoExprColumn | int | None = None
+    ) -> T:
         """Extracts a sublist or substring using slice conventions.
 
         Negative values are accepted.
@@ -7685,9 +7773,9 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
             list_slice
 
         Args:
-            begin (T): `ANY` expression
-            end (T): `ANY` expression
-            step (T | int | None): `BIGINT` expression
+            begin (IntoExpr): `ANY` expression
+            end (IntoExpr): `ANY` expression
+            step (IntoExprColumn | int | None): `BIGINT` expression
 
         Examples:
             array_slice('DuckDB', 3, 4)
@@ -7699,7 +7787,11 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("array_slice", self.inner(), begin, end, step))
 
-    def sort(self, col1: T | str | None = None, col2: T | str | None = None) -> T:
+    def sort(
+        self,
+        col1: IntoExprColumn | str | None = None,
+        col2: IntoExprColumn | str | None = None,
+    ) -> T:
         """Sorts the elements of the list.
 
         **SQL name**: *array_sort*
@@ -7708,8 +7800,8 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
             list_sort
 
         Args:
-            col1 (T | str | None): `VARCHAR` expression
-            col2 (T | str | None): `VARCHAR` expression
+            col1 (IntoExprColumn | str | None): `VARCHAR` expression
+            col2 (IntoExprColumn | str | None): `VARCHAR` expression
 
         Examples:
             array_sort([3, 6, 1, 2])
@@ -7719,46 +7811,46 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("array_sort", self.inner(), col1, col2))
 
-    def to_json(self, *args: T) -> T:
+    def to_json(self, *args: IntoExpr) -> T:
         """SQL array_to_json function.
 
         **SQL name**: *array_to_json*
 
         Args:
-            *args (T): `ANY` expression
+            *args (IntoExpr): `ANY` expression
 
         Returns:
             T
         """
         return self._new(func("array_to_json", self.inner(), *args))
 
-    def to_string(self, sep: T) -> T:
+    def to_string(self, sep: IntoExpr) -> T:
         """SQL array_to_string function.
 
         **SQL name**: *array_to_string*
 
         Args:
-            sep (T): `ANY` expression
+            sep (IntoExpr): `ANY` expression
 
         Returns:
             T
         """
         return self._new(func("array_to_string", self.inner(), sep))
 
-    def to_string_comma_default(self, sep: T) -> T:
+    def to_string_comma_default(self, sep: IntoExpr) -> T:
         """SQL array_to_string_comma_default function.
 
         **SQL name**: *array_to_string_comma_default*
 
         Args:
-            sep (T): `ANY` expression
+            sep (IntoExpr): `ANY` expression
 
         Returns:
             T
         """
         return self._new(func("array_to_string_comma_default", self.inner(), sep))
 
-    def transform(self, lambda_arg: T) -> T:
+    def transform(self, lambda_arg: IntoExprColumn) -> T:
         """Returns a list that is the result of applying the `lambda` function to each element of the input `list`.
 
         The return type is defined by the return type of the `lambda` function.
@@ -7769,7 +7861,7 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
             apply, array_apply, list_apply, list_transform
 
         Args:
-            lambda_arg (T): `LAMBDA` expression
+            lambda_arg (IntoExprColumn): `LAMBDA` expression
 
         Examples:
             array_transform([1, 2, 3], lambda x : x + 1)
@@ -7795,13 +7887,13 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("array_unique", self.inner()))
 
-    def value(self, *args: T) -> T:
+    def value(self, *args: IntoExpr) -> T:
         """Creates an `ARRAY` containing the argument values.
 
         **SQL name**: *array_value*
 
         Args:
-            *args (T): `ANY` expression
+            *args (IntoExpr): `ANY` expression
 
         Examples:
             array_value(1.0::FLOAT, 2.0::FLOAT, 3.0::FLOAT)
@@ -7811,7 +7903,7 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("array_value", self.inner(), *args))
 
-    def where(self, mask_list: T | SeqLiteral[bool]) -> T:
+    def where(self, mask_list: IntoExprColumn | SeqLiteral[bool]) -> T:
         """Returns a list with the `BOOLEAN`s in `mask_list` applied as a mask to the `value_list`.
 
         **SQL name**: *array_where*
@@ -7820,7 +7912,7 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
             list_where
 
         Args:
-            mask_list (T | SeqLiteral[bool]): `BOOLEAN[]` expression
+            mask_list (IntoExprColumn | SeqLiteral[bool]): `BOOLEAN[]` expression
 
         Examples:
             array_where([10, 20, 30, 40], [true, false, false, true])
@@ -7830,7 +7922,7 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("array_where", self.inner(), mask_list))
 
-    def zip(self, *args: T) -> T:
+    def zip(self, *args: IntoExpr) -> T:
         """Zips n `LIST`s to a new `LIST` whose length will be that of the longest list.
 
         Its elements are structs of n elements from each list `list_1`, …, `list_n`, missing elements are replaced with `NULL`.
@@ -7843,7 +7935,7 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
             list_zip
 
         Args:
-            *args (T): `ANY` expression
+            *args (IntoExpr): `ANY` expression
 
         Examples:
             array_zip([1, 2], [3, 4], [5, 6])
@@ -7859,39 +7951,41 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
 class JsonFns[T: Fns](NameSpaceHandler[T]):
     """Mixin providing auto-generated DuckDB JSON functions as methods."""
 
-    def array(self, *args: T) -> T:
+    def array(self, *args: IntoExpr) -> T:
         """SQL json_array function.
 
         **SQL name**: *json_array*
 
         Args:
-            *args (T): `ANY` expression
+            *args (IntoExpr): `ANY` expression
 
         Returns:
             T
         """
         return self._new(func("json_array", self.inner(), *args))
 
-    def array_length(self, col1: T | SeqLiteral[str] | str | None = None) -> T:
+    def array_length(
+        self, col1: IntoExprColumn | SeqLiteral[str] | str | None = None
+    ) -> T:
         """SQL json_array_length function.
 
         **SQL name**: *json_array_length*
 
         Args:
-            col1 (T | SeqLiteral[str] | str | None): `VARCHAR | VARCHAR[]` expression
+            col1 (IntoExprColumn | SeqLiteral[str] | str | None): `VARCHAR | VARCHAR[]` expression
 
         Returns:
             T
         """
         return self._new(func("json_array_length", self.inner(), col1))
 
-    def contains(self, col1: T | str) -> T:
+    def contains(self, col1: IntoExprColumn | str) -> T:
         """SQL json_contains function.
 
         **SQL name**: *json_contains*
 
         Args:
-            col1 (T | str): `JSON | VARCHAR` expression
+            col1 (IntoExprColumn | str): `JSON | VARCHAR` expression
 
         Returns:
             T
@@ -7908,65 +8002,67 @@ class JsonFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("json_deserialize_sql", self.inner()))
 
-    def exists(self, col1: T | SeqLiteral[str] | str) -> T:
+    def exists(self, col1: IntoExprColumn | SeqLiteral[str] | str) -> T:
         """SQL json_exists function.
 
         **SQL name**: *json_exists*
 
         Args:
-            col1 (T | SeqLiteral[str] | str): `VARCHAR | VARCHAR[]` expression
+            col1 (IntoExprColumn | SeqLiteral[str] | str): `VARCHAR | VARCHAR[]` expression
 
         Returns:
             T
         """
         return self._new(func("json_exists", self.inner(), col1))
 
-    def extract(self, col1: T | SeqLiteral[str] | int | str) -> T:
+    def extract(self, col1: IntoExprColumn | SeqLiteral[str] | int | str) -> T:
         """SQL json_extract function.
 
         **SQL name**: *json_extract*
 
         Args:
-            col1 (T | SeqLiteral[str] | int | str): `BIGINT | VARCHAR | VARCHAR[]` expression
+            col1 (IntoExprColumn | SeqLiteral[str] | int | str): `BIGINT | VARCHAR | VARCHAR[]` expression
 
         Returns:
             T
         """
         return self._new(func("json_extract", self.inner(), col1))
 
-    def extract_path(self, col1: T | SeqLiteral[str] | int | str) -> T:
+    def extract_path(self, col1: IntoExprColumn | SeqLiteral[str] | int | str) -> T:
         """SQL json_extract_path function.
 
         **SQL name**: *json_extract_path*
 
         Args:
-            col1 (T | SeqLiteral[str] | int | str): `BIGINT | VARCHAR | VARCHAR[]` expression
+            col1 (IntoExprColumn | SeqLiteral[str] | int | str): `BIGINT | VARCHAR | VARCHAR[]` expression
 
         Returns:
             T
         """
         return self._new(func("json_extract_path", self.inner(), col1))
 
-    def extract_path_text(self, col1: T | SeqLiteral[str] | int | str) -> T:
+    def extract_path_text(
+        self, col1: IntoExprColumn | SeqLiteral[str] | int | str
+    ) -> T:
         """SQL json_extract_path_text function.
 
         **SQL name**: *json_extract_path_text*
 
         Args:
-            col1 (T | SeqLiteral[str] | int | str): `BIGINT | VARCHAR | VARCHAR[]` expression
+            col1 (IntoExprColumn | SeqLiteral[str] | int | str): `BIGINT | VARCHAR | VARCHAR[]` expression
 
         Returns:
             T
         """
         return self._new(func("json_extract_path_text", self.inner(), col1))
 
-    def extract_string(self, col1: T | SeqLiteral[str] | int | str) -> T:
+    def extract_string(self, col1: IntoExprColumn | SeqLiteral[str] | int | str) -> T:
         """SQL json_extract_string function.
 
         **SQL name**: *json_extract_string*
 
         Args:
-            col1 (T | SeqLiteral[str] | int | str): `BIGINT | VARCHAR | VARCHAR[]` expression
+            col1 (IntoExprColumn | SeqLiteral[str] | int | str): `BIGINT | VARCHAR | VARCHAR[]` expression
 
         Returns:
             T
@@ -7983,13 +8079,13 @@ class JsonFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("json_group_array", self.inner()))
 
-    def group_object(self, v: T) -> T:
+    def group_object(self, v: IntoExpr) -> T:
         """SQL json_group_object function.
 
         **SQL name**: *json_group_object*
 
         Args:
-            v (T): `ANY` expression
+            v (IntoExpr): `ANY` expression
 
         Returns:
             T
@@ -8006,40 +8102,40 @@ class JsonFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("json_group_structure", self.inner()))
 
-    def keys(self, col1: T | SeqLiteral[str] | str | None = None) -> T:
+    def keys(self, col1: IntoExprColumn | SeqLiteral[str] | str | None = None) -> T:
         """SQL json_keys function.
 
         **SQL name**: *json_keys*
 
         Args:
-            col1 (T | SeqLiteral[str] | str | None): `VARCHAR | VARCHAR[]` expression
+            col1 (IntoExprColumn | SeqLiteral[str] | str | None): `VARCHAR | VARCHAR[]` expression
 
         Returns:
             T
         """
         return self._new(func("json_keys", self.inner(), col1))
 
-    def merge_patch(self, col1: T | str, *args: T | str) -> T:
+    def merge_patch(self, col1: IntoExprColumn | str, *args: IntoExprColumn | str) -> T:
         """SQL json_merge_patch function.
 
         **SQL name**: *json_merge_patch*
 
         Args:
-            col1 (T | str): `JSON` expression
-            *args (T | str): `JSON` expression
+            col1 (IntoExprColumn | str): `JSON` expression
+            *args (IntoExprColumn | str): `JSON` expression
 
         Returns:
             T
         """
         return self._new(func("json_merge_patch", self.inner(), col1, *args))
 
-    def object(self, *args: T) -> T:
+    def object(self, *args: IntoExpr) -> T:
         """SQL json_object function.
 
         **SQL name**: *json_object*
 
         Args:
-            *args (T): `ANY` expression
+            *args (IntoExpr): `ANY` expression
 
         Returns:
             T
@@ -8066,13 +8162,13 @@ class JsonFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("json_pretty", self.inner()))
 
-    def quote(self, *args: T) -> T:
+    def quote(self, *args: IntoExpr) -> T:
         """SQL json_quote function.
 
         **SQL name**: *json_quote*
 
         Args:
-            *args (T): `ANY` expression
+            *args (IntoExpr): `ANY` expression
 
         Returns:
             T
@@ -8081,20 +8177,20 @@ class JsonFns[T: Fns](NameSpaceHandler[T]):
 
     def serialize_plan(
         self,
-        col1: T | bool | None = None,
-        col2: T | bool | None = None,
-        col3: T | bool | None = None,
-        col4: T | bool | None = None,
+        col1: IntoExprColumn | bool | None = None,
+        col2: IntoExprColumn | bool | None = None,
+        col3: IntoExprColumn | bool | None = None,
+        col4: IntoExprColumn | bool | None = None,
     ) -> T:
         """SQL json_serialize_plan function.
 
         **SQL name**: *json_serialize_plan*
 
         Args:
-            col1 (T | bool | None): `BOOLEAN` expression
-            col2 (T | bool | None): `BOOLEAN` expression
-            col3 (T | bool | None): `BOOLEAN` expression
-            col4 (T | bool | None): `BOOLEAN` expression
+            col1 (IntoExprColumn | bool | None): `BOOLEAN` expression
+            col2 (IntoExprColumn | bool | None): `BOOLEAN` expression
+            col3 (IntoExprColumn | bool | None): `BOOLEAN` expression
+            col4 (IntoExprColumn | bool | None): `BOOLEAN` expression
 
         Returns:
             T
@@ -8105,20 +8201,20 @@ class JsonFns[T: Fns](NameSpaceHandler[T]):
 
     def serialize_sql(
         self,
-        col1: T | bool | None = None,
-        col2: T | bool | None = None,
-        col3: T | bool | None = None,
-        col4: T | bool | None = None,
+        col1: IntoExprColumn | bool | None = None,
+        col2: IntoExprColumn | bool | None = None,
+        col3: IntoExprColumn | bool | None = None,
+        col4: IntoExprColumn | bool | None = None,
     ) -> T:
         """SQL json_serialize_sql function.
 
         **SQL name**: *json_serialize_sql*
 
         Args:
-            col1 (T | bool | None): `BOOLEAN` expression
-            col2 (T | bool | None): `BOOLEAN` expression
-            col3 (T | bool | None): `BOOLEAN` expression
-            col4 (T | bool | None): `BOOLEAN` expression
+            col1 (IntoExprColumn | bool | None): `BOOLEAN` expression
+            col2 (IntoExprColumn | bool | None): `BOOLEAN` expression
+            col3 (IntoExprColumn | bool | None): `BOOLEAN` expression
+            col4 (IntoExprColumn | bool | None): `BOOLEAN` expression
 
         Returns:
             T
@@ -8137,39 +8233,39 @@ class JsonFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("json_structure", self.inner()))
 
-    def transform(self, col1: T | str) -> T:
+    def transform(self, col1: IntoExprColumn | str) -> T:
         """SQL json_transform function.
 
         **SQL name**: *json_transform*
 
         Args:
-            col1 (T | str): `VARCHAR` expression
+            col1 (IntoExprColumn | str): `VARCHAR` expression
 
         Returns:
             T
         """
         return self._new(func("json_transform", self.inner(), col1))
 
-    def transform_strict(self, col1: T | str) -> T:
+    def transform_strict(self, col1: IntoExprColumn | str) -> T:
         """SQL json_transform_strict function.
 
         **SQL name**: *json_transform_strict*
 
         Args:
-            col1 (T | str): `VARCHAR` expression
+            col1 (IntoExprColumn | str): `VARCHAR` expression
 
         Returns:
             T
         """
         return self._new(func("json_transform_strict", self.inner(), col1))
 
-    def type(self, col1: T | SeqLiteral[str] | str | None = None) -> T:
+    def type(self, col1: IntoExprColumn | SeqLiteral[str] | str | None = None) -> T:
         """SQL json_type function.
 
         **SQL name**: *json_type*
 
         Args:
-            col1 (T | SeqLiteral[str] | str | None): `VARCHAR | VARCHAR[]` expression
+            col1 (IntoExprColumn | SeqLiteral[str] | str | None): `VARCHAR | VARCHAR[]` expression
 
         Returns:
             T
@@ -8186,13 +8282,13 @@ class JsonFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("json_valid", self.inner()))
 
-    def value(self, col1: T | SeqLiteral[str] | int | str) -> T:
+    def value(self, col1: IntoExprColumn | SeqLiteral[str] | int | str) -> T:
         """SQL json_value function.
 
         **SQL name**: *json_value*
 
         Args:
-            col1 (T | SeqLiteral[str] | int | str): `BIGINT | VARCHAR | VARCHAR[]` expression
+            col1 (IntoExprColumn | SeqLiteral[str] | int | str): `BIGINT | VARCHAR | VARCHAR[]` expression
 
         Returns:
             T
@@ -8203,13 +8299,13 @@ class JsonFns[T: Fns](NameSpaceHandler[T]):
 class MapFns[T: Fns](NameSpaceHandler[T]):
     """Mixin providing auto-generated DuckDB map functions as methods."""
 
-    def concat(self, *args: T) -> T:
+    def concat(self, *args: IntoExpr) -> T:
         """Returns a map created from merging the input maps, on key collision the value is taken from the last map with that key.
 
         **SQL name**: *map_concat*
 
         Args:
-            *args (T): `ANY` expression
+            *args (IntoExpr): `ANY` expression
 
         Examples:
             map_concat(map([1, 2], ['a', 'b']), map([2, 3], ['c', 'd']));
@@ -8219,13 +8315,13 @@ class MapFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("map_concat", self.inner(), *args))
 
-    def contains(self, key: T) -> T:
+    def contains(self, key: IntoExprColumn) -> T:
         """Checks if a map contains a given key.
 
         **SQL name**: *map_contains*
 
         Args:
-            key (T): `K` expression
+            key (IntoExprColumn): `K` expression
 
         Examples:
             map_contains(MAP {'key1': 10, 'key2': 20, 'key3': 30}, 'key2')
@@ -8235,27 +8331,27 @@ class MapFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("map_contains", self.inner(), key))
 
-    def contains_entry(self, key: T, value: T) -> T:
+    def contains_entry(self, key: IntoExpr, value: IntoExpr) -> T:
         """SQL map_contains_entry function.
 
         **SQL name**: *map_contains_entry*
 
         Args:
-            key (T): `ANY` expression
-            value (T): `ANY` expression
+            key (IntoExpr): `ANY` expression
+            value (IntoExpr): `ANY` expression
 
         Returns:
             T
         """
         return self._new(func("map_contains_entry", self.inner(), key, value))
 
-    def contains_value(self, value: T) -> T:
+    def contains_value(self, value: IntoExpr) -> T:
         """SQL map_contains_value function.
 
         **SQL name**: *map_contains_value*
 
         Args:
-            value (T): `ANY` expression
+            value (IntoExpr): `ANY` expression
 
         Returns:
             T
@@ -8275,7 +8371,7 @@ class MapFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("map_entries", self.inner()))
 
-    def extract(self, key: T) -> T:
+    def extract(self, key: IntoExprColumn) -> T:
         """Returns a list containing the value for a given key or an empty list if the key is not contained in the map.
 
         The type of the key provided in the second parameter must match the type of the map's keys else an error is returned.
@@ -8286,7 +8382,7 @@ class MapFns[T: Fns](NameSpaceHandler[T]):
             element_at
 
         Args:
-            key (T): `K` expression
+            key (IntoExprColumn): `K` expression
 
         Examples:
             map_extract(map(['key'], ['val']), 'key')
@@ -8296,7 +8392,7 @@ class MapFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("map_extract", self.inner(), key))
 
-    def extract_value(self, key: T) -> T:
+    def extract_value(self, key: IntoExprColumn) -> T:
         """Returns the value for a given key or NULL if the key is not contained in the map.
 
         The type of the key provided in the second parameter must match the type of the map's keys else an error is returned.
@@ -8304,7 +8400,7 @@ class MapFns[T: Fns](NameSpaceHandler[T]):
         **SQL name**: *map_extract_value*
 
         Args:
-            key (T): `K` expression
+            key (IntoExprColumn): `K` expression
 
         Examples:
             map_extract_value(map(['key'], ['val']), 'key')
@@ -8419,7 +8515,7 @@ class EnumFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("enum_range", self.inner()))
 
-    def range_boundary(self, end: T) -> T:
+    def range_boundary(self, end: IntoExpr) -> T:
         """Returns the range between the two given enum values as an array.
 
         The values must be of the same enum type.
@@ -8431,7 +8527,7 @@ class EnumFns[T: Fns](NameSpaceHandler[T]):
         **SQL name**: *enum_range_boundary*
 
         Args:
-            end (T): `ANY` expression
+            end (IntoExpr): `ANY` expression
 
         Examples:
             enum_range_boundary(NULL, 'happy'::mood)

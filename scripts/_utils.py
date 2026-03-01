@@ -72,6 +72,7 @@ class Pql(KwordEnum):
     SQLEXPR = "SqlExpr"
     EXPR = pql.Expr.__name__
     INTO_EXPR = "IntoExpr"
+    BLOB_LITERAL = "BlobLiteral"
     INTO_EXPR_COLUMN = "IntoExprColumn"
     PYTHON_LITERAL = "PythonLiteral"
     TRY_ITER = auto()
