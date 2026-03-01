@@ -12,7 +12,7 @@ The first value of each tuple is for `Narwhals` and the second value is for `Pol
 | LazyFrame           | (53.8%, 32.5%)  | (26, 83)  | (14, 27) | (1, 32) | (11, 24)   | (34, 8) |
 | Expr                | (70.0%, 42.3%)  | (70, 213) | (49, 90) | (8, 94) | (13, 29)   | (58, 1) |
 | LazyGroupBy         | (0.0%, 43.8%)   | (1, 16)   | (0, 7)   | (0, 4)  | (1, 5)     | (11, 0) |
-| ExprStrNameSpace    | (94.7%, 38.3%)  | (19, 47)  | (18, 18) | (0, 10) | (1, 19)    | (19, 1) |
+| ExprStrNameSpace    | (42.1%, 27.7%)  | (19, 47)  | (8, 13)  | (0, 10) | (11, 24)   | (19, 1) |
 | ExprListNameSpace   | (90.0%, 46.5%)  | (10, 43)  | (9, 20)  | (0, 20) | (1, 3)     | (14, 1) |
 | ExprStructNameSpace | (100.0%, 20.0%) | (1, 5)    | (1, 1)   | (0, 2)  | (0, 2)     | (3, 1)  |
 | ExprNameNameSpace   | (100.0%, 70.0%) | (6, 10)   | (6, 7)   | (0, 3)  | (0, 0)     | (2, 1)  |
@@ -483,24 +483,79 @@ The first value of each tuple is for `Narwhals` and the second value is for `Pol
 - `to_integer`
   - **Polars**: (base: int | IntoExprColumn, dtype: PolarsIntegerType, strict: bool) -> Expr
 
-### [!] Signature Mismatches (5)
+### [!] Signature Mismatches (20)
 
+- `contains` (nw)
+  - **Narwhals**: (`pattern: str`, literal: bool) -> ExprT
+  - **Polars**: (`pattern: str | Expr`, literal: bool, `strict: bool`) -> Expr
+  - **pql**: (`pattern: IntoExprColumn`, literal: bool) -> Expr
+- `count_matches` (pl)
+  - **Polars***: (`pattern: str | Expr`, literal: bool) -> Expr
+  - **pql**: (`pattern: IntoExprColumn`, literal: bool) -> Expr
+- `ends_with` (nw)
+  - **Narwhals**: (`suffix: str`) -> ExprT
+  - **Polars**: (`suffix: str | Expr`) -> Expr
+  - **pql**: (`suffix: IntoExprColumn`) -> Expr
+- `extract_all` (pl)
+  - **Polars***: (`pattern: str | Expr`) -> Expr
+  - **pql**: (`pattern: IntoExprColumn`) -> Expr
 - `find` (pl)
-  - **Polars***: (pattern: str | Expr, literal: bool, `strict: bool`) -> Expr
-  - **pql**: (pattern: str | Expr, literal: bool) -> Expr
+  - **Polars***: (`pattern: str | Expr`, literal: bool, `strict: bool`) -> Expr
+  - **pql**: (`pattern: IntoExprColumn`, literal: bool) -> Expr
+- `join` (pl)
+  - **Polars***: (`delimiter: str`, ignore_nulls: bool) -> Expr
+  - **pql**: (`delimiter: IntoExprColumn`, ignore_nulls: bool) -> Expr
 - `normalize` (pl)
   - **Polars***: (`form: UnicodeForm`) -> Expr
   - **pql**: () -> Expr
+- `pad_end` (nw)
+  - **Narwhals**: (length: int, `fill_char: str`) -> ExprT
+  - **Polars**: (`length: int | IntoExprColumn`, `fill_char: str`) -> Expr
+  - **pql**: (length: int, `fill_char: IntoExprColumn`) -> Expr
+- `pad_start` (nw)
+  - **Narwhals**: (length: int, `fill_char: str`) -> ExprT
+  - **Polars**: (`length: int | IntoExprColumn`, `fill_char: str`) -> Expr
+  - **pql**: (length: int, `fill_char: IntoExprColumn`) -> Expr
 - `replace` (nw)
   - **Narwhals**: (pattern: str, `value: str | IntoExpr`, literal: bool, n: int) -> ExprT
-  - **Polars**: (`pattern: str | Expr`, value: str | Expr, literal: bool, n: int) -> Expr
-  - **pql**: (pattern: str, `value: str | Expr`, literal: bool, n: int) -> Expr
+  - **Polars**: (`pattern: str | Expr`, `value: str | Expr`, literal: bool, n: int) -> Expr
+  - **pql**: (pattern: str, `value: IntoExprColumn`, literal: bool, n: int) -> Expr
+- `replace_all` (nw)
+  - **Narwhals**: (`pattern: str`, `value: IntoExpr`, literal: bool) -> ExprT
+  - **Polars**: (`pattern: str | Expr`, `value: str | Expr`, literal: bool) -> Expr
+  - **pql**: (`pattern: IntoExprColumn`, `value: IntoExprColumn`, literal: bool) -> Expr
+- `split` (nw)
+  - **Narwhals**: (`by: str`) -> ExprT
+  - **Polars**: (`by: IntoExpr`, `inclusive: bool`, `literal: bool`, `strict: bool`) -> Expr
+  - **pql**: (`by: IntoExprColumn`) -> Expr
+- `starts_with` (nw)
+  - **Narwhals**: (`prefix: str`) -> ExprT
+  - **Polars**: (`prefix: str | Expr`) -> Expr
+  - **pql**: (`prefix: IntoExprColumn`) -> Expr
+- `strip_chars` (nw)
+  - **Narwhals**: (`characters: str | None`) -> ExprT
+  - **Polars**: (`characters: IntoExpr`) -> Expr
+  - **pql**: (`characters: IntoExprColumn | None`) -> Expr
+- `strip_chars_end` (pl)
+  - **Polars***: (`characters: IntoExpr`) -> Expr
+  - **pql**: (`characters: IntoExprColumn | None`) -> Expr
+- `strip_chars_start` (pl)
+  - **Polars***: (`characters: IntoExpr`) -> Expr
+  - **pql**: (`characters: IntoExprColumn | None`) -> Expr
 - `strptime` (pl)
   - **Polars***: (`dtype: PolarsTemporalType`, `format: str | None`, `strict: bool`, `exact: bool`, `cache: bool`, `ambiguous: Ambiguous | Expr`) -> Expr
-  - **pql**: (`format: str | Expr`) -> Expr
+  - **pql**: (`format: IntoExprColumn`) -> Expr
+- `to_date` (nw)
+  - **Narwhals**: (`format: str | None`) -> ExprT
+  - **Polars**: (`format: str | None`, `strict: bool`, `exact: bool`, `cache: bool`) -> Expr
+  - **pql**: (`format: IntoExprColumn | None`) -> Expr
+- `to_datetime` (nw)
+  - **Narwhals**: (`format: str | None`) -> ExprT
+  - **Polars**: (`format: str | None`, `time_unit: TimeUnit | None`, `time_zone: str | None`, `strict: bool`, `exact: bool`, `cache: bool`, `ambiguous: Ambiguous | Expr`) -> Expr
+  - **pql**: (`format: IntoExprColumn | None`) -> Expr
 - `to_time` (pl)
-  - **Polars***: (format: str | None, `strict: bool`, `cache: bool`) -> Expr
-  - **pql**: (format: str | None) -> Expr
+  - **Polars***: (`format: str | None`, `strict: bool`, `cache: bool`) -> Expr
+  - **pql**: (`format: IntoExprColumn | None`) -> Expr
 
 ### [+] Extra Methods (pql-only) (1)
 
