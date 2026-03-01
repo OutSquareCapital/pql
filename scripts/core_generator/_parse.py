@@ -10,13 +10,13 @@ from ._target import TargetSpec
 
 
 def extract_methods_from_stub(
-    stub_path: Path, target: TargetSpec
+    stub_path: Path, class_name: str, target: TargetSpec
 ) -> pc.Seq[MethodInfo]:
     """Parse the .pyi stub and extract methods for a target DuckDB class."""
     docs = target.get_runtime_docs()
 
     def _is_target_class(node: ast.AST) -> TypeIs[ast.ClassDef]:
-        return isinstance(node, ast.ClassDef) and node.name == target.stub_class
+        return isinstance(node, ast.ClassDef) and node.name == class_name
 
     return (
         pc.Iter(ast.iter_child_nodes(ast.parse(stub_path.read_text(encoding="utf-8"))))
@@ -30,7 +30,7 @@ def extract_methods_from_stub(
                 .collect()
             )
         )
-        .expect(f"{target.stub_class} class not found in stub")
+        .expect(f"{class_name} class not found in stub: {stub_path.as_posix()}")
     )
 
 

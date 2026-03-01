@@ -63,13 +63,20 @@ class Dunders(KwordEnum):
     CALL = "__call__"
     DEPRECATED = "__deprecated__"
     DOC = "__doc__"
+    AND = "__and__"
+    OR = "__or__"
+    INVERT = "__invert__"
 
 
 class Pql(KwordEnum):
     SQLEXPR = "SqlExpr"
     EXPR = pql.Expr.__name__
+    INTO_EXPR = "IntoExpr"
+    INTO_EXPR_COLUMN = "IntoExprColumn"
+    PYTHON_LITERAL = "PythonLiteral"
     TRY_ITER = auto()
     INTO_DUCKDB = auto()
+    INTO_DUCKDB_MAPPING = auto()
     RELATION = "Relation"
     CORE_HANDLER = "CoreHandler"
     REL_HANDLER = "RelHandler"
@@ -147,3 +154,4 @@ class CollectionsABC(KwordEnum):
 
     ITERABLE = collections_abc.Iterable.__name__
     CALLABLE = collections_abc.Callable.__name__
+    MAPPING = collections_abc.Mapping.__name__

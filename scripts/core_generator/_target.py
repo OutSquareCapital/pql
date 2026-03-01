@@ -6,7 +6,7 @@ import duckdb
 import pyochain as pc
 
 from .._utils import Builtins, DuckDB, Dunders, Pql, Pyochain, Typing
-from ._rules import EXPR_TYPE_SUBS, PYTYPING_REWRITES, TYPE_SUBS
+from ._rules import PYTYPING_REWRITES
 
 
 class ReturnMeta(NamedTuple):
@@ -16,10 +16,10 @@ class ReturnMeta(NamedTuple):
 
 @dataclass(slots=True)
 class TargetSpec:
+    stub_file_name: str
     stub_class: str
     wrapper_class: str
     wrapper_base: str
-    type_subs: pc.Dict[DuckDB, Pql | Typing]
     wrapped_return_type: str
     skip_methods: pc.Set[str] = field(default_factory=pc.Set[str].new)
     method_renames: pc.Dict[str, str] = field(default_factory=pc.Dict[str, str].new)
@@ -31,15 +31,18 @@ class TargetSpec:
             return acc.replace(old_new[0], old_new[1])
 
         return (
-            self.type_subs.items()
+            PYTYPING_REWRITES.items()
             .iter()
-            .fold(PYTYPING_REWRITES.items().iter().fold(annotation, _sub_one), _sub_one)
+            .fold(annotation, _sub_one)
+            .replace(self.stub_class, Typing.SELF)
         )
 
     def return_meta(self, annotation: str) -> ReturnMeta:
         def _collection_kind() -> pc.Option[Builtins]:
             match rewritten:
                 case _ if rewritten.startswith(Builtins.LIST):
+                    return pc.Some(Builtins.LIST)
+                case _ if rewritten.startswith("lst"):
                     return pc.Some(Builtins.LIST)
                 case _ if rewritten.startswith(Builtins.DICT):
                     return pc.Some(Builtins.DICT)
@@ -57,7 +60,8 @@ class TargetSpec:
         rewritten = self.rewrite_type(annotation)
         match _collection_kind():
             case pc.Some(Builtins.LIST):
-                return _build(Pyochain.VEC, rewritten.removeprefix(Builtins.LIST))
+                suffix = rewritten.removeprefix(Builtins.LIST).removeprefix("lst")
+                return _build(Pyochain.VEC, suffix)
             case pc.Some(Builtins.DICT):
                 return _build(Pyochain.DICT, rewritten.removeprefix(Builtins.DICT))
             case _:
@@ -101,22 +105,27 @@ class TargetSpec:
         )
 
 
-REL_TARGET = TargetSpec(
-    stub_class=DuckDB.RELATION,
-    wrapper_class=Pql.RELATION,
-    wrapper_base=Pql.REL_HANDLER,
-    type_subs=TYPE_SUBS,
-    wrapped_return_type=DuckDB.RELATION,
-)
+class Targets:
+    RELATION = TargetSpec(
+        stub_file_name="__init__.pyi",
+        stub_class=DuckDB.RELATION,
+        wrapper_class=Pql.RELATION,
+        wrapper_base=Pql.REL_HANDLER,
+        wrapped_return_type=DuckDB.RELATION,
+    )
 
-EXPR_TARGET = TargetSpec(
-    stub_class=DuckDB.EXPRESSION,
-    wrapper_class=DuckDB.EXPRESSION,
-    wrapper_base=Pql.DUCK_HANDLER,
-    type_subs=EXPR_TYPE_SUBS,
-    wrapped_return_type=DuckDB.EXPRESSION,
-    skip_methods=pc.Set({Dunders.INIT, "when", "otherwise"}),
-    method_renames=pc.Dict.from_kwargs(
-        isnull="is_null", isin="is_in", isnotin="is_not_in", isnotnull="is_not_null"
-    ),
-)
+    EXPRESSION = TargetSpec(
+        stub_file_name="_expression.pyi",
+        stub_class=DuckDB.EXPRESSION,
+        wrapper_class=DuckDB.EXPRESSION,
+        wrapper_base=Pql.DUCK_HANDLER,
+        wrapped_return_type=DuckDB.EXPRESSION,
+        skip_methods=pc.Set({Dunders.INIT, "when", "otherwise"}),
+        method_renames=pc.Dict.from_kwargs(
+            isnull="is_null", isin="is_in", isnotin="is_not_in", isnotnull="is_not_null"
+        ),
+    )
+
+    @classmethod
+    def into_iter(cls) -> pc.Iter[TargetSpec]:
+        return pc.Iter((cls.RELATION, cls.EXPRESSION))

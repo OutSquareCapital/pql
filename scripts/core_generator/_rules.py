@@ -1,22 +1,28 @@
 import pyochain as pc
 
-from .._utils import Builtins, DuckDB, Pql, Typing
+from .._utils import Builtins, Dunders, Typing
 
-_PA = "pa."
 PYTYPING_REWRITES = pc.Dict.from_ref(
     {
         "typing.Any": Typing.ANY,
         "typing.SupportsInt": Typing.SUPPORTS_INT,
-        "typing.List": Builtins.LIST,
         "typing.Literal": Typing.LITERAL,
-        "typing.Union": Typing.UNION,
-        "pyarrow.lib.": _PA,
-        "pyarrow.": _PA,
+        "pyarrow.lib.": "pa.",
+        "lst": Builtins.LIST,
     }
 )
 
-TYPE_SUBS = pc.Dict({DuckDB.EXPRESSION: Pql.DUCK_HANDLER, DuckDB.RELATION: Typing.SELF})
-
-EXPR_TYPE_SUBS = pc.Dict(
-    {DuckDB.EXPRESSION: Typing.SELF, DuckDB.RELATION: Pql.RELATION}
+DUNDER_OPERATOR_ALIAS_EXCEPTIONS: pc.Dict[str, str] = pc.Dict.from_ref(
+    {Dunders.AND: "and_", Dunders.OR: "or_", Dunders.INVERT: "not_"}
 )
+
+
+def dunder_operator_alias(name: str) -> pc.Option[str]:
+    return DUNDER_OPERATOR_ALIAS_EXCEPTIONS.get_item(name).or_else(
+        lambda: pc.Option.if_true(
+            name,
+            predicate=lambda x: (
+                x.startswith("__") and x.endswith("__") and x != Dunders.INIT
+            ),
+        ).map(lambda x: x.removeprefix("__").removesuffix("__"))
+    )

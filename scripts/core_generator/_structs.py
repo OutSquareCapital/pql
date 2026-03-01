@@ -6,16 +6,59 @@ from textwrap import indent
 from typing import NamedTuple, Self
 
 import pyochain as pc
-from astToolkit import Make
 
 from .._utils import Builtins, CollectionsABC, DuckDB, Pql, Pyochain, Typing
-from ._target import REL_TARGET, ReturnMeta, TargetSpec
+from ._rules import dunder_operator_alias
+from ._target import ReturnMeta, Targets, TargetSpec
 
 ARG = "arg"
 INNER = "inner"
 NEW = "_new"
 MAP = "map"
 INDENT = "    "
+
+
+@dataclass(slots=True)
+class Node(pc.traits.Pipeable):
+    node: ast.expr
+
+    @classmethod
+    def ref(cls, name: str) -> Self:
+        return cls(ast.Name(name))
+
+    def attr(self, name: str) -> Self:
+        return self.__class__(ast.Attribute(value=self.node, attr=name, ctx=ast.Load()))
+
+    def call(self, *args: Self | ast.expr | str) -> Self:
+        def _into_arg(x: Self | ast.expr | str) -> ast.expr:
+            match x:
+                case Node():
+                    return x.node
+                case str():
+                    return self.ref(x).node
+                case _:
+                    return x
+
+        return self.__class__(
+            ast.Call(self.node, pc.Iter(args).map(_into_arg).collect(list))
+        )
+
+    def call_kw(self, args: list[ast.expr], keywords: list[ast.keyword]) -> Self:
+        return self.__class__(ast.Call(func=self.node, args=args, keywords=keywords))
+
+    def starred(self) -> ast.Starred:
+        return ast.Starred(value=self.node, ctx=ast.Load())
+
+
+def _map_inner(nb: Node) -> Node:
+    lam = ast.Lambda(
+        ast.arguments(args=[ast.arg(ARG)]), Node.ref(ARG).attr(INNER).call().node
+    )
+    return Node(ast.Call(func=nb.attr(MAP).node, args=[lam]))
+
+
+def _wrap(nb: Node, wrapper: pc.Option[str]) -> Node:
+    return wrapper.map_or(nb, lambda fn: Node.ref(fn).call(nb))
 
 
 @dataclass(slots=True)
@@ -28,50 +71,63 @@ class ParamInfo:
     is_kw_only: bool = False
 
     def forward_vararg(self, target: TargetSpec) -> ast.Starred:
-        """Generate the forwarded vararg, converting types at boundary."""
+        """Return the `*args` AST node passed to the wrapped DuckDB call, mapping each item only when the rewritten annotation requires `into_col`, `into_duckdb`, or `.inner()`."""
+        rewritten = target.rewrite_type(self.annotation)
+        it = Node.ref("pc").attr(Pyochain.ITER).call(self.name)
         match target:
-            case t if t == REL_TARGET:
-                match target.rewrite_type(self.annotation):
+            case t if t == Targets.RELATION:
+                match rewritten:
+                    case a if Pql.INTO_EXPR in a or Pql.INTO_EXPR_COLUMN in a:
+                        return it.attr(MAP).call(Pql.INTO_DUCKDB).starred()
                     case a if Pql.DUCK_HANDLER in a and Builtins.STR not in a:
-                        expr = _iter_map_inner(_iter_from_name(self.name))
+                        return it.into(_map_inner).starred()
                     case a if Pql.DUCK_HANDLER in a:
-                        expr = _iter_map_name(
-                            _iter_from_name(self.name), Pql.INTO_DUCKDB
-                        )
+                        return it.attr(MAP).call(Pql.INTO_DUCKDB).starred()
                     case _:
-                        expr = Make.Name(self.name)
-            case _ if target.stub_class in self.annotation:
-                expr = _iter_map_inner(_iter_from_name(self.name))
+                        return Node.ref(self.name).starred()
+            case _ if (
+                Pql.INTO_EXPR in rewritten or target.stub_class in self.annotation
+            ):
+                return it.attr(MAP).call(Pql.INTO_DUCKDB).starred()
             case _:
-                expr = Make.Name(self.name)
-        return ast.Starred(value=expr, ctx=ast.Load())
+                return Node.ref(self.name).starred()
 
-    def forward_arg(self, target: TargetSpec) -> ast.expr:  # noqa: PLR0911
-        """Generate the forwarded argument, converting types at boundary."""
+    def forward_arg(self, target: TargetSpec) -> ast.expr:
+        """Return the AST node for the argument passed to the wrapped DuckDB call, applying `into_col`, `into_duckdb`, iterable mapping, or `.inner()` only when required by the rewritten annotation."""
+        rewritten = target.rewrite_type(self.annotation)
+        name_e = Node.ref(self.name)
+        if CollectionsABC.ITERABLE in rewritten and (
+            Pql.INTO_EXPR in rewritten or Pql.INTO_EXPR_COLUMN in rewritten
+        ):
+            return (
+                Node.ref(Pql.TRY_ITER)
+                .call(self.name)
+                .attr(MAP)
+                .call(Pql.INTO_DUCKDB)
+                .node
+            )
+        if CollectionsABC.MAPPING in rewritten and Pql.INTO_EXPR in rewritten:
+            return Node.ref(Pql.INTO_DUCKDB_MAPPING).call(name_e).node
         match target:
-            case t if t == REL_TARGET:
-                match self.annotation:
-                    case a if CollectionsABC.ITERABLE in a and DuckDB.EXPRESSION in a:
-                        return _iter_map_name(
-                            _call_name(Pql.TRY_ITER, Make.Name(self.name)),
-                            Pql.INTO_DUCKDB,
-                        )
-                    case a if DuckDB.EXPRESSION in a and DuckDB.RELATION not in a:
-                        return _call_name(Pql.INTO_DUCKDB, Make.Name(self.name))
-                    case a if DuckDB.RELATION in a:
-                        return _call_attr0(Make.Name(self.name), INNER)
-                    case _:
-                        return Make.Name(self.name)
+            case t if t == Targets.RELATION:
+                use_duckdb = (
+                    Pql.INTO_EXPR in rewritten or Pql.INTO_EXPR_COLUMN in rewritten
+                ) and DuckDB.RELATION not in rewritten
+                use_inner = not use_duckdb and (
+                    DuckDB.RELATION in self.annotation or Typing.SELF in rewritten
+                )
             case _:
-                match self.annotation:
-                    case a if CollectionsABC.ITERABLE in a and target.stub_class in a:
-                        return _iter_map_inner(
-                            _call_name(Pql.TRY_ITER, Make.Name(self.name))
-                        )
-                    case a if target.stub_class in a or DuckDB.RELATION in a:
-                        return _call_attr0(Make.Name(self.name), INNER)
-                    case _:
-                        return Make.Name(self.name)
+                use_duckdb = (
+                    Pql.INTO_EXPR in rewritten or Pql.INTO_EXPR_COLUMN in rewritten
+                )
+                use_inner = not use_duckdb and (
+                    target.stub_class in rewritten or DuckDB.RELATION in rewritten
+                )
+        if use_duckdb:
+            return Node.ref(Pql.INTO_DUCKDB).call(name_e).node
+        if use_inner:
+            return name_e.attr(INNER).call().node
+        return name_e.node
 
 
 @dataclass(slots=True)
@@ -99,58 +155,96 @@ class MethodInfo:
     def returns_none(self) -> bool:
         return self.return_type == Builtins.NONE
 
-    def _return_meta(self) -> ReturnMeta:
+    def _meta(self) -> ReturnMeta:
         if self.returns_relation:
             return ReturnMeta(Typing.SELF, pc.NONE)
         return self.target.return_meta(self.return_type)
 
     def generate_method(self) -> str:
         """Generate a single method wrapper."""
-        return_annotation, wrapper = self._return_meta()
-        ast_signature = self._build_ast_signature(return_annotation)
+        meta = self._meta()
+        ast_signature = self._build_ast_signature(meta.return_annotation)
         match self.name:
             case _ if self.is_overload:
                 return ast_signature.render_overload()
             case _ if self.is_property:
-                return self._build_property_signature(return_annotation).render(
+                return self._build_property_signature(meta.return_annotation).render(
                     self.doc,
-                    _wrap_return_expr(
-                        _call_attr(
-                            _call_attr0(Make.Name(Builtins.SELF), INNER), self.name
-                        ),
-                        wrapper,
-                    ),
-                    decorators=pc.Seq((Builtins.PROPERTY,)),
+                    Node.ref(Builtins.SELF)
+                    .attr(INNER)
+                    .call()
+                    .attr(self.name)
+                    .into(_wrap, meta.wrapper)
+                    .node,
+                    decorators=pc.Some(pc.Iter.once(Builtins.PROPERTY)),
                 )
             case _:
-                return ast_signature.render(self.doc, self._build_return_expr(wrapper))
+                return ast_signature.render(
+                    self.doc, self._build_return_expr(meta.wrapper)
+                )
+
+    def generate_methods(self) -> pc.Iter[str]:
+        generated = self.generate_method()
+        return self._build_operator_alias().map_or(
+            pc.Iter.once(generated), lambda alias: pc.Iter((generated, alias))
+        )
+
+    def _build_operator_alias(self) -> pc.Option[str]:
+        meta = self._meta()
+        if self.target != Targets.EXPRESSION or self.is_overload or self.is_property:
+            return pc.NONE
+        return dunder_operator_alias(self.name).map(
+            lambda alias_name: AstSignature(
+                alias_name,
+                self._build_ast_signature(meta.return_annotation).args,
+                _to_expr(meta.return_annotation),
+            ).render("", self._operator_alias_call())
+        )
+
+    def _operator_alias_call(self) -> ast.expr:
+        pos_args = (
+            self.params.iter()
+            .filter(lambda p: not p.is_kw_only)
+            .map(lambda p: Node.ref(p.name).node)
+        )
+        keywords = (
+            self.params.iter()
+            .filter(lambda p: p.is_kw_only)
+            .map(lambda p: ast.keyword(arg=p.name, value=Node.ref(p.name).node))
+            .collect(list)
+        )
+        call_args = self.vararg.map_or(
+            pos_args.collect(list),
+            lambda vararg: pos_args.insert(Node.ref(vararg.name).starred()).collect(
+                list
+            ),
+        )
+        return Node.ref(Builtins.SELF).attr(self.name).call_kw(call_args, keywords).node
 
     def _build_ast_signature(self, return_annotation: str) -> AstSignature:
+        def _param_arg(p: ParamInfo) -> ast.arg:
+            return _make_arg(p.name, self.target.rewrite_type(p.annotation))
+
         pos_params = self.params.iter().filter(lambda p: not p.is_kw_only).collect()
         kwonly_params = self.params.iter().filter(lambda p: p.is_kw_only).collect()
-        args = Make.arguments(
-            list_arg=pos_params.iter()
-            .map(lambda p: _make_arg(p.name, self.target.rewrite_type(p.annotation)))
-            .insert(Make.arg(Builtins.SELF))
-            .collect(list),
-            vararg=self.vararg.map(
-                lambda p: _make_arg(p.name, self.target.rewrite_type(p.annotation))
-            ).unwrap_or(None),  # pyright: ignore[reportArgumentType]
-            kwonlyargs=kwonly_params.iter()
-            .map(lambda p: _make_arg(p.name, self.target.rewrite_type(p.annotation)))
-            .collect(list),
-            kw_defaults=kwonly_params.iter()
-            .map(
-                lambda p: p.default.map(_to_expr).unwrap_or(None)  # pyright: ignore[reportArgumentType]
-            )
-            .collect(),
-            defaults=(
-                pos_params.iter()
+        return AstSignature(
+            self.target.rename_method(self.name),
+            ast.arguments(
+                args=pos_params.iter()
+                .map(_param_arg)
+                .insert(ast.arg(Builtins.SELF))
+                .collect(list),
+                vararg=self.vararg.map(_param_arg).unwrap_or(None),  # pyright: ignore[reportArgumentType]
+                kwonlyargs=kwonly_params.iter().map(_param_arg).collect(list),
+                kw_defaults=kwonly_params.iter()
+                .map(lambda p: p.default.map(_to_expr).unwrap_or(None))  # pyright: ignore[reportArgumentType]
+                .collect(),
+                defaults=pos_params.iter()
                 .map(lambda p: p.default)
                 .collect(pc.Vec)
                 .into(
-                    lambda pos_defaults: (
-                        pos_defaults.iter()
+                    lambda ds: (
+                        ds.iter()
                         .enumerate()
                         .find_map(
                             lambda item: (
@@ -159,7 +253,7 @@ class MethodInfo:
                         )
                         .map(
                             lambda idx: (
-                                pos_defaults.iter()
+                                ds.iter()
                                 .skip(idx)
                                 .map(
                                     lambda d: d.expect(
@@ -167,50 +261,53 @@ class MethodInfo:
                                     )
                                 )
                                 .map(_to_expr)
-                                .collect()
+                                .collect(list)
                             )
                         )
-                        .unwrap_or(pc.Seq(()))
+                        .unwrap_or([])
                     )
-                )
+                ),
             ),
-        )
-
-        return AstSignature(
-            self.target.rename_method(self.name), args, _to_expr(return_annotation)
+            _to_expr(return_annotation),
         )
 
     def _build_property_signature(self, return_annotation: str) -> AstSignature:
         return AstSignature(
             self.target.rename_method(self.name),
-            Make.arguments(list_arg=[Make.arg(Builtins.SELF)]),
+            ast.arguments(args=[ast.arg(Builtins.SELF)]),
             _to_expr(return_annotation),
         )
 
     def _build_return_expr(self, wrapper: pc.Option[str]) -> ast.expr:
-        args = (
+        pos_args = (
             self.params.iter()
             .filter(lambda p: not p.is_kw_only)
             .map(lambda p: p.forward_arg(self.target))
         )
-        kwargs = (
+        keywords = (
             self.params.iter()
             .filter(lambda p: p.is_kw_only)
             .map(lambda p: ast.keyword(arg=p.name, value=p.forward_arg(self.target)))
+            .collect(list)
         )
-
-        call = ast.Call(
-            func=_call_attr(_call_attr0(Make.Name(Builtins.SELF), INNER), self.name),
-            args=self.vararg.map_or(
-                args.collect(list),
-                lambda v: args.insert(v.forward_vararg(self.target)).collect(list),
-            ),
-            keywords=kwargs.collect(list),
+        call = (
+            Node.ref(Builtins.SELF)
+            .attr(INNER)
+            .call()
+            .attr(self.name)
+            .call_kw(
+                self.vararg.map_or(
+                    pos_args.collect(list),
+                    lambda v: pos_args.insert(v.forward_vararg(self.target)).collect(
+                        list
+                    ),
+                ),
+                keywords,
+            )
         )
-
         if self.returns_relation:
-            return _call_attr(Make.Name(Builtins.SELF), NEW, call)
-        return _wrap_return_expr(call, wrapper)
+            return Node.ref(Builtins.SELF).attr(NEW).call(call).node
+        return call.into(_wrap, wrapper).node
 
 
 class AstSignature(NamedTuple):
@@ -218,42 +315,37 @@ class AstSignature(NamedTuple):
     args: ast.arguments
     returns: ast.expr
 
+    def _render(self, body: list[ast.stmt], decorators: list[ast.expr]) -> str:
+        rendered = ast.FunctionDef(
+            name=self.name,
+            args=self.args,
+            body=body,
+            decorator_list=decorators,
+            returns=self.returns,
+        )
+        ast.fix_missing_locations(rendered)
+        return indent(ast.unparse(rendered), INDENT)
+
     def render(
         self,
         doc: str,
         return_expr: ast.expr,
-        decorators: pc.Seq[str] | None = None,
+        decorators: pc.Option[pc.Iter[str]] = pc.NONE,
     ) -> str:
-        body = pc.Option.if_some(doc.strip()).map_or(
-            [Make.Return(return_expr)],
-            lambda txt: [
-                Make.Expr(Make.Constant(txt)),
-                Make.Return(return_expr),
-            ],
+        return self._render(
+            pc.Option.if_some(doc.strip()).map_or(
+                [ast.Return(return_expr)],
+                lambda txt: [ast.Expr(ast.Constant(txt)), ast.Return(return_expr)],
+            ),
+            decorators.map(lambda ds: ds.iter().map(ast.Name).collect(list)).unwrap_or(
+                []
+            ),  # pyright: ignore[reportArgumentType]
         )
-
-        rendered = Make.FunctionDef(
-            name=self.name,
-            argumentSpecification=self.args,
-            body=body,
-            decorator_list=pc.Option(decorators)
-            .map(lambda ds: ds.iter().map(Make.Name).collect())
-            .unwrap_or(pc.Seq(())),
-            returns=self.returns,
-        )
-        ast.fix_missing_locations(rendered)
-        return indent(ast.unparse(rendered), INDENT)
 
     def render_overload(self) -> str:
-        rendered = Make.FunctionDef(
-            name=self.name,
-            argumentSpecification=self.args,
-            body=[Make.Expr(Make.Constant(Ellipsis))],
-            decorator_list=[Make.Name(Typing.OVERLOAD)],
-            returns=self.returns,
+        return self._render(
+            [ast.Expr(ast.Constant(Ellipsis))], [ast.Name(Typing.OVERLOAD)]
         )
-        ast.fix_missing_locations(rendered)
-        return indent(ast.unparse(rendered), INDENT)
 
 
 def _to_expr(expr: str) -> ast.expr:
@@ -261,40 +353,4 @@ def _to_expr(expr: str) -> ast.expr:
 
 
 def _make_arg(name: str, annotation: str) -> ast.arg:
-    return Make.arg(name, _to_expr(annotation))
-
-
-def _wrap_return_expr(value: ast.expr, wrapper: pc.Option[str]) -> ast.expr:
-    return wrapper.map_or(
-        value,
-        lambda fn_name: ast.Call(func=_to_expr(fn_name), args=[value]),
-    )
-
-
-def _iter_map_inner(iterable_expr: ast.expr) -> ast.expr:
-    lambda_expr = ast.Lambda(
-        args=ast.arguments(args=[Make.arg(ARG)]),
-        body=_call_attr0(Make.Name(ARG), INNER),
-    )
-    return _call_attr(iterable_expr, MAP, lambda_expr)
-
-
-def _iter_from_name(name: str) -> ast.expr:
-    return _call_attr(Make.Name("pc"), Pyochain.ITER, Make.Name(name))
-
-
-def _call_name(name: str, *args: ast.expr) -> ast.Call:
-    return ast.Call(func=Make.Name(name), args=list(args))
-
-
-def _iter_map_name(iterable_expr: ast.expr, fn_name: str) -> ast.expr:
-    return _call_attr(iterable_expr, MAP, Make.Name(fn_name))
-
-
-def _call_attr(obj: ast.expr, attr: str, *args: ast.expr) -> ast.expr:
-    node = ast.Attribute(value=obj, attr=attr, ctx=ast.Load())
-    return node if not args else ast.Call(func=node, args=list(args))
-
-
-def _call_attr0(obj: ast.expr, attr: str) -> ast.Call:
-    return ast.Call(ast.Attribute(value=obj, attr=attr, ctx=ast.Load()))
+    return ast.arg(name, _to_expr(annotation))
