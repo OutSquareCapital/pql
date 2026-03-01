@@ -26,6 +26,9 @@ RENAME_RULES = pc.Dict.from_ref(
         "json": "json_parse",
         "map": "to_map",
         "kurtosis": "kurtosis_samp",
+        "isnan": "is_nan",
+        "isinf": "is_inf",
+        "isfinite": "is_finite",
     }
 )
 """Explicit SQL function name -> generated Python method name mapping."""

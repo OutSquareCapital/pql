@@ -1517,6 +1517,19 @@ class Fns(DuckHandler):
         """
         return self._new(func("in_search_path", self.inner(), schema_name))
 
+    def is_finite(self) -> Self:
+        """Returns true if the floating point value is finite, false otherwise.
+
+        **SQL name**: *isfinite*
+
+        Examples:
+            isfinite(5.5)
+
+        Returns:
+            Self
+        """
+        return self._new(func("isfinite", self.inner()))
+
     def is_histogram_other_bin(self) -> Self:
         """Whether or not the provided value is the histogram "other" bin (used for values not belonging to any provided bin).
 
@@ -1530,20 +1543,7 @@ class Fns(DuckHandler):
         """
         return self._new(func("is_histogram_other_bin", self.inner()))
 
-    def isfinite(self) -> Self:
-        """Returns true if the floating point value is finite, false otherwise.
-
-        **SQL name**: *isfinite*
-
-        Examples:
-            isfinite(5.5)
-
-        Returns:
-            Self
-        """
-        return self._new(func("isfinite", self.inner()))
-
-    def isinf(self) -> Self:
+    def is_inf(self) -> Self:
         """Returns true if the floating point value is infinite, false otherwise.
 
         **SQL name**: *isinf*
@@ -1556,7 +1556,7 @@ class Fns(DuckHandler):
         """
         return self._new(func("isinf", self.inner()))
 
-    def isnan(self) -> Self:
+    def is_nan(self) -> Self:
         """Returns true if the floating point value is not a number, false otherwise.
 
         **SQL name**: *isnan*

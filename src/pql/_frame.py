@@ -613,7 +613,7 @@ class LazyFrame(sql.CoreHandler[sql.Relation]):
     def fill_nan(self, value: float | Expr | None) -> Self:
         """Fill NaN values."""
         return self._iter_slct(
-            lambda c: sql.when(sql.col(c).isnan()).then(value).otherwise(c).alias(c)
+            lambda c: sql.when(sql.col(c).is_nan()).then(value).otherwise(c).alias(c)
         )
 
     def fill_null(

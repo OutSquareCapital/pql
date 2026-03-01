@@ -615,7 +615,7 @@ class Expr(sql.CoreHandler[sql.SqlExpr]):
                 return self._new(close)
             case True:
                 return self._new(
-                    sql.when(self.inner().isnan().and_(other_expr.isnan()))
+                    sql.when(self.inner().is_nan().and_(other_expr.is_nan()))
                     .then(value=True)
                     .otherwise(close)
                 )
@@ -955,24 +955,24 @@ class Expr(sql.CoreHandler[sql.SqlExpr]):
 
     def is_nan(self) -> Self:
         """Check if value is NaN."""
-        return self._new(self.inner().isnan())
+        return self._new(self.inner().is_nan())
 
     def is_not_nan(self) -> Self:
         """Check if value is not NaN."""
-        return self._new(self.inner().isnan().not_())
+        return self._new(self.inner().is_nan().not_())
 
     def is_finite(self) -> Self:
         """Check if value is finite."""
-        return self._new(self.inner().isfinite())
+        return self._new(self.inner().is_finite())
 
     def is_infinite(self) -> Self:
         """Check if value is infinite."""
-        return self._new(self.inner().isinf())
+        return self._new(self.inner().is_inf())
 
     def fill_nan(self, value: float | Expr | None) -> Self:
         """Fill NaN values."""
         return self._new(
-            sql.when(self.inner().isnan()).then(value).otherwise(self.inner())
+            sql.when(self.inner().is_nan()).then(value).otherwise(self.inner())
         )
 
     def fill_null(
