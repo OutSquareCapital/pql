@@ -943,8 +943,6 @@ class LazyFrame(sql.CoreHandler[sql.Relation]):
             else pc.Ok(None)
         ).unwrap()
 
-        order_cols_opt = order_by_opt.map(lambda cols: cols.iter().map(sql.col))
-
         def _marker(subset_cols: Iterable[sql.SqlExpr]) -> sql.SqlExpr:
             match keep:
                 case "none":
@@ -952,12 +950,12 @@ class LazyFrame(sql.CoreHandler[sql.Relation]):
                 case "first":
                     return sql.row_number().over(
                         partition_by=subset_cols,
-                        order_by=order_cols_opt.unwrap(),
+                        order_by=order_by_opt.unwrap(),
                     )
                 case "last":
                     return sql.row_number().over(
                         partition_by=subset_cols,
-                        order_by=order_cols_opt.unwrap(),
+                        order_by=order_by_opt.unwrap(),
                         descending=True,
                         nulls_last=True,
                     )

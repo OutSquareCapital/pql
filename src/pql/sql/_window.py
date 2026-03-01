@@ -10,6 +10,7 @@ from .._args_iter import try_iter
 
 if TYPE_CHECKING:
     from ._expr import SqlExpr
+    from .typing import IntoExprColumn
 from enum import StrEnum
 
 
@@ -65,7 +66,7 @@ class Kword(StrEnum):
 def over_expr(  # noqa: PLR0913
     expr: SqlExpr,
     partition_by: pc.Option[SqlExpr | Iterable[SqlExpr]],
-    order_by: pc.Option[SqlExpr | Iterable[SqlExpr]],
+    order_by: pc.Option[IntoExprColumn | Iterable[IntoExprColumn]],
     rows_start: pc.Option[int],
     rows_end: pc.Option[int],
     *,
@@ -107,7 +108,7 @@ def handle_nulls(expr: SqlExpr, *, ignore_nulls: bool) -> str:
 
 
 def get_order_by(
-    order_by: pc.Option[pc.Seq[SqlExpr]],
+    order_by: pc.Option[pc.Seq[IntoExprColumn]],
     *,
     descending: Iterable[bool] | bool,
     nulls_last: Iterable[bool] | bool,
