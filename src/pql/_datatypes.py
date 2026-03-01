@@ -14,7 +14,7 @@ from . import sql
 
 if TYPE_CHECKING:
     from ._typing import TimeUnit
-    from .sql.typing import IntoDict
+    from .sql.typing import DTypeIds, IntoDict, StrIntoDType
 
 
 class DataType(ABC):
@@ -32,7 +32,13 @@ class DataType(ABC):
         return (
             NESTED_MAP.get_item(dtype.type_id)
             .map(lambda constructor: constructor.__from_raw__(dtype))
-            .unwrap_or_else(lambda: NON_NESTED_MAP.get_item(dtype.type_id).unwrap())
+            .unwrap_or_else(
+                lambda: (
+                    NON_NESTED_MAP.get_item(dtype.type_id)
+                    .ok_or_else(lambda: f"Unsupported data type: {dtype}")
+                    .unwrap()
+                )
+            )
         )
 
 
@@ -330,47 +336,47 @@ PRECISION_MAP: pc.Dict[TimeUnit, sql.DType] = pc.Dict.from_ref(
 )
 
 
-NESTED_MAP: pc.Dict[str, type[ComplexDataType[Any]]] = pc.Dict.from_ref(
+NESTED_MAP: pc.Dict[DTypeIds, type[ComplexDataType[Any]]] = pc.Dict.from_ref(
     {
-        sql.RawTypes.LIST: List,
-        sql.RawTypes.STRUCT: Struct,
-        sql.RawTypes.MAP: Map,
-        sql.RawTypes.UNION: Union,
-        sql.RawTypes.ARRAY: Array,
-        sql.RawTypes.ENUM: Enum,
-        sql.RawTypes.DECIMAL: Decimal,
+        "list": List,
+        "struct": Struct,
+        "map": Map,
+        "union": Union,
+        "array": Array,
+        "enum": Enum,
+        "decimal": Decimal,
     }
 )
 
-NON_NESTED_MAP: pc.Dict[str, DataType] = pc.Dict.from_ref(
+NON_NESTED_MAP: pc.Dict[StrIntoDType, DataType] = pc.Dict.from_ref(
     {
-        sql.RawTypes.HUGEINT: Int128(),
-        sql.RawTypes.BIGINT: Int64(),
-        sql.RawTypes.INTEGER: Int32(),
-        sql.RawTypes.SMALLINT: Int16(),
-        sql.RawTypes.TINYINT: Int8(),
-        sql.RawTypes.UHUGEINT: UInt128(),
-        sql.RawTypes.UBIGINT: UInt64(),
-        sql.RawTypes.UINTEGER: UInt32(),
-        sql.RawTypes.USMALLINT: UInt16(),
-        sql.RawTypes.UTINYINT: UInt8(),
-        sql.RawTypes.DOUBLE: Float64(),
-        sql.RawTypes.FLOAT: Float32(),
-        sql.RawTypes.VARCHAR: String(),
-        sql.RawTypes.DATE: Date(),
-        sql.RawTypes.TIMESTAMP_S: Datetime("s"),
-        sql.RawTypes.TIMESTAMP_MS: Datetime("ms"),
-        sql.RawTypes.TIMESTAMP: Datetime(),
-        sql.RawTypes.TIMESTAMP_NS: Datetime("ns"),
-        sql.RawTypes.TIMESTAMP_TZ: DatetimeTZ(),
-        sql.RawTypes.BOOLEAN: Boolean(),
-        sql.RawTypes.INTERVAL: Duration(),
-        sql.RawTypes.TIME: Time(),
-        sql.RawTypes.TIME_TZ: TimeTZ(),
-        sql.RawTypes.BLOB: Binary(),
-        sql.RawTypes.JSON: Json(),
-        sql.RawTypes.BIT: BitString(),
-        sql.RawTypes.BIGNUM: Number(),
-        sql.RawTypes.UUID: UUID(),
+        "hugeint": Int128(),
+        "bigint": Int64(),
+        "integer": Int32(),
+        "smallint": Int16(),
+        "tinyint": Int8(),
+        "uhugeint": UInt128(),
+        "ubigint": UInt64(),
+        "uinteger": UInt32(),
+        "usmallint": UInt16(),
+        "utinyint": UInt8(),
+        "double": Float64(),
+        "float": Float32(),
+        "varchar": String(),
+        "date": Date(),
+        "timestamp_s": Datetime("s"),
+        "timestamp_ms": Datetime("ms"),
+        "timestamp": Datetime(),
+        "timestamp_ns": Datetime("ns"),
+        "timestamp with time zone": DatetimeTZ(),
+        "boolean": Boolean(),
+        "interval": Duration(),
+        "time": Time(),
+        "time with time zone": TimeTZ(),
+        "blob": Binary(),
+        "json": Json(),
+        "bit": BitString(),
+        "bignum": Number(),
+        "uuid": UUID(),
     }
 )

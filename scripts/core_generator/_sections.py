@@ -32,10 +32,10 @@ if {Typing.TYPE_CHECKING}:
     from _duckdb._typing import (  # pyright: ignore[reportMissingModuleSource]
         CsvCompression,
         CsvEncoding,
-        IntoDType,
+        IntoPyType,
         JoinType,
         ParquetFieldsOptions,
-        StrIntoDType,
+        StrIntoPyType,
     )
     from ..typing import {Pql.INTO_EXPR}, {Pql.INTO_EXPR_COLUMN}, {Pql.PYTHON_LITERAL}
     import numpy as np

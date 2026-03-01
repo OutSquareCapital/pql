@@ -29,10 +29,10 @@ if TYPE_CHECKING:
     from _duckdb._typing import (  # pyright: ignore[reportMissingModuleSource]
         CsvCompression,
         CsvEncoding,
-        IntoDType,
+        IntoPyType,
         JoinType,
         ParquetFieldsOptions,
-        StrIntoDType,
+        StrIntoPyType,
     )
     from duckdb import sqltypes
 
@@ -698,11 +698,11 @@ class Relation(RelHandler):
             self.inner().select(*pc.Iter(args).map(into_duckdb), groups=groups)
         )
 
-    def select_dtypes(self, types: list[sqltypes.DuckDBPyType | StrIntoDType]) -> Self:
+    def select_dtypes(self, types: list[sqltypes.DuckDBPyType | StrIntoPyType]) -> Self:
         """Select columns from the relation, by filtering based on type(s)."""
         return self._new(self.inner().select_dtypes(types))
 
-    def select_types(self, types: list[sqltypes.DuckDBPyType | StrIntoDType]) -> Self:
+    def select_types(self, types: list[sqltypes.DuckDBPyType | StrIntoPyType]) -> Self:
         """Select columns from the relation, by filtering based on type(s)."""
         return self._new(self.inner().select_types(types))
 
@@ -1499,7 +1499,7 @@ class Expression(DuckHandler):
     def between(self, lower: IntoExpr, upper: IntoExpr) -> Self:
         return self._new(self.inner().between(into_duckdb(lower), into_duckdb(upper)))
 
-    def cast(self, type: IntoDType) -> Self:
+    def cast(self, type: IntoPyType) -> Self:
         """Create a CastExpression to type from self.
 
         Parameters:

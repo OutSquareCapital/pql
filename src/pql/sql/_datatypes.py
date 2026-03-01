@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from collections.abc import Iterable
 from dataclasses import dataclass
-from enum import Enum, StrEnum, auto
+from enum import Enum
 from typing import TYPE_CHECKING, NamedTuple, Self, cast
 
 import duckdb
@@ -11,50 +11,7 @@ from duckdb import sqltypes
 from duckdb.sqltypes import DuckDBPyType
 
 if TYPE_CHECKING:
-    from .typing import IntoDict
-
-
-class RawTypes(StrEnum):
-    """Raw DuckDB type ids, including both scalar and nested types.
-
-    This structure is here to help match the raw type ids from DuckDBPyType to the appropriate parsing logic.
-    """
-
-    LIST = auto()
-    STRUCT = auto()
-    ARRAY = auto()
-    ENUM = auto()
-    MAP = auto()
-    DECIMAL = auto()
-    UNION = auto()
-    JSON = auto()
-    HUGEINT = sqltypes.HUGEINT.id
-    BIGINT = sqltypes.BIGINT.id
-    INTEGER = sqltypes.INTEGER.id
-    SMALLINT = sqltypes.SMALLINT.id
-    TINYINT = sqltypes.TINYINT.id
-    UHUGEINT = sqltypes.UHUGEINT.id
-    UBIGINT = sqltypes.UBIGINT.id
-    UINTEGER = sqltypes.UINTEGER.id
-    USMALLINT = sqltypes.USMALLINT.id
-    UTINYINT = sqltypes.UTINYINT.id
-    DOUBLE = sqltypes.DOUBLE.id
-    FLOAT = sqltypes.FLOAT.id
-    VARCHAR = sqltypes.VARCHAR.id
-    DATE = sqltypes.DATE.id
-    TIMESTAMP_S = sqltypes.TIMESTAMP_S.id
-    TIMESTAMP_MS = sqltypes.TIMESTAMP_MS.id
-    TIMESTAMP = sqltypes.TIMESTAMP.id
-    TIMESTAMP_NS = sqltypes.TIMESTAMP_NS.id
-    TIMESTAMP_TZ = sqltypes.TIMESTAMP_TZ.id
-    BOOLEAN = sqltypes.BOOLEAN.id
-    INTERVAL = sqltypes.INTERVAL.id
-    TIME = sqltypes.TIME.id
-    TIME_TZ = sqltypes.TIME_TZ.id
-    BLOB = sqltypes.BLOB.id
-    BIT = sqltypes.BIT.id
-    UUID = sqltypes.UUID.id
-    BIGNUM = auto()
+    from .typing import DTypeIds, IntoDict
 
 
 # Raw type aliases for the unparsed children of each DuckDB type, used in the Cast namespace to convert from the raw DuckDBPyType.children to more specific structures for each type.
@@ -144,7 +101,7 @@ class DType:
     """Base class for all parsed DuckDB types."""
 
     physical: str
-    type_id: str
+    type_id: DTypeIds
 
     @classmethod
     def from_duckdb(cls, dtype: DuckDBPyType) -> Self:
@@ -187,7 +144,7 @@ class EnumType(DType):
                 cats = pc.Iter(categories).map(lambda i: i.value)
             case Iterable():
                 cats = pc.Iter(categories)
-        raw_sql = f"ENUM{cats.collect().into(tuple)!r}"
+        raw_sql = f"ENUM{cats.collect(tuple)!r}"
         return cls.from_duckdb(DuckDBPyType(raw_sql))
 
     @classmethod
@@ -325,15 +282,15 @@ type ConfiguredType = DecimalType | EnumType
 """Types who are not nested, but have additional configuration parameters (like precision/scale for `Decimal`)."""
 type SqlType = NestedType | ConfiguredType | DType
 """All possible parsed types, including simple scalar types which are represented as the base `DType`."""
-DTYPE_MAP: pc.Dict[str, type[SqlType]] = pc.Dict.from_ref(
+DTYPE_MAP: pc.Dict[DTypeIds, type[SqlType]] = pc.Dict.from_ref(
     {
-        RawTypes.LIST: ListType,
-        RawTypes.ARRAY: ArrayType,
-        RawTypes.STRUCT: StructType,
-        RawTypes.MAP: MapType,
-        RawTypes.UNION: UnionType,
-        RawTypes.ENUM: EnumType,
-        RawTypes.DECIMAL: DecimalType,
+        "list": ListType,
+        "array": ArrayType,
+        "struct": StructType,
+        "map": MapType,
+        "union": UnionType,
+        "enum": EnumType,
+        "decimal": DecimalType,
     }
 )
 """Mapping of parsing strategies for each raw `DuckDB` type id.
@@ -368,8 +325,8 @@ class ScalarType:
     BLOB = DType.from_duckdb(sqltypes.BLOB)
     BIT = DType.from_duckdb(sqltypes.BIT)
     UUID = DType.from_duckdb(sqltypes.UUID)
-    JSON = DType(RawTypes.JSON.value, RawTypes.JSON.value)
-    BIGNUM = DType(RawTypes.BIGNUM.value, RawTypes.BIGNUM.value)
+    JSON = DType.from_duckdb(duckdb.dtype("json"))
+    BIGNUM = DType.from_duckdb(duckdb.dtype("bignum"))
 
 
 def parse_dtype(dtype: DuckDBPyType) -> SqlType:

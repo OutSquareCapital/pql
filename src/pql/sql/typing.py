@@ -16,6 +16,8 @@ if TYPE_CHECKING:
         NestedLiteral as DuckNestedLit,
         NonNestedLiteral as DuckNonNestedLit,
         PythonLiteral as DuckPyLit,
+        PyTypeIds as DuckPyTypeIds,
+        StrIntoPyType as DuckStrIntoPyType,
     )
 
     from .._expr import Expr
@@ -95,3 +97,5 @@ type IntoExpr = PythonLiteral | IntoExprColumn | duckdb.Expression
 """Inputs that can convert into an expression (either a `lit` or a `col`)."""
 type IntoDuckExpr = DuckIntoExpr
 type IntoDuckExprCol = DuckIntoExprColumn
+type DTypeIds = DuckPyTypeIds
+type StrIntoDType = DuckStrIntoPyType
