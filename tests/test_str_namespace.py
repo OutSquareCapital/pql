@@ -151,39 +151,42 @@ def test_len_chars() -> None:
 
 def test_contains_literal() -> None:
     assert_eq(
-        pql.col("text").str.contains("lo", literal=True),
+        pql.col("text").str.contains(pql.lit("lo"), literal=True),
         nw.col("text").str.contains("lo", literal=True),
     )
 
 
 def test_starts_with() -> None:
     assert_eq(
-        pql.col("text").str.starts_with("Hello"),
+        pql.col("text").str.starts_with(pql.lit("Hello")),
         nw.col("text").str.starts_with("Hello"),
     )
 
 
 def test_ends_with() -> None:
     assert_eq(
-        pql.col("text").str.ends_with("suffix"), nw.col("text").str.ends_with("suffix")
+        pql.col("text").str.ends_with(pql.lit("suffix")),
+        nw.col("text").str.ends_with("suffix"),
     )
 
 
 def test_replace() -> None:
+    hi = pql.lit("Hi")
     with pytest.raises(NotImplementedError):
         assert_eq(
-            (pql.col("text").str.replace("Hello", "Hi")),
+            (pql.col("text").str.replace("Hello", hi)),
             (nw.col("text").str.replace("Hello", "Hi")),
         )
     assert_eq_pl(
-        pql.col("text").str.replace("Hello", "Hi"),
+        pql.col("text").str.replace("Hello", hi),
         pl.col("text").str.replace("Hello", "Hi"),
     )
+    expr = pql.lit("_")
     assert_eq_pl(
         (
-            pql.col("text").str.replace("a", "_", n=2),
-            pql.col("text").str.replace("a", "_", n=0).alias("replaced_0"),
-            pql.col("text").str.replace("a", "_", n=-1).alias("replaced_minus1"),
+            pql.col("text").str.replace("a", expr, n=2),
+            pql.col("text").str.replace("a", expr, n=0).alias("replaced_0"),
+            pql.col("text").str.replace("a", expr, n=-1).alias("replaced_minus1"),
         ),
         (
             pl.col("text").str.replace("a", "_", n=2),
@@ -193,16 +196,22 @@ def test_replace() -> None:
     )
 
 
+_SPACE = pql.lit(" ")
+
+
 def test_strip_chars() -> None:
     assert_eq(pql.col("text").str.strip_chars(), nw.col("text").str.strip_chars())
-    assert_eq(pql.col("text").str.strip_chars(" "), nw.col("text").str.strip_chars(" "))
+    assert_eq(
+        pql.col("text").str.strip_chars(_SPACE),
+        nw.col("text").str.strip_chars(" "),
+    )
 
 
 def test_strip_chars_start() -> None:
     assert_eq_pl(
         (
             pql.col("text").str.strip_chars_start().alias("lstripped"),
-            pql.col("text").str.strip_chars_start(" ").alias("lstripped_space"),
+            pql.col("text").str.strip_chars_start(_SPACE).alias("lstripped_space"),
         ),
         (
             pl.col("text").str.strip_chars_start().alias("lstripped"),
@@ -216,7 +225,7 @@ def test_strip_chars_end() -> None:
         pql.col("text").str.strip_chars_end(), pl.col("text").str.strip_chars_end()
     )
     assert_eq_pl(
-        pql.col("text").str.strip_chars_end(" "),
+        pql.col("text").str.strip_chars_end(_SPACE),
         pl.col("text").str.strip_chars_end(" "),
     )
 
@@ -265,23 +274,26 @@ def test_to_titlecase() -> None:
 
 
 def test_split() -> None:
-    assert_eq(pql.col("text").str.split(","), nw.col("text").str.split(","))
+    assert_eq(pql.col("text").str.split(pql.lit(",")), nw.col("text").str.split(","))
 
 
 def test_extract_all() -> None:
     assert_eq_pl(
-        pql.col("text").str.extract_all(r"\d+"), pl.col("text").str.extract_all(r"\d+")
+        pql.col("text").str.extract_all(pql.lit(r"\d+")),
+        pl.col("text").str.extract_all(r"\d+"),
     )
 
 
 def test_extract() -> None:
+    ptrn = pql.lit(r"(\w+)")
+
     assert_eq_pl(
         (
-            pql.col("text").str.extract(r"(\w+)").alias("group_default"),
+            pql.col("text").str.extract(ptrn).alias("group_default"),
             pql.col("text")
-            .str.extract(r"(\w+)\s+(\w+)", group_index=2)
+            .str.extract(pql.lit(r"(\w+)\s+(\w+)"), group_index=2)
             .alias("group_index_2"),
-            pql.col("text").str.extract(pql.lit(r"(\w+)"), group_index=0).alias("all"),
+            pql.col("text").str.extract(ptrn, group_index=0).alias("all"),
         ),
         (
             pl.col("text").str.extract(r"(\w+)").alias("group_default"),
@@ -297,13 +309,15 @@ def test_find() -> None:
     pattern = r"[A-Z][a-z]+"
     assert_eq_pl(
         (
-            pql.col("text").str.find("World", literal=True).alias("literal_found"),
-            pql.col("text").str.find("missing", literal=True).alias("literal_none"),
-            pql.col("text").str.find(pattern, literal=False).alias("regex"),
+            pql.col("text").str.find(pql.lit("World"), literal=True).alias("lit_found"),
+            pql.col("text")
+            .str.find(pql.lit("missing"), literal=True)
+            .alias("lit_none"),
+            pql.col("text").str.find(pql.lit(pattern), literal=False).alias("regex"),
         ),
         (
-            pl.col("text").str.find("World", literal=True).alias("literal_found"),
-            pl.col("text").str.find("missing", literal=True).alias("literal_none"),
+            pl.col("text").str.find("World", literal=True).alias("lit_found"),
+            pl.col("text").str.find("missing", literal=True).alias("lit_none"),
             pl.col("text").str.find(pattern, literal=False).alias("regex"),
         ),
     )
@@ -316,8 +330,8 @@ def test_escape_regex() -> None:
 def test_json_path_match() -> None:
     assert_eq_pl(
         (
-            pql.col("json").str.json_path_match("$.a").alias("json_lit"),
-            pql.col("json").str.json_path_match(pql.col("json_path")).alias("json_col"),
+            pql.col("json").str.json_path_match(pql.lit("$.a")).alias("json_lit"),
+            pql.col("json").str.json_path_match("json_path").alias("json_col"),
         ),
         (
             pl.col("json").str.json_path_match("$.a").alias("json_lit"),
@@ -327,15 +341,16 @@ def test_json_path_match() -> None:
 
 
 def test_join() -> None:
+    sep = pql.lit("-")
     assert_eq_pl(
         (
             pql.col("text_short").str.join().alias("default"),
-            pql.col("text_short").str.join("|").alias("custom"),
+            pql.col("text_short").str.join(pql.lit("|")).alias("custom"),
             pql.col("text_with_null")
-            .str.join("-", ignore_nulls=True)
+            .str.join(sep, ignore_nulls=True)
             .alias("ignore_nulls_true"),
             pql.col("text_with_null")
-            .str.join("-", ignore_nulls=False)
+            .str.join(sep, ignore_nulls=False)
             .alias("ignore_nulls_false"),
         ),
         (
@@ -352,44 +367,43 @@ def test_join() -> None:
 
 
 def test_to_date() -> None:
+    fmt = "%Y-%m-%d"
     assert_eq_pl(
         (
             pql.col("date_str").str.to_date().alias("default"),
-            pql.col("date_str").str.to_date(format="%Y-%m-%d").alias("format"),
+            pql.col("date_str").str.to_date(format=pql.lit(fmt)).alias("format"),
         ),
         (
             pl.col("date_str").str.to_date().alias("default"),
-            pl.col("date_str").str.to_date(format="%Y-%m-%d").alias("format"),
+            pl.col("date_str").str.to_date(format=fmt).alias("format"),
         ),
     )
 
 
 def test_to_datetime() -> None:
+    fmt = "%Y-%m-%d %H:%M:%S"
     assert_eq_pl(
         (
             pql.col("dt_str").str.to_datetime().alias("default"),
-            pql.col("dt_str")
-            .str.to_datetime(format="%Y-%m-%d %H:%M:%S")
-            .alias("format"),
+            pql.col("dt_str").str.to_datetime(format=pql.lit(fmt)).alias("format"),
         ),
         (
             pl.col("dt_str").str.to_datetime().alias("default"),
-            pl.col("dt_str")
-            .str.to_datetime(format="%Y-%m-%d %H:%M:%S")
-            .alias("format"),
+            pl.col("dt_str").str.to_datetime(format=fmt).alias("format"),
         ),
     )
 
 
 def test_to_time() -> None:
+    fmt = "%H:%M:%S"
     assert_eq_pl(
         (
             pql.col("time_str").str.to_time().alias("default"),
-            pql.col("time_str").str.to_time(format="%H:%M:%S").alias("format"),
+            pql.col("time_str").str.to_time(format=pql.lit(fmt)).alias("format"),
         ),
         (
             pl.col("time_str").str.to_time().alias("default"),
-            pl.col("time_str").str.to_time(format="%H:%M:%S").alias("format"),
+            pl.col("time_str").str.to_time(format=fmt).alias("format"),
         ),
     )
 
@@ -397,7 +411,7 @@ def test_to_time() -> None:
 def test_strptime() -> None:
     fmt = "%Y-%m-%d %H:%M:%S"
     assert_eq_pl(
-        pql.col("dt_str").str.strptime(fmt),
+        pql.col("dt_str").str.strptime(pql.lit(fmt)),
         pl.col("dt_str").str.strptime(pl.Datetime, fmt),
     )
 
@@ -455,22 +469,25 @@ def test_strip_suffix() -> None:
 
 
 def test_replace_all() -> None:
+
     assert_eq(
-        pql.col("text").str.replace_all("o", "0", literal=True),
+        pql.col("text").str.replace_all(pql.lit("o"), pql.lit("0"), literal=True),
         nw.col("text").str.replace_all("o", "0", literal=True),
     )
 
     assert_eq(
-        pql.col("text").str.replace_all("l", "L", literal=True),
+        pql.col("text").str.replace_all(pql.lit("l"), pql.lit("L"), literal=True),
         nw.col("text").str.replace_all("l", "L", literal=True),
     )
 
     assert_eq(
-        pql.col("text").str.replace_all(r"\d+", "X", literal=False),
+        pql.col("text").str.replace_all(pql.lit(r"\d+"), pql.lit("X"), literal=False),
         nw.col("text").str.replace_all(r"\d+", "X", literal=False),
     )
     assert_eq(
-        pql.col("text").str.replace_all("suffix", pql.col("suffix_val"), literal=True),
+        pql.col("text").str.replace_all(
+            pql.lit("suffix"), pql.col("suffix_val"), literal=True
+        ),
         nw.col("text").str.replace_all("suffix", nw.col("suffix_val"), literal=True),
     )
 
@@ -485,7 +502,7 @@ def test_tail() -> None:
 
 def test_contains_regex() -> None:
     assert_eq(
-        pql.col("text").str.contains(r"\d+", literal=False),
+        pql.col("text").str.contains(pql.lit(r"\d+"), literal=False),
         nw.col("text").str.contains(r"\d+", literal=False),
     )
 
@@ -509,7 +526,7 @@ def test_pad_start() -> None:
         pql.col("text_short").str.pad_start(5), pl.col("text_short").str.pad_start(5)
     )
     assert_eq_pl(
-        pql.col("text_short").str.pad_start(10, fill_char="*"),
+        pql.col("text_short").str.pad_start(10, fill_char=pql.lit("*")),
         pl.col("text_short").str.pad_start(10, fill_char="*"),
     )
 
@@ -519,7 +536,7 @@ def test_pad_end() -> None:
         pql.col("text_short").str.pad_end(5), pl.col("text_short").str.pad_end(5)
     )
     assert_eq_pl(
-        pql.col("text_short").str.pad_end(10, fill_char="-"),
+        pql.col("text_short").str.pad_end(10, fill_char=pql.lit("-")),
         pl.col("text_short").str.pad_end(10, fill_char="-"),
     )
 

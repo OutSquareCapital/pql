@@ -40,6 +40,7 @@ def sample_df() -> nw.LazyFrame[duckdb.DuckDBPyRelation]:
                         ["c"],
                         [],
                     ],
+                    "matches": ["g", "b", "c", None],
                 },
             )
         )
@@ -85,7 +86,7 @@ def test_contains() -> None:
     assert_eq(pql.col("x").list.contains(2), nw.col("x").list.contains(2))
     assert_eq_pl(
         (
-            pql.col("x").list.contains(None).alias("x_nulls_neq"),
+            pql.col("x").list.contains(pql.lit(None)).alias("x_nulls_neq"),
             pql.col("x").list.contains(pql.col("y")).alias("x_nulls_neq_y"),
             pql.col("x").list.contains(pql.col("y")).alias("x_y"),
         ),
@@ -101,6 +102,10 @@ def test_contains() -> None:
 
 def test_count_matches() -> None:
     assert_eq_pl(pql.col("x").list.count_matches(5), pl.col("x").list.count_matches(5))
+    assert_eq_pl(
+        pql.col("str_vals").list.count_matches(pql.lit("matches")),
+        pl.col("str_vals").list.count_matches("matches"),
+    )
 
 
 def test_drop_nulls() -> None:
@@ -214,9 +219,10 @@ def test_all() -> None:
 
 
 def test_join() -> None:
-    assert_eq_pl(pql.col("str_vals").list.join("-"), pl.col("str_vals").list.join("-"))
+    sep = pql.lit("-")
+    assert_eq_pl(pql.col("str_vals").list.join(sep), pl.col("str_vals").list.join("-"))
     assert_eq_pl(
-        pql.col("str_vals").list.join("-", ignore_nulls=False),
+        pql.col("str_vals").list.join(sep, ignore_nulls=False),
         pl.col("str_vals").list.join("-", ignore_nulls=False),
     )
 

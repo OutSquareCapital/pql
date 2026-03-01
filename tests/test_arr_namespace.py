@@ -100,16 +100,18 @@ def test_contains() -> None:
     assert_eq(pql.col("x").arr.contains(2), nw.col("x").list.contains(2))
     assert_eq_pl(
         (
-            pql.col("x").arr.contains(None).alias("x_nulls_neq"),
-            pql.col("x").arr.contains(pql.col("y")).alias("x_nulls_neq_y"),
-            pql.col("x").arr.contains(pql.col("y")).alias("x_y"),
+            pql.col("x").arr.contains(pql.lit(None)).alias("x_nulls_neq"),
+            pql.col("x").arr.contains("y").alias("x_nulls_neq_y"),
+            pql.col("x").arr.contains(3).alias("x_y"),
         ),
         (
-            pl.col("x").arr.contains(None, nulls_equal=False).alias("x_nulls_neq"),
+            pl.col("x")
+            .arr.contains(pl.lit(None), nulls_equal=False)
+            .alias("x_nulls_neq"),
             pl.col("x")
             .arr.contains(pl.col("y"), nulls_equal=False)
             .alias("x_nulls_neq_y"),
-            pl.col("x").arr.contains(pl.col("y")).alias("x_y"),
+            pl.col("x").arr.contains(3).alias("x_y"),
         ),
     )
 
@@ -231,9 +233,10 @@ def test_all() -> None:
 
 
 def test_join() -> None:
-    assert_eq_pl(pql.col("str_vals").arr.join("-"), pl.col("str_vals").arr.join("-"))
+    sep = pql.lit("-")
+    assert_eq_pl(pql.col("str_vals").arr.join(sep), pl.col("str_vals").arr.join("-"))
     assert_eq_pl(
-        pql.col("str_vals").arr.join("-", ignore_nulls=False),
+        pql.col("str_vals").arr.join(sep, ignore_nulls=False),
         pl.col("str_vals").arr.join("-", ignore_nulls=False),
     )
 

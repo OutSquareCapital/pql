@@ -3918,7 +3918,7 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("list_concat", self.inner(), *args))
 
-    def contains(self, element: IntoExprColumn) -> T:
+    def contains(self, element: IntoExpr) -> T:
         """Returns true if the list contains the element.
 
         **SQL name**: *list_contains*
@@ -3927,7 +3927,7 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
             array_contains, array_has, list_has
 
         Args:
-            element (IntoExprColumn): `T` expression
+            element (IntoExpr): `T` expression
 
         Examples:
             list_contains([1, 2, NULL], 1)
@@ -4171,7 +4171,7 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("grade_up", self.inner(), col1, col2))
 
-    def has(self, element: IntoExprColumn) -> T:
+    def has(self, element: IntoExpr) -> T:
         """Returns true if the list contains the element.
 
         **SQL name**: *list_has*
@@ -4180,7 +4180,7 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
             array_contains, array_has, list_contains
 
         Args:
-            element (IntoExprColumn): `T` expression
+            element (IntoExpr): `T` expression
 
         Examples:
             list_has([1, 2, NULL], 1)
@@ -4190,7 +4190,7 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("list_has", self.inner(), element))
 
-    def has_all(self, list2: IntoExprColumn) -> T:
+    def has_all(self, list2: IntoExpr) -> T:
         """Returns true if all elements of list2 are in list1.
 
         NULLs are ignored.
@@ -4201,7 +4201,7 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
             array_has_all
 
         Args:
-            list2 (IntoExprColumn): `T[]` expression
+            list2 (IntoExpr): `T[]` expression
 
         Examples:
             list_has_all([1, 2, 3], [2, 3])
@@ -4211,7 +4211,7 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("list_has_all", self.inner(), list2))
 
-    def has_any(self, list2: IntoExprColumn) -> T:
+    def has_any(self, list2: IntoExpr) -> T:
         """Returns true if the lists have any element in common.
 
         NULLs are ignored.
@@ -4222,7 +4222,7 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
             array_has_any
 
         Args:
-            list2 (IntoExprColumn): `T[]` expression
+            list2 (IntoExpr): `T[]` expression
 
         Examples:
             list_has_any([1, 2, 3], [2, 3, 4])
@@ -4242,7 +4242,7 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("list_histogram", self.inner()))
 
-    def indexof(self, element: IntoExprColumn) -> T:
+    def indexof(self, element: IntoExpr) -> T:
         """Returns the index of the `element` if the `list` contains the `element`.
 
         If the `element` is not found, it returns `NULL`.
@@ -4253,7 +4253,7 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
             array_indexof, array_position, list_position
 
         Args:
-            element (IntoExprColumn): `T` expression
+            element (IntoExpr): `T` expression
 
         Examples:
             list_indexof([1, 2, NULL], 2)
@@ -4445,7 +4445,7 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("list_negative_inner_product", self.inner(), list2))
 
-    def pack(self, *args: IntoExprColumn) -> T:
+    def pack(self, *args: IntoExpr) -> T:
         """Creates a LIST containing the argument values.
 
         **SQL name**: *list_pack*
@@ -4454,7 +4454,7 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
             list_value
 
         Args:
-            *args (IntoExprColumn): `T` expression
+            *args (IntoExpr): `T` expression
 
         Examples:
             list_pack(4, 5, 6)
@@ -4464,7 +4464,7 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("list_pack", self.inner(), *args))
 
-    def position(self, element: IntoExprColumn) -> T:
+    def position(self, element: IntoExpr) -> T:
         """Returns the index of the `element` if the `list` contains the `element`.
 
         If the `element` is not found, it returns `NULL`.
@@ -4475,7 +4475,7 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
             array_indexof, array_position, list_indexof
 
         Args:
-            element (IntoExprColumn): `T` expression
+            element (IntoExpr): `T` expression
 
         Examples:
             list_position([1, 2, NULL], 2)
@@ -4785,7 +4785,7 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("unpivot_list", self.inner(), *args))
 
-    def value(self, *args: IntoExprColumn) -> T:
+    def value(self, *args: IntoExpr) -> T:
         """Creates a LIST containing the argument values.
 
         **SQL name**: *list_value*
@@ -4794,7 +4794,7 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
             list_pack
 
         Args:
-            *args (IntoExprColumn): `T` expression
+            *args (IntoExpr): `T` expression
 
         Examples:
             list_value(4, 5, 6)
@@ -7195,7 +7195,7 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("array_concat", self.inner(), *args))
 
-    def contains(self, element: IntoExprColumn) -> T:
+    def contains(self, element: IntoExpr) -> T:
         """Returns true if the list contains the element.
 
         **SQL name**: *array_contains*
@@ -7204,7 +7204,7 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
             array_has, list_contains, list_has
 
         Args:
-            element (IntoExprColumn): `T` expression
+            element (IntoExpr): `T` expression
 
         Examples:
             array_contains([1, 2, NULL], 1)
@@ -7393,7 +7393,7 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("array_grade_up", self.inner(), col1, col2))
 
-    def has(self, element: IntoExprColumn) -> T:
+    def has(self, element: IntoExpr) -> T:
         """Returns true if the list contains the element.
 
         **SQL name**: *array_has*
@@ -7402,7 +7402,7 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
             array_contains, list_contains, list_has
 
         Args:
-            element (IntoExprColumn): `T` expression
+            element (IntoExpr): `T` expression
 
         Examples:
             array_has([1, 2, NULL], 1)
@@ -7412,7 +7412,7 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("array_has", self.inner(), element))
 
-    def has_all(self, list2: IntoExprColumn) -> T:
+    def has_all(self, list2: IntoExpr) -> T:
         """Returns true if all elements of list2 are in list1.
 
         NULLs are ignored.
@@ -7423,7 +7423,7 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
             list_has_all
 
         Args:
-            list2 (IntoExprColumn): `T[]` expression
+            list2 (IntoExpr): `T[]` expression
 
         Examples:
             array_has_all([1, 2, 3], [2, 3])
@@ -7433,7 +7433,7 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("array_has_all", self.inner(), list2))
 
-    def has_any(self, list2: IntoExprColumn) -> T:
+    def has_any(self, list2: IntoExpr) -> T:
         """Returns true if the lists have any element in common.
 
         NULLs are ignored.
@@ -7444,7 +7444,7 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
             list_has_any
 
         Args:
-            list2 (IntoExprColumn): `T[]` expression
+            list2 (IntoExpr): `T[]` expression
 
         Examples:
             array_has_any([1, 2, 3], [2, 3, 4])
@@ -7454,7 +7454,7 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("array_has_any", self.inner(), list2))
 
-    def indexof(self, element: IntoExprColumn) -> T:
+    def indexof(self, element: IntoExpr) -> T:
         """Returns the index of the `element` if the `list` contains the `element`.
 
         If the `element` is not found, it returns `NULL`.
@@ -7465,7 +7465,7 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
             array_position, list_indexof, list_position
 
         Args:
-            element (IntoExprColumn): `T` expression
+            element (IntoExpr): `T` expression
 
         Examples:
             array_indexof([1, 2, NULL], 2)
@@ -7606,7 +7606,7 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("array_pop_front", self.inner()))
 
-    def position(self, element: IntoExprColumn) -> T:
+    def position(self, element: IntoExpr) -> T:
         """Returns the index of the `element` if the `list` contains the `element`.
 
         If the `element` is not found, it returns `NULL`.
@@ -7617,7 +7617,7 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
             array_indexof, list_indexof, list_position
 
         Args:
-            element (IntoExprColumn): `T` expression
+            element (IntoExpr): `T` expression
 
         Examples:
             array_position([1, 2, NULL], 2)

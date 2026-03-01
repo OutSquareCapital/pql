@@ -24,7 +24,7 @@ from ._core import func
 from ._window import over_expr
 
 if TYPE_CHECKING:
-    from .typing import IntoExprColumn
+    from .typing import IntoExpr, IntoExprColumn
 
 
 class SqlExpr(Expression, Fns):
@@ -98,7 +98,7 @@ class SqlExpr(Expression, Fns):
             case False:
                 return self.kurtosis_samp()
 
-    def log(self, x: Self | float | None = None) -> Self:
+    def log(self, x: IntoExprColumn | float | None = None) -> Self:
         """Computes the logarithm of x to base b.
 
         b may be omitted, in which case the default 10.
@@ -106,14 +106,14 @@ class SqlExpr(Expression, Fns):
         **SQL name**: *log*
 
         Args:
-            x (Self | float | None): `DOUBLE` expression
+            x (IntoExprColumn | float | None): `DOUBLE` expression
 
         Returns:
             Self
         """
         return self._new(func("log", x, self.inner()))
 
-    def greatest(self, *args: Self) -> Self:
+    def greatest(self, *args: IntoExpr) -> Self:
         """Returns the largest value.
 
         For strings lexicographical ordering is used.
@@ -123,14 +123,14 @@ class SqlExpr(Expression, Fns):
         **SQL name**: *greatest*
 
         Args:
-            *args (Self): `ANY` expression
+            *args (IntoExpr): `ANY` expression
 
         Returns:
             Self
         """
         return self._new(func("greatest", self.inner(), *args))
 
-    def least(self, *args: Self) -> Self:
+    def least(self, *args: IntoExpr) -> Self:
         """Returns the smallest value.
 
         For strings lexicographical ordering is used.
@@ -140,7 +140,7 @@ class SqlExpr(Expression, Fns):
         **SQL name**: *least*
 
         Args:
-            *args (Self): `ANY` expression
+            *args (IntoExpr): `ANY` expression
 
         Returns:
             Self
@@ -228,7 +228,9 @@ class SqlExpr(Expression, Fns):
         """
         return self._new(func("first_value", self.inner()))
 
-    def lag(self, offset: SqlExpr | int = 1, default: SqlExpr | None = None) -> Self:
+    def lag(
+        self, offset: IntoExprColumn | int = 1, default: IntoExpr | None = None
+    ) -> Self:
         """Returns expr evaluated at the row that is offset rows (among rows with a non-null value of expr if IGNORE NULLS is set) before the current row within the window frame.
 
         If there is no such row, instead return default (which must be of the Same type as expr).
@@ -240,8 +242,8 @@ class SqlExpr(Expression, Fns):
         If an `ORDER BY` clause is specified, the lagged row number is computed within the frame using the provided ordering instead of the frame ordering.
 
         Args:
-            offset (SqlExpr | int): Number of rows to look back (default: 1)
-            default (SqlExpr | None): Default value if no such row exists (default: NULL)
+            offset (IntoExprColumn | int): Number of rows to look back (default: 1)
+            default (IntoExpr | None): Default value if no such row exists (default: NULL)
 
         Returns:
             Self
@@ -259,7 +261,9 @@ class SqlExpr(Expression, Fns):
         """
         return self._new(func("last_value", self.inner()))
 
-    def lead(self, offset: SqlExpr | int = 1, default: SqlExpr | None = None) -> Self:
+    def lead(
+        self, offset: IntoExprColumn | int = 1, default: IntoExpr | None = None
+    ) -> Self:
         """Returns expr evaluated at the row that is offset rows after the current row (among rows with a non-null value of expr if IGNORE NULLS is set) within the window frame.
 
         If there is no such row, instead return default (which must be of the Same type as expr).
@@ -269,15 +273,15 @@ class SqlExpr(Expression, Fns):
         If an `ORDER BY` clause is specified, the leading row number is computed within the frame using the provided ordering instead of the frame ordering.
 
         Args:
-            offset (SqlExpr | int): Number of rows to look ahead (default: 1)
-            default (SqlExpr | None): Default value if no such row exists (default: NULL)
+            offset (IntoExprColumn | int): Number of rows to look ahead (default: 1)
+            default (IntoExpr | None): Default value if no such row exists (default: NULL)
 
         Returns:
             Self
         """
         return self._new(func("lead", self.inner(), offset, default))
 
-    def nth_value(self, nth: SqlExpr | int) -> Self:
+    def nth_value(self, nth: IntoExprColumn | int) -> Self:
         """Returns expr evaluated at the nth row (among rows with a non-null value of expr if IGNORE NULLS is set) of the window frame (counting from 1).
 
         Return `NULL` if no such row.
@@ -285,7 +289,7 @@ class SqlExpr(Expression, Fns):
         If an `ORDER BY` clause is specified, the nth row number is computed within the frame using the provided ordering instead of the frame ordering.
 
         Args:
-            nth (SqlExpr | int): The row number to retrieve (1-based)
+            nth (IntoExprColumn | int): The row number to retrieve (1-based)
 
         Returns:
             Self
@@ -340,20 +344,20 @@ class SqlExpr(Expression, Fns):
 class SqlExprStringNameSpace(StringFns[SqlExpr]):
     """String function namespace for SQL expressions."""
 
-    def strftime(self, format_arg: SqlExpr | date | datetime | str) -> SqlExpr:
+    def strftime(self, format_arg: IntoExprColumn | date | datetime | str) -> SqlExpr:
         """Converts a `date` to a string according to the format string.
 
         **SQL name**: *strftime*
 
         Args:
-            format_arg (SqlExpr | date | datetime | str): `DATE | TIMESTAMP | TIMESTAMP_NS | VARCHAR` expression
+            format_arg (IntoExprColumn | date | datetime | str): `DATE | TIMESTAMP | TIMESTAMP_NS | VARCHAR` expression
 
         Returns:
             SqlExpr
         """
         return self._new(func("strftime", self.inner(), format_arg))
 
-    def strptime(self, format_arg: SqlExpr | list[str] | str) -> SqlExpr:
+    def strptime(self, format_arg: IntoExprColumn | list[str]) -> SqlExpr:
         """Converts the `string` text to timestamp according to the format string.
 
         Throws an error on failure.
@@ -363,14 +367,14 @@ class SqlExprStringNameSpace(StringFns[SqlExpr]):
         **SQL name**: *strptime*
 
         Args:
-            format_arg (SqlExpr | list[str] | str): `VARCHAR | VARCHAR[]` expression
+            format_arg (IntoExprColumn | list[str]): `VARCHAR | VARCHAR[]` expression
 
         Returns:
             SqlExpr
         """
         return self._new(func("strptime", self.inner(), format_arg))
 
-    def concat(self, *args: SqlExpr) -> SqlExpr:
+    def concat(self, *args: IntoExpr) -> SqlExpr:
         """Concatenates multiple strings or lists.
 
         `NULL` inputs are skipped.
@@ -380,7 +384,7 @@ class SqlExprStringNameSpace(StringFns[SqlExpr]):
         **SQL name**: *concat*
 
         Args:
-            *args (SqlExpr): `ANY` expression
+            *args (IntoExpr): `ANY` expression
 
         Returns:
             SqlExpr

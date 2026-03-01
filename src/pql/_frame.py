@@ -384,12 +384,12 @@ class LazyFrame(sql.CoreHandler[sql.Relation]):
 
         def _with_idx_and_len() -> Self:
             return self.with_columns(
-                sql.row_number().over().sub(sql.lit(1)).alias(slice_idx_col),
+                sql.row_number().over().sub(1).alias(slice_idx_col),
                 sql.lit(1).count().over().alias(slice_len_col),
             )
 
         def _from_end_start(off: int) -> sql.SqlExpr:
-            return sql.col(slice_idx_col).ge(sql.col(slice_len_col).add(sql.lit(off)))
+            return sql.col(slice_idx_col).ge(sql.col(slice_len_col).add(off))
 
         match (pc.Option(length), offset):
             case (pc.Some(length), _) if length < 0:
@@ -409,9 +409,7 @@ class LazyFrame(sql.CoreHandler[sql.Relation]):
                     .filter(
                         _from_end_start(offset).and_(
                             sql.col(slice_idx_col).lt(
-                                sql.col(slice_len_col)
-                                .add(sql.lit(offset))
-                                .add(sql.lit(length))
+                                sql.col(slice_len_col).add(offset).add(length)
                             )
                         )
                     )
@@ -458,8 +456,7 @@ class LazyFrame(sql.CoreHandler[sql.Relation]):
             if to_explode.length() == 1
             else (
                 to_explode.first().list.zip(
-                    *to_explode.iter().skip(1),
-                    sql.lit(1).eq(sql.lit(1)),
+                    *to_explode.iter().skip(1), sql.lit(1).eq(1)
                 )
             )
         )
@@ -478,7 +475,7 @@ class LazyFrame(sql.CoreHandler[sql.Relation]):
                     return replace.alias(name)
                 case False:
                     return replace.struct.extract(
-                        sql.lit(zipped_index.get_item(name).unwrap()),
+                        zipped_index.get_item(name).unwrap()
                     ).alias(name)
 
         def _project_col(
@@ -500,7 +497,7 @@ class LazyFrame(sql.CoreHandler[sql.Relation]):
 
         return (
             target.is_not_null()
-            .and_(target.len().gt(sql.lit(0)))
+            .and_(target.len().gt(0))
             .pipe(
                 lambda cond: (
                     self.inner()
@@ -661,11 +658,7 @@ class LazyFrame(sql.CoreHandler[sql.Relation]):
         """Take every nth row starting from offset."""
         return (
             self.with_row_index(name=TEMP_NAME, order_by=self.columns)
-            .filter(
-                TEMP_COL.ge(sql.lit(offset)).and_(
-                    TEMP_COL.sub(sql.lit(offset)).mod(sql.lit(n)).eq(sql.lit(0))
-                )
-            )
+            .filter(TEMP_COL.ge(offset).and_(TEMP_COL.sub(offset).mod(n).eq(0)))
             .drop(TEMP_NAME)
         )
 
@@ -898,14 +891,14 @@ class LazyFrame(sql.CoreHandler[sql.Relation]):
                         )
                         .alias(asof_rank),
                     )
-                    .filter(sql.col(asof_rank).eq(sql.lit(1)))
+                    .filter(sql.col(asof_rank).eq(1))
                     .select(sql.all(exclude=(asof_rank, asof_order, TEMP_NAME)))
                     .pipe(self._new)
                 )
 
     def quantile(self, quantile: float) -> Self:
         """Compute quantile for each column."""
-        return self._iter_agg(lambda c: c.quantile_cont(sql.lit(quantile)))
+        return self._iter_agg(lambda c: c.quantile_cont(quantile))
 
     def unique(
         self,
@@ -999,10 +992,7 @@ class LazyFrame(sql.CoreHandler[sql.Relation]):
         """Insert row index based on order_by."""
         return self._select(
             (
-                sql.row_number()
-                .over(order_by=try_iter(order_by))
-                .sub(sql.lit(1))
-                .alias(name),
+                sql.row_number().over(order_by=try_iter(order_by)).sub(1).alias(name),
                 sql.all(),
             )
         )
