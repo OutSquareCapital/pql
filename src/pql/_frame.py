@@ -231,14 +231,7 @@ class LazyFrame(sql.CoreHandler[sql.Relation]):
     def _select(
         self, exprs: IntoExprColumn | Iterable[IntoExprColumn], groups: str = ""
     ) -> Self:
-        return (
-            self.inner()
-            .select(
-                *try_flatten(exprs).map(lambda v: sql.into_expr(v, as_col=True)),
-                groups=groups,
-            )
-            .pipe(self._new)
-        )
+        return self.inner().select(*try_flatten(exprs), groups=groups).pipe(self._new)
 
     def _filter(self, predicates: IntoExprColumn | Iterable[IntoExprColumn]) -> Self:
         return try_iter(predicates).fold(
@@ -258,14 +251,7 @@ class LazyFrame(sql.CoreHandler[sql.Relation]):
         exprs: IntoExprColumn | Iterable[IntoExprColumn],
         group_expr: sql.SqlExpr | str = "",
     ) -> Self:
-        return (
-            self.inner()
-            .aggregate(
-                try_flatten(exprs).map(lambda v: sql.into_expr(v, as_col=True)),
-                group_expr,
-            )
-            .pipe(self._new)
-        )
+        return self.inner().aggregate(try_flatten(exprs), group_expr).pipe(self._new)
 
     def _iter_slct(self, func: Callable[[str], sql.SqlExpr]) -> Self:
         return self.columns.iter().map(func).into(self._select)
@@ -542,7 +528,7 @@ class LazyFrame(sql.CoreHandler[sql.Relation]):
         If `sqlparse` is installed, the SQL output will be formatted for better readability.
         """
 
-        def _try_import() -> pc.Option[Any]:
+        def _try_import() -> pc.Option[Any]:  # pragma: no cover
             try:
                 import sqlparse
 
@@ -564,7 +550,6 @@ class LazyFrame(sql.CoreHandler[sql.Relation]):
     ) -> Self:
         return (
             try_chain(columns, more_columns)
-            .map(lambda v: sql.into_expr(v, as_col=True))
             .collect()
             .into(
                 lambda unnest_cols: (
@@ -664,9 +649,8 @@ class LazyFrame(sql.CoreHandler[sql.Relation]):
                 def _shift_fn(c: str) -> sql.SqlExpr:
                     return sql.col(c).lag(abs_n).alias(c)
 
-        fill_expr = sql.into_expr(fill_value)
         return self._iter_slct(
-            lambda c: sql.coalesce(_shift_fn(c).over(), fill_expr).alias(c)
+            lambda c: sql.coalesce(_shift_fn(c).over(), fill_value).alias(c)
         )
 
     def clone(self) -> Self:

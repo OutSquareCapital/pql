@@ -12,7 +12,7 @@ The first value of each tuple is for `Narwhals` and the second value is for `Pol
 | LazyFrame           | (53.8%, 32.5%)  | (26, 83)  | (14, 27) | (1, 32) | (11, 24)   | (34, 8) |
 | Expr                | (70.0%, 42.3%)  | (70, 213) | (49, 90) | (8, 94) | (13, 29)   | (58, 1) |
 | LazyGroupBy         | (0.0%, 43.8%)   | (1, 16)   | (0, 7)   | (0, 4)  | (1, 5)     | (11, 0) |
-| ExprStrNameSpace    | (100.0%, 38.3%) | (19, 47)  | (19, 18) | (0, 10) | (0, 19)    | (19, 1) |
+| ExprStrNameSpace    | (94.7%, 38.3%)  | (19, 47)  | (18, 18) | (0, 10) | (1, 19)    | (19, 1) |
 | ExprListNameSpace   | (90.0%, 46.5%)  | (10, 43)  | (9, 20)  | (0, 20) | (1, 3)     | (14, 1) |
 | ExprStructNameSpace | (100.0%, 20.0%) | (1, 5)    | (1, 1)   | (0, 2)  | (0, 2)     | (3, 1)  |
 | ExprNameNameSpace   | (100.0%, 70.0%) | (6, 10)   | (6, 7)   | (0, 3)  | (0, 0)     | (2, 1)  |
@@ -405,7 +405,7 @@ The first value of each tuple is for `Narwhals` and the second value is for `Pol
   - **pql**: (`n: int`) -> Self
 - `pow` (pl)
   - **Polars***: (`exponent: IntoExprColumn | int | float`) -> Expr
-  - **pql**: (`other: Any`) -> Self
+  - **pql**: (`other: IntoExpr`) -> Self
 - `repeat_by` (pl)
   - **Polars***: (`by: Series | Expr | str_ | int`) -> Expr
   - **pql**: (`by: Expr | int`) -> Self
@@ -483,7 +483,7 @@ The first value of each tuple is for `Narwhals` and the second value is for `Pol
 - `to_integer`
   - **Polars**: (base: int | IntoExprColumn, dtype: PolarsIntegerType, strict: bool) -> Expr
 
-### [!] Signature Mismatches (4)
+### [!] Signature Mismatches (5)
 
 - `find` (pl)
   - **Polars***: (pattern: str | Expr, literal: bool, `strict: bool`) -> Expr
@@ -491,6 +491,10 @@ The first value of each tuple is for `Narwhals` and the second value is for `Pol
 - `normalize` (pl)
   - **Polars***: (`form: UnicodeForm`) -> Expr
   - **pql**: () -> Expr
+- `replace` (nw)
+  - **Narwhals**: (pattern: str, `value: str | IntoExpr`, literal: bool, n: int) -> ExprT
+  - **Polars**: (`pattern: str | Expr`, value: str | Expr, literal: bool, n: int) -> Expr
+  - **pql**: (pattern: str, `value: str | Expr`, literal: bool, n: int) -> Expr
 - `strptime` (pl)
   - **Polars***: (`dtype: PolarsTemporalType`, `format: str | None`, `strict: bool`, `exact: bool`, `cache: bool`, `ambiguous: Ambiguous | Expr`) -> Expr
   - **pql**: (`format: str | Expr`) -> Expr

@@ -6,7 +6,7 @@ import re
 from collections.abc import Callable, Collection, Iterable
 from dataclasses import dataclass, field, replace
 from functools import partial
-from typing import TYPE_CHECKING, Any, NamedTuple, Self
+from typing import TYPE_CHECKING, NamedTuple, Self
 
 import pyochain as pc
 
@@ -185,7 +185,7 @@ class ExprPlan:
 def _resolve_projection(
     columns: pc.Seq[str], value: IntoExpr, *, alias_override: pc.Option[str] = pc.NONE
 ) -> pc.Iter[ExprProjection]:
-    into_expr = pc.Iter[ExprProjection].once
+    into_proj = pc.Iter[ExprProjection].once
     match value:
         case Expr() as expr:
             base_names = (
@@ -205,7 +205,7 @@ def _resolve_projection(
                         )
                     )
                 case False:
-                    return into_expr(
+                    return into_proj(
                         ExprProjection(
                             expr.inner(),
                             expr.meta.from_projection(output_names.first()),
@@ -214,7 +214,7 @@ def _resolve_projection(
         case _:
             resolved = sql.into_expr(value, as_col=True)
             resolved_meta = ExprMeta.__from_expr__(resolved)
-            return into_expr(
+            return into_proj(
                 ExprProjection(
                     resolved,
                     resolved_meta.from_projection(
@@ -287,7 +287,7 @@ class Expr(sql.CoreHandler[sql.SqlExpr]):
                 self.inner()
                 .count()
                 .over(rows_start=bounds.start, rows_end=bounds.end)
-                .ge(sql.lit(pc.Option(min_samples).unwrap_or(window_size)))
+                .ge(pc.Option(min_samples).unwrap_or(window_size))
             )
             .then(agg(self.inner()).over(rows_start=bounds.start, rows_end=bounds.end))
             .otherwise(_NONE)
@@ -328,7 +328,7 @@ class Expr(sql.CoreHandler[sql.SqlExpr]):
         return self.sub(other)
 
     def __rsub__(self, other: IntoExpr) -> Self:
-        return self._new(self.inner().rsub(sql.into_expr(other)))
+        return self._new(self.inner().rsub(other))
 
     def __mul__(self, other: IntoExpr) -> Self:
         return self.mul(other)
@@ -340,25 +340,25 @@ class Expr(sql.CoreHandler[sql.SqlExpr]):
         return self.truediv(other)
 
     def __rtruediv__(self, other: IntoExpr) -> Self:
-        return self._new(self.inner().rtruediv(sql.into_expr(other)))
+        return self._new(self.inner().rtruediv(other))
 
     def __floordiv__(self, other: IntoExpr) -> Self:
         return self.floordiv(other)
 
     def __rfloordiv__(self, other: IntoExpr) -> Self:
-        return self._new(self.inner().rfloordiv(sql.into_expr(other)))
+        return self._new(self.inner().rfloordiv(other))
 
     def __mod__(self, other: IntoExpr) -> Self:
         return self.mod(other)
 
     def __rmod__(self, other: IntoExpr) -> Self:
-        return self._new(self.inner().rmod(sql.into_expr(other)))
+        return self._new(self.inner().rmod(other))
 
     def __pow__(self, other: IntoExpr) -> Self:
         return self.pow(other)
 
     def __rpow__(self, other: IntoExpr) -> Self:
-        return self._new(self.inner().rpow(sql.into_expr(other)))
+        return self._new(self.inner().rpow(other))
 
     def __neg__(self) -> Self:
         return self.neg()
@@ -402,27 +402,27 @@ class Expr(sql.CoreHandler[sql.SqlExpr]):
     def __hash__(self) -> int:
         return hash(str(self.inner()))
 
-    def add(self, other: Any) -> Self:  # noqa: ANN401
+    def add(self, other: IntoExpr) -> Self:
         """Add another expression or value."""
-        return self._new(self.inner().add(sql.into_expr(other)))
+        return self._new(self.inner().add(other))
 
-    def sub(self, other: Any) -> Self:  # noqa: ANN401
-        return self._new(self.inner().sub(sql.into_expr(other)))
+    def sub(self, other: IntoExpr) -> Self:
+        return self._new(self.inner().sub(other))
 
-    def mul(self, other: Any) -> Self:  # noqa: ANN401
-        return self._new(self.inner().mul(sql.into_expr(other)))
+    def mul(self, other: IntoExpr) -> Self:
+        return self._new(self.inner().mul(other))
 
-    def truediv(self, other: Any) -> Self:  # noqa: ANN401
-        return self._new(self.inner().truediv(sql.into_expr(other)))
+    def truediv(self, other: IntoExpr) -> Self:
+        return self._new(self.inner().truediv(other))
 
-    def floordiv(self, other: Any) -> Self:  # noqa: ANN401
-        return self._new(self.inner().floordiv(sql.into_expr(other)))
+    def floordiv(self, other: IntoExpr) -> Self:
+        return self._new(self.inner().floordiv(other))
 
-    def mod(self, other: Any) -> Self:  # noqa: ANN401
-        return self._new(self.inner().mod(sql.into_expr(other)))
+    def mod(self, other: IntoExpr) -> Self:
+        return self._new(self.inner().mod(other))
 
-    def pow(self, other: Any) -> Self:  # noqa: ANN401
-        return self._new(self.inner().pow(sql.into_expr(other)))
+    def pow(self, other: IntoExpr) -> Self:
+        return self._new(self.inner().pow(other))
 
     def neg(self) -> Self:
         return self._new(self.inner().neg())
@@ -430,29 +430,29 @@ class Expr(sql.CoreHandler[sql.SqlExpr]):
     def abs(self) -> Self:
         return self._new(self.inner().abs())
 
-    def eq(self, other: Any) -> Self:  # noqa: ANN401
-        return self._new(self.inner().eq(sql.into_expr(other)))
+    def eq(self, other: IntoExpr) -> Self:
+        return self._new(self.inner().eq(other))
 
-    def ne(self, other: Any) -> Self:  # noqa: ANN401
-        return self._new(self.inner().ne(sql.into_expr(other)))
+    def ne(self, other: IntoExpr) -> Self:
+        return self._new(self.inner().ne(other))
 
-    def lt(self, other: Any) -> Self:  # noqa: ANN401
-        return self._new(self.inner().lt(sql.into_expr(other)))
+    def lt(self, other: IntoExpr) -> Self:
+        return self._new(self.inner().lt(other))
 
-    def le(self, other: Any) -> Self:  # noqa: ANN401
-        return self._new(self.inner().le(sql.into_expr(other)))
+    def le(self, other: IntoExpr) -> Self:
+        return self._new(self.inner().le(other))
 
-    def gt(self, other: Any) -> Self:  # noqa: ANN401
-        return self._new(self.inner().gt(sql.into_expr(other)))
+    def gt(self, other: IntoExpr) -> Self:
+        return self._new(self.inner().gt(other))
 
-    def ge(self, other: Any) -> Self:  # noqa: ANN401
-        return self._new(self.inner().ge(sql.into_expr(other)))
+    def ge(self, other: IntoExpr) -> Self:
+        return self._new(self.inner().ge(other))
 
-    def and_(self, others: Any) -> Self:  # noqa: ANN401
-        return self._new(self.inner().and_(sql.into_expr(others)))
+    def and_(self, others: IntoExpr) -> Self:
+        return self._new(self.inner().and_(others))
 
-    def or_(self, others: Any) -> Self:  # noqa: ANN401
-        return self._new(self.inner().or_(sql.into_expr(others)))
+    def or_(self, others: IntoExpr) -> Self:
+        return self._new(self.inner().or_(others))
 
     def not_(self) -> Self:
         return self._new(self.inner().not_())
@@ -487,7 +487,7 @@ class Expr(sql.CoreHandler[sql.SqlExpr]):
 
     def is_in(self, other: Collection[IntoExpr] | IntoExpr) -> Self:
         """Check if value is in an iterable of values."""
-        return self._new(self.inner().is_in(*try_iter(other).map(sql.into_expr)))
+        return self._new(self.inner().is_in(*try_iter(other)))
 
     def shift(self, n: int = 1) -> Self:
         return self._as_window(expr=self.inner().pipe(shift, n))
@@ -496,7 +496,7 @@ class Expr(sql.CoreHandler[sql.SqlExpr]):
         return self.sub(self.shift())
 
     def pct_change(self, n: int = 1) -> Self:
-        return self.truediv(self.shift(n)).sub(sql.lit(1))
+        return self.truediv(self.shift(n)).sub(1)
 
     def is_between(
         self,
@@ -504,17 +504,15 @@ class Expr(sql.CoreHandler[sql.SqlExpr]):
         upper_bound: IntoExpr,
         closed: ClosedInterval = "both",
     ) -> Self:
-        lower_expr = sql.into_expr(lower_bound)
-        upper_expr = sql.into_expr(upper_bound)
         match closed:
             case "both":
-                return self.ge(lower_expr).and_(self.le(upper_expr))
+                return self.ge(lower_bound).and_(self.le(upper_bound))
             case "left":
-                return self.ge(lower_expr).and_(self.lt(upper_expr))
+                return self.ge(lower_bound).and_(self.lt(upper_bound))
             case "right":
-                return self.gt(lower_expr).and_(self.le(upper_expr))
+                return self.gt(lower_bound).and_(self.le(upper_bound))
             case "none":
-                return self.gt(lower_expr).and_(self.lt(upper_expr))
+                return self.gt(lower_bound).and_(self.lt(upper_bound))
 
     def clip(
         self, lower_bound: IntoExpr | None = None, upper_bound: IntoExpr | None = None
@@ -723,7 +721,7 @@ class Expr(sql.CoreHandler[sql.SqlExpr]):
             case True:
                 return self._as_scalar(base)
             case False:
-                return self._as_scalar(base.add(sql.lit(3)))
+                return self._as_scalar(base.add(3))
 
     def skew(self, *, bias: bool = True) -> Self:
         adjusted = self.inner().skewness()
@@ -732,7 +730,7 @@ class Expr(sql.CoreHandler[sql.SqlExpr]):
                 return self._as_scalar(adjusted)
             case True:
                 n = self.inner().count()
-                factor = n.sub(sql.lit(2)).truediv(n.mul(n.sub(sql.lit(1))).sqrt())
+                factor = n.sub(2).truediv(n.mul(n.sub(1)).sqrt())
                 return self._as_scalar(adjusted.mul(factor))
 
     def quantile(
@@ -773,12 +771,12 @@ class Expr(sql.CoreHandler[sql.SqlExpr]):
         peer_count = sql.all().count().over(self.inner())
         match method:
             case "average":
-                max_rank = base_rank.add(peer_count).sub(sql.lit(1))
-                expr = base_rank.add(max_rank).truediv(sql.lit(2))
+                max_rank = base_rank.add(peer_count).sub(1)
+                expr = base_rank.add(max_rank).truediv(2)
             case "min":
                 expr = base_rank
             case "max":
-                expr = base_rank.add(peer_count).sub(sql.lit(1))
+                expr = base_rank.add(peer_count).sub(1)
             case "dense":
                 expr = (
                     self.inner()
@@ -872,7 +870,7 @@ class Expr(sql.CoreHandler[sql.SqlExpr]):
 
     def log1p(self) -> Self:
         """Compute the natural logarithm of 1+x."""
-        return self._new(self.inner().add(sql.lit(1)).ln())
+        return self._new(self.inner().add(1).ln())
 
     def exp(self) -> Self:
         """Compute the exponential."""
@@ -998,9 +996,7 @@ class Expr(sql.CoreHandler[sql.SqlExpr]):
     def replace(self, old: IntoExpr, new: IntoExpr) -> Self:
         """Replace values."""
         return self._new(
-            sql.when(self.inner().eq(sql.into_expr(old)))
-            .then(new)
-            .otherwise(self.inner())
+            sql.when(self.inner().eq(old)).then(new).otherwise(self.inner())
         )
 
     def repeat_by(self, by: Expr | int) -> Self:
@@ -1011,15 +1007,15 @@ class Expr(sql.CoreHandler[sql.SqlExpr]):
 
     def is_duplicated(self) -> Self:
         """Check if value is duplicated."""
-        return self._new(sql.all().count().over(self.inner()).gt(sql.lit(1)))
+        return self._new(sql.all().count().over(self.inner()).gt(1))
 
     def is_unique(self) -> Self:
         """Check if value is unique."""
-        return self._new(sql.all().count().over(self.inner()).eq(sql.lit(1)))
+        return self._new(sql.all().count().over(self.inner()).eq(1))
 
     def is_first_distinct(self) -> Self:
         """Check if value is first occurrence."""
-        return self._new(self.inner().row_number().over(self.inner()).eq(sql.lit(1)))
+        return self._new(self.inner().row_number().over(self.inner()).eq(1))
 
     def is_last_distinct(self) -> Self:
         """Check if value is last occurrence."""
@@ -1027,7 +1023,7 @@ class Expr(sql.CoreHandler[sql.SqlExpr]):
             self.inner()
             .row_number()
             .over(self.inner(), self.inner(), descending=True, nulls_last=True)
-            .eq(sql.lit(1))
+            .eq(1)
         )
 
 
@@ -1102,7 +1098,7 @@ class ExprStringNameSpace(ExprNameSpaceBase):
         return self._new(self.inner().str.ends_with(sql.lit(suffix)))
 
     def replace(
-        self, pattern: str, value: str | IntoExpr, *, literal: bool = False, n: int = 1
+        self, pattern: str, value: str | Expr, *, literal: bool = False, n: int = 1
     ) -> Expr:
         """Replace first matching substring with a new string value."""
         value_expr = sql.into_expr(value)

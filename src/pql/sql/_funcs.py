@@ -16,7 +16,7 @@ def row_number() -> SqlExpr:
 
 
 def unnest(
-    col: SqlExpr, max_depth: int | None = None, *, recursive: bool = False
+    col: IntoExprColumn, max_depth: int | None = None, *, recursive: bool = False
 ) -> SqlExpr:
     """The unnest special function is used to unnest lists or structs by one level.
 
