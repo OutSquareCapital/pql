@@ -943,7 +943,7 @@ class LazyFrame(sql.CoreHandler[sql.Relation]):
             else pc.Ok(None)
         ).unwrap()
 
-        def _marker(subset_cols: Iterable[sql.SqlExpr]) -> sql.SqlExpr:
+        def _marker(subset_cols: Iterable[IntoExprColumn]) -> sql.SqlExpr:
             match keep:
                 case "none":
                     return sql.all().count().over(partition_by=subset_cols)
@@ -964,12 +964,12 @@ class LazyFrame(sql.CoreHandler[sql.Relation]):
 
         return (
             pc.Option(subset)
-            .map(lambda value: try_iter(value).map(sql.col))
-            .unwrap_or(self.columns.iter().map(sql.col))
+            .map(try_iter)
+            .unwrap_or(self.columns.iter())
             .into(_marker)
             .alias(TEMP_NAME)
             .pipe(self.with_columns)
-            .filter(TEMP_COL.eq(sql.lit(1)))
+            .filter(TEMP_COL.eq(1))
             .drop(TEMP_NAME)
         )
 
@@ -1016,7 +1016,7 @@ class LazyFrame(sql.CoreHandler[sql.Relation]):
         return self._select(
             (
                 sql.row_number()
-                .over(order_by=try_iter(order_by).map(sql.col))
+                .over(order_by=try_iter(order_by))
                 .sub(sql.lit(1))
                 .alias(name),
                 sql.all(),

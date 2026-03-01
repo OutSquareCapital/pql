@@ -65,7 +65,7 @@ class Kword(StrEnum):
 
 def over_expr(  # noqa: PLR0913
     expr: SqlExpr,
-    partition_by: pc.Option[SqlExpr | Iterable[SqlExpr]],
+    partition_by: pc.Option[IntoExprColumn | Iterable[IntoExprColumn]],
     order_by: pc.Option[IntoExprColumn | Iterable[IntoExprColumn]],
     rows_start: pc.Option[int],
     rows_end: pc.Option[int],
@@ -91,7 +91,7 @@ def _build_over(expr: str, partition_by: str, order_by: str, row_between: str) -
     return f"{expr} OVER ({partition_by} {order_by} {row_between})"
 
 
-def get_partition_by(partition_by: pc.Option[pc.Seq[SqlExpr]]) -> str:
+def get_partition_by(partition_by: pc.Option[pc.Seq[IntoExprColumn]]) -> str:
     return (
         partition_by.map(lambda x: x.iter().map(str).join(", "))
         .map(Kword.partition_by)
