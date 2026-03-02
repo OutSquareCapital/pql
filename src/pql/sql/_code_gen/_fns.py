@@ -638,19 +638,6 @@ class Fns(DuckHandler):
         """
         return self._new(func("ceiling", self.inner()))
 
-    def century(self) -> Self:
-        """Extract the century component from a date or timestamp.
-
-        **SQL name**: *century*
-
-        Examples:
-            century(timestamp '2021-08-03 11:59:44.123456')
-
-        Returns:
-            Self
-        """
-        return self._new(func("century", self.inner()))
-
     def char_length(self) -> Self:
         """Returns the bit-length of the `bit` argument.
 
@@ -904,19 +891,6 @@ class Fns(DuckHandler):
         """
         return self._new(func("currval", self.inner()))
 
-    def decade(self) -> Self:
-        """Extract the decade component from a date or timestamp.
-
-        **SQL name**: *decade*
-
-        Examples:
-            decade(timestamp '2021-08-03 11:59:44.123456')
-
-        Returns:
-            Self
-        """
-        return self._new(func("decade", self.inner()))
-
     def decode(self) -> Self:
         r"""Converts `blob` to `VARCHAR`.
 
@@ -991,58 +965,6 @@ class Fns(DuckHandler):
         """
         return self._new(func("entropy", self.inner()))
 
-    def epoch(self) -> Self:
-        """Extract the epoch component from a temporal type.
-
-        **SQL name**: *epoch*
-
-        Examples:
-            epoch(timestamp '2021-08-03 11:59:44.123456')
-
-        Returns:
-            Self
-        """
-        return self._new(func("epoch", self.inner()))
-
-    def epoch_ms(self) -> Self:
-        """Extract the epoch component in milliseconds from a temporal type.
-
-        **SQL name**: *epoch_ms*
-
-        Examples:
-            epoch_ms(timestamp '2021-08-03 11:59:44.123456')
-
-        Returns:
-            Self
-        """
-        return self._new(func("epoch_ms", self.inner()))
-
-    def epoch_ns(self) -> Self:
-        """Extract the epoch component in nanoseconds from a temporal type.
-
-        **SQL name**: *epoch_ns*
-
-        Examples:
-            epoch_ns(timestamp '2021-08-03 11:59:44.123456')
-
-        Returns:
-            Self
-        """
-        return self._new(func("epoch_ns", self.inner()))
-
-    def epoch_us(self) -> Self:
-        """Extract the epoch component in microseconds from a temporal type.
-
-        **SQL name**: *epoch_us*
-
-        Examples:
-            epoch_us(timestamp '2021-08-03 11:59:44.123456')
-
-        Returns:
-            Self
-        """
-        return self._new(func("epoch_us", self.inner()))
-
     def equi_width_bins(
         self,
         max_arg: IntoExprColumn | IntoExpr | datetime | float,
@@ -1069,19 +991,6 @@ class Fns(DuckHandler):
         return self._new(
             func("equi_width_bins", self.inner(), max_arg, bin_count, nice_rounding)
         )
-
-    def era(self) -> Self:
-        """Extract the era component from a date or timestamp.
-
-        **SQL name**: *era*
-
-        Examples:
-            era(timestamp '2021-08-03 11:59:44.123456')
-
-        Returns:
-            Self
-        """
-        return self._new(func("era", self.inner()))
 
     def error(self) -> Self:
         """Throws the given error message.
@@ -1472,19 +1381,6 @@ class Fns(DuckHandler):
         """
         return self._new(func("histogram_exact", self.inner(), bins))
 
-    def hour(self) -> Self:
-        """Extract the hour component from a date or timestamp.
-
-        **SQL name**: *hour*
-
-        Examples:
-            hour(timestamp '2021-08-03 11:59:44.123456')
-
-        Returns:
-            Self
-        """
-        return self._new(func("hour", self.inner()))
-
     def implode(self) -> Self:
         """Returns a LIST containing all the values of a column.
 
@@ -1569,19 +1465,6 @@ class Fns(DuckHandler):
         """
         return self._new(func("isnan", self.inner()))
 
-    def julian(self) -> Self:
-        """Extract the Julian Day number from a date or timestamp.
-
-        **SQL name**: *julian*
-
-        Examples:
-            julian(timestamp '2006-01-01 12:00')
-
-        Returns:
-            Self
-        """
-        return self._new(func("julian", self.inner()))
-
     def kahan_sum(self) -> Self:
         """Calculates the sum using a more accurate floating point summation (Kahan Sum).
 
@@ -1632,19 +1515,6 @@ class Fns(DuckHandler):
             Self
         """
         return self._new(func("last", self.inner()))
-
-    def last_day(self) -> Self:
-        """Returns the last day of the month.
-
-        **SQL name**: *last_day*
-
-        Examples:
-            last_day(TIMESTAMP '1992-03-22 01:02:03.1234')
-
-        Returns:
-            Self
-        """
-        return self._new(func("last_day", self.inner()))
 
     def lcm(self, y: IntoExprColumn | int) -> Self:
         """Computes the least common multiple of x and y.
@@ -2073,32 +1943,6 @@ class Fns(DuckHandler):
         """
         return self._new(func("microsecond", self.inner()))
 
-    def millennium(self) -> Self:
-        """Extract the millennium component from a date or timestamp.
-
-        **SQL name**: *millennium*
-
-        Examples:
-            millennium(timestamp '2021-08-03 11:59:44.123456')
-
-        Returns:
-            Self
-        """
-        return self._new(func("millennium", self.inner()))
-
-    def millisecond(self) -> Self:
-        """Extract the millisecond component from a date or timestamp.
-
-        **SQL name**: *millisecond*
-
-        Examples:
-            millisecond(timestamp '2021-08-03 11:59:44.123456')
-
-        Returns:
-            Self
-        """
-        return self._new(func("millisecond", self.inner()))
-
     def min(self, col1: IntoExprColumn | int | None = None) -> Self:
         """Returns the minimum value present in arg.
 
@@ -2141,19 +1985,6 @@ class Fns(DuckHandler):
         """
         return self._new(func("min_by", self.inner(), val, col2))
 
-    def minute(self) -> Self:
-        """Extract the minute component from a date or timestamp.
-
-        **SQL name**: *minute*
-
-        Examples:
-            minute(timestamp '2021-08-03 11:59:44.123456')
-
-        Returns:
-            Self
-        """
-        return self._new(func("minute", self.inner()))
-
     def mode(self) -> Self:
         """Returns the most frequent value for the values within x.
 
@@ -2165,19 +1996,6 @@ class Fns(DuckHandler):
             Self
         """
         return self._new(func("mode", self.inner()))
-
-    def nanosecond(self) -> Self:
-        """Extract the nanosecond component from a date or timestamp.
-
-        **SQL name**: *nanosecond*
-
-        Examples:
-            nanosecond(timestamp_ns '2021-08-03 11:59:44.123456789')
-
-        Returns:
-            Self
-        """
-        return self._new(func("nanosecond", self.inner()))
 
     def nextafter(self, y: IntoExprColumn | float) -> Self:
         """Returns the next floating point value after x in the direction of y.
@@ -2352,19 +2170,6 @@ class Fns(DuckHandler):
             Self
         """
         return self._new(func("quantile_disc", self.inner(), pos))
-
-    def quarter(self) -> Self:
-        """Extract the quarter component from a date or timestamp.
-
-        **SQL name**: *quarter*
-
-        Examples:
-            quarter(timestamp '2021-08-03 11:59:44.123456')
-
-        Returns:
-            Self
-        """
-        return self._new(func("quarter", self.inner()))
 
     def radians(self) -> Self:
         """Converts degrees to radians.
@@ -2662,19 +2467,6 @@ class Fns(DuckHandler):
             Self
         """
         return self._new(func("row_to_json", self.inner(), *args))
-
-    def second(self) -> Self:
-        """Extract the second component from a date or timestamp.
-
-        **SQL name**: *second*
-
-        Examples:
-            second(timestamp '2021-08-03 11:59:44.123456')
-
-        Returns:
-            Self
-        """
-        return self._new(func("second", self.inner()))
 
     def sem(self) -> Self:
         """Returns the standard error of the mean.
@@ -2997,45 +2789,6 @@ class Fns(DuckHandler):
         """
         return self._new(func("to_binary", self.inner()))
 
-    def to_centuries(self) -> Self:
-        """Construct a century interval.
-
-        **SQL name**: *to_centuries*
-
-        Examples:
-            to_centuries(5)
-
-        Returns:
-            Self
-        """
-        return self._new(func("to_centuries", self.inner()))
-
-    def to_days(self) -> Self:
-        """Construct a day interval.
-
-        **SQL name**: *to_days*
-
-        Examples:
-            to_days(5)
-
-        Returns:
-            Self
-        """
-        return self._new(func("to_days", self.inner()))
-
-    def to_decades(self) -> Self:
-        """Construct a decade interval.
-
-        **SQL name**: *to_decades*
-
-        Examples:
-            to_decades(5)
-
-        Returns:
-            Self
-        """
-        return self._new(func("to_decades", self.inner()))
-
     def to_hex(self) -> Self:
         """Converts the `value` to `VARCHAR` using hexadecimal representation.
 
@@ -3051,19 +2804,6 @@ class Fns(DuckHandler):
             Self
         """
         return self._new(func("to_hex", self.inner()))
-
-    def to_hours(self) -> Self:
-        """Construct a hour interval.
-
-        **SQL name**: *to_hours*
-
-        Examples:
-            to_hours(5)
-
-        Returns:
-            Self
-        """
-        return self._new(func("to_hours", self.inner()))
 
     def to_json(self, *args: IntoExpr) -> Self:
         """SQL to_json function.
@@ -3094,19 +2834,6 @@ class Fns(DuckHandler):
         """
         return self._new(func("map", self.inner(), values))
 
-    def to_microseconds(self) -> Self:
-        """Construct a microsecond interval.
-
-        **SQL name**: *to_microseconds*
-
-        Examples:
-            to_microseconds(5)
-
-        Returns:
-            Self
-        """
-        return self._new(func("to_microseconds", self.inner()))
-
     def to_millennia(self) -> Self:
         """Construct a millenium interval.
 
@@ -3119,110 +2846,6 @@ class Fns(DuckHandler):
             Self
         """
         return self._new(func("to_millennia", self.inner()))
-
-    def to_milliseconds(self) -> Self:
-        """Construct a millisecond interval.
-
-        **SQL name**: *to_milliseconds*
-
-        Examples:
-            to_milliseconds(5.5)
-
-        Returns:
-            Self
-        """
-        return self._new(func("to_milliseconds", self.inner()))
-
-    def to_minutes(self) -> Self:
-        """Construct a minute interval.
-
-        **SQL name**: *to_minutes*
-
-        Examples:
-            to_minutes(5)
-
-        Returns:
-            Self
-        """
-        return self._new(func("to_minutes", self.inner()))
-
-    def to_months(self) -> Self:
-        """Construct a month interval.
-
-        **SQL name**: *to_months*
-
-        Examples:
-            to_months(5)
-
-        Returns:
-            Self
-        """
-        return self._new(func("to_months", self.inner()))
-
-    def to_quarters(self) -> Self:
-        """Construct a quarter interval.
-
-        **SQL name**: *to_quarters*
-
-        Examples:
-            to_quarters(5)
-
-        Returns:
-            Self
-        """
-        return self._new(func("to_quarters", self.inner()))
-
-    def to_seconds(self) -> Self:
-        """Construct a second interval.
-
-        **SQL name**: *to_seconds*
-
-        Examples:
-            to_seconds(5.5)
-
-        Returns:
-            Self
-        """
-        return self._new(func("to_seconds", self.inner()))
-
-    def to_timestamp(self) -> Self:
-        """Converts secs since epoch to a timestamp with time zone.
-
-        **SQL name**: *to_timestamp*
-
-        Examples:
-            to_timestamp(1284352323.5)
-
-        Returns:
-            Self
-        """
-        return self._new(func("to_timestamp", self.inner()))
-
-    def to_weeks(self) -> Self:
-        """Construct a week interval.
-
-        **SQL name**: *to_weeks*
-
-        Examples:
-            to_weeks(5)
-
-        Returns:
-            Self
-        """
-        return self._new(func("to_weeks", self.inner()))
-
-    def to_years(self) -> Self:
-        """Construct a year interval.
-
-        **SQL name**: *to_years*
-
-        Examples:
-            to_years(5)
-
-        Returns:
-            Self
-        """
-        return self._new(func("to_years", self.inner()))
 
     def trunc(self, col1: IntoExprColumn | int | None = None) -> Self:
         """Truncates the number.
@@ -6645,6 +6268,19 @@ class DateTimeFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("date_add", self.inner(), interval))
 
+    def century(self) -> T:
+        """Extract the century component from a date or timestamp.
+
+        **SQL name**: *century*
+
+        Examples:
+            century(timestamp '2021-08-03 11:59:44.123456')
+
+        Returns:
+            T
+        """
+        return self._new(func("century", self.inner()))
+
     def datediff(
         self,
         startdate: IntoExprColumn | date | datetime | time,
@@ -6784,6 +6420,19 @@ class DateTimeFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("dayofyear", self.inner()))
 
+    def decade(self) -> T:
+        """Extract the decade component from a date or timestamp.
+
+        **SQL name**: *decade*
+
+        Examples:
+            decade(timestamp '2021-08-03 11:59:44.123456')
+
+        Returns:
+            T
+        """
+        return self._new(func("decade", self.inner()))
+
     def diff(
         self,
         startdate: IntoExprColumn | date | datetime | time,
@@ -6804,6 +6453,84 @@ class DateTimeFns[T: Fns](NameSpaceHandler[T]):
             T
         """
         return self._new(func("date_diff", self.inner(), startdate, enddate))
+
+    def epoch(self) -> T:
+        """Extract the epoch component from a temporal type.
+
+        **SQL name**: *epoch*
+
+        Examples:
+            epoch(timestamp '2021-08-03 11:59:44.123456')
+
+        Returns:
+            T
+        """
+        return self._new(func("epoch", self.inner()))
+
+    def epoch_ms(self) -> T:
+        """Extract the epoch component in milliseconds from a temporal type.
+
+        **SQL name**: *epoch_ms*
+
+        Examples:
+            epoch_ms(timestamp '2021-08-03 11:59:44.123456')
+
+        Returns:
+            T
+        """
+        return self._new(func("epoch_ms", self.inner()))
+
+    def epoch_ns(self) -> T:
+        """Extract the epoch component in nanoseconds from a temporal type.
+
+        **SQL name**: *epoch_ns*
+
+        Examples:
+            epoch_ns(timestamp '2021-08-03 11:59:44.123456')
+
+        Returns:
+            T
+        """
+        return self._new(func("epoch_ns", self.inner()))
+
+    def epoch_us(self) -> T:
+        """Extract the epoch component in microseconds from a temporal type.
+
+        **SQL name**: *epoch_us*
+
+        Examples:
+            epoch_us(timestamp '2021-08-03 11:59:44.123456')
+
+        Returns:
+            T
+        """
+        return self._new(func("epoch_us", self.inner()))
+
+    def era(self) -> T:
+        """Extract the era component from a date or timestamp.
+
+        **SQL name**: *era*
+
+        Examples:
+            era(timestamp '2021-08-03 11:59:44.123456')
+
+        Returns:
+            T
+        """
+        return self._new(func("era", self.inner()))
+
+    def hour(self) -> T:
+        """Extract the hour component from a date or timestamp.
+
+        **SQL name**: *hour*
+
+        Examples:
+            hour(timestamp '2021-08-03 11:59:44.123456')
+
+        Returns:
+            T
+        """
+        return self._new(func("hour", self.inner()))
 
     def isodow(self) -> T:
         """Extract the isodow component from a date or timestamp.
@@ -6831,6 +6558,71 @@ class DateTimeFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("isoyear", self.inner()))
 
+    def julian(self) -> T:
+        """Extract the Julian Day number from a date or timestamp.
+
+        **SQL name**: *julian*
+
+        Examples:
+            julian(timestamp '2006-01-01 12:00')
+
+        Returns:
+            T
+        """
+        return self._new(func("julian", self.inner()))
+
+    def last_day(self) -> T:
+        """Returns the last day of the month.
+
+        **SQL name**: *last_day*
+
+        Examples:
+            last_day(TIMESTAMP '1992-03-22 01:02:03.1234')
+
+        Returns:
+            T
+        """
+        return self._new(func("last_day", self.inner()))
+
+    def millennium(self) -> T:
+        """Extract the millennium component from a date or timestamp.
+
+        **SQL name**: *millennium*
+
+        Examples:
+            millennium(timestamp '2021-08-03 11:59:44.123456')
+
+        Returns:
+            T
+        """
+        return self._new(func("millennium", self.inner()))
+
+    def millisecond(self) -> T:
+        """Extract the millisecond component from a date or timestamp.
+
+        **SQL name**: *millisecond*
+
+        Examples:
+            millisecond(timestamp '2021-08-03 11:59:44.123456')
+
+        Returns:
+            T
+        """
+        return self._new(func("millisecond", self.inner()))
+
+    def minute(self) -> T:
+        """Extract the minute component from a date or timestamp.
+
+        **SQL name**: *minute*
+
+        Examples:
+            minute(timestamp '2021-08-03 11:59:44.123456')
+
+        Returns:
+            T
+        """
+        return self._new(func("minute", self.inner()))
+
     def month(self) -> T:
         """Extract the month component from a date or timestamp.
 
@@ -6857,6 +6649,19 @@ class DateTimeFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("monthname", self.inner()))
 
+    def nanosecond(self) -> T:
+        """Extract the nanosecond component from a date or timestamp.
+
+        **SQL name**: *nanosecond*
+
+        Examples:
+            nanosecond(timestamp_ns '2021-08-03 11:59:44.123456789')
+
+        Returns:
+            T
+        """
+        return self._new(func("nanosecond", self.inner()))
+
     def part(self, col1: IntoExprColumn | date | datetime | time | timedelta) -> T:
         """Get subfield (equivalent to extract).
 
@@ -6872,6 +6677,32 @@ class DateTimeFns[T: Fns](NameSpaceHandler[T]):
             T
         """
         return self._new(func("date_part", self.inner(), col1))
+
+    def quarter(self) -> T:
+        """Extract the quarter component from a date or timestamp.
+
+        **SQL name**: *quarter*
+
+        Examples:
+            quarter(timestamp '2021-08-03 11:59:44.123456')
+
+        Returns:
+            T
+        """
+        return self._new(func("quarter", self.inner()))
+
+    def second(self) -> T:
+        """Extract the second component from a date or timestamp.
+
+        **SQL name**: *second*
+
+        Examples:
+            second(timestamp '2021-08-03 11:59:44.123456')
+
+        Returns:
+            T
+        """
+        return self._new(func("second", self.inner()))
 
     def sub(
         self,
@@ -6973,6 +6804,175 @@ class DateTimeFns[T: Fns](NameSpaceHandler[T]):
             T
         """
         return self._new(func("timezone_minute", self.inner()))
+
+    def to_centuries(self) -> T:
+        """Construct a century interval.
+
+        **SQL name**: *to_centuries*
+
+        Examples:
+            to_centuries(5)
+
+        Returns:
+            T
+        """
+        return self._new(func("to_centuries", self.inner()))
+
+    def to_days(self) -> T:
+        """Construct a day interval.
+
+        **SQL name**: *to_days*
+
+        Examples:
+            to_days(5)
+
+        Returns:
+            T
+        """
+        return self._new(func("to_days", self.inner()))
+
+    def to_decades(self) -> T:
+        """Construct a decade interval.
+
+        **SQL name**: *to_decades*
+
+        Examples:
+            to_decades(5)
+
+        Returns:
+            T
+        """
+        return self._new(func("to_decades", self.inner()))
+
+    def to_hours(self) -> T:
+        """Construct a hour interval.
+
+        **SQL name**: *to_hours*
+
+        Examples:
+            to_hours(5)
+
+        Returns:
+            T
+        """
+        return self._new(func("to_hours", self.inner()))
+
+    def to_microseconds(self) -> T:
+        """Construct a microsecond interval.
+
+        **SQL name**: *to_microseconds*
+
+        Examples:
+            to_microseconds(5)
+
+        Returns:
+            T
+        """
+        return self._new(func("to_microseconds", self.inner()))
+
+    def to_milliseconds(self) -> T:
+        """Construct a millisecond interval.
+
+        **SQL name**: *to_milliseconds*
+
+        Examples:
+            to_milliseconds(5.5)
+
+        Returns:
+            T
+        """
+        return self._new(func("to_milliseconds", self.inner()))
+
+    def to_minutes(self) -> T:
+        """Construct a minute interval.
+
+        **SQL name**: *to_minutes*
+
+        Examples:
+            to_minutes(5)
+
+        Returns:
+            T
+        """
+        return self._new(func("to_minutes", self.inner()))
+
+    def to_months(self) -> T:
+        """Construct a month interval.
+
+        **SQL name**: *to_months*
+
+        Examples:
+            to_months(5)
+
+        Returns:
+            T
+        """
+        return self._new(func("to_months", self.inner()))
+
+    def to_quarters(self) -> T:
+        """Construct a quarter interval.
+
+        **SQL name**: *to_quarters*
+
+        Examples:
+            to_quarters(5)
+
+        Returns:
+            T
+        """
+        return self._new(func("to_quarters", self.inner()))
+
+    def to_seconds(self) -> T:
+        """Construct a second interval.
+
+        **SQL name**: *to_seconds*
+
+        Examples:
+            to_seconds(5.5)
+
+        Returns:
+            T
+        """
+        return self._new(func("to_seconds", self.inner()))
+
+    def to_timestamp(self) -> T:
+        """Converts secs since epoch to a timestamp with time zone.
+
+        **SQL name**: *to_timestamp*
+
+        Examples:
+            to_timestamp(1284352323.5)
+
+        Returns:
+            T
+        """
+        return self._new(func("to_timestamp", self.inner()))
+
+    def to_weeks(self) -> T:
+        """Construct a week interval.
+
+        **SQL name**: *to_weeks*
+
+        Examples:
+            to_weeks(5)
+
+        Returns:
+            T
+        """
+        return self._new(func("to_weeks", self.inner()))
+
+    def to_years(self) -> T:
+        """Construct a year interval.
+
+        **SQL name**: *to_years*
+
+        Examples:
+            to_years(5)
+
+        Returns:
+            T
+        """
+        return self._new(func("to_years", self.inner()))
 
     def trunc(self, timestamp: IntoExprColumn | date | datetime | timedelta) -> T:
         """Truncate to specified precision.

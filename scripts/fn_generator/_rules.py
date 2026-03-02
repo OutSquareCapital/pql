@@ -1,6 +1,6 @@
 import builtins
 import keyword
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 import pyochain as pc
 
@@ -104,8 +104,9 @@ class NamespaceSpec:
     name: str
     doc: str
     prefixes: pc.Seq[str]
-    categories: pc.Seq[Categories]
     strip_prefixes: pc.Seq[str]
+    categories: pc.Seq[Categories] = field(default_factory=pc.Seq[Categories].new)
+    explicit_names: pc.Seq[str] = field(default_factory=pc.Seq[str].new)
 
 
 NAMESPACE_SPECS = pc.Seq(
@@ -141,9 +142,42 @@ NAMESPACE_SPECS = pc.Seq(
         NamespaceSpec(
             name="DateTimeFns",
             doc="Mixin providing auto-generated DuckDB datetime functions as methods.",
-            prefixes=pc.Seq(("date", "day", "iso", "week", "year", "month", "time")),
+            prefixes=pc.Seq(
+                ("date", "epoch", "iso", "time", "day", "month", "week", "year")
+            ),
             categories=pc.Seq((Categories.TIMESTAMP, Categories.DATE)),
             strip_prefixes=pc.Seq(("date_",)),
+            explicit_names=pc.Seq(
+                (
+                    "microssecond",
+                    "nanosecond",
+                    "millisecond",
+                    "second",
+                    "minute",
+                    "hour",
+                    "quarter",
+                    "decade",
+                    "century",
+                    "millennium",
+                    "era",
+                    "julian",
+                    "last_day",
+                    "to_timestamp",
+                    "to_microseconds",
+                    "to_milliseconds",
+                    "to_seconds",
+                    "to_minutes",
+                    "to_hours",
+                    "to_days",
+                    "to_weeks",
+                    "to_months",
+                    "to_quarters",
+                    "to_years",
+                    "to_decades",
+                    "to_centuries",
+                    "to_millenia",
+                )
+            ),
         ),
         NamespaceSpec(
             name="ArrayFns",
@@ -156,21 +190,18 @@ NAMESPACE_SPECS = pc.Seq(
             name="JsonFns",
             doc="Mixin providing auto-generated DuckDB JSON functions as methods.",
             prefixes=pc.Seq(("json_",)),
-            categories=pc.Seq(()),
             strip_prefixes=pc.Seq(("json_",)),
         ),
         NamespaceSpec(
             name="MapFns",
             doc="Mixin providing auto-generated DuckDB map functions as methods.",
             prefixes=pc.Seq(("map_",)),
-            categories=pc.Seq(()),
             strip_prefixes=pc.Seq(("map_",)),
         ),
         NamespaceSpec(
             name="EnumFns",
             doc="Mixin providing auto-generated DuckDB enum functions as methods.",
             prefixes=pc.Seq(("enum_",)),
-            categories=pc.Seq(()),
             strip_prefixes=pc.Seq(("enum_",)),
         ),
     )

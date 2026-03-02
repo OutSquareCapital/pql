@@ -214,6 +214,7 @@ def _namespace_specs(cats: pl.Expr, fn_name: pl.Expr) -> pl.Expr:
                 spec.prefixes.iter()
                 .map(fn_name.str.starts_with)
                 .into(pl.any_horizontal)
+                .or_(fn_name.is_in(spec.explicit_names))
             ).then(pl.lit(spec.name))
         )
         .into(pl.coalesce)
