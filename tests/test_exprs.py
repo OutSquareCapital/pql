@@ -639,13 +639,14 @@ def test_skew() -> None:
     )
 
 
-@pytest.mark.parametrize(
-    "interpolation", ["nearest", "higher", "lower", "midpoint", "linear"]
-)
-def test_quantile(interpolation: t.RollingInterpolationMethod) -> None:
+def test_quantile() -> None:
     assert_eq_pl(
-        pql.col("x").quantile(0.5, interpolation),
-        pl.col("x").quantile(0.5, interpolation),
+        pql.col("x").quantile(0.75, interpolation=True),
+        pl.col("x").quantile(0.75, "linear"),
+    )
+    assert_eq_pl(
+        pql.col("x").quantile(0.75, interpolation=False),
+        pl.col("x").quantile(0.75, "equiprobable"),
     )
 
 

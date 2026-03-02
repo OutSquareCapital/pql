@@ -16,10 +16,5 @@ type RankMethod = Literal["average", "min", "max", "dense", "ordinal"]
 type FillNullStrategy = Literal[
     "forward", "backward", "min", "max", "mean", "zero", "one"
 ]
-type RollingInterpolationMethod = Literal[
-    "nearest", "higher", "lower", "midpoint", "linear"
-]
-
-
 type JoinKeysRes[T: pc.Seq[str] | str] = pc.Result[JoinKeys[T], ValueError]
 type OptIter[T] = pc.Option[T | Iterable[T]]

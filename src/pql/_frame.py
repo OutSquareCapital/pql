@@ -23,7 +23,6 @@ if TYPE_CHECKING:
         JoinKeysRes,
         JoinStrategy,
         OptIter,
-        RollingInterpolationMethod,
         UniqueKeepStrategy,
     )
     from .sql.typing import (
@@ -159,11 +158,7 @@ class LazyGroupBy:
     def n_unique(self) -> LazyFrame:
         return self._agg_columns(Expr.n_unique)
 
-    def quantile(
-        self,
-        quantile: float,
-        interpolation: RollingInterpolationMethod = "nearest",
-    ) -> LazyFrame:
+    def quantile(self, quantile: float, *, interpolation: bool = True) -> LazyFrame:
         return self._agg_columns(
             lambda expr: expr.quantile(quantile, interpolation=interpolation)
         )

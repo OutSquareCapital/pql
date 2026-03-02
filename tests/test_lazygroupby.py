@@ -122,10 +122,7 @@ def test_len(sample_df: pl.DataFrame) -> None:
     )
 
 
-@pytest.mark.parametrize(
-    "interpolation", ["nearest", "linear", "lower", "higher", "midpoint"]
-)
-def test_quantile(interpolation: str) -> None:
+def test_quantile() -> None:
 
     qdf = pl.DataFrame(
         {
@@ -137,12 +134,24 @@ def test_quantile(interpolation: str) -> None:
     assert_eq(
         pql.LazyFrame(qdf)
         .group_by("department")
-        .quantile(0.5, interpolation=interpolation)  # pyright: ignore[reportArgumentType]
+        .quantile(0.5, interpolation=True)
         .sort("department")
         .collect(),
         qdf.lazy()
         .group_by("department")
-        .quantile(0.5, interpolation=interpolation)  # pyright: ignore[reportArgumentType]
+        .quantile(0.5, interpolation="nearest")
+        .sort("department")
+        .collect(),
+    )
+    assert_eq(
+        pql.LazyFrame(qdf)
+        .group_by("department")
+        .quantile(0.5, interpolation=False)
+        .sort("department")
+        .collect(),
+        qdf.lazy()
+        .group_by("department")
+        .quantile(0.5, interpolation="equiprobable")
         .sort("department")
         .collect(),
     )
