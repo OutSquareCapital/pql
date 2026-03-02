@@ -107,6 +107,10 @@ PREFIXES = pc.Set(
 """Functions to exclude by prefixes."""
 
 
+def _rule[T](*args: T) -> pc.Seq[T]:
+    return pc.Seq(args)
+
+
 @dataclass(slots=True)
 class NamespaceSpec:
     name: str
@@ -123,14 +127,14 @@ NAMESPACE_SPECS = pc.Seq(
             name="ListFns",
             doc="Mixin providing auto-generated DuckDB list functions as methods.",
             prefixes=pc.Seq(("list_",)),
-            categories=pc.Seq((Categories.LIST,)),
-            strip_prefixes=pc.Seq(("list_", "array_")),
+            categories=_rule(Categories.LIST),
+            strip_prefixes=_rule("list_", "array_"),
         ),
         NamespaceSpec(
             name="StructFns",
             doc="Mixin providing auto-generated DuckDB struct functions as methods.",
             prefixes=pc.Seq(("struct_",)),
-            categories=pc.Seq((Categories.STRUCT,)),
+            categories=_rule(Categories.STRUCT),
             strip_prefixes=pc.Seq(("struct_",)),
         ),
         NamespaceSpec(
@@ -138,60 +142,58 @@ NAMESPACE_SPECS = pc.Seq(
             doc="Mixin providing auto-generated DuckDB regex functions as methods.",
             prefixes=pc.Seq(("regexp_",)),
             categories=pc.Seq((Categories.REGEX,)),
-            strip_prefixes=pc.Seq(("regexp_", "str_", "string_")),
+            strip_prefixes=_rule("regexp_", "str_", "string_"),
         ),
         NamespaceSpec(
             name="StringFns",
             doc="Mixin providing auto-generated DuckDB string functions as methods.",
-            prefixes=pc.Seq(("string_", "str_")),
-            categories=pc.Seq((Categories.STRING, Categories.TEXT_SIMILARITY)),
-            strip_prefixes=pc.Seq(("string_", "str_")),
+            prefixes=_rule("string_", "str_"),
+            categories=_rule(Categories.STRING, Categories.TEXT_SIMILARITY),
+            strip_prefixes=_rule("string_", "str_"),
         ),
         NamespaceSpec(
             name="DateTimeFns",
             doc="Mixin providing auto-generated DuckDB datetime functions as methods.",
-            prefixes=pc.Seq(
-                ("date", "epoch", "iso", "time", "day", "month", "week", "year")
+            prefixes=_rule(
+                "date", "epoch", "iso", "time", "day", "month", "week", "year"
             ),
-            categories=pc.Seq((Categories.TIMESTAMP, Categories.DATE)),
-            strip_prefixes=pc.Seq(("date_", "date")),
-            explicit_names=pc.Seq(
-                (
-                    "microssecond",
-                    "nanosecond",
-                    "millisecond",
-                    "second",
-                    "minute",
-                    "hour",
-                    "quarter",
-                    "decade",
-                    "century",
-                    "millennium",
-                    "era",
-                    "julian",
-                    "last_day",
-                    "to_timestamp",
-                    "to_microseconds",
-                    "to_milliseconds",
-                    "to_seconds",
-                    "to_minutes",
-                    "to_hours",
-                    "to_days",
-                    "to_weeks",
-                    "to_months",
-                    "to_quarters",
-                    "to_years",
-                    "to_decades",
-                    "to_centuries",
-                    "to_millennia",
-                    "make_date",
-                    "make_date_month_day",
-                    "make_time",
-                    "make_timestamp",
-                    "make_timestamp_ms",
-                    "make_timestamp_ns",
-                    "make_timestamptz",
-                )
+            categories=_rule(Categories.TIMESTAMP, Categories.DATE),
+            strip_prefixes=_rule("date_", "date"),
+            explicit_names=_rule(
+                "microssecond",
+                "nanosecond",
+                "millisecond",
+                "second",
+                "minute",
+                "hour",
+                "quarter",
+                "decade",
+                "century",
+                "millennium",
+                "era",
+                "julian",
+                "last_day",
+                "to_timestamp",
+                "to_microseconds",
+                "to_milliseconds",
+                "to_seconds",
+                "to_minutes",
+                "to_hours",
+                "to_days",
+                "to_weeks",
+                "to_months",
+                "to_quarters",
+                "to_years",
+                "to_decades",
+                "to_centuries",
+                "to_millennia",
+                "make_date",
+                "make_date_month_day",
+                "make_time",
+                "make_timestamp",
+                "make_timestamp_ms",
+                "make_timestamp_ns",
+                "make_timestamptz",
             ),
         ),
         NamespaceSpec(
