@@ -580,7 +580,7 @@ class LazyFrame(sql.CoreHandler[sql.Relation]):
 
     def mean(self) -> Self:
         """Aggregate the mean of each column."""
-        return self._iter_agg(sql.SqlExpr.avg)
+        return self._iter_agg(sql.SqlExpr.mean)
 
     def median(self) -> Self:
         """Aggregate the median of each column."""
@@ -630,20 +630,8 @@ class LazyFrame(sql.CoreHandler[sql.Relation]):
 
     def shift(self, n: int = 1, *, fill_value: IntoExpr | None = None) -> Self:
         """Shift values by n positions."""
-        abs_n = abs(n)
-        match n:
-            case n_val if n_val < 0:
-
-                def _shift_fn(c: str) -> sql.SqlExpr:
-                    return sql.col(c).lead(abs_n).alias(c)
-
-            case _:
-
-                def _shift_fn(c: str) -> sql.SqlExpr:
-                    return sql.col(c).lag(abs_n).alias(c)
-
         return self._iter_slct(
-            lambda c: sql.coalesce(_shift_fn(c).over(), fill_value).alias(c)
+            lambda c: sql.coalesce(sql.col(c).shift(n), fill_value).alias(c)
         )
 
     def clone(self) -> Self:
