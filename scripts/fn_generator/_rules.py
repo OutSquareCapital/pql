@@ -92,6 +92,7 @@ SPECIAL_CASES = pc.Set(
         "avg",  # mean
         "variance",  # var_samp
         "stddev",  # stddev_samp
+        "quantile",  # quantile_disc
     }
 )
 """Function to exclude by name, either because they require special handling or because they conflict with existing names."""
