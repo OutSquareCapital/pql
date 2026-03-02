@@ -10,20 +10,9 @@ from .sql.typing import IntoExpr
 def round(expr: sql.SqlExpr, decimals: int, mode: RoundMode) -> sql.SqlExpr:
     match mode:
         case "half_to_even":
-            return expr.round_even(sql.lit(decimals))
+            return expr.round_even(decimals)
         case "half_away_from_zero":
             return expr.round(decimals)
-
-
-def shift(expr: sql.SqlExpr, n: int = 1) -> sql.SqlExpr:
-    match n:
-        case 0:
-            return expr
-        case n_val if n_val > 0:
-            expr = expr.lag(n_val)
-        case _:
-            expr = expr.lead(-n)
-    return expr.over()
 
 
 def fill_nulls(  # noqa: PLR0911
@@ -44,9 +33,9 @@ def fill_nulls(  # noqa: PLR0911
             iterator = pc.Iter(range(1, lim + 1))
             match strategy:
                 case "forward":
-                    exprs = iterator.map(lambda offset: shift(expr, offset))
+                    exprs = iterator.map(expr.shift)
                 case _:
-                    exprs = iterator.map(lambda offset: shift(expr, -offset))
+                    exprs = iterator.map(lambda offset: expr.shift(-offset))
             return pc.Ok(exprs.insert(expr).reduce(sql.coalesce))
         case (_, _, pc.Some(_)):
             msg = "can only specify `limit` when strategy is set to 'backward' or 'forward'"

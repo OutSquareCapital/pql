@@ -12,7 +12,7 @@ import pyochain as pc
 
 from . import _datatypes as dt, sql  # pyright: ignore[reportPrivateUsage]
 from ._args_iter import try_chain, try_iter
-from ._computations import fill_nulls, round, shift
+from ._computations import fill_nulls, round
 
 if TYPE_CHECKING:
     from ._datatypes import DataType
@@ -498,7 +498,7 @@ class Expr(sql.CoreHandler[sql.SqlExpr]):
         return self._new(self.inner().is_in(*try_iter(other)))
 
     def shift(self, n: int = 1) -> Self:
-        return self._as_window(expr=self.inner().pipe(shift, n))
+        return self._as_window(self.inner().shift(n))
 
     def diff(self) -> Self:
         return self.sub(self.shift())

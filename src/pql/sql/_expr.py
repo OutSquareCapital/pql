@@ -98,6 +98,15 @@ class SqlExpr(Expression, Fns):
             case False:
                 return self.kurtosis_samp()
 
+    def shift(self, n: int = 1) -> Self:
+        match n:
+            case 0:
+                return self
+            case n_val if n_val > 0:
+                return self.lag(n_val).over()
+            case _:
+                return self.lead(-n).over()
+
     def log(self, x: IntoExprColumn | float | None = None) -> Self:
         """Computes the logarithm of x to base b.
 
