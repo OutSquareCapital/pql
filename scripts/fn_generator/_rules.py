@@ -146,7 +146,7 @@ NAMESPACE_SPECS = pc.Seq(
                 ("date", "epoch", "iso", "time", "day", "month", "week", "year")
             ),
             categories=pc.Seq((Categories.TIMESTAMP, Categories.DATE)),
-            strip_prefixes=pc.Seq(("date_",)),
+            strip_prefixes=pc.Seq(("date_", "date")),
             explicit_names=pc.Seq(
                 (
                     "microssecond",

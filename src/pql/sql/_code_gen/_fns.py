@@ -6281,80 +6281,6 @@ class DateTimeFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("century", self.inner()))
 
-    def datediff(
-        self,
-        startdate: IntoExprColumn | date | datetime | time,
-        enddate: IntoExprColumn | date | datetime | time,
-    ) -> T:
-        """The number of partition boundaries between the timestamps.
-
-        **SQL name**: *datediff*
-
-        Args:
-            startdate (IntoExprColumn | date | datetime | time): `DATE | TIME | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
-            enddate (IntoExprColumn | date | datetime | time): `DATE | TIME | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
-
-        Examples:
-            datediff('hour', TIMESTAMPTZ '1992-09-30 23:59:59', TIMESTAMPTZ '1992-10-01 01:58:00')
-
-        Returns:
-            T
-        """
-        return self._new(func("datediff", self.inner(), startdate, enddate))
-
-    def datepart(self, col1: IntoExprColumn | date | datetime | time | timedelta) -> T:
-        """Get subfield (equivalent to extract).
-
-        **SQL name**: *datepart*
-
-        Args:
-            col1 (IntoExprColumn | date | datetime | time | timedelta): `DATE | INTERVAL | TIME | TIME_NS | TIME WITH TIME ZONE | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
-
-        Examples:
-            datepart('minute', TIMESTAMP '1992-09-20 20:38:40')
-
-        Returns:
-            T
-        """
-        return self._new(func("datepart", self.inner(), col1))
-
-    def datesub(
-        self,
-        startdate: IntoExprColumn | date | datetime | time,
-        enddate: IntoExprColumn | date | datetime | time,
-    ) -> T:
-        """The number of complete partitions between the timestamps.
-
-        **SQL name**: *datesub*
-
-        Args:
-            startdate (IntoExprColumn | date | datetime | time): `DATE | TIME | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
-            enddate (IntoExprColumn | date | datetime | time): `DATE | TIME | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
-
-        Examples:
-            datesub('hour', TIMESTAMPTZ '1992-09-30 23:59:59', TIMESTAMPTZ '1992-10-01 01:58:00')
-
-        Returns:
-            T
-        """
-        return self._new(func("datesub", self.inner(), startdate, enddate))
-
-    def datetrunc(self, timestamp: IntoExprColumn | date | datetime | timedelta) -> T:
-        """Truncate to specified precision.
-
-        **SQL name**: *datetrunc*
-
-        Args:
-            timestamp (IntoExprColumn | date | datetime | timedelta): `DATE | INTERVAL | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
-
-        Examples:
-            datetrunc('hour', TIMESTAMPTZ '1992-09-20 20:38:40')
-
-        Returns:
-            T
-        """
-        return self._new(func("datetrunc", self.inner(), timestamp))
-
     def day(self) -> T:
         """Extract the day component from a date or timestamp.
 
@@ -6440,19 +6366,19 @@ class DateTimeFns[T: Fns](NameSpaceHandler[T]):
     ) -> T:
         """The number of partition boundaries between the timestamps.
 
-        **SQL name**: *date_diff*
+        **SQL name**: *datediff*
 
         Args:
             startdate (IntoExprColumn | date | datetime | time): `DATE | TIME | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
             enddate (IntoExprColumn | date | datetime | time): `DATE | TIME | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
 
         Examples:
-            date_diff('hour', TIMESTAMPTZ '1992-09-30 23:59:59', TIMESTAMPTZ '1992-10-01 01:58:00')
+            datediff('hour', TIMESTAMPTZ '1992-09-30 23:59:59', TIMESTAMPTZ '1992-10-01 01:58:00')
 
         Returns:
             T
         """
-        return self._new(func("date_diff", self.inner(), startdate, enddate))
+        return self._new(func("datediff", self.inner(), startdate, enddate))
 
     def epoch(self) -> T:
         """Extract the epoch component from a temporal type.
@@ -6665,18 +6591,18 @@ class DateTimeFns[T: Fns](NameSpaceHandler[T]):
     def part(self, col1: IntoExprColumn | date | datetime | time | timedelta) -> T:
         """Get subfield (equivalent to extract).
 
-        **SQL name**: *date_part*
+        **SQL name**: *datepart*
 
         Args:
             col1 (IntoExprColumn | date | datetime | time | timedelta): `DATE | INTERVAL | TIME | TIME_NS | TIME WITH TIME ZONE | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
 
         Examples:
-            date_part('minute', TIMESTAMP '1992-09-20 20:38:40')
+            datepart('minute', TIMESTAMP '1992-09-20 20:38:40')
 
         Returns:
             T
         """
-        return self._new(func("date_part", self.inner(), col1))
+        return self._new(func("datepart", self.inner(), col1))
 
     def quarter(self) -> T:
         """Extract the quarter component from a date or timestamp.
@@ -6711,19 +6637,19 @@ class DateTimeFns[T: Fns](NameSpaceHandler[T]):
     ) -> T:
         """The number of complete partitions between the timestamps.
 
-        **SQL name**: *date_sub*
+        **SQL name**: *datesub*
 
         Args:
             startdate (IntoExprColumn | date | datetime | time): `DATE | TIME | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
             enddate (IntoExprColumn | date | datetime | time): `DATE | TIME | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
 
         Examples:
-            date_sub('hour', TIMESTAMPTZ '1992-09-30 23:59:59', TIMESTAMPTZ '1992-10-01 01:58:00')
+            datesub('hour', TIMESTAMPTZ '1992-09-30 23:59:59', TIMESTAMPTZ '1992-10-01 01:58:00')
 
         Returns:
             T
         """
-        return self._new(func("date_sub", self.inner(), startdate, enddate))
+        return self._new(func("datesub", self.inner(), startdate, enddate))
 
     def time_bucket(
         self,
@@ -6977,18 +6903,18 @@ class DateTimeFns[T: Fns](NameSpaceHandler[T]):
     def trunc(self, timestamp: IntoExprColumn | date | datetime | timedelta) -> T:
         """Truncate to specified precision.
 
-        **SQL name**: *date_trunc*
+        **SQL name**: *datetrunc*
 
         Args:
             timestamp (IntoExprColumn | date | datetime | timedelta): `DATE | INTERVAL | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
 
         Examples:
-            date_trunc('hour', TIMESTAMPTZ '1992-09-20 20:38:40')
+            datetrunc('hour', TIMESTAMPTZ '1992-09-20 20:38:40')
 
         Returns:
             T
         """
-        return self._new(func("date_trunc", self.inner(), timestamp))
+        return self._new(func("datetrunc", self.inner(), timestamp))
 
     def week(self) -> T:
         """Extract the week component from a date or timestamp.
