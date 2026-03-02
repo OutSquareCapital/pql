@@ -175,7 +175,7 @@ NAMESPACE_SPECS = pc.Seq(
                     "to_years",
                     "to_decades",
                     "to_centuries",
-                    "to_millenia",
+                    "to_millennia",
                 )
             ),
         ),

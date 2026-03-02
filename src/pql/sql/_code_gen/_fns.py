@@ -2834,19 +2834,6 @@ class Fns(DuckHandler):
         """
         return self._new(func("map", self.inner(), values))
 
-    def to_millennia(self) -> Self:
-        """Construct a millenium interval.
-
-        **SQL name**: *to_millennia*
-
-        Examples:
-            to_millennia(1)
-
-        Returns:
-            Self
-        """
-        return self._new(func("to_millennia", self.inner()))
-
     def trunc(self, col1: IntoExprColumn | int | None = None) -> Self:
         """Truncates the number.
 
@@ -6795,6 +6782,19 @@ class DateTimeFns[T: Fns](NameSpaceHandler[T]):
             T
         """
         return self._new(func("to_microseconds", self.inner()))
+
+    def to_millennia(self) -> T:
+        """Construct a millenium interval.
+
+        **SQL name**: *to_millennia*
+
+        Examples:
+            to_millennia(1)
+
+        Returns:
+            T
+        """
+        return self._new(func("to_millennia", self.inner()))
 
     def to_milliseconds(self) -> T:
         """Construct a millisecond interval.
