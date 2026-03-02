@@ -5,7 +5,7 @@ import pytest
 import pql
 from pql import _typing as t
 
-from ._utils import assert_eq, assert_eq_pl
+from ._utils import assert_eq, assert_eq_pl, on_simple_fn
 
 
 def test_rand() -> None:
@@ -18,18 +18,6 @@ def test_ror() -> None:
 
 def test_hash() -> None:
     assert hash(pql.col("x")) == hash(pql.col("x"))
-
-
-def test_bitwise_and() -> None:
-    assert_eq_pl(pql.col("x").bitwise_and(), pl.col("x").bitwise_and())
-
-
-def test_bitwise_or() -> None:
-    assert_eq_pl(pql.col("x").bitwise_or(), pl.col("x").bitwise_or())
-
-
-def test_bitwise_xor() -> None:
-    assert_eq_pl(pql.col("x").bitwise_xor(), pl.col("x").bitwise_xor())
 
 
 def test_xor() -> None:
@@ -164,24 +152,62 @@ def test_floordiv() -> None:
     assert_eq((pql.col("x") // 3), (nw.col("x") // 3))
 
 
+_SIMPLE_FNS = {
+    "sinh",
+    "cosh",
+    "tanh",
+    "is_finite",
+    "is_infinite",
+    "count",
+    "len",
+    "min",
+    "max",
+    "sum",
+    "mean",
+    "median",
+    "mode",
+    "product",
+    "n_unique",
+    "null_count",
+    "has_nulls",
+    "cot",
+    "degrees",
+    "radians",
+    "sign",
+    "floor",
+    "ceil",
+    "sqrt",
+    "cbrt",
+    "abs",
+    "approx_n_unique",
+    "is_last_distinct",
+    "log10",
+    "log1p",
+    "exp",
+    "sin",
+    "cos",
+    "tan",
+    "arctan",
+    "arccosh",
+    "arcsinh",
+    "bitwise_and",
+    "bitwise_or",
+    "bitwise_xor",
+    "diff",
+}
+
+
+@pytest.mark.parametrize("fn", _SIMPLE_FNS)
+def test_simple_methods(fn: str) -> None:
+    on_simple_fn(pql.col("x"), pl.col("x"), fn)
+
+
+def test_log() -> None:
+    assert_eq(pql.col("x").log(10), nw.col("x").log(10))
+
+
 def test_is_first_distinct() -> None:
     assert_eq_pl(pql.col("a").is_first_distinct(), pl.col("a").is_first_distinct())
-
-
-def test_is_last_distinct() -> None:
-    assert_eq_pl(pql.col("x").is_last_distinct(), pl.col("x").is_last_distinct())
-
-
-def test_sinh() -> None:
-    assert_eq_pl(pql.col("x").sinh(), pl.col("x").sinh())
-
-
-def test_cosh() -> None:
-    assert_eq_pl(pql.col("x").cosh(), pl.col("x").cosh())
-
-
-def test_tanh() -> None:
-    assert_eq_pl(pql.col("x").tanh(), pl.col("x").tanh())
 
 
 def test_col_getattr() -> None:
@@ -226,14 +252,6 @@ def test_is_not_nan() -> None:
     assert_eq_pl(pql.col("nan_vals").is_not_nan(), pl.col("nan_vals").is_not_nan())
 
 
-def test_is_finite() -> None:
-    assert_eq(pql.col("x").is_finite(), nw.col("x").is_finite())
-
-
-def test_is_infinite() -> None:
-    assert_eq_pl(pql.col("x").is_infinite(), pl.col("x").is_infinite())
-
-
 def test_fill_nan() -> None:
     assert_eq(pql.col("nan_vals").fill_nan(0.0), nw.col("nan_vals").fill_nan(0.0))
 
@@ -242,56 +260,8 @@ def test_is_duplicated() -> None:
     assert_eq(pql.col("a").is_duplicated(), nw.col("a").is_duplicated())
 
 
-def test_floor() -> None:
-    assert_eq(pql.col("x").floor(), nw.col("x").floor())
-
-
-def test_ceil() -> None:
-    assert_eq(pql.col("x").ceil(), nw.col("x").ceil())
-
-
 def test_round() -> None:
     assert_eq(pql.col("x").round(2), nw.col("x").round(2))
-
-
-def test_sqrt() -> None:
-    assert_eq(pql.col("x").sqrt(), nw.col("x").sqrt())
-
-
-def test_cbrt() -> None:
-    assert_eq_pl(pql.col("x").cbrt(), pl.col("x").cbrt())
-
-
-def test_log() -> None:
-    assert_eq(pql.col("x").log(10), nw.col("x").log(10))
-
-
-def test_log10() -> None:
-    assert_eq_pl(pql.col("x").log10(), pl.col("x").log10())
-
-
-def test_log1p() -> None:
-    assert_eq_pl(pql.col("x").log1p(), pl.col("x").log1p())
-
-
-def test_exp() -> None:
-    assert_eq(pql.col("x").exp(), nw.col("x").exp())
-
-
-def test_sin() -> None:
-    assert_eq(pql.col("x").sin(), nw.col("x").sin())
-
-
-def test_cos() -> None:
-    assert_eq_pl(pql.col("x").cos(), pl.col("x").cos())
-
-
-def test_tan() -> None:
-    assert_eq_pl(pql.col("x").tan(), pl.col("x").tan())
-
-
-def test_arctan() -> None:
-    assert_eq_pl(pql.col("x").arctan(), pl.col("x").arctan())
 
 
 def test_arccos() -> None:
@@ -301,10 +271,6 @@ def test_arccos() -> None:
     )
 
 
-def test_arccosh() -> None:
-    assert_eq_pl(pql.col("x").arccosh(), pl.col("x").arccosh())
-
-
 def test_arcsin() -> None:
     assert_eq_pl(
         pql.col("x").truediv(20).arcsin(),
@@ -312,31 +278,11 @@ def test_arcsin() -> None:
     )
 
 
-def test_arcsinh() -> None:
-    assert_eq_pl(pql.col("x").arcsinh(), pl.col("x").arcsinh())
-
-
 def test_arctanh() -> None:
     assert_eq_pl(
         pql.col("x").truediv(30).arctanh(),
         pl.col("x").truediv(30).arctanh(),
     )
-
-
-def test_cot() -> None:
-    assert_eq_pl(pql.col("x").cot(), pl.col("x").cot())
-
-
-def test_degrees() -> None:
-    assert_eq_pl(pql.col("x").degrees(), pl.col("x").degrees())
-
-
-def test_radians() -> None:
-    assert_eq_pl(pql.col("x").radians(), pl.col("x").radians())
-
-
-def test_sign() -> None:
-    assert_eq_pl(pql.col("x").sign(), pl.col("x").sign())
 
 
 def test_pow() -> None:
@@ -366,19 +312,9 @@ def test_is_in() -> None:
     assert_eq(pql.col("x").is_in([2, 3]), nw.col("x").is_in([2, 3]))
 
 
-def test_abs() -> None:
-    assert_eq(pql.col("x").abs(), nw.col("x").abs())
-
-
 @pytest.mark.parametrize("n", [0, 1, 2, -1, -2])
 def test_shift(n: int) -> None:
     assert_eq_pl(pql.col("x").shift(n), pl.col("x").shift(n))
-
-
-def test_diff() -> None:
-    assert_eq_pl(
-        pql.col("x").diff().alias("x_diff"), pl.col("x").diff().alias("x_diff")
-    )
 
 
 @pytest.mark.parametrize("n", [0, 1, 2, -1, -2])
@@ -432,36 +368,8 @@ def test_when_then_chained() -> None:
     )
 
 
-def test_count() -> None:
-    assert_eq(pql.col("x").count(), nw.col("x").count())
-
-
-def test_len() -> None:
-    assert_eq_pl(pql.col("x").len(), pl.col("x").len())
-
-
-def test_sum() -> None:
-    assert_eq_pl(pql.col("x").sum(), pl.col("x").sum())
-
-
-def test_mean() -> None:
-    assert_eq_pl(pql.col("x").mean(), pl.col("x").mean())
-
-
-def test_median() -> None:
-    assert_eq_pl(pql.col("x").median(), pl.col("x").median())
-
-
-def test_min() -> None:
-    assert_eq_pl(pql.col("x").min(), pl.col("x").min())
-
-
-def test_max() -> None:
-    assert_eq_pl(pql.col("x").max(), pl.col("x").max())
-
-
 @pytest.mark.parametrize("ignore_nulls", [True, False])
-def test_first(ignore_nulls: bool) -> None:  # noqa: FBT001
+def test_first(ignore_nulls: bool) -> None:
     assert_eq_pl(
         pql.col("n").first(ignore_nulls=ignore_nulls),
         pl.col("n").first(ignore_nulls=ignore_nulls),
@@ -470,18 +378,6 @@ def test_first(ignore_nulls: bool) -> None:  # noqa: FBT001
 
 def test_last() -> None:
     assert_eq_pl(pql.col("n").last(), pl.col("n").last())
-
-
-def test_mode() -> None:
-    assert_eq_pl(pql.col("x").mode(), pl.col("x").mode())
-
-
-def test_approx_n_unique() -> None:
-    assert_eq_pl(pql.col("x").approx_n_unique(), pl.col("x").approx_n_unique())
-
-
-def test_product() -> None:
-    assert_eq_pl(pql.col("x").product(), pl.col("x").product())
 
 
 def test_max_by() -> None:
@@ -651,7 +547,7 @@ def test_quantile() -> None:
 
 
 @pytest.mark.parametrize("desc", [True, False])
-def test_over(desc: bool) -> None:  # noqa: FBT001
+def test_over(desc: bool) -> None:
     assert_eq_pl(
         pql.col("x").sum().over("a", order_by="n", descending=desc),
         pl.col("x").sum().over("a", order_by="n", descending=desc),
@@ -755,10 +651,6 @@ def test_all() -> None:
 
 def test_any() -> None:
     assert_eq_pl(pql.col("x").gt(10).any(), pl.col("x").gt(10).any())
-
-
-def test_n_unique() -> None:
-    assert_eq_pl(pql.col("x").n_unique(), pl.col("x").n_unique())
 
 
 def test_null_count() -> None:

@@ -1,4 +1,5 @@
 from collections.abc import Iterable
+from datetime import date, datetime
 
 import duckdb
 import narwhals as nw
@@ -28,8 +29,26 @@ def sample_df() -> nw.LazyFrame[duckdb.DuckDBPyRelation]:
             {"a": 5, "b": 6, "c": 7, "d": 8},
             {"a": 5, "b": 6, "c": 7, "d": 8},
         ],
+        "d": [
+            date(2024, 1, 1),
+            date(2024, 1, 2),
+            date(2024, 1, 3),
+            date(2024, 1, 4),
+            date(2024, 1, 1),
+            date(2024, 1, 2),
+        ],
+        "dt": [
+            datetime(2024, 1, 1, 10, 30, 15, 123_456),
+            datetime(2024, 1, 2, 11, 45, 30, 1),
+            datetime(2024, 1, 3, 23, 59, 59, 999_001),
+            datetime(2024, 1, 4, 0, 0, 0, 0),
+            datetime(2024, 1, 1, 10, 30, 15, 123_456),
+            datetime(2024, 1, 2, 11, 45, 30, 1),
+        ],
+        "dur": [0, 4_500_000_000, 86_430_000_000, 45_000_000, 0, 4_500_000_000],
     }
-    return nw.from_native(pl.DataFrame(data).pipe(duckdb.from_arrow))
+
+    return nw.from_native(duckdb.from_arrow(pl.DataFrame(data)))
 
 
 def assert_eq(
@@ -52,3 +71,7 @@ def assert_eq_pl(
         check_dtypes=False,
         check_row_order=False,
     )
+
+
+def on_simple_fn(pql_expr: object, pl_expr: object, fn_name: str) -> None:
+    assert_eq_pl(getattr(pql_expr, fn_name)(), getattr(pl_expr, fn_name)())
