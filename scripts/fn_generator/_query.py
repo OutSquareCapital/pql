@@ -2,6 +2,7 @@ import re
 from collections.abc import Iterable
 
 import polars as pl
+import pyochain as pc
 
 from .._utils import Pql, Typing
 from ._dtypes import FuncTypes
@@ -196,13 +197,44 @@ def _make_type_union(py_type: pl.Expr) -> pl.Expr:
     return (
         pl.when(py_type.eq(EMPTY_STR))
         .then(into_expr_col)
-        .when(py_type.eq(Pql.INTO_EXPR))
+        .when(py_type.str.contains(_token_pattern(Pql.INTO_EXPR)))
         .then(pl.lit(Pql.INTO_EXPR))
+        .when(py_type.str.contains(_token_pattern(Pql.INTO_EXPR_COLUMN)))
+        .then(py_type)
         .otherwise(
             format_kwords(
                 "{self_type} | {py_type}", self_type=into_expr_col, py_type=py_type
             )
         )
+        .map_elements(_simplify_generated_union, return_dtype=pl.String)
+    )
+
+
+def _token_pattern(token: str) -> str:
+    return rf"(^|\s\|\s){re.escape(token)}($|\s\|\s)"
+
+
+def _simplify_generated_union(type_hint: str) -> str:
+    tokens = (
+        pc.Iter(type_hint.split("|"))
+        .map(str.strip)
+        .filter(lambda type_name: type_name != "")
+        .collect()
+    )
+    if tokens.iter().any(lambda type_name: type_name == Pql.INTO_EXPR):
+        return Pql.INTO_EXPR.value
+
+    has_into_expr_column = tokens.iter().any(
+        lambda type_name: type_name == Pql.INTO_EXPR_COLUMN
+    )
+    return (
+        tokens.iter()
+        .filter(
+            lambda type_name: (
+                type_name != "str" if has_into_expr_column else type_name != ""
+            )
+        )
+        .join(" | ")
     )
 
 
