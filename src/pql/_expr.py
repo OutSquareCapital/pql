@@ -1343,73 +1343,58 @@ class ExprStringNameSpace(ExprNameSpaceBase):
 
 
 @dataclass(slots=True)
-class ExprArrayNameSpace(ExprNameSpaceBase):
-    """Array operations namespace (equivalent to pl.Expr.array)."""
+class _VecNameSpace[T: sql.SqlExprListNameSpace | sql.SqlExprArrayNameSpace](
+    ExprNameSpaceBase
+):
+    """Common list/array operations namespace."""
 
-    def all(self) -> Expr:
-        """Return whether all values in the array are true."""
-        return self._new(self.inner().list.bool_and())
-
-    def any(self) -> Expr:
-        """Return whether any value in the array is true."""
-        return self._new(self.inner().list.bool_or())
+    @property
+    def _vec(self) -> T:  # pragma: no cover
+        raise NotImplementedError
 
     def eval(self, expr: Expr) -> Expr:
         """Run an expression against each array element."""
-        return self._new(self.inner().arr.transform(sql.fn_once(expr.inner())))
+        return self._new(self._vec.transform(sql.fn_once(expr.inner())))
 
     def filter(self, predicate: Expr) -> Expr:
-        return self._new(self.inner().arr.filter(sql.fn_once(predicate.inner())))
+        return self._new(self._vec.filter(sql.fn_once(predicate.inner())))
 
-    def len(self) -> Expr:
-        """Return the number of elements in each array."""
-        return self._new(self.inner().arr.length())
-
-    def unique(self) -> Expr:
-        """Return unique values in each array."""
-        return self._new(self.inner().arr.distinct())
-
-    def n_unique(self) -> Expr:
-        """Return the number of unique values in each array."""
-        return self._new(self.inner().arr.distinct().arr.length())
+    def drop_nulls(self) -> Expr:
+        """Drop null values in each list."""
+        return self._new(self._vec.filter(sql.fn_once(sql.element().is_not_null())))
 
     def contains(self, item: IntoExpr) -> Expr:
         """Check if subarrays contain the given item."""
-        return self._new(self.inner().arr.contains(item))
+        return self._new(self._vec.contains(item))
 
-    def count_matches(self, element: IntoExpr) -> Expr:
-        """Count matches in each array."""
+    def all(self) -> Expr:
+        """Return whether all values in the list are true."""
+        return self._new(self.inner().list.bool_and())
+
+    def any(self) -> Expr:
+        """Return whether any value in the listis true."""
+        return self._new(self.inner().list.bool_or())
+
+    def len(self) -> Expr:
+        """Return the number of elements in each array."""
+        return self._new(self._vec.length())
+
+    def unique(self) -> Expr:
+        """Return unique values in each array."""
+        return self._new(self._vec.distinct())
+
+    def reverse(self) -> Expr:
+        """Reverse the arrays of the expression."""
+        return self._new(self._vec.reverse())
+
+    def sort(self, *, descending: bool = False, nulls_last: bool = False) -> Expr:
+        """Sort the lists of the column."""
         return self._new(
-            self.inner().arr.filter(sql.fn_once(sql.element().eq(element))).arr.length()
+            self._vec.sort(
+                sql.lit(sql.Kword.sort_order(desc=descending)),
+                sql.lit(sql.Kword.null_order(last=nulls_last)),
+            )
         )
-
-    def drop_nulls(self) -> Expr:
-        """Drop null values in each array."""
-        return self._new(
-            self.inner().arr.filter(sql.fn_once(sql.element().is_not_null()))
-        )
-
-    def join(self, separator: IntoExprColumn, *, ignore_nulls: bool = True) -> Expr:
-        """Join string values in each array with a separator."""
-        joined = self.inner().arr.aggregate(_STR_AGG, separator)
-        match ignore_nulls:
-            case True:
-                return self._new(sql.coalesce(joined, _EMPTY_STR))
-            case False:
-                return self._new(
-                    sql.when(
-                        self.inner()
-                        .arr.filter(sql.fn_once(sql.element().is_null()))
-                        .arr.length()
-                        .gt(0)
-                    )
-                    .then(_NONE)
-                    .otherwise(sql.coalesce(joined, _EMPTY_STR))
-                )
-
-    def get(self, index: int) -> Expr:
-        """Return the value by index in each array."""
-        return self._new(self.inner().arr.extract(index + 1 if index >= 0 else index))
 
     def first(self) -> Expr:
         """Get the first element of each array."""
@@ -1447,54 +1432,59 @@ class ExprArrayNameSpace(ExprNameSpaceBase):
         """Compute the variance of the arrays in the column."""
         return self._new(self.inner().list.var(ddof))
 
-    def sort(self, *, descending: bool = False, nulls_last: bool = False) -> Expr:
-        """Sort the lists of the column."""
-        return self._new(
-            self.inner().arr.sort(
-                sql.lit(sql.Kword.sort_order(desc=descending)),
-                sql.lit(sql.Kword.null_order(last=nulls_last)),
-            )
-        )
-
-    def reverse(self) -> Expr:
-        """Reverse the arrays of the expression."""
-        return self._new(self.inner().arr.reverse())
+    def get(self, index: int) -> Expr:
+        """Return the value by index in each array."""
+        return self._new(self._vec.extract(index + 1 if index >= 0 else index))
 
 
 @dataclass(slots=True)
-class ExprListNameSpace(ExprNameSpaceBase):
+class ExprArrayNameSpace(_VecNameSpace[sql.SqlExprArrayNameSpace]):
+    """Array operations namespace (equivalent to pl.Expr.array)."""
+
+    @property
+    def _vec(self) -> sql.SqlExprArrayNameSpace:
+        return self.inner().arr
+
+    def n_unique(self) -> Expr:
+        """Return the number of unique values in each array."""
+        return self._new(self.inner().arr.distinct().arr.length())
+
+    def count_matches(self, element: IntoExpr) -> Expr:
+        """Count matches in each array."""
+        return self._new(
+            self.inner().arr.filter(sql.fn_once(sql.element().eq(element))).arr.length()
+        )
+
+    def join(self, separator: IntoExprColumn, *, ignore_nulls: bool = True) -> Expr:
+        """Join string values in each array with a separator."""
+        joined = self.inner().arr.aggregate(_STR_AGG, separator)
+        match ignore_nulls:
+            case True:
+                return self._new(sql.coalesce(joined, _EMPTY_STR))
+            case False:
+                return self._new(
+                    sql.when(
+                        self.inner()
+                        .arr.filter(sql.fn_once(sql.element().is_null()))
+                        .arr.length()
+                        .gt(0)
+                    )
+                    .then(_NONE)
+                    .otherwise(sql.coalesce(joined, _EMPTY_STR))
+                )
+
+
+@dataclass(slots=True)
+class ExprListNameSpace(_VecNameSpace[sql.SqlExprListNameSpace]):
     """List operations namespace (equivalent to pl.Expr.list)."""
 
-    def all(self) -> Expr:
-        """Return whether all values in the list are true."""
-        return self._new(self.inner().list.bool_and())
-
-    def any(self) -> Expr:
-        """Return whether any value in the listis true."""
-        return self._new(self.inner().list.bool_or())
-
-    def eval(self, expr: Expr) -> Expr:
-        """Run an expression against each list element."""
-        return self._new(self.inner().list.transform(sql.fn_once(expr.inner())))
-
-    def filter(self, predicate: Expr) -> Expr:
-        return self._new(self.inner().list.filter(sql.fn_once(predicate.inner())))
-
-    def len(self) -> Expr:
-        """Return the number of elements in each list."""
-        return self._new(self.inner().list.length())
-
-    def unique(self) -> Expr:
-        """Return unique values in each list."""
-        return self._new(self.inner().list.distinct())
+    @property
+    def _vec(self) -> sql.SqlExprListNameSpace:
+        return self.inner().list
 
     def n_unique(self) -> Expr:
         """Return the number of unique values in each list."""
         return self._new(self.inner().list.distinct().list.length())
-
-    def contains(self, item: IntoExpr) -> Expr:
-        """Check if sublists contain the given item."""
-        return self._new(self.inner().list.contains(item))
 
     def count_matches(self, element: IntoExpr) -> Expr:
         """Count matches in each list."""
@@ -1502,12 +1492,6 @@ class ExprListNameSpace(ExprNameSpaceBase):
             self.inner()
             .list.filter(sql.fn_once(sql.element().eq(element)))
             .list.length()
-        )
-
-    def drop_nulls(self) -> Expr:
-        """Drop null values in each list."""
-        return self._new(
-            self.inner().list.filter(sql.fn_once(sql.element().is_not_null()))
         )
 
     def join(self, separator: IntoExprColumn, *, ignore_nulls: bool = True) -> Expr:
@@ -1527,59 +1511,6 @@ class ExprListNameSpace(ExprNameSpaceBase):
                     .then(_NONE)
                     .otherwise(sql.coalesce(joined, _EMPTY_STR))
                 )
-
-    def get(self, index: int) -> Expr:
-        """Return the value by index in each list."""
-        return self._new(self.inner().list.extract(index + 1 if index >= 0 else index))
-
-    def first(self) -> Expr:
-        """Get the first element of each list."""
-        return self._new(self.inner().list.first())
-
-    def last(self) -> Expr:
-        """Get the last element of each list."""
-        return self._new(self.inner().list.last())
-
-    def min(self) -> Expr:
-        """Compute the min value of the lists in the column."""
-        return self._new(self.inner().list.min())
-
-    def max(self) -> Expr:
-        """Compute the max value of the lists in the column."""
-        return self._new(self.inner().list.max())
-
-    def mean(self) -> Expr:
-        """Compute the mean value of the lists in the column."""
-        return self._new(self.inner().list.avg())
-
-    def median(self) -> Expr:
-        """Compute the median value of the lists in the column."""
-        return self._new(self.inner().list.median())
-
-    def sum(self) -> Expr:
-        """Compute the sum value of the lists in the column."""
-        return self._new(self.inner().list.sum())
-
-    def std(self, ddof: int = 1) -> Expr:
-        """Compute the standard deviation of the lists in the column."""
-        return self._new(self.inner().list.std(ddof))
-
-    def var(self, ddof: int = 1) -> Expr:
-        """Compute the variance of the lists in the column."""
-        return self._new(self.inner().list.var(ddof))
-
-    def sort(self, *, descending: bool = False, nulls_last: bool = False) -> Expr:
-        """Sort the lists of the column."""
-        return self._new(
-            self.inner().list.sort(
-                sql.lit(sql.Kword.sort_order(desc=descending)),
-                sql.lit(sql.Kword.null_order(last=nulls_last)),
-            )
-        )
-
-    def reverse(self) -> Expr:
-        """Reverse the lists of the expression."""
-        return self._new(self.inner().list.reverse())
 
 
 @dataclass(slots=True)
