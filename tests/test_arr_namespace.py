@@ -128,20 +128,15 @@ def test_drop_nulls() -> None:
     )
 
 
-def test_get() -> None:
-    assert_eq(
-        pql.col("x").arr.get(0),
-        nw.col("x").list.get(0),
-    )
-    assert_eq_pl(
-        pql.col("x").arr.get(-1),
-        pl.col("x").arr.get(-1),
-    )
+def test_get_out_of_bounds() -> None:
+
     with pytest.raises(pl.exceptions.ComputeError, match="get index is out of bounds"):
-        assert_eq_pl(
-            pql.col("x_var").arr.get(10),
-            pl.col("x_var").arr.get(10),
-        )
+        assert_eq_pl(pql.col("x_var").arr.get(10), pl.col("x_var").arr.get(10))
+
+
+@pytest.mark.parametrize("index", [0, 1, -1])
+def test_get(index: int) -> None:
+    assert_eq_pl(pql.col("x").arr.get(index), pl.col("x").arr.get(index))
 
 
 def test_min() -> None:

@@ -1,55 +1,11 @@
-from collections.abc import Iterable
-
-import duckdb
 import narwhals as nw
 import polars as pl
 import pytest
-from polars.testing import assert_frame_equal
 
 import pql
+from pql import _typing as t
 
-
-def sample_df() -> nw.LazyFrame[duckdb.DuckDBPyRelation]:
-    nan = float("nan")
-    return nw.from_native(
-        duckdb.from_arrow(
-            pl.DataFrame(
-                {
-                    "a": [True, False, True, None, True, False],
-                    "b": [True, True, False, None, True, False],
-                    "x": [10, 2, 3, 5, 10, 20],
-                    "n": [None, 3, 1, None, 2, 3],
-                    "s": ["1", "2", "3", None, "1", "2"],
-                    "age": [25, 30, 35, None, 25, 30],
-                    "salary": [50000.0, 60000.0, 70000.0, None, 50000.0, 60000.0],
-                    "nested": [[1, 2], [3, 4], [5], None, [1, 2], [3, 4]],
-                    "nan_vals": [1.0, nan, 3.0, nan, 5.0, nan],
-                }
-            )
-        )
-    )
-
-
-def assert_eq(
-    pql_exprs: pql.Expr | Iterable[pql.Expr], polars_exprs: nw.Expr | Iterable[nw.Expr]
-) -> None:
-    assert_frame_equal(
-        pql.LazyFrame(sample_df().to_native()).select(pql_exprs).collect(),
-        sample_df().lazy().select(polars_exprs).to_native().pl(),
-        check_dtypes=False,
-        check_row_order=False,
-    )
-
-
-def assert_eq_pl(
-    pql_exprs: pql.Expr | Iterable[pql.Expr], polars_exprs: pl.Expr | Iterable[pl.Expr]
-) -> None:
-    assert_frame_equal(
-        pql.LazyFrame(sample_df().to_native()).select(pql_exprs).collect(),
-        sample_df().to_native().pl(lazy=True).select(polars_exprs).collect(),
-        check_dtypes=False,
-        check_row_order=False,
-    )
+from ._utils import assert_eq, assert_eq_pl
 
 
 def test_rand() -> None:
@@ -232,16 +188,13 @@ def test_col_getattr() -> None:
     assert_eq_pl(pql.col.a, pl.col.a)
 
 
-def test_round_modes() -> None:
+def test_round_nw() -> None:
     assert_eq(pql.col("x").round(2), nw.col("x").round(2))
-    assert_eq_pl(
-        pql.col("x").round(2, mode="half_to_even"),
-        pl.col("x").round(2, mode="half_to_even"),
-    )
-    assert_eq_pl(
-        pql.col("x").round(2, mode="half_away_from_zero"),
-        pl.col("x").round(2, mode="half_away_from_zero"),
-    )
+
+
+@pytest.mark.parametrize("mode", ["half_to_even", "half_away_from_zero"])
+def test_round_mode(mode: t.RoundMode) -> None:
+    assert_eq_pl(pql.col("x").round(2, mode=mode), pl.col("x").round(2, mode=mode))
 
 
 def test_pipe() -> None:
@@ -252,9 +205,9 @@ def test_forward_fill() -> None:
     assert_eq_pl(pql.col("a").forward_fill(), pl.col("a").forward_fill())
 
 
-def test_backward_fill() -> None:
-    assert_eq_pl(pql.col("n").backward_fill(), pl.col("n").backward_fill())
-    assert_eq_pl(pql.col("n").backward_fill(2), pl.col("n").backward_fill(2))
+@pytest.mark.parametrize("limit", [1, 2, None])
+def test_backward_fill(limit: int | None) -> None:
+    assert_eq_pl(pql.col("n").backward_fill(limit), pl.col("n").backward_fill(limit))
 
 
 def test_is_nan() -> None:
@@ -417,10 +370,9 @@ def test_abs() -> None:
     assert_eq(pql.col("x").abs(), nw.col("x").abs())
 
 
-def test_shift() -> None:
-    assert_eq_pl(pql.col("x").shift(), pl.col("x").shift())
-    assert_eq_pl(pql.col("x").shift(-1), pl.col("x").shift(-1))
-    assert_eq_pl(pql.col("x").shift(0), pl.col("x").shift(0))
+@pytest.mark.parametrize("n", [0, 1, 2, -1, -2])
+def test_shift(n: int) -> None:
+    assert_eq_pl(pql.col("x").shift(n), pl.col("x").shift(n))
 
 
 def test_diff() -> None:
@@ -429,26 +381,16 @@ def test_diff() -> None:
     )
 
 
-def test_pct_change() -> None:
-    assert_eq_pl(pql.col("x").pct_change(), pl.col("x").pct_change())
-    assert_eq_pl(pql.col("x").pct_change(2), pl.col("x").pct_change(2))
-    assert_eq_pl(pql.col("x").pct_change(-1), pl.col("x").pct_change(-1))
+@pytest.mark.parametrize("n", [0, 1, 2, -1, -2])
+def test_pct_change(n: int) -> None:
+    assert_eq_pl(pql.col("x").pct_change(n), pl.col("x").pct_change(n))
 
 
-def test_is_between() -> None:
+@pytest.mark.parametrize("closed", ["both", "left", "right", "none"])
+def test_is_between(closed: t.ClosedInterval) -> None:
     assert_eq_pl(
-        [
-            pql.col("x").is_between(2, 10).alias("x_between"),
-            pql.col("x").is_between(2, 10, closed="left").alias("x_between_left"),
-            pql.col("x").is_between(2, 10, closed="right").alias("x_between_right"),
-            pql.col("x").is_between(2, 10, closed="none").alias("x_between_none"),
-        ],
-        [
-            pl.col("x").is_between(2, 10).alias("x_between"),
-            pl.col("x").is_between(2, 10, closed="left").alias("x_between_left"),
-            pl.col("x").is_between(2, 10, closed="right").alias("x_between_right"),
-            pl.col("x").is_between(2, 10, closed="none").alias("x_between_none"),
-        ],
+        pql.col("x").is_between(2, 10, closed=closed),
+        pl.col("x").is_between(2, 10, closed=closed),
     )
 
 
@@ -518,20 +460,11 @@ def test_max() -> None:
     assert_eq_pl(pql.col("x").max(), pl.col("x").max())
 
 
-def test_first() -> None:
-    assert_eq_pl(pql.col("x").first(), pl.col("x").first())
+@pytest.mark.parametrize("ignore_nulls", [True, False])
+def test_first(ignore_nulls: bool) -> None:  # noqa: FBT001
     assert_eq_pl(
-        pql.col("n").first(ignore_nulls=False), pl.col("n").first(ignore_nulls=False)
-    )
-    assert_eq_pl(
-        pql.col("n").first(ignore_nulls=True), pl.col("n").first(ignore_nulls=True)
-    )
-    assert_eq_pl(
-        pql.col("n").first(ignore_nulls=False),
-        pl.col("n").first(ignore_nulls=False),
-    )
-    assert_eq_pl(
-        pql.col("n").first(ignore_nulls=True), pl.col("n").first(ignore_nulls=True)
+        pql.col("n").first(ignore_nulls=ignore_nulls),
+        pl.col("n").first(ignore_nulls=ignore_nulls),
     )
 
 
@@ -706,40 +639,26 @@ def test_skew() -> None:
     )
 
 
-def test_quantile() -> None:
+@pytest.mark.parametrize(
+    "interpolation", ["nearest", "higher", "lower", "midpoint", "linear"]
+)
+def test_quantile(interpolation: t.RollingInterpolationMethod) -> None:
     assert_eq_pl(
-        pql.col("x").quantile(0.5, interpolation="lower").alias("x_quantile"),
-        pl.col("x").quantile(0.5, interpolation="lower").alias("x_quantile"),
-    )
-    assert_eq_pl(
-        pql.col("x").quantile(0.5, interpolation="linear").alias("x_quantile_linear"),
-        pl.col("x").quantile(0.5, interpolation="linear").alias("x_quantile_linear"),
-    )
-    assert_eq_pl(
-        pql.col("x")
-        .quantile(0.5, interpolation="midpoint")
-        .alias("x_quantile_midpoint"),
-        pl.col("x")
-        .quantile(0.5, interpolation="midpoint")
-        .alias("x_quantile_midpoint"),
+        pql.col("x").quantile(0.5, interpolation),
+        pl.col("x").quantile(0.5, interpolation),
     )
 
 
-def test_over() -> None:
-    assert_eq_pl(pql.col("x").sum().over("a"), pl.col("x").sum().over("a"))
-
-
-def test_over_order_by() -> None:
+@pytest.mark.parametrize("desc", [True, False])
+def test_over(desc: bool) -> None:  # noqa: FBT001
     assert_eq_pl(
-        pql.col("x").sum().over("a", order_by="n"),
-        pl.col("x").sum().over("a", order_by="n"),
+        pql.col("x").sum().over("a", order_by="n", descending=desc),
+        pl.col("x").sum().over("a", order_by="n", descending=desc),
     )
 
-
-def test_over_descending() -> None:
     assert_eq_pl(
-        pql.col("x").sum().over("a", descending=True),
-        pl.col("x").sum().over("a", descending=True),
+        pql.col("x").sum().over("a", descending=desc),
+        pl.col("x").sum().over("a", descending=desc),
     )
 
 
@@ -759,51 +678,26 @@ def test_over_with_nulls_last() -> None:
     )
 
 
-def test_fill_null() -> None:
+@pytest.mark.parametrize(
+    "strategy", ["forward", "backward", "min", "max", "mean", "zero", "one"]
+)
+def test_fill_null(strategy: t.FillNullStrategy) -> None:
     assert_eq_pl(pql.col("age").fill_null(0), pl.col("age").fill_null(0))
     assert_eq_pl(
-        pql.col("age").fill_null(strategy="forward"),
-        pl.col("age").fill_null(strategy="forward"),
+        pql.col("age").fill_null(strategy=strategy),
+        pl.col("age").fill_null(strategy=strategy),
+    )
+
+
+@pytest.mark.parametrize("limit", [0, 1])
+def test_fill_null_limit(limit: int) -> None:
+    assert_eq_pl(
+        pql.col("age").fill_null(strategy="forward", limit=limit),
+        pl.col("age").fill_null(strategy="forward", limit=limit),
     )
     assert_eq_pl(
-        pql.col("age").fill_null(strategy="backward"),
-        pl.col("age").fill_null(strategy="backward"),
-    )
-    assert_eq_pl(
-        pql.col("age").fill_null(strategy="forward", limit=0),
-        pl.col("age").fill_null(strategy="forward", limit=0),
-    )
-    assert_eq_pl(
-        pql.col("age").fill_null(strategy="forward", limit=1),
-        pl.col("age").fill_null(strategy="forward", limit=1),
-    )
-    assert_eq_pl(
-        pql.col("age").fill_null(strategy="backward", limit=0),
-        pl.col("age").fill_null(strategy="backward", limit=0),
-    )
-    assert_eq_pl(
-        pql.col("age").fill_null(strategy="backward", limit=1),
-        pl.col("age").fill_null(strategy="backward", limit=1),
-    )
-    assert_eq_pl(
-        pql.col("age").fill_null(strategy="min"),
-        pl.col("age").fill_null(strategy="min"),
-    )
-    assert_eq_pl(
-        pql.col("age").fill_null(strategy="max"),
-        pl.col("age").fill_null(strategy="max"),
-    )
-    assert_eq_pl(
-        pql.col("age").fill_null(strategy="mean"),
-        pl.col("age").fill_null(strategy="mean"),
-    )
-    assert_eq_pl(
-        pql.col("age").fill_null(strategy="zero"),
-        pl.col("age").fill_null(strategy="zero"),
-    )
-    assert_eq_pl(
-        pql.col("age").fill_null(strategy="one"),
-        pl.col("age").fill_null(strategy="one"),
+        pql.col("age").fill_null(strategy="backward", limit=limit),
+        pl.col("age").fill_null(strategy="backward", limit=limit),
     )
 
 
@@ -874,11 +768,9 @@ def test_has_nulls() -> None:
     assert_eq_pl(pql.col("age").has_nulls(), pl.col("age").has_nulls())
 
 
-def test_rank() -> None:
-    assert_eq_pl(pql.col("x").rank(), pl.col("x").rank())
-    assert_eq_pl(pql.col("x").rank(method="min"), pl.col("x").rank(method="min"))
-    assert_eq_pl(pql.col("x").rank(method="max"), pl.col("x").rank(method="max"))
-    assert_eq_pl(pql.col("x").rank(method="dense"), pl.col("x").rank(method="dense"))
+@pytest.mark.parametrize("method", ["average", "min", "max", "dense", "ordinal"])
+def test_rank(method: t.RankMethod) -> None:
+    assert_eq_pl(pql.col("x").rank(method), pl.col("x").rank(method))
     assert_eq_pl(
         pql.col("x").rank(method="ordinal"), pl.col("x").rank(method="ordinal")
     )

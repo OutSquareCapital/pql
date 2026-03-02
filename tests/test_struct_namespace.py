@@ -1,79 +1,42 @@
-from collections.abc import Iterable
-
-import duckdb
 import narwhals as nw
 import polars as pl
-from polars.testing import assert_frame_equal
 
 import pql
 
-
-def sample_df() -> nw.LazyFrame[duckdb.DuckDBPyRelation]:
-    return nw.from_native(
-        duckdb.from_arrow(
-            pl.DataFrame(
-                {
-                    "x": [
-                        {"a": 1, "b": 2, "c": 3, "d": 4},
-                        {"a": 5, "b": 6, "c": 7, "d": 8},
-                    ],
-                }
-            )
-        )
-    )
-
-
-def assert_eq(
-    pql_exprs: pql.Expr | Iterable[pql.Expr], polars_exprs: nw.Expr | Iterable[nw.Expr]
-) -> None:
-    assert_frame_equal(
-        pql.LazyFrame(sample_df().to_native()).select(pql_exprs).collect(),
-        sample_df().lazy().select(polars_exprs).to_native().pl(),
-        check_dtypes=False,
-        check_row_order=False,
-    )
-
-
-def assert_eq_pl(
-    pql_exprs: pql.Expr | Iterable[pql.Expr], polars_exprs: pl.Expr | Iterable[pl.Expr]
-) -> None:
-    assert_frame_equal(
-        pql.LazyFrame(sample_df().to_native()).select(pql_exprs).collect(),
-        sample_df().to_native().pl(lazy=True).select(polars_exprs).collect(),
-        check_dtypes=False,
-        check_row_order=False,
-    )
+from ._utils import assert_eq, assert_eq_pl
 
 
 def test_field() -> None:
     assert_eq(
-        pql.col("x").struct.field("a").alias("a"),
-        nw.col("x").struct.field("a").alias("a"),
+        pql.col("structs").struct.field("a").alias("a"),
+        nw.col("structs").struct.field("a").alias("a"),
     )
 
 
 def test_with_fields() -> None:
     assert_eq_pl(
-        pql.col("x")
+        pql.col("structs")
         .struct.with_fields(
-            "x",
-            pql.col("x").struct.field("a").alias("e"),
-            pql.col("x").struct.field("b").alias("f"),
-            g=pql.col("x").struct.field("c"),
-            h="x",
+            "structs",
+            pql.col("structs").struct.field("a").alias("e"),
+            pql.col("structs").struct.field("b").alias("f"),
+            g=pql.col("structs").struct.field("c"),
+            h="structs",
         )
-        .alias("x"),
-        pl.col("x")
+        .alias("structs"),
+        pl.col("structs")
         .struct.with_fields(
-            "x",
-            pl.col("x").struct.field("a").alias("e"),
-            pl.col("x").struct.field("b").alias("f"),
-            g=pl.col("x").struct.field("c"),
-            h="x",
+            "structs",
+            pl.col("structs").struct.field("a").alias("e"),
+            pl.col("structs").struct.field("b").alias("f"),
+            g=pl.col("structs").struct.field("c"),
+            h="structs",
         )
-        .alias("x"),
+        .alias("structs"),
     )
 
 
 def test_json_encode() -> None:
-    assert_eq_pl(pql.col("x").struct.json_encode(), pl.col("x").struct.json_encode())
+    assert_eq_pl(
+        pql.col("structs").struct.json_encode(), pl.col("structs").struct.json_encode()
+    )
