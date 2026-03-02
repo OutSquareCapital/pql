@@ -31,6 +31,7 @@ RENAME_RULES = pc.Dict.from_ref(
         "isfinite": "is_finite",
         "bool_and": "all",
         "bool_or": "any",
+        "round": "round_from_zero",  # allow to expose round as parametrizable method
     }
 )
 """Explicit SQL function name -> generated Python method name mapping."""

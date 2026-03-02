@@ -31,6 +31,9 @@ class CoreHandler[T]:
     def __repr__(self) -> str:
         return self.inner().__repr__()
 
+    def __str__(self) -> str:
+        return self.inner().__str__()
+
     def pipe[**P, R](
         self,
         function: Callable[Concatenate[Self, P], R],

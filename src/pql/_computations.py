@@ -3,16 +3,8 @@ from collections.abc import Callable
 import pyochain as pc
 
 from . import sql
-from ._typing import FillNullStrategy, RoundMode
+from ._typing import FillNullStrategy
 from .sql.typing import IntoExpr
-
-
-def round(expr: sql.SqlExpr, decimals: int, mode: RoundMode) -> sql.SqlExpr:
-    match mode:
-        case "half_to_even":
-            return expr.round_even(decimals)
-        case "half_away_from_zero":
-            return expr.round(decimals)
 
 
 def fill_nulls(  # noqa: PLR0911

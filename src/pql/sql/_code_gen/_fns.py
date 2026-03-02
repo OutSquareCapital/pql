@@ -2123,7 +2123,20 @@ class Fns(DuckHandler):
             func("reservoir_quantile", self.inner(), quantile, sample_size)
         )
 
-    def round(self, precision: IntoExprColumn | int | None = None) -> Self:
+    def round_even(self, n: IntoExpr) -> Self:
+        """SQL round_even function.
+
+        **SQL name**: *round_even*
+
+        Args:
+            n (IntoExpr): `ANY` expression
+
+        Returns:
+            Self
+        """
+        return self._new(func("round_even", self.inner(), n))
+
+    def round_from_zero(self, precision: IntoExprColumn | int | None = None) -> Self:
         """Rounds x to s decimal places.
 
         **SQL name**: *round*
@@ -2138,19 +2151,6 @@ class Fns(DuckHandler):
             Self
         """
         return self._new(func("round", self.inner(), precision))
-
-    def round_even(self, n: IntoExpr) -> Self:
-        """SQL round_even function.
-
-        **SQL name**: *round_even*
-
-        Args:
-            n (IntoExpr): `ANY` expression
-
-        Returns:
-            Self
-        """
-        return self._new(func("round_even", self.inner(), n))
 
     def roundbankers(self, n: IntoExpr) -> Self:
         """SQL roundbankers function.

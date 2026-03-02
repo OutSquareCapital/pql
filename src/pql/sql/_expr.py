@@ -24,7 +24,7 @@ from ._core import func
 from ._window import over_expr
 
 if TYPE_CHECKING:
-    from .typing import IntoExpr, IntoExprColumn
+    from .typing import IntoExpr, IntoExprColumn, RoundMode
 
 
 class SqlExpr(Expression, Fns):
@@ -107,6 +107,20 @@ class SqlExpr(Expression, Fns):
             case _:
                 return self.lead(-n).over()
 
+    def round(self, decimals: int, mode: RoundMode) -> Self:
+        match mode:
+            case "half_to_even":
+                return self.round_even(decimals)
+            case "half_away_from_zero":
+                return self.round_from_zero(decimals)
+
+    def quantile(self, quantile: float, *, interpolation: bool = True) -> Self:
+        match interpolation:
+            case True:
+                return self.quantile_cont(quantile)
+            case False:
+                return self.quantile_disc(quantile)
+
     def log(self, x: IntoExprColumn | float | None = None) -> Self:
         """Computes the logarithm of x to base b.
 
@@ -155,9 +169,6 @@ class SqlExpr(Expression, Fns):
             Self
         """
         return self._new(func("least", self.inner(), *args))
-
-    def __str__(self) -> str:
-        return self.inner().__str__()
 
     def over(  # noqa: PLR0913
         self,

@@ -15,6 +15,7 @@ def sample_df() -> nw.LazyFrame[duckdb.DuckDBPyRelation]:
         "a": [True, False, True, None, True, False],
         "b": [True, True, False, None, True, False],
         "x": [10, 2, 3, 5, 10, 20],
+        "float_vals": [1.36, 2.75, 3.14, None, 1.36, 2.75],
         "n": [None, 3, 1, None, 2, 3],
         "s": ["1", "2", "3", None, "1", "2"],
         "age": [25, 30, 35, None, 25, 30],

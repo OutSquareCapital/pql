@@ -214,13 +214,12 @@ def test_col_getattr() -> None:
     assert_eq_pl(pql.col.a, pl.col.a)
 
 
-def test_round_nw() -> None:
-    assert_eq(pql.col("x").round(2), nw.col("x").round(2))
-
-
 @pytest.mark.parametrize("mode", ["half_to_even", "half_away_from_zero"])
-def test_round_mode(mode: t.RoundMode) -> None:
-    assert_eq_pl(pql.col("x").round(2, mode=mode), pl.col("x").round(2, mode=mode))
+def test_round(mode: pql.sql.typing.RoundMode) -> None:
+    assert_eq_pl(
+        pql.col("float_vals").round(2, mode=mode),
+        pl.col("float_vals").round(2, mode=mode),
+    )
 
 
 def test_pipe() -> None:
@@ -258,10 +257,6 @@ def test_fill_nan() -> None:
 
 def test_is_duplicated() -> None:
     assert_eq(pql.col("a").is_duplicated(), nw.col("a").is_duplicated())
-
-
-def test_round() -> None:
-    assert_eq(pql.col("x").round(2), nw.col("x").round(2))
 
 
 def test_arccos() -> None:

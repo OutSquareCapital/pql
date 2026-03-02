@@ -131,3 +131,5 @@ type DatePart = Literal[
     "yearweek",
 ]
 type AllDateParts = IntervalPart | DatePart
+
+type RoundMode = Literal["half_to_even", "half_away_from_zero"]
