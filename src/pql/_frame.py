@@ -229,16 +229,12 @@ class LazyFrame(sql.CoreHandler[sql.Relation]):
         return self.inner().select(*try_flatten(exprs), groups=groups).pipe(self._new)
 
     def _filter(self, predicates: IntoExprColumn | Iterable[IntoExprColumn]) -> Self:
-        return try_iter(predicates).fold(
-            self,
-            lambda lf, p: (
-                try_flatten(p)
-                .map(lambda v: sql.into_expr(v, as_col=True))
-                .fold(
-                    lf,
-                    lambda inner_lf, pred: inner_lf._new(inner_lf.inner().filter(pred)),
-                )
-            ),
+        return self._new(
+            try_iter(predicates)
+            .flat_map(try_flatten)
+            .map(lambda value: sql.into_expr(value, as_col=True))
+            .reduce(sql.SqlExpr.and_)
+            .pipe(self.inner().filter)
         )
 
     def _agg(

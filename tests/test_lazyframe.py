@@ -69,6 +69,15 @@ def test_explain(sample_df: pl.DataFrame) -> None:
     assert "WHERE" in sql
 
 
+def test_explain_filter_predicates_are_combined(sample_df: pl.DataFrame) -> None:
+    sql = (
+        pql.LazyFrame(sample_df)
+        .filter(pql.col("age").gt(25), pql.col("salary").gt(0))
+        .explain()
+    )
+    assert sql.upper().count("WHERE") == 1
+
+
 def test_select_single_column(sample_df: pl.DataFrame) -> None:
     assert_eq(
         pql.LazyFrame(sample_df).select("name").collect(),
