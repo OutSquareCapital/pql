@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Iterable, Iterator, Mapping, Sequence
-from typing import TYPE_CHECKING, Any, Protocol, runtime_checkable
+from typing import TYPE_CHECKING, Any, Literal, Protocol, runtime_checkable
 
 import duckdb
 from narwhals.typing import IntoFrame
@@ -99,3 +99,35 @@ type IntoDuckExpr = DuckIntoExpr
 type IntoDuckExprCol = DuckIntoExprColumn
 type DTypeIds = DuckPyTypeIds
 type StrIntoDType = DuckStrIntoPyType
+# TODO: add this to parse_{dirname, dirpath, filename, path} fns arg
+type Separator = Literal["system", "both_slash", "forward_slash", "backslash"]
+# TODO: add this to date_{trunc, part, diff, sub} fns with a part arg
+type IntervalPart = Literal[
+    "century",
+    "day",
+    "decade",
+    "hour",
+    "microseconds",
+    "millenium",
+    "milliseconds",
+    "minute",
+    "month",
+    "quarter",
+    "second",
+    "year",
+]
+type DatePart = Literal[
+    "dayofweek",
+    "dayofyear",
+    "epoch",
+    "era",
+    "isodow",
+    "isoyear",
+    "julian",
+    "timezone_hour",
+    "timezone_minute",
+    "timezone",
+    "week",
+    "yearweek",
+]
+type AllDateParts = IntervalPart | DatePart
