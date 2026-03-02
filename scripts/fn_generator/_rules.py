@@ -141,7 +141,7 @@ NAMESPACE_SPECS = pc.Seq(
         NamespaceSpec(
             name="DateTimeFns",
             doc="Mixin providing auto-generated DuckDB datetime functions as methods.",
-            prefixes=pc.Seq(("date", "day", "iso")),
+            prefixes=pc.Seq(("date", "day", "iso", "week", "year", "month", "time")),
             categories=pc.Seq((Categories.TIMESTAMP, Categories.DATE)),
             strip_prefixes=pc.Seq(("date_",)),
         ),

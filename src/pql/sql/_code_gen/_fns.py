@@ -2166,32 +2166,6 @@ class Fns(DuckHandler):
         """
         return self._new(func("mode", self.inner()))
 
-    def month(self) -> Self:
-        """Extract the month component from a date or timestamp.
-
-        **SQL name**: *month*
-
-        Examples:
-            month(timestamp '2021-08-03 11:59:44.123456')
-
-        Returns:
-            Self
-        """
-        return self._new(func("month", self.inner()))
-
-    def monthname(self) -> Self:
-        """The (English) name of the month.
-
-        **SQL name**: *monthname*
-
-        Examples:
-            monthname(TIMESTAMP '1992-09-20')
-
-        Returns:
-            Self
-        """
-        return self._new(func("monthname", self.inner()))
-
     def nanosecond(self) -> Self:
         """Extract the nanosecond component from a date or timestamp.
 
@@ -3007,86 +2981,6 @@ class Fns(DuckHandler):
         """
         return self._new(func("tanh", self.inner()))
 
-    def time_bucket(
-        self,
-        timestamp: IntoExprColumn | date | datetime,
-        origin: IntoExprColumn | date | datetime | str | timedelta | None = None,
-    ) -> Self:
-        """Truncate TIMESTAMPTZ by the specified interval bucket_width.
-
-        Buckets are aligned relative to origin TIMESTAMPTZ.
-
-        The origin defaults to 2000-01-03 00:00:00+00 for buckets that do not include a month or year interval, and to 2000-01-01 00:00:00+00 for month and year buckets.
-
-        **SQL name**: *time_bucket*
-
-        Args:
-            timestamp (IntoExprColumn | date | datetime): `DATE | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
-            origin (IntoExprColumn | date | datetime | str | timedelta | None): `DATE | INTERVAL | TIMESTAMP | TIMESTAMP WITH TIME ZONE | VARCHAR` expression
-
-        Examples:
-            time_bucket(INTERVAL '2 weeks', TIMESTAMP '1992-04-20 15:26:00-07', TIMESTAMP '1992-04-01 00:00:00-07')
-
-        Returns:
-            Self
-        """
-        return self._new(func("time_bucket", self.inner(), timestamp, origin))
-
-    def timetz_byte_comparable(self) -> Self:
-        """Converts a TIME WITH TIME ZONE to an integer sort key.
-
-        **SQL name**: *timetz_byte_comparable*
-
-        Examples:
-            timetz_byte_comparable('18:18:16.21-07:00'::TIMETZ)
-
-        Returns:
-            Self
-        """
-        return self._new(func("timetz_byte_comparable", self.inner()))
-
-    def timezone(self, col1: IntoExprColumn | datetime | None = None) -> Self:
-        """Extract the timezone component from a date or timestamp.
-
-        **SQL name**: *timezone*
-
-        Args:
-            col1 (IntoExprColumn | datetime | None): `TIME WITH TIME ZONE | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
-
-        Examples:
-            timezone(timestamp '2021-08-03 11:59:44.123456')
-
-        Returns:
-            Self
-        """
-        return self._new(func("timezone", self.inner(), col1))
-
-    def timezone_hour(self) -> Self:
-        """Extract the timezone_hour component from a date or timestamp.
-
-        **SQL name**: *timezone_hour*
-
-        Examples:
-            timezone_hour(timestamp '2021-08-03 11:59:44.123456')
-
-        Returns:
-            Self
-        """
-        return self._new(func("timezone_hour", self.inner()))
-
-    def timezone_minute(self) -> Self:
-        """Extract the timezone_minute component from a date or timestamp.
-
-        **SQL name**: *timezone_minute*
-
-        Examples:
-            timezone_minute(timestamp '2021-08-03 11:59:44.123456')
-
-        Returns:
-            Self
-        """
-        return self._new(func("timezone_minute", self.inner()))
-
     def to_binary(self) -> Self:
         """Converts the `value` to binary representation.
 
@@ -3546,45 +3440,6 @@ class Fns(DuckHandler):
         """
         return self._new(func("wavg", self.inner(), weight))
 
-    def week(self) -> Self:
-        """Extract the week component from a date or timestamp.
-
-        **SQL name**: *week*
-
-        Examples:
-            week(timestamp '2021-08-03 11:59:44.123456')
-
-        Returns:
-            Self
-        """
-        return self._new(func("week", self.inner()))
-
-    def weekday(self) -> Self:
-        """Extract the weekday component from a date or timestamp.
-
-        **SQL name**: *weekday*
-
-        Examples:
-            weekday(timestamp '2021-08-03 11:59:44.123456')
-
-        Returns:
-            Self
-        """
-        return self._new(func("weekday", self.inner()))
-
-    def weekofyear(self) -> Self:
-        """Extract the weekofyear component from a date or timestamp.
-
-        **SQL name**: *weekofyear*
-
-        Examples:
-            weekofyear(timestamp '2021-08-03 11:59:44.123456')
-
-        Returns:
-            Self
-        """
-        return self._new(func("weekofyear", self.inner()))
-
     def weighted_avg(self, weight: IntoExpr) -> Self:
         """SQL weighted_avg function.
 
@@ -3629,32 +3484,6 @@ class Fns(DuckHandler):
             Self
         """
         return self._new(func("xor", self.inner(), right))
-
-    def year(self) -> Self:
-        """Extract the year component from a date or timestamp.
-
-        **SQL name**: *year*
-
-        Examples:
-            year(timestamp '2021-08-03 11:59:44.123456')
-
-        Returns:
-            Self
-        """
-        return self._new(func("year", self.inner()))
-
-    def yearweek(self) -> Self:
-        """Extract the yearweek component from a date or timestamp.
-
-        **SQL name**: *yearweek*
-
-        Examples:
-            yearweek(timestamp '2021-08-03 11:59:44.123456')
-
-        Returns:
-            Self
-        """
-        return self._new(func("yearweek", self.inner()))
 
 
 class ListFns[T: Fns](NameSpaceHandler[T]):
@@ -7002,6 +6831,32 @@ class DateTimeFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("isoyear", self.inner()))
 
+    def month(self) -> T:
+        """Extract the month component from a date or timestamp.
+
+        **SQL name**: *month*
+
+        Examples:
+            month(timestamp '2021-08-03 11:59:44.123456')
+
+        Returns:
+            T
+        """
+        return self._new(func("month", self.inner()))
+
+    def monthname(self) -> T:
+        """The (English) name of the month.
+
+        **SQL name**: *monthname*
+
+        Examples:
+            monthname(TIMESTAMP '1992-09-20')
+
+        Returns:
+            T
+        """
+        return self._new(func("monthname", self.inner()))
+
     def part(self, col1: IntoExprColumn | date | datetime | time | timedelta) -> T:
         """Get subfield (equivalent to extract).
 
@@ -7039,6 +6894,86 @@ class DateTimeFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("date_sub", self.inner(), startdate, enddate))
 
+    def time_bucket(
+        self,
+        timestamp: IntoExprColumn | date | datetime,
+        origin: IntoExprColumn | date | datetime | str | timedelta | None = None,
+    ) -> T:
+        """Truncate TIMESTAMPTZ by the specified interval bucket_width.
+
+        Buckets are aligned relative to origin TIMESTAMPTZ.
+
+        The origin defaults to 2000-01-03 00:00:00+00 for buckets that do not include a month or year interval, and to 2000-01-01 00:00:00+00 for month and year buckets.
+
+        **SQL name**: *time_bucket*
+
+        Args:
+            timestamp (IntoExprColumn | date | datetime): `DATE | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
+            origin (IntoExprColumn | date | datetime | str | timedelta | None): `DATE | INTERVAL | TIMESTAMP | TIMESTAMP WITH TIME ZONE | VARCHAR` expression
+
+        Examples:
+            time_bucket(INTERVAL '2 weeks', TIMESTAMP '1992-04-20 15:26:00-07', TIMESTAMP '1992-04-01 00:00:00-07')
+
+        Returns:
+            T
+        """
+        return self._new(func("time_bucket", self.inner(), timestamp, origin))
+
+    def timetz_byte_comparable(self) -> T:
+        """Converts a TIME WITH TIME ZONE to an integer sort key.
+
+        **SQL name**: *timetz_byte_comparable*
+
+        Examples:
+            timetz_byte_comparable('18:18:16.21-07:00'::TIMETZ)
+
+        Returns:
+            T
+        """
+        return self._new(func("timetz_byte_comparable", self.inner()))
+
+    def timezone(self, col1: IntoExprColumn | datetime | None = None) -> T:
+        """Extract the timezone component from a date or timestamp.
+
+        **SQL name**: *timezone*
+
+        Args:
+            col1 (IntoExprColumn | datetime | None): `TIME WITH TIME ZONE | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
+
+        Examples:
+            timezone(timestamp '2021-08-03 11:59:44.123456')
+
+        Returns:
+            T
+        """
+        return self._new(func("timezone", self.inner(), col1))
+
+    def timezone_hour(self) -> T:
+        """Extract the timezone_hour component from a date or timestamp.
+
+        **SQL name**: *timezone_hour*
+
+        Examples:
+            timezone_hour(timestamp '2021-08-03 11:59:44.123456')
+
+        Returns:
+            T
+        """
+        return self._new(func("timezone_hour", self.inner()))
+
+    def timezone_minute(self) -> T:
+        """Extract the timezone_minute component from a date or timestamp.
+
+        **SQL name**: *timezone_minute*
+
+        Examples:
+            timezone_minute(timestamp '2021-08-03 11:59:44.123456')
+
+        Returns:
+            T
+        """
+        return self._new(func("timezone_minute", self.inner()))
+
     def trunc(self, timestamp: IntoExprColumn | date | datetime | timedelta) -> T:
         """Truncate to specified precision.
 
@@ -7054,6 +6989,71 @@ class DateTimeFns[T: Fns](NameSpaceHandler[T]):
             T
         """
         return self._new(func("date_trunc", self.inner(), timestamp))
+
+    def week(self) -> T:
+        """Extract the week component from a date or timestamp.
+
+        **SQL name**: *week*
+
+        Examples:
+            week(timestamp '2021-08-03 11:59:44.123456')
+
+        Returns:
+            T
+        """
+        return self._new(func("week", self.inner()))
+
+    def weekday(self) -> T:
+        """Extract the weekday component from a date or timestamp.
+
+        **SQL name**: *weekday*
+
+        Examples:
+            weekday(timestamp '2021-08-03 11:59:44.123456')
+
+        Returns:
+            T
+        """
+        return self._new(func("weekday", self.inner()))
+
+    def weekofyear(self) -> T:
+        """Extract the weekofyear component from a date or timestamp.
+
+        **SQL name**: *weekofyear*
+
+        Examples:
+            weekofyear(timestamp '2021-08-03 11:59:44.123456')
+
+        Returns:
+            T
+        """
+        return self._new(func("weekofyear", self.inner()))
+
+    def year(self) -> T:
+        """Extract the year component from a date or timestamp.
+
+        **SQL name**: *year*
+
+        Examples:
+            year(timestamp '2021-08-03 11:59:44.123456')
+
+        Returns:
+            T
+        """
+        return self._new(func("year", self.inner()))
+
+    def yearweek(self) -> T:
+        """Extract the yearweek component from a date or timestamp.
+
+        **SQL name**: *yearweek*
+
+        Examples:
+            yearweek(timestamp '2021-08-03 11:59:44.123456')
+
+        Returns:
+            T
+        """
+        return self._new(func("yearweek", self.inner()))
 
 
 class ArrayFns[T: Fns](NameSpaceHandler[T]):
