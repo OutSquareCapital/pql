@@ -194,6 +194,7 @@ NAMESPACE_SPECS = pc.Seq(
                 "make_timestamp_ms",
                 "make_timestamp_ns",
                 "make_timestamptz",
+                "normalized_interval",
             ),
         ),
         NamespaceSpec(

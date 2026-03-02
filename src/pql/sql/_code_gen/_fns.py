@@ -1791,19 +1791,6 @@ class Fns(DuckHandler):
         """
         return self._new(func("nextval", self.inner()))
 
-    def normalized_interval(self) -> Self:
-        """Normalizes an INTERVAL to an equivalent interval.
-
-        **SQL name**: *normalized_interval*
-
-        Examples:
-            normalized_interval(INTERVAL '30 days')
-
-        Returns:
-            Self
-        """
-        return self._new(func("normalized_interval", self.inner()))
-
     def nullif(self, b: IntoExpr) -> Self:
         """SQL nullif function.
 
@@ -6431,6 +6418,19 @@ class DateTimeFns[T: Fns](NameSpaceHandler[T]):
             T
         """
         return self._new(func("nanosecond", self.inner()))
+
+    def normalized_interval(self) -> T:
+        """Normalizes an INTERVAL to an equivalent interval.
+
+        **SQL name**: *normalized_interval*
+
+        Examples:
+            normalized_interval(INTERVAL '30 days')
+
+        Returns:
+            T
+        """
+        return self._new(func("normalized_interval", self.inner()))
 
     def part(self, col1: IntoExprColumn | date | datetime | time | timedelta) -> T:
         """Get subfield (equivalent to extract).
