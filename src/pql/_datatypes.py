@@ -13,7 +13,7 @@ import pyochain as pc
 from . import sql
 
 if TYPE_CHECKING:
-    from ._typing import TimeUnit
+    from ._typing import EpochTimeUnit
     from .sql.typing import DTypeIds, IntoDict, StrIntoDType
 
 
@@ -165,9 +165,9 @@ class UUID(DataType):
 @dataclass(slots=True, init=False)
 class Datetime(DataType):
     raw: sql.DType
-    time_unit: TimeUnit
+    time_unit: EpochTimeUnit
 
-    def __init__(self, time_unit: TimeUnit = "ns") -> None:
+    def __init__(self, time_unit: EpochTimeUnit = "ns") -> None:
         self.raw = PRECISION_MAP.get_item(time_unit).expect(
             f"Unsupported time unit: {time_unit}"
         )
@@ -326,7 +326,7 @@ class Enum(ComplexDataType[sql.EnumType]):
         return self.raw.child.values
 
 
-PRECISION_MAP: pc.Dict[TimeUnit, sql.DType] = pc.Dict.from_ref(
+PRECISION_MAP: pc.Dict[EpochTimeUnit, sql.DType] = pc.Dict.from_ref(
     {
         "s": sql.ScalarType.TIMESTAMP_S,
         "ms": sql.ScalarType.TIMESTAMP_MS,
