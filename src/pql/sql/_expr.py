@@ -431,6 +431,22 @@ class SqlExprStructNameSpace(StructFns[SqlExpr]):
 class SqlExprDateTimeNameSpace(DateTimeFns[SqlExpr]):
     """Datetime function namespace for SQL expressions."""
 
+    def trunc(self, precision: IntoExprColumn) -> SqlExpr:
+        """Truncate to specified precision.
+
+        **SQL name**: *date_trunc*
+
+        Args:
+            precision (IntoExprColumn): `VARCHAR` expression
+
+        Examples:
+            date_trunc('hour', TIMESTAMPTZ '1992-09-20 20:38:40')
+
+        Returns:
+            T
+        """
+        return self._new(func("date_trunc", precision, self.inner()))
+
 
 @dataclass(slots=True)
 class SqlExprArrayNameSpace(ArrayFns[SqlExpr]):

@@ -6731,22 +6731,6 @@ class DateTimeFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("to_years", self.inner()))
 
-    def trunc(self, timestamp: IntoExprColumn | date | datetime | timedelta) -> T:
-        """Truncate to specified precision.
-
-        **SQL name**: *datetrunc*
-
-        Args:
-            timestamp (IntoExprColumn | date | datetime | timedelta): `DATE | INTERVAL | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
-
-        Examples:
-            datetrunc('hour', TIMESTAMPTZ '1992-09-20 20:38:40')
-
-        Returns:
-            T
-        """
-        return self._new(func("datetrunc", self.inner(), timestamp))
-
     def week(self) -> T:
         """Extract the week component from a date or timestamp.
 

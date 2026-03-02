@@ -78,8 +78,11 @@ SPECIAL_CASES = pc.Set(
         "multiply",
         "divide",
         "alias",  # conflicts with duckdb alias method
-        # Misc
+        # Need arg swapping
         "log",  # Need to swap argument order to take self.inner() as value and not as base
+        "date_trunc",  # Need to swap argument order to take self.inner() as timestamp and not as precision
+        "datetrunc",  # alias of date_trunc, same issue
+        # misc
         "strftime",  # Need custom "str" prefix rule, but this rule will also take "struct" funcs in string namespace, so better to just special case it
         "strptime",  # Same as strftime
         # Generic functions that cause too much conflicts with other names
