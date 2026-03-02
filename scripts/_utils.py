@@ -89,6 +89,7 @@ class Pql(KwordEnum):
     EXPR_STRUCT_NAME_SPACE = "ExprStructNameSpace"
     EXPR_NAME_NAME_SPACE = "ExprNameNameSpace"
     EXPR_ARR_NAME_SPACE = "ExprArrNameSpace"
+    EXPR_DT_NAME_SPACE = "ExprDtNameSpace"
     SEQ_LITERAL = "SeqLiteral"
 
 

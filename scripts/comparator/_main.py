@@ -57,6 +57,12 @@ def get_comparisons() -> str:
                     pql.col("x").arr.__class__,
                     Pql.EXPR_ARR_NAME_SPACE,
                 ),
+                ClassComparison(
+                    pc.Some(nw.col("x").dt.__class__),
+                    pl.col("x").dt.__class__,
+                    pql.col("x").dt.__class__,
+                    Pql.EXPR_DT_NAME_SPACE,
+                ),
             )
         )
         .map(lambda comp: comp.to_report())

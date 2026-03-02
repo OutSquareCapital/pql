@@ -321,6 +321,11 @@ class Expr(sql.CoreHandler[sql.SqlExpr]):
         """Access name operations."""
         return ExprNameNameSpace(self)
 
+    @property
+    def dt(self) -> ExprDateTimeNameSpace:
+        """Access datetime operations."""
+        return ExprDateTimeNameSpace(self)
+
     def __add__(self, other: IntoExpr) -> Self:
         return self.add(other)
 
@@ -1636,3 +1641,8 @@ class ExprNameNameSpace(ExprNameSpaceBase):
             case False:
                 regex = re.compile(pattern)
                 return self._with_alias_mapper(lambda name: regex.sub(value, name))
+
+
+@dataclass(slots=True)
+class ExprDateTimeNameSpace(ExprNameSpaceBase):
+    """Date and datetime operations namespace (equivalent to pl.Expr.dt)."""

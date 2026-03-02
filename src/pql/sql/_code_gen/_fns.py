@@ -1569,32 +1569,6 @@ class Fns(DuckHandler):
         """
         return self._new(func("isnan", self.inner()))
 
-    def isodow(self) -> Self:
-        """Extract the isodow component from a date or timestamp.
-
-        **SQL name**: *isodow*
-
-        Examples:
-            isodow(timestamp '2021-08-03 11:59:44.123456')
-
-        Returns:
-            Self
-        """
-        return self._new(func("isodow", self.inner()))
-
-    def isoyear(self) -> Self:
-        """Extract the isoyear component from a date or timestamp.
-
-        **SQL name**: *isoyear*
-
-        Examples:
-            isoyear(timestamp '2021-08-03 11:59:44.123456')
-
-        Returns:
-            Self
-        """
-        return self._new(func("isoyear", self.inner()))
-
     def julian(self) -> Self:
         """Extract the Julian Day number from a date or timestamp.
 
@@ -7001,6 +6975,32 @@ class DateTimeFns[T: Fns](NameSpaceHandler[T]):
             T
         """
         return self._new(func("date_diff", self.inner(), startdate, enddate))
+
+    def isodow(self) -> T:
+        """Extract the isodow component from a date or timestamp.
+
+        **SQL name**: *isodow*
+
+        Examples:
+            isodow(timestamp '2021-08-03 11:59:44.123456')
+
+        Returns:
+            T
+        """
+        return self._new(func("isodow", self.inner()))
+
+    def isoyear(self) -> T:
+        """Extract the isoyear component from a date or timestamp.
+
+        **SQL name**: *isoyear*
+
+        Examples:
+            isoyear(timestamp '2021-08-03 11:59:44.123456')
+
+        Returns:
+            T
+        """
+        return self._new(func("isoyear", self.inner()))
 
     def part(self, col1: IntoExprColumn | date | datetime | time | timedelta) -> T:
         """Get subfield (equivalent to extract).

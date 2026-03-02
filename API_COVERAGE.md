@@ -7,16 +7,17 @@ This report shows the API coverage of pql compared to other libraries.
 
 The first value of each tuple is for `Narwhals` and the second value is for `Polars`.
 
-| Class               | Coverage        | Total     | Matched  | Missing | Mismatched | Extra   |
-| ------------------- | --------------- | --------- | -------- | ------- | ---------- | ------- |
-| LazyFrame           | (53.8%, 32.5%)  | (26, 83)  | (14, 27) | (1, 32) | (11, 24)   | (34, 8) |
-| Expr                | (70.0%, 42.3%)  | (70, 213) | (49, 90) | (8, 94) | (13, 29)   | (58, 1) |
-| LazyGroupBy         | (0.0%, 43.8%)   | (1, 16)   | (0, 7)   | (0, 4)  | (1, 5)     | (11, 0) |
-| ExprStrNameSpace    | (42.1%, 27.7%)  | (19, 47)  | (8, 13)  | (0, 10) | (11, 24)   | (19, 1) |
-| ExprListNameSpace   | (90.0%, 46.5%)  | (10, 43)  | (9, 20)  | (0, 20) | (1, 3)     | (14, 1) |
-| ExprStructNameSpace | (100.0%, 20.0%) | (1, 5)    | (1, 1)   | (0, 2)  | (0, 2)     | (3, 1)  |
-| ExprNameNameSpace   | (100.0%, 70.0%) | (6, 10)   | (6, 7)   | (0, 3)  | (0, 0)     | (2, 1)  |
-| ExprArrNameSpace    | (100.0%, 54.8%) | (0, 31)   | (0, 17)  | (0, 10) | (0, 4)     | (24, 3) |
+| Class               | Coverage        | Total     | Matched  | Missing  | Mismatched | Extra   |
+| ------------------- | --------------- | --------- | -------- | -------- | ---------- | ------- |
+| LazyFrame           | (53.8%, 32.5%)  | (26, 83)  | (14, 27) | (1, 32)  | (11, 24)   | (34, 8) |
+| Expr                | (71.4%, 42.7%)  | (70, 213) | (50, 91) | (7, 93)  | (13, 29)   | (58, 1) |
+| LazyGroupBy         | (0.0%, 43.8%)   | (1, 16)   | (0, 7)   | (0, 4)   | (1, 5)     | (11, 0) |
+| ExprStrNameSpace    | (42.1%, 27.7%)  | (19, 47)  | (8, 13)  | (0, 10)  | (11, 24)   | (19, 1) |
+| ExprListNameSpace   | (90.0%, 46.5%)  | (10, 43)  | (9, 20)  | (0, 20)  | (1, 3)     | (14, 1) |
+| ExprStructNameSpace | (100.0%, 20.0%) | (1, 5)    | (1, 1)   | (0, 2)   | (0, 2)     | (3, 1)  |
+| ExprNameNameSpace   | (100.0%, 70.0%) | (6, 10)   | (6, 7)   | (0, 3)   | (0, 0)     | (2, 1)  |
+| ExprArrNameSpace    | (100.0%, 54.8%) | (0, 31)   | (0, 17)  | (0, 10)  | (0, 4)     | (24, 3) |
+| ExprDtNameSpace     | (0.0%, 0.0%)    | (23, 45)  | (0, 0)   | (23, 45) | (0, 0)     | (1, 1)  |
 
 ## LazyFrame
 
@@ -168,7 +169,7 @@ The first value of each tuple is for `Narwhals` and the second value is for `Pol
 
 ## Expr
 
-### [x] Missing Methods (95)
+### [x] Missing Methods (94)
 
 - `agg_groups`
   - **Polars**: () -> Expr
@@ -220,9 +221,6 @@ The first value of each tuple is for `Narwhals` and the second value is for `Pol
 - `drop_nulls`
   - **Narwhals**: () -> Self
   - **Polars**: () -> Expr
-- `dt`
-  - **Narwhals**: ()
-  - **Polars**: ()
 - `entropy`
   - **Polars**: (base: float, normalize: bool) -> Expr
 - `eq_missing`
@@ -695,4 +693,126 @@ The first value of each tuple is for `Narwhals` and the second value is for `Pol
 
 - `drop_nulls`
 - `filter`
+- `inner`
+
+## ExprDtNameSpace
+
+### [x] Missing Methods (45)
+
+- `add_business_days`
+  - **Polars**: (n: int | IntoExpr, week_mask: Iterable[bool], holidays: Iterable[dt.date], roll: Roll) -> Expr
+- `base_utc_offset`
+  - **Polars**: () -> Expr
+- `cast_time_unit`
+  - **Polars**: (time_unit: TimeUnit) -> Expr
+- `century`
+  - **Polars**: () -> Expr
+- `combine`
+  - **Polars**: (time: time | Expr, time_unit: TimeUnit) -> Expr
+- `convert_time_zone`
+  - **Narwhals**: (time_zone: str) -> ExprT
+  - **Polars**: (time_zone: str) -> Expr
+- `date`
+  - **Narwhals**: () -> ExprT
+  - **Polars**: () -> Expr
+- `day`
+  - **Narwhals**: () -> ExprT
+  - **Polars**: () -> Expr
+- `days_in_month`
+  - **Polars**: () -> Expr
+- `dst_offset`
+  - **Polars**: () -> Expr
+- `epoch`
+  - **Polars**: (time_unit: EpochTimeUnit) -> Expr
+- `hour`
+  - **Narwhals**: () -> ExprT
+  - **Polars**: () -> Expr
+- `is_business_day`
+  - **Polars**: (week_mask: Iterable[bool], holidays: Iterable[dt.date]) -> Expr
+- `is_leap_year`
+  - **Polars**: () -> Expr
+- `iso_year`
+  - **Polars**: () -> Expr
+- `microsecond`
+  - **Narwhals**: () -> ExprT
+  - **Polars**: () -> Expr
+- `millennium`
+  - **Polars**: () -> Expr
+- `millisecond`
+  - **Narwhals**: () -> ExprT
+  - **Polars**: () -> Expr
+- `minute`
+  - **Narwhals**: () -> ExprT
+  - **Polars**: () -> Expr
+- `month`
+  - **Narwhals**: () -> ExprT
+  - **Polars**: () -> Expr
+- `month_end`
+  - **Polars**: () -> Expr
+- `month_start`
+  - **Polars**: () -> Expr
+- `nanosecond`
+  - **Narwhals**: () -> ExprT
+  - **Polars**: () -> Expr
+- `offset_by`
+  - **Narwhals**: (by: str) -> ExprT
+  - **Polars**: (by: str | Expr) -> Expr
+- `ordinal_day`
+  - **Narwhals**: () -> ExprT
+  - **Polars**: () -> Expr
+- `quarter`
+  - **Polars**: () -> Expr
+- `replace`
+  - **Polars**: (year: int | IntoExpr | None, month: int | IntoExpr | None, day: int | IntoExpr | None, hour: int | IntoExpr | None, minute: int | IntoExpr | None, second: int | IntoExpr | None, microsecond: int | IntoExpr | None, ambiguous: Ambiguous | Expr) -> Expr
+- `replace_time_zone`
+  - **Narwhals**: (time_zone: str | None) -> ExprT
+  - **Polars**: (time_zone: str | None, ambiguous: Ambiguous | Expr, non_existent: NonExistent) -> Expr
+- `round`
+  - **Polars**: (every: timedelta | IntoExprColumn) -> Expr
+- `second`
+  - **Narwhals**: () -> ExprT
+  - **Polars**: (fractional: bool) -> Expr
+- `strftime`
+  - **Polars**: (format: str) -> Expr
+- `time`
+  - **Polars**: () -> Expr
+- `timestamp`
+  - **Narwhals**: (time_unit: TimeUnit) -> ExprT
+  - **Polars**: (time_unit: TimeUnit) -> Expr
+- `to_string`
+  - **Narwhals**: (format: str) -> ExprT
+  - **Polars**: (format: str | None) -> Expr
+- `total_days`
+  - **Polars**: (fractional: bool) -> Expr
+- `total_hours`
+  - **Polars**: (fractional: bool) -> Expr
+- `total_microseconds`
+  - **Narwhals**: () -> ExprT
+  - **Polars**: (fractional: bool) -> Expr
+- `total_milliseconds`
+  - **Narwhals**: () -> ExprT
+  - **Polars**: (fractional: bool) -> Expr
+- `total_minutes`
+  - **Narwhals**: () -> ExprT
+  - **Polars**: (fractional: bool) -> Expr
+- `total_nanoseconds`
+  - **Narwhals**: () -> ExprT
+  - **Polars**: (fractional: bool) -> Expr
+- `total_seconds`
+  - **Narwhals**: () -> ExprT
+  - **Polars**: (fractional: bool) -> Expr
+- `truncate`
+  - **Narwhals**: (every: str) -> ExprT
+  - **Polars**: (every: timedelta | Expr) -> Expr
+- `week`
+  - **Polars**: () -> Expr
+- `weekday`
+  - **Narwhals**: () -> ExprT
+  - **Polars**: () -> Expr
+- `year`
+  - **Narwhals**: () -> ExprT
+  - **Polars**: () -> Expr
+
+### [+] Extra Methods (pql-only) (1)
+
 - `inner`
