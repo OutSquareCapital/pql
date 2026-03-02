@@ -29,6 +29,8 @@ RENAME_RULES = pc.Dict.from_ref(
         "isnan": "is_nan",
         "isinf": "is_inf",
         "isfinite": "is_finite",
+        "bool_and": "all",
+        "bool_or": "any",
     }
 )
 """Explicit SQL function name -> generated Python method name mapping."""
@@ -84,6 +86,12 @@ SPECIAL_CASES = pc.Set(
         "greatest",  # Has 5 categories, same behavior across thoses, no namespace needed
         "least",  # Has 5 categories, same behavior across thoses, no namespace needed
         "concat",  # too much conflict with list_concat, array_concat, etc..
+        # basic aliases not really needed
+        "countif",  # count_if
+        "arbitrary",  # first
+        "avg",  # mean
+        "variance",  # var_samp
+        "stddev",  # stddev_samp
     }
 )
 """Function to exclude by name, either because they require special handling or because they conflict with existing names."""
@@ -176,6 +184,13 @@ NAMESPACE_SPECS = pc.Seq(
                     "to_decades",
                     "to_centuries",
                     "to_millennia",
+                    "make_date",
+                    "make_date_month_day",
+                    "make_time",
+                    "make_timestamp",
+                    "make_timestamp_ms",
+                    "make_timestamp_ns",
+                    "make_timestamptz",
                 )
             ),
         ),

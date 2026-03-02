@@ -749,11 +749,11 @@ class Expr(sql.CoreHandler[sql.SqlExpr]):
 
     def all(self) -> Self:
         """Return whether all values are true."""
-        return self._as_scalar(self.inner().bool_and())
+        return self._as_scalar(self.inner().all())
 
     def any(self) -> Self:
         """Return whether any value is true."""
-        return self._as_scalar(self.inner().bool_or())
+        return self._as_scalar(self.inner().any())
 
     def n_unique(self) -> Self:
         """Count distinct values."""
@@ -765,7 +765,7 @@ class Expr(sql.CoreHandler[sql.SqlExpr]):
 
     def has_nulls(self) -> Self:
         """Return whether the expression contains nulls."""
-        return self._as_scalar(self.inner().is_null().bool_or())
+        return self._as_scalar(self.inner().is_null().any())
 
     def rank(self, method: RankMethod = "average", *, descending: bool = False) -> Self:
         """Compute rank values."""
@@ -1062,7 +1062,7 @@ class ExprStringNameSpace(ExprNameSpaceBase):
                 return self._parent._as_scalar(aggregated)  # pyright: ignore[reportPrivateUsage]
             case False:
                 return self._parent._as_scalar(  # pyright: ignore[reportPrivateUsage]
-                    sql.when(self.inner().is_null().bool_or())
+                    sql.when(self.inner().is_null().any())
                     .then(_NONE)
                     .otherwise(aggregated)
                 )

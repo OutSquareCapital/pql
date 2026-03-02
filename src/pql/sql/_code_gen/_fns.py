@@ -76,6 +76,32 @@ class Fns(DuckHandler):
         """
         return self._new(func("age", self.inner(), timestamp))
 
+    def all(self) -> Self:
+        """Returns TRUE if every input value is TRUE, otherwise FALSE.
+
+        **SQL name**: *bool_and*
+
+        Examples:
+            bool_and(A)
+
+        Returns:
+            Self
+        """
+        return self._new(func("bool_and", self.inner()))
+
+    def any(self) -> Self:
+        """Returns TRUE if any input value is TRUE, otherwise FALSE.
+
+        **SQL name**: *bool_or*
+
+        Examples:
+            bool_or(A)
+
+        Returns:
+            Self
+        """
+        return self._new(func("bool_or", self.inner()))
+
     def any_value(self) -> Self:
         """Returns the first non-NULL value from arg.
 
@@ -132,24 +158,6 @@ class Fns(DuckHandler):
             Self
         """
         return self._new(func("approx_top_k", self.inner(), k))
-
-    def arbitrary(self) -> Self:
-        """Returns the first value (NULL or non-NULL) from arg.
-
-        This function is affected by ordering.
-
-        **SQL name**: *arbitrary*
-
-        See Also:
-            first
-
-        Examples:
-            arbitrary(A)
-
-        Returns:
-            Self
-        """
-        return self._new(func("arbitrary", self.inner()))
 
     def arg_max(
         self,
@@ -365,22 +373,6 @@ class Fns(DuckHandler):
         """
         return self._new(func("atanh", self.inner()))
 
-    def avg(self) -> Self:
-        """Calculates the average value for all tuples in x.
-
-        **SQL name**: *avg*
-
-        See Also:
-            mean
-
-        Examples:
-            SUM(x) / COUNT(*)
-
-        Returns:
-            Self
-        """
-        return self._new(func("avg", self.inner()))
-
     def bin(self) -> Self:
         """Converts the `value` to binary representation.
 
@@ -518,32 +510,6 @@ class Fns(DuckHandler):
             Self
         """
         return self._new(func("bitstring_agg", self.inner(), col1, col2))
-
-    def bool_and(self) -> Self:
-        """Returns TRUE if every input value is TRUE, otherwise FALSE.
-
-        **SQL name**: *bool_and*
-
-        Examples:
-            bool_and(A)
-
-        Returns:
-            Self
-        """
-        return self._new(func("bool_and", self.inner()))
-
-    def bool_or(self) -> Self:
-        """Returns TRUE if any input value is TRUE, otherwise FALSE.
-
-        **SQL name**: *bool_or*
-
-        Examples:
-            bool_or(A)
-
-        Returns:
-            Self
-        """
-        return self._new(func("bool_or", self.inner()))
 
     def can_cast_implicitly(self, target_type: IntoExpr) -> Self:
         """Whether or not we can implicitly cast from the source type to the other type.
@@ -801,9 +767,6 @@ class Fns(DuckHandler):
 
         **SQL name**: *count_if*
 
-        See Also:
-            countif
-
         Examples:
             count_if(A)
 
@@ -811,22 +774,6 @@ class Fns(DuckHandler):
             Self
         """
         return self._new(func("count_if", self.inner()))
-
-    def countif(self) -> Self:
-        """Counts the total number of TRUE values for a boolean column.
-
-        **SQL name**: *countif*
-
-        See Also:
-            count_if
-
-        Examples:
-            countif(A)
-
-        Returns:
-            Self
-        """
-        return self._new(func("countif", self.inner()))
 
     def covar_pop(self, x: IntoExprColumn | float) -> Self:
         """Returns the population covariance of input values.
@@ -1088,9 +1035,6 @@ class Fns(DuckHandler):
         This function is affected by ordering.
 
         **SQL name**: *first*
-
-        See Also:
-            arbitrary
 
         Examples:
             first(A)
@@ -1674,139 +1618,6 @@ class Fns(DuckHandler):
         """
         return self._new(func("mad", self.inner()))
 
-    def make_date(self) -> Self:
-        """The date for the given struct.
-
-        **SQL name**: *make_date*
-
-        Returns:
-            Self
-        """
-        return self._new(func("make_date", self.inner()))
-
-    def make_date_month_day(
-        self,
-        month: IntoExprColumn | int | None = None,
-        day: IntoExprColumn | int | None = None,
-    ) -> Self:
-        """The date for the given parts.
-
-        **SQL name**: *make_date*
-
-        Args:
-            month (IntoExprColumn | int | None): `BIGINT` expression
-            day (IntoExprColumn | int | None): `BIGINT` expression
-
-        Examples:
-            make_date(1992, 9, 20)
-
-        Returns:
-            Self
-        """
-        return self._new(func("make_date", self.inner(), month, day))
-
-    def make_time(
-        self, minute: IntoExprColumn | int, seconds: IntoExprColumn | float
-    ) -> Self:
-        """The time for the given parts.
-
-        **SQL name**: *make_time*
-
-        Args:
-            minute (IntoExprColumn | int): `BIGINT` expression
-            seconds (IntoExprColumn | float): `DOUBLE` expression
-
-        Examples:
-            make_time(13, 34, 27.123456)
-
-        Returns:
-            Self
-        """
-        return self._new(func("make_time", self.inner(), minute, seconds))
-
-    def make_timestamp(
-        self,
-        month: IntoExprColumn | int | None = None,
-        day: IntoExprColumn | int | None = None,
-        hour: IntoExprColumn | int | None = None,
-        minute: IntoExprColumn | int | None = None,
-        seconds: IntoExprColumn | float | None = None,
-    ) -> Self:
-        """The timestamp for the given parts.
-
-        **SQL name**: *make_timestamp*
-
-        Args:
-            month (IntoExprColumn | int | None): `BIGINT` expression
-            day (IntoExprColumn | int | None): `BIGINT` expression
-            hour (IntoExprColumn | int | None): `BIGINT` expression
-            minute (IntoExprColumn | int | None): `BIGINT` expression
-            seconds (IntoExprColumn | float | None): `DOUBLE` expression
-
-        Examples:
-            make_timestamp(1992, 9, 20, 13, 34, 27.123456)
-
-        Returns:
-            Self
-        """
-        return self._new(
-            func("make_timestamp", self.inner(), month, day, hour, minute, seconds)
-        )
-
-    def make_timestamp_ms(self) -> Self:
-        """The timestamp for the given microseconds since the epoch.
-
-        **SQL name**: *make_timestamp_ms*
-
-        Examples:
-            make_timestamp_ms(1732117793000000)
-
-        Returns:
-            Self
-        """
-        return self._new(func("make_timestamp_ms", self.inner()))
-
-    def make_timestamp_ns(self) -> Self:
-        """The timestamp for the given nanoseconds since epoch.
-
-        **SQL name**: *make_timestamp_ns*
-
-        Examples:
-            make_timestamp_ns(1732117793000000000)
-
-        Returns:
-            Self
-        """
-        return self._new(func("make_timestamp_ns", self.inner()))
-
-    def make_timestamptz(
-        self,
-        col1: IntoExprColumn | int | None = None,
-        col2: IntoExprColumn | int | None = None,
-        col3: IntoExprColumn | int | None = None,
-        col4: IntoExprColumn | int | None = None,
-        col5: IntoExprColumn | float | None = None,
-        col6: IntoExprColumn | str | None = None,
-    ) -> Self:
-        """SQL make_timestamptz function.
-
-        **SQL name**: *make_timestamptz*
-
-        Args:
-            col1 (IntoExprColumn | int | None): `BIGINT` expression
-            col2 (IntoExprColumn | int | None): `BIGINT` expression
-            col3 (IntoExprColumn | int | None): `BIGINT` expression
-            col4 (IntoExprColumn | int | None): `BIGINT` expression
-            col5 (IntoExprColumn | float | None): `DOUBLE` expression
-            col6 (IntoExprColumn | str | None): `VARCHAR` expression
-
-        Returns:
-            Self
-        """
-        return self._new(
-            func("make_timestamptz", self.inner(), col1, col2, col3, col4, col5, col6)
-        )
-
     def max(self, col1: IntoExprColumn | int | None = None) -> Self:
         """Returns the maximum value present in arg.
 
@@ -1899,9 +1710,6 @@ class Fns(DuckHandler):
         """Calculates the average value for all tuples in x.
 
         **SQL name**: *mean*
-
-        See Also:
-            avg
 
         Examples:
             SUM(x) / COUNT(*)
@@ -2658,22 +2466,6 @@ class Fns(DuckHandler):
         """
         return self._new(func("stats", self.inner()))
 
-    def stddev(self) -> Self:
-        """Returns the sample standard deviation.
-
-        **SQL name**: *stddev*
-
-        See Also:
-            stddev_samp
-
-        Examples:
-            sqrt(var_samp(x))
-
-        Returns:
-            Self
-        """
-        return self._new(func("stddev", self.inner()))
-
     def stddev_pop(self) -> Self:
         """Returns the population standard deviation.
 
@@ -2691,9 +2483,6 @@ class Fns(DuckHandler):
         """Returns the sample standard deviation.
 
         **SQL name**: *stddev_samp*
-
-        See Also:
-            stddev
 
         Examples:
             sqrt(var_samp(x))
@@ -2971,9 +2760,6 @@ class Fns(DuckHandler):
 
         **SQL name**: *var_samp*
 
-        See Also:
-            variance
-
         Examples:
             (SUM(x^2) - SUM(x)^2 / COUNT(x)) / (COUNT(x) - 1)
 
@@ -2981,22 +2767,6 @@ class Fns(DuckHandler):
             Self
         """
         return self._new(func("var_samp", self.inner()))
-
-    def variance(self) -> Self:
-        """Returns the sample variance of all input values.
-
-        **SQL name**: *variance*
-
-        See Also:
-            var_samp
-
-        Examples:
-            (SUM(x^2) - SUM(x)^2 / COUNT(x)) / (COUNT(x) - 1)
-
-        Returns:
-            Self
-        """
-        return self._new(func("variance", self.inner()))
 
     def variant_extract(self, col1: IntoExprColumn | int | str) -> Self:
         """SQL variant_extract function.
@@ -6496,6 +6266,139 @@ class DateTimeFns[T: Fns](NameSpaceHandler[T]):
             T
         """
         return self._new(func("last_day", self.inner()))
+
+    def make_date(self) -> T:
+        """The date for the given struct.
+
+        **SQL name**: *make_date*
+
+        Returns:
+            T
+        """
+        return self._new(func("make_date", self.inner()))
+
+    def make_date_month_day(
+        self,
+        month: IntoExprColumn | int | None = None,
+        day: IntoExprColumn | int | None = None,
+    ) -> T:
+        """The date for the given parts.
+
+        **SQL name**: *make_date*
+
+        Args:
+            month (IntoExprColumn | int | None): `BIGINT` expression
+            day (IntoExprColumn | int | None): `BIGINT` expression
+
+        Examples:
+            make_date(1992, 9, 20)
+
+        Returns:
+            T
+        """
+        return self._new(func("make_date", self.inner(), month, day))
+
+    def make_time(
+        self, minute: IntoExprColumn | int, seconds: IntoExprColumn | float
+    ) -> T:
+        """The time for the given parts.
+
+        **SQL name**: *make_time*
+
+        Args:
+            minute (IntoExprColumn | int): `BIGINT` expression
+            seconds (IntoExprColumn | float): `DOUBLE` expression
+
+        Examples:
+            make_time(13, 34, 27.123456)
+
+        Returns:
+            T
+        """
+        return self._new(func("make_time", self.inner(), minute, seconds))
+
+    def make_timestamp(
+        self,
+        month: IntoExprColumn | int | None = None,
+        day: IntoExprColumn | int | None = None,
+        hour: IntoExprColumn | int | None = None,
+        minute: IntoExprColumn | int | None = None,
+        seconds: IntoExprColumn | float | None = None,
+    ) -> T:
+        """The timestamp for the given parts.
+
+        **SQL name**: *make_timestamp*
+
+        Args:
+            month (IntoExprColumn | int | None): `BIGINT` expression
+            day (IntoExprColumn | int | None): `BIGINT` expression
+            hour (IntoExprColumn | int | None): `BIGINT` expression
+            minute (IntoExprColumn | int | None): `BIGINT` expression
+            seconds (IntoExprColumn | float | None): `DOUBLE` expression
+
+        Examples:
+            make_timestamp(1992, 9, 20, 13, 34, 27.123456)
+
+        Returns:
+            T
+        """
+        return self._new(
+            func("make_timestamp", self.inner(), month, day, hour, minute, seconds)
+        )
+
+    def make_timestamp_ms(self) -> T:
+        """The timestamp for the given microseconds since the epoch.
+
+        **SQL name**: *make_timestamp_ms*
+
+        Examples:
+            make_timestamp_ms(1732117793000000)
+
+        Returns:
+            T
+        """
+        return self._new(func("make_timestamp_ms", self.inner()))
+
+    def make_timestamp_ns(self) -> T:
+        """The timestamp for the given nanoseconds since epoch.
+
+        **SQL name**: *make_timestamp_ns*
+
+        Examples:
+            make_timestamp_ns(1732117793000000000)
+
+        Returns:
+            T
+        """
+        return self._new(func("make_timestamp_ns", self.inner()))
+
+    def make_timestamptz(
+        self,
+        col1: IntoExprColumn | int | None = None,
+        col2: IntoExprColumn | int | None = None,
+        col3: IntoExprColumn | int | None = None,
+        col4: IntoExprColumn | int | None = None,
+        col5: IntoExprColumn | float | None = None,
+        col6: IntoExprColumn | str | None = None,
+    ) -> T:
+        """SQL make_timestamptz function.
+
+        **SQL name**: *make_timestamptz*
+
+        Args:
+            col1 (IntoExprColumn | int | None): `BIGINT` expression
+            col2 (IntoExprColumn | int | None): `BIGINT` expression
+            col3 (IntoExprColumn | int | None): `BIGINT` expression
+            col4 (IntoExprColumn | int | None): `BIGINT` expression
+            col5 (IntoExprColumn | float | None): `DOUBLE` expression
+            col6 (IntoExprColumn | str | None): `VARCHAR` expression
+
+        Returns:
+            T
+        """
+        return self._new(
+            func("make_timestamptz", self.inner(), col1, col2, col3, col4, col5, col6)
+        )
 
     def millennium(self) -> T:
         """Extract the millennium component from a date or timestamp.
