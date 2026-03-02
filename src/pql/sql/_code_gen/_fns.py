@@ -1738,19 +1738,6 @@ class Fns(DuckHandler):
         """
         return self._new(func("median", self.inner()))
 
-    def microsecond(self) -> Self:
-        """Extract the microsecond component from a date or timestamp.
-
-        **SQL name**: *microsecond*
-
-        Examples:
-            microsecond(timestamp '2021-08-03 11:59:44.123456')
-
-        Returns:
-            Self
-        """
-        return self._new(func("microsecond", self.inner()))
-
     def min(self, col1: IntoExprColumn | int | None = None) -> Self:
         """Returns the minimum value present in arg.
 
@@ -6399,6 +6386,19 @@ class DateTimeFns[T: Fns](NameSpaceHandler[T]):
         return self._new(
             func("make_timestamptz", self.inner(), col1, col2, col3, col4, col5, col6)
         )
+
+    def microsecond(self) -> T:
+        """Extract the microsecond component from a date or timestamp.
+
+        **SQL name**: *microsecond*
+
+        Examples:
+            microsecond(timestamp '2021-08-03 11:59:44.123456')
+
+        Returns:
+            T
+        """
+        return self._new(func("microsecond", self.inner()))
 
     def millennium(self) -> T:
         """Extract the millennium component from a date or timestamp.

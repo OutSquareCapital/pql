@@ -160,7 +160,7 @@ NAMESPACE_SPECS = pc.Seq(
             categories=_rule(Categories.TIMESTAMP, Categories.DATE),
             strip_prefixes=_rule("date_", "date"),
             explicit_names=_rule(
-                "microssecond",
+                "microsecond",
                 "nanosecond",
                 "millisecond",
                 "second",
