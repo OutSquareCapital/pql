@@ -129,6 +129,14 @@ class ExprProjection:
     expr: sql.SqlExpr
     meta: ExprMeta
 
+    def implode_or_scalar(self) -> sql.SqlExpr:
+        name = self.meta.output_name
+        return (
+            self.expr.alias(name)
+            if self.meta.is_scalar_select
+            else self.expr.implode().alias(name)
+        )
+
     def as_aliased(self) -> sql.SqlExpr:
         return self.expr.alias(self.meta.output_name)
 

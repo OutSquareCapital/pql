@@ -110,26 +110,24 @@ class JoinKeys[T: pc.Seq[str] | str](NamedTuple):
 
 
 class LazyGroupBy:
-    __slots__ = ("_frame", "_group_expr", "_keys")
+    __slots__ = ("_col_names", "_frame", "_group_expr", "_keys")
 
     def __init__(self, frame: LazyFrame, keys: pc.Seq[sql.SqlExpr]) -> None:
         self._frame = frame
         self._keys = keys
-        self._group_expr = self._keys.iter().map(str).join(", ")
+        keys_names = keys.iter().map(sql.SqlExpr.get_name).collect(pc.Set)
+        self._col_names = (
+            frame.columns.iter().filter(lambda name: name not in keys_names).collect()
+        )
+        self._group_expr = keys.iter().map(str).join(", ")
 
     def _agg_columns(self, func: Callable[[Expr], Expr]) -> LazyFrame:
-        key_names = self._key_names
 
         return (
-            self._frame.columns.iter()
-            .filter(lambda name: name not in key_names)
-            .map(lambda name: func(Expr(sql.col(name))).alias(name))
+            self._col_names.iter()
+            .map(lambda name: sql.col(name).pipe(Expr).pipe(func).alias(name))
             .into(self.agg)
         )
-
-    @property
-    def _key_names(self) -> pc.Set[str]:
-        return self._keys.iter().map(sql.SqlExpr.get_name).collect(pc.Set)
 
     def len(self, name: str = "len") -> LazyFrame:
         return self.agg(Expr(sql.lit(1)).count().alias(name))
@@ -172,27 +170,17 @@ class LazyGroupBy:
         *more_aggregates: IntoExpr,
         **named_aggs: IntoExpr,
     ) -> LazyFrame:
-        key_names = self._key_names
         plan = (
-            self._frame.columns.iter()
-            .filter(lambda name: name not in key_names)
-            .collect()
-            .into(
+            self._col_names.into(
                 ExprPlan.from_inputs, try_chain(aggregate, more_aggregates), named_aggs
             )
+            .into_iter()
+            .map(lambda p: p.implode_or_scalar())
         )
 
         return (
             self._keys.iter()
-            .chain(
-                plan.into_iter().map(
-                    lambda p: (
-                        p.as_aliased()
-                        if p.meta.is_scalar_select
-                        else p.expr.implode().alias(p.meta.output_name)
-                    )
-                )
-            )
+            .chain(plan)
             .into(self._frame.inner().aggregate, self._group_expr)
             .pipe(self._frame.__class__)
         )
