@@ -1,11 +1,11 @@
 from collections.abc import Callable
+from functools import cache, partial
 
 import pyochain as pc
 
 
+@cache
 def _try_import() -> pc.Option[Callable[[str], str]]:  # pragma: no cover
-    from functools import partial
-
     try:
         import sqlparse
 
