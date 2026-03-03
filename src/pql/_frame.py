@@ -223,25 +223,21 @@ class LazyFrame(sql.CoreHandler[sql.Relation]):
     def from_sequence(cls, data: SeqIntoVals) -> Self:
         return cls(sql.from_sequence(data))
 
-    def _select(
-        self, exprs: IntoExprColumn | Iterable[IntoExprColumn], groups: str = ""
-    ) -> Self:
-        return self.inner().select(*try_iter(exprs), groups=groups).pipe(self._new)
+    def _select(self, exprs: Iterable[IntoExprColumn], groups: str = "") -> Self:
+        return self.inner().select(*exprs, groups=groups).pipe(self._new)
 
-    def _filter(self, predicates: IntoExprColumn | Iterable[IntoExprColumn]) -> Self:
+    def _filter(self, predicates: Iterable[IntoExprColumn]) -> Self:
         return self._new(
-            try_iter(predicates)
+            pc.Iter(predicates)
             .map(lambda value: sql.into_expr(value, as_col=True))
             .reduce(sql.SqlExpr.and_)
             .pipe(self.inner().filter)
         )
 
     def _agg(
-        self,
-        exprs: IntoExprColumn | Iterable[IntoExprColumn],
-        group_expr: sql.SqlExpr | str = "",
+        self, exprs: Iterable[IntoExprColumn], group_expr: IntoExprColumn = ""
     ) -> Self:
-        return self.inner().aggregate(try_iter(exprs), group_expr).pipe(self._new)
+        return self.inner().aggregate(exprs, group_expr).pipe(self._new)
 
     def _iter_slct(self, func: Callable[[str], sql.SqlExpr]) -> Self:
         return self.columns.iter().map(func).into(self._select)
@@ -432,7 +428,7 @@ class LazyFrame(sql.CoreHandler[sql.Relation]):
 
     def drop(self, *columns: str) -> Self:
         """Drop columns from the frame."""
-        return self._select(sql.all(exclude=columns))
+        return self._select((sql.all(exclude=columns),))
 
     def drop_nulls(self, subset: str | Iterable[str] | None = None) -> Self:
         """Drop rows that contain null values."""
