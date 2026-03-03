@@ -15,6 +15,7 @@ if TYPE_CHECKING:
         IntoExprColumn as DuckIntoExprColumn,
         NestedLiteral as DuckNestedLit,
         NonNestedLiteral as DuckNonNestedLit,
+        ParquetCompression as DuckParquetCompression,
         PythonLiteral as DuckPyLit,
         PyTypeIds as DuckPyTypeIds,
         StrIntoPyType as DuckStrIntoPyType,
@@ -133,3 +134,4 @@ type DatePart = Literal[
 type AllDateParts = IntervalPart | DatePart
 
 type RoundMode = Literal["half_to_even", "half_away_from_zero"]
+type ParquetCompression = DuckParquetCompression

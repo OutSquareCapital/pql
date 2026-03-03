@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Callable, Iterable, Mapping, Sequence
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, NamedTuple, Self
+from typing import TYPE_CHECKING, Any, Literal, NamedTuple, Self
 
 import pyochain as pc
 
@@ -31,12 +31,14 @@ if TYPE_CHECKING:
         IntoExprColumn,
         IntoRel,
         NPArrayLike,
+        ParquetCompression,
         SeqIntoVals,
     )
 
 TEMP_NAME = "__pql_temp__"
 TEMP_COL = sql.col(TEMP_NAME)
 MAX_I64 = 9_223_372_036_854_775_807
+type OptSeq = pc.Option[pc.Seq[str]]
 
 
 class JoinKeys[T: pc.Seq[str] | str](NamedTuple):
@@ -87,12 +89,9 @@ class JoinKeys[T: pc.Seq[str] | str](NamedTuple):
 
     @staticmethod
     def from_how(
-        how: JoinStrategy,
-        on_opt: pc.Option[pc.Seq[str]],
-        left_on_opt: pc.Option[pc.Seq[str]],
-        right_on_opt: pc.Option[pc.Seq[str]],
+        how: JoinStrategy, on: OptSeq, left_on: OptSeq, right_on: OptSeq
     ) -> JoinKeysRes[pc.Seq[str]]:
-        match (on_opt, left_on_opt, right_on_opt):
+        match (on, left_on, right_on):
             case (pc.Some(on_vals), pc.NONE, pc.NONE):
                 return pc.Ok(JoinKeys(on_vals, on_vals))
             case (pc.NONE, pc.Some(lv), pc.Some(rv)) if lv.length() == rv.length():
@@ -510,7 +509,7 @@ class LazyFrame(sql.CoreHandler[sql.Relation]):
             lambda c: sql.col(c).alias(rename_map.get_item(c).unwrap_or(c))
         )
 
-    def explain(self) -> str:
+    def sql_query(self) -> str:
         """Generate SQL string.
 
         If `sqlparse` is installed, the SQL output will be formatted for better readability.
@@ -527,9 +526,20 @@ class LazyFrame(sql.CoreHandler[sql.Relation]):
         qry = self.inner().sql_query()
         return (
             _try_import()
-            .map(lambda sp: sp.format(qry, reindent_aligned=True, keyword_case="upper"))
+            .map(
+                lambda sp: sp.format(
+                    qry,
+                    indent_width=4,
+                    reindent=True,
+                    keyword_case="upper",
+                    use_space_around_operators=True,
+                )
+            )
             .unwrap_or(qry)
         )
+
+    def explain(self, kind: Literal["standard", "analyze"] = "standard") -> str:
+        return self.inner().explain(kind)  # pyright: ignore[reportArgumentType]
 
     def unnest(
         self,
@@ -1018,7 +1028,9 @@ class LazyFrame(sql.CoreHandler[sql.Relation]):
                     lambda c: sql.col(c).cast(dtypes.raw.to_duckdb()).alias(c)
                 )
 
-    def sink_parquet(self, path: str | Path, *, compression: str = "zstd") -> None:
+    def sink_parquet(
+        self, path: str | Path, *, compression: ParquetCompression = "zstd"
+    ) -> None:
         """Write to Parquet file."""
         self.inner().write_parquet(str(path), compression=compression)
 

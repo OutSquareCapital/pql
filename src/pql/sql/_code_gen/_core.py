@@ -26,11 +26,16 @@ if TYPE_CHECKING:
     import pandas as pd  # pyright: ignore[reportMissingModuleSource]
     import polars as pl
     import pyarrow as pa
+    from _duckdb._enums import (  # pyright: ignore[reportMissingModuleSource]
+        ExplainTypeLiteral,
+        RenderModeLiteral,
+    )
     from _duckdb._typing import (  # pyright: ignore[reportMissingModuleSource]
         CsvCompression,
         CsvEncoding,
         IntoPyType,
         JoinType,
+        ParquetCompression,
         ParquetFieldsOptions,
         StrIntoPyType,
     )
@@ -300,7 +305,9 @@ class Relation(RelHandler):
         """Transform the relation into a result set."""
         return self._new(self.inner().execute())
 
-    def explain(self, type: ExplainType = ExplainType.STANDARD) -> str:
+    def explain(
+        self, type: ExplainType | ExplainTypeLiteral = ExplainType.STANDARD
+    ) -> str:
         return self.inner().explain(type)
 
     def favg(
@@ -717,7 +724,7 @@ class Relation(RelHandler):
         max_rows: SupportsInt | None = None,
         max_col_width: SupportsInt | None = None,
         null_value: str | None = None,
-        render_mode: RenderMode | None = None,
+        render_mode: RenderMode | RenderModeLiteral | None = None,
     ) -> None:
         """Display a summary of the data."""
         return self.inner().show(
@@ -863,7 +870,7 @@ class Relation(RelHandler):
         self,
         file_name: str,
         *,
-        compression: str | None = None,
+        compression: ParquetCompression | None = None,
         field_ids: ParquetFieldsOptions | None = None,
         row_group_size_bytes: int | str | None = None,
         row_group_size: int | None = None,
@@ -1017,7 +1024,7 @@ class Relation(RelHandler):
         self,
         file_name: str,
         *,
-        compression: str | None = None,
+        compression: ParquetCompression | None = None,
         field_ids: ParquetFieldsOptions | None = None,
         row_group_size_bytes: str | int | None = None,
         row_group_size: int | None = None,

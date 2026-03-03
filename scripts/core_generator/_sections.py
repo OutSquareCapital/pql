@@ -29,20 +29,27 @@ from .._core import {Pql.CORE_HANDLER}, {Pql.REL_HANDLER}, {Pql.INTO_DUCKDB}, {P
 from ..._args_iter import {Pql.TRY_ITER}
 if {Typing.TYPE_CHECKING}:
     {From(CollectionsABC).import_(CollectionsABC.CALLABLE, CollectionsABC.ITERABLE, CollectionsABC.MAPPING)}
+
+    import numpy as np
+    import pandas  # pyright: ignore[reportMissingModuleSource]
+    import polars
+    import pyarrow as pa
+    from _duckdb._enums import (  # pyright: ignore[reportMissingModuleSource]
+        ExplainTypeLiteral,
+        RenderModeLiteral,
+    )
     from _duckdb._typing import (  # pyright: ignore[reportMissingModuleSource]
         CsvCompression,
         CsvEncoding,
         IntoPyType,
         JoinType,
+        ParquetCompression,
         ParquetFieldsOptions,
         StrIntoPyType,
     )
-    from ..typing import {Pql.INTO_EXPR}, {Pql.INTO_EXPR_COLUMN}, {Pql.PYTHON_LITERAL}
-    import numpy as np
-    import pandas  # pyright: ignore[reportMissingModuleSource]
-    import polars
-    import pyarrow as pa
     {From(DuckDB).import_(DuckDB.SQLTYPES)}
+
+    from ..typing import {Pql.INTO_EXPR}, {Pql.INTO_EXPR_COLUMN}, {Pql.PYTHON_LITERAL}
 '''
 
 
