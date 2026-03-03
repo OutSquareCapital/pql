@@ -118,9 +118,7 @@ class LazyGroupBy:
         self._group_expr = self._keys.iter().map(str).join(", ")
 
     def _agg_columns(self, func: Callable[[Expr], Expr]) -> LazyFrame:
-        key_names = (
-            self._keys.iter().map(lambda key: key.inner().get_name()).collect(pc.Set)
-        )
+        key_names = self._key_names
 
         return (
             self._frame.columns.iter()
@@ -129,8 +127,12 @@ class LazyGroupBy:
             .into(self.agg)
         )
 
+    @property
+    def _key_names(self) -> pc.Set[str]:
+        return self._keys.iter().map(sql.SqlExpr.get_name).collect(pc.Set)
+
     def len(self, name: str = "len") -> LazyFrame:
-        return self.agg(sql.lit(1).count().alias(name))
+        return self.agg(Expr(sql.lit(1)).count().alias(name))
 
     def all(self) -> LazyFrame:
         return self._agg_columns(Expr.implode)
@@ -170,14 +172,26 @@ class LazyGroupBy:
         *more_aggregates: IntoExpr,
         **named_aggs: IntoExpr,
     ) -> LazyFrame:
+        key_names = self._key_names
+        plan = (
+            self._frame.columns.iter()
+            .filter(lambda name: name not in key_names)
+            .collect()
+            .into(
+                ExprPlan.from_inputs, try_chain(aggregate, more_aggregates), named_aggs
+            )
+        )
+
         return (
             self._keys.iter()
             .chain(
-                ExprPlan.from_inputs(
-                    self._frame.columns,
-                    try_chain(aggregate, more_aggregates),
-                    named_exprs=named_aggs,
-                ).aliased_sql()
+                plan.into_iter().map(
+                    lambda p: (
+                        p.as_aliased()
+                        if p.meta.is_scalar_select
+                        else p.expr.implode().alias(p.meta.output_name)
+                    )
+                )
             )
             .into(self._frame.inner().aggregate, self._group_expr)
             .pipe(self._frame.__class__)
@@ -329,7 +343,7 @@ class LazyFrame(sql.CoreHandler[sql.Relation]):
                         )
                     )
                 )
-                .unwrap_or(pc.Iter[sql.SqlExpr].new())
+                .unwrap_or_else(pc.Iter[sql.SqlExpr].new)
             )
             .into(self._filter)
         )
@@ -633,17 +647,12 @@ class LazyFrame(sql.CoreHandler[sql.Relation]):
 
     @property
     def schema(self) -> pc.Dict[str, DataType]:
-        return (
-            self.columns.iter()
-            .zip(self.inner().dtypes, strict=True)
-            .map_star(
-                lambda name, dtype: (
-                    name,
-                    DataType.__from_sql__(sql.parse_dtype(dtype)),
-                )
-            )
-            .collect(pc.Dict)
+        dtypes = (
+            self.inner()
+            .dtypes.iter()
+            .map(lambda d: DataType.__from_sql__(sql.parse_dtype(d)))
         )
+        return self.columns.iter().zip(dtypes, strict=True).collect(pc.Dict)
 
     def collect_schema(self) -> pc.Dict[str, DataType]:
         """Collect the schema (same as schema property for lazy)."""
@@ -791,7 +800,7 @@ class LazyFrame(sql.CoreHandler[sql.Relation]):
 
         def _expr_sql(expr: sql.SqlExpr) -> str:
             base_sql = str(expr)
-            alias_name = expr.inner().get_name()
+            alias_name = expr.get_name()
             return base_sql if alias_name == base_sql else f"{base_sql} AS {alias_name}"
 
         by_cond = (
@@ -901,7 +910,7 @@ class LazyFrame(sql.CoreHandler[sql.Relation]):
         return (
             pc.Option(subset)
             .map(try_iter)
-            .unwrap_or(self.columns.iter())
+            .unwrap_or_else(self.columns.iter)
             .into(_marker)
             .alias(TEMP_NAME)
             .pipe(self.with_columns)
@@ -921,16 +930,12 @@ class LazyFrame(sql.CoreHandler[sql.Relation]):
         index_cols = (
             pc.Option(index)
             .map(lambda value: try_iter(value).collect())
-            .unwrap_or(pc.Seq[str].new())
+            .unwrap_or_else(pc.Seq[str].new)
         )
         on_cols = (
             pc.Option(on)
-            .map(lambda value: try_iter(value).collect())
-            .unwrap_or(
-                self.columns.iter()
-                .filter(lambda name: name not in index_cols)
-                .collect()
-            )
+            .map(try_iter)
+            .unwrap_or(self.columns.iter().filter(lambda name: name not in index_cols))
             .join(", ")
         )
         return self.from_query(
@@ -981,7 +986,7 @@ class LazyFrame(sql.CoreHandler[sql.Relation]):
                                 sql.col(c).cast(dtype.raw.to_duckdb()).alias(c)
                             )
                         )
-                        .unwrap_or(sql.col(c))
+                        .unwrap_or_else(lambda: sql.col(c))
                     )
                 )
             case _:

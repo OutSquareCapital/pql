@@ -68,7 +68,7 @@ def all(exclude: Iterable[IntoExprColumn] | None = None) -> SqlExpr:
         pc.Option(exclude)
         .map(lambda x: pc.Iter(x).map(into_duckdb))
         .map(lambda exc: SqlExpr(duckdb.StarExpression(exclude=exc)))
-        .unwrap_or(SqlExpr(duckdb.StarExpression()))
+        .unwrap_or_else(lambda: SqlExpr(duckdb.StarExpression()))
     )
 
 

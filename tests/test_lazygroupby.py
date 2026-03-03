@@ -155,3 +155,24 @@ def test_quantile() -> None:
         .sort("department")
         .collect(),
     )
+
+
+def test_agg_all_exclude(sample_df: pl.DataFrame) -> None:
+    assert_eq(
+        pql.LazyFrame(sample_df)
+        .group_by("department")
+        .agg(
+            pql.all(exclude=["category"]),
+            pql.col("category").str.join(pql.lit(", ")).alias("category"),
+        )
+        .sort("department")
+        .collect(),
+        sample_df.lazy()
+        .group_by("department")
+        .agg(
+            pl.all().exclude("category"),
+            pl.col("category").str.join(", ").alias("category"),
+        )
+        .sort("department")
+        .collect(),
+    )

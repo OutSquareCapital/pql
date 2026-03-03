@@ -26,7 +26,21 @@ col: Col = Col()
 def all(exclude: Iterable[IntoExprColumn] | None = None) -> Expr:
     """Create an expression representing all columns (equivalent to pl.all())."""
     inner = sql.all(exclude)
-    return Expr(inner, pc.Some(ExprMeta(inner.inner().get_name(), is_multi=True)))
+    excluded_names = (
+        pc.Option(exclude)
+        .map(
+            lambda exc: (
+                pc.Iter(exc)
+                .map(lambda value: sql.into_expr(value, as_col=True).get_name())
+                .collect(pc.Set)
+            )
+        )
+        .unwrap_or_else(pc.Set[str].new)
+    )
+    meta = pc.Some(
+        ExprMeta(inner.get_name(), is_multi=True, excluded_names=excluded_names)
+    )
+    return Expr(inner, meta)
 
 
 _ELEMENT = Expr(sql.element())

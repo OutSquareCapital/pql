@@ -74,10 +74,7 @@ class ExprMeta:
     has_window: bool = False
     is_unique_projection: bool = False
     is_multi: bool = False
-
-    @classmethod
-    def __from_expr__(cls, expr: sql.SqlExpr) -> Self:
-        return cls(expr.inner().get_name())
+    excluded_names: pc.Set[str] = field(default_factory=pc.Set[str].new)
 
     @property
     def output_name(self) -> str:
@@ -170,7 +167,7 @@ class ExprPlan:
                     .flatten()
                 )
             )
-            .unwrap_or(pc.Iter[ExprProjection].new())
+            .unwrap_or_else(pc.Iter[ExprProjection].new)
         )
         return cls(
             exprs.flat_map(lambda value: _resolve_projection(columns, value))
@@ -208,13 +205,17 @@ def _resolve_projection(
     match value:
         case Expr() as expr:
             base_names = (
-                columns if expr.meta.is_multi else pc.Seq((expr.meta.root_name,))
+                columns.iter()
+                .filter(lambda name: name not in expr.meta.excluded_names)
+                .collect()
+                if expr.meta.is_multi
+                else pc.Seq((expr.meta.root_name,))
             )
             output_names = expr.meta.resolve_output_names(base_names, alias_override)
             match expr.meta.is_multi and alias_override.is_none():
                 case True:
                     return (
-                        columns.iter()
+                        base_names.iter()
                         .zip(output_names)
                         .map_star(
                             lambda column_name, output_name: ExprProjection(
@@ -232,7 +233,7 @@ def _resolve_projection(
                     )
         case _:
             resolved = sql.into_expr(value, as_col=True)
-            resolved_meta = ExprMeta.__from_expr__(resolved)
+            resolved_meta = ExprMeta(resolved.inner().get_name())
             return into_proj(
                 ExprProjection(
                     resolved,
@@ -251,9 +252,7 @@ class Expr(sql.CoreHandler[sql.SqlExpr]):
 
     def __init__(self, inner: sql.SqlExpr, meta: pc.Option[ExprMeta] = pc.NONE) -> None:
         self._inner = inner
-        self.meta = meta.map(replace).unwrap_or_else(
-            lambda: ExprMeta.__from_expr__(inner)
-        )
+        self.meta = meta.map(replace).unwrap_or_else(lambda: ExprMeta(inner.get_name()))
 
     def _new(self, value: sql.SqlExpr, meta: pc.Option[ExprMeta] = pc.NONE) -> Self:
         return self.__class__(
