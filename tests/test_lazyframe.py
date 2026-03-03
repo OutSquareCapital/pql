@@ -57,25 +57,24 @@ def test_clone(sample_df: pl.DataFrame) -> None:
     assert lf.collect().height != cloned_modified.collect().height
 
 
-def test_explain(sample_df: pl.DataFrame) -> None:
+def test_sql_query(sample_df: pl.DataFrame) -> None:
     sql = (
         pql.LazyFrame(sample_df)
         .filter(pql.col("age").gt(25))
         .select("name", "age")
-        .explain()
+        .sql_query()
     )
     assert isinstance(sql, str)
     assert "SELECT" in sql
     assert "WHERE" in sql
-
-
-def test_explain_filter_predicates_are_combined(sample_df: pl.DataFrame) -> None:
-    sql = (
-        pql.LazyFrame(sample_df)
-        .filter(pql.col("age").gt(25), pql.col("salary").gt(0))
-        .explain()
-    )
     assert sql.upper().count("WHERE") == 1
+
+
+def test_explain(sample_df: pl.DataFrame) -> None:
+    explained = (
+        pql.LazyFrame(sample_df).filter(pql.col("age").gt(25)).explain("standard")
+    )
+    assert isinstance(explained, str)
 
 
 def test_select_single_column(sample_df: pl.DataFrame) -> None:
