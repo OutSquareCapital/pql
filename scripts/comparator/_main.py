@@ -14,6 +14,9 @@ from ._text import ClassComparison, header, render_summary_table
 
 
 def get_comparisons() -> str:
+    pl_col = pl.col("x")
+    pql_col = pql.col("x")
+    nw_col = pc.Some(nw.col("x"))
     return (
         pc.Iter(
             (
@@ -28,39 +31,39 @@ def get_comparisons() -> str:
                     Pql.LAZY_GROUP_BY,
                 ),
                 ClassComparison(
-                    pc.Some(nw.col("x").str.__class__),
-                    pl.col("x").str.__class__,
-                    pql.col("x").str.__class__,
+                    nw_col.map(lambda x: x.str.__class__),
+                    pl_col.str.__class__,
+                    pql_col.str.__class__,
                     Pql.EXPR_STR_NAME_SPACE,
                 ),
                 ClassComparison(
-                    pc.Some(nw.col("x").list.__class__),
-                    pl.col("x").list.__class__,
-                    pql.col("x").list.__class__,
+                    nw_col.map(lambda x: x.list.__class__),
+                    pl_col.list.__class__,
+                    pql_col.list.__class__,
                     Pql.EXPR_LIST_NAME_SPACE,
                 ),
                 ClassComparison(
-                    pc.Some(nw.col("x").struct.__class__),
-                    pl.col("x").struct.__class__,
-                    pql.col("x").struct.__class__,
+                    nw_col.map(lambda x: x.struct.__class__),
+                    pl_col.struct.__class__,
+                    pql_col.struct.__class__,
                     Pql.EXPR_STRUCT_NAME_SPACE,
                 ),
                 ClassComparison(
-                    pc.Some(nw.col("x").name.__class__),
-                    pl.col("x").name.__class__,
-                    pql.col("x").name.__class__,
+                    nw_col.map(lambda x: x.name.__class__),
+                    pl_col.name.__class__,
+                    pql_col.name.__class__,
                     Pql.EXPR_NAME_NAME_SPACE,
                 ),
                 ClassComparison(
                     pc.NONE,
-                    pl.col("x").arr.__class__,
-                    pql.col("x").arr.__class__,
+                    pl_col.arr.__class__,
+                    pql_col.arr.__class__,
                     Pql.EXPR_ARR_NAME_SPACE,
                 ),
                 ClassComparison(
-                    pc.Some(nw.col("x").dt.__class__),
-                    pl.col("x").dt.__class__,
-                    pql.col("x").dt.__class__,
+                    nw_col.map(lambda x: x.dt.__class__),
+                    pl_col.dt.__class__,
+                    pql_col.dt.__class__,
                     Pql.EXPR_DT_NAME_SPACE,
                 ),
             )
