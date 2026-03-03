@@ -5,6 +5,7 @@ from __future__ import annotations
 import re
 from collections.abc import Callable, Collection, Iterable
 from dataclasses import dataclass, field, replace
+from enum import IntEnum
 from functools import partial
 from typing import TYPE_CHECKING, NamedTuple, Self
 
@@ -12,25 +13,40 @@ import pyochain as pc
 
 from . import _datatypes as dt, sql  # pyright: ignore[reportPrivateUsage]
 from ._args_iter import try_chain, try_iter
-from ._computations import fill_nulls, round
+from ._computations import fill_nulls
 
 if TYPE_CHECKING:
     from ._datatypes import DataType
     from ._typing import (
         ClosedInterval,
+        EpochTimeUnit,
         FillNullStrategy,
         RankMethod,
-        RollingInterpolationMethod,
-        RoundMode,
+        TimeUnit,
         TransferEncoding,
     )
-    from .sql.typing import IntoExpr, IntoExprColumn
+    from .sql.typing import IntoExpr, IntoExprColumn, RoundMode
 
 _NONE = sql.lit(None)
 _EMPTY_STR = sql.lit("")
 G_PARAM = sql.lit("g")
 _ESCAPE = sql.lit(" ")
 _STR_AGG = sql.lit("string_agg")
+_DAY = sql.lit("day")
+_MONTH = sql.lit("month")
+_ZERO = sql.lit("0")
+_TITLECASE = sql.lit(r"[a-z]*[^a-z]*")
+_ESCAPE_REGEX = sql.lit(r"([.^$*+?{}\[\]\\|()])")
+_ESCAPE_REPLACE = sql.lit(r"\\\1")
+
+
+class Sec(IntEnum):
+    TO_NANO = 1_000_000_000
+    TO_MICRO = 1_000_000
+    TO_MILLI = 1_000
+    BY_MINUTE = 60
+    BY_HOUR = 3_600
+    BY_DAY = 86_400
 
 
 class RollingBounds(NamedTuple):
@@ -737,15 +753,10 @@ class Expr(sql.CoreHandler[sql.SqlExpr]):
                 factor = n.sub(2).truediv(n.mul(n.sub(1)).sqrt())
                 return self._as_scalar(adjusted.mul(factor))
 
-    def quantile(
-        self, quantile: float, interpolation: RollingInterpolationMethod = "nearest"
-    ) -> Self:
-        match interpolation:
-            case "linear" | "midpoint":
-                expr = self.inner().quantile_cont(quantile)
-            case _:
-                expr = self.inner().quantile(quantile)
-        return self._as_scalar(expr)
+    def quantile(self, quantile: float, *, interpolation: bool = True) -> Self:
+        return self._as_scalar(
+            self.inner().quantile(quantile, interpolation=interpolation)
+        )
 
     def all(self) -> Self:
         """Return whether all values are true."""
@@ -854,7 +865,7 @@ class Expr(sql.CoreHandler[sql.SqlExpr]):
 
     def round(self, decimals: int = 0, *, mode: RoundMode = "half_to_even") -> Self:
         """Round to given number of decimal places."""
-        return self._new(round(self.inner(), decimals, mode=mode))
+        return self._new(self.inner().round(decimals, mode=mode))
 
     def sqrt(self) -> Self:
         """Compute the square root."""
@@ -1070,9 +1081,7 @@ class ExprStringNameSpace(ExprNameSpaceBase):
     def escape_regex(self) -> Expr:
         """Escape all regex meta characters in the string."""
         return self._new(
-            self.inner().re.replace(
-                sql.lit(r"([.^$*+?{}\[\]\\|()])"), sql.lit(r"\\\1"), G_PARAM
-            )
+            self.inner().re.replace(_ESCAPE_REGEX, _ESCAPE_REPLACE, G_PARAM)
         )
 
     def to_uppercase(self) -> Expr:
@@ -1312,7 +1321,7 @@ class ExprStringNameSpace(ExprNameSpaceBase):
         return self._new(self.inner().str.rpad(length, fill_char))
 
     def zfill(self, width: int) -> Expr:
-        return self._new(self.inner().str.lpad(width, sql.lit("0")))
+        return self._new(self.inner().str.lpad(width, _ZERO))
 
     def replace_all(
         self, pattern: IntoExprColumn, value: IntoExprColumn, *, literal: bool = False
@@ -1329,7 +1338,7 @@ class ExprStringNameSpace(ExprNameSpaceBase):
         return self._new(
             self.inner()
             .str.lower()
-            .re.extract_all(sql.lit(r"[a-z]*[^a-z]*"))
+            .re.extract_all(_TITLECASE)
             .list.transform(
                 sql.fn_once(
                     sql.element()
@@ -1577,3 +1586,109 @@ class ExprNameNameSpace(ExprNameSpaceBase):
 @dataclass(slots=True)
 class ExprDateTimeNameSpace(ExprNameSpaceBase):
     """Date and datetime operations namespace (equivalent to pl.Expr.dt)."""
+
+    def millennium(self) -> Expr:
+        return self._new(self.inner().dt.millennium())
+
+    def century(self) -> Expr:
+        return self._new(self.inner().dt.century())
+
+    def year(self) -> Expr:
+        return self._new(self.inner().dt.year())
+
+    def iso_year(self) -> Expr:
+        return self._new(self.inner().dt.isoyear())
+
+    def quarter(self) -> Expr:
+        return self._new(self.inner().dt.quarter())
+
+    def month(self) -> Expr:
+        return self._new(self.inner().dt.month())
+
+    def week(self) -> Expr:
+        return self._new(self.inner().dt.week())
+
+    def weekday(self) -> Expr:
+        return self._new(self.inner().dt.isodow())
+
+    def day(self) -> Expr:
+        return self._new(self.inner().dt.day())
+
+    def ordinal_day(self) -> Expr:
+        return self._new(self.inner().dt.dayofyear())
+
+    def hour(self) -> Expr:
+        return self._new(self.inner().dt.hour())
+
+    def minute(self) -> Expr:
+        return self._new(self.inner().dt.minute())
+
+    def second(self) -> Expr:
+        return self._new(self.inner().dt.second())
+
+    def millisecond(self) -> Expr:
+        return self._new(self.inner().dt.millisecond().mod(Sec.TO_MILLI))
+
+    def microsecond(self) -> Expr:
+        return self._new(self.inner().dt.microsecond().mod(Sec.TO_MICRO))
+
+    def nanosecond(self) -> Expr:
+        return self._new(self.inner().dt.nanosecond().mod(Sec.TO_NANO))
+
+    def month_start(self) -> Expr:
+        return self._new(
+            self.inner()
+            .dt.trunc(_MONTH)
+            .add(self.inner().sub(self.inner().dt.trunc(_DAY)))
+        )
+
+    def month_end(self) -> Expr:
+        return self._new(
+            self.inner()
+            .dt.last_day()
+            .add(self.inner().sub(self.inner().dt.trunc(_DAY)))
+        )
+
+    def date(self) -> Expr:
+        return self._parent.cast(dt.Date())
+
+    def time(self) -> Expr:
+        return self._parent.cast(dt.Time())
+
+    def to_string(self, format: IntoExprColumn) -> Expr:  # noqa: A002
+        return self._new(self.inner().str.strftime(format))
+
+    def strftime(self, format: IntoExprColumn) -> Expr:  # noqa: A002
+        return self._new(self.inner().str.strftime(format))
+
+    def epoch(self, time_unit: EpochTimeUnit = "us") -> Expr:
+        match time_unit:
+            case "d":
+                return self._new(
+                    self.inner()
+                    .dt.epoch_us()
+                    .truediv(Sec.BY_DAY * Sec.TO_MICRO)
+                    .floor()
+                )
+            case "s":
+                return self._new(
+                    self.inner().dt.epoch_us().truediv(Sec.TO_MICRO).floor()
+                )
+            case "ms":
+                return self._new(self.inner().dt.epoch_ms())
+            case "us":
+                return self._new(self.inner().dt.epoch_us())
+            case "ns":
+                return self._new(self.inner().dt.epoch_ns())
+
+    def timestamp(self, time_unit: TimeUnit = "us") -> Expr:
+        return self.epoch(time_unit)
+
+    def truncate(self, every: str) -> Expr:
+        return self._new(self.inner().dt.trunc(sql.lit(every)))
+
+    def round(self, every: str) -> Expr:
+        return self._new(self.inner().dt.trunc(sql.lit(every)))
+
+    def offset_by(self, by: IntoExpr) -> Expr:
+        return self._new(self.inner().dt.add(by))

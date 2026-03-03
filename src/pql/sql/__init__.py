@@ -18,7 +18,12 @@ from ._datatypes import (
     UnionType,
     parse_dtype,
 )
-from ._expr import SqlExpr, SqlExprArrayNameSpace, SqlExprListNameSpace
+from ._expr import (
+    SqlExpr,
+    SqlExprArrayNameSpace,
+    SqlExprDateTimeNameSpace,
+    SqlExprListNameSpace,
+)
 from ._funcs import (
     all,
     coalesce,
@@ -55,6 +60,7 @@ __all__ = [
     "ScalarType",
     "SqlExpr",
     "SqlExprArrayNameSpace",
+    "SqlExprDateTimeNameSpace",
     "SqlExprListNameSpace",
     "SqlType",
     "StructType",

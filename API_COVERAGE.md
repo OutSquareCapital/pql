@@ -7,17 +7,17 @@ This report shows the API coverage of pql compared to other libraries.
 
 The first value of each tuple is for `Narwhals` and the second value is for `Polars`.
 
-| Class               | Coverage        | Total     | Matched  | Missing  | Mismatched | Extra   |
-| ------------------- | --------------- | --------- | -------- | -------- | ---------- | ------- |
-| LazyFrame           | (53.8%, 32.5%)  | (26, 83)  | (14, 27) | (1, 32)  | (11, 24)   | (34, 8) |
-| Expr                | (71.4%, 42.7%)  | (70, 213) | (50, 91) | (7, 93)  | (13, 29)   | (58, 1) |
-| LazyGroupBy         | (0.0%, 43.8%)   | (1, 16)   | (0, 7)   | (0, 4)   | (1, 5)     | (11, 0) |
-| ExprStrNameSpace    | (42.1%, 27.7%)  | (19, 47)  | (8, 13)  | (0, 10)  | (11, 24)   | (19, 1) |
-| ExprListNameSpace   | (90.0%, 46.5%)  | (10, 43)  | (9, 20)  | (0, 20)  | (1, 3)     | (14, 1) |
-| ExprStructNameSpace | (100.0%, 20.0%) | (1, 5)    | (1, 1)   | (0, 2)   | (0, 2)     | (3, 1)  |
-| ExprNameNameSpace   | (100.0%, 70.0%) | (6, 10)   | (6, 7)   | (0, 3)   | (0, 0)     | (2, 1)  |
-| ExprArrNameSpace    | (100.0%, 54.8%) | (0, 31)   | (0, 17)  | (0, 10)  | (0, 4)     | (24, 3) |
-| ExprDtNameSpace     | (0.0%, 0.0%)    | (23, 45)  | (0, 0)   | (23, 45) | (0, 0)     | (1, 1)  |
+| Class               | Coverage        | Total     | Matched  | Missing | Mismatched | Extra   |
+| ------------------- | --------------- | --------- | -------- | ------- | ---------- | ------- |
+| LazyFrame           | (53.8%, 32.5%)  | (26, 83)  | (14, 27) | (1, 32) | (11, 24)   | (34, 8) |
+| Expr                | (71.4%, 42.7%)  | (70, 213) | (50, 91) | (7, 93) | (13, 29)   | (58, 1) |
+| LazyGroupBy         | (0.0%, 50.0%)   | (1, 16)   | (0, 8)   | (0, 4)  | (1, 4)     | (11, 0) |
+| ExprStrNameSpace    | (42.1%, 27.7%)  | (19, 47)  | (8, 13)  | (0, 10) | (11, 24)   | (19, 1) |
+| ExprListNameSpace   | (90.0%, 46.5%)  | (10, 43)  | (9, 20)  | (0, 20) | (1, 3)     | (14, 1) |
+| ExprStructNameSpace | (100.0%, 20.0%) | (1, 5)    | (1, 1)   | (0, 2)  | (0, 2)     | (3, 1)  |
+| ExprNameNameSpace   | (100.0%, 70.0%) | (6, 10)   | (6, 7)   | (0, 3)  | (0, 0)     | (2, 1)  |
+| ExprArrNameSpace    | (100.0%, 54.8%) | (0, 31)   | (0, 17)  | (0, 10) | (0, 4)     | (24, 3) |
+| ExprDtNameSpace     | (60.9%, 46.7%)  | (23, 45)  | (14, 21) | (7, 18) | (2, 6)     | (12, 1) |
 
 ## LazyFrame
 
@@ -125,7 +125,7 @@ The first value of each tuple is for `Narwhals` and the second value is for `Pol
   - **Polars**: (other: LazyFrame, `left_on: str | None | Expr`, `right_on: str | None | Expr`, `on: str | None | Expr`, `by_left: str | Sequence[str] | None`, `by_right: str | Sequence[str] | None`, `by: str | Sequence[str] | None`, strategy: AsofJoinStrategy, suffix: str, `tolerance: str | int | float | timedelta | None`, allow_parallel: bool, force_parallel: bool, `coalesce: bool`, `allow_exact_matches: bool`, `check_sortedness: bool`) -> LazyFrame
   - **pql**: (other: Self, left_on: str | None, right_on: str | None, on: str | None, `by_left: str | Iterable[str] | None`, `by_right: str | Iterable[str] | None`, `by: str | Iterable[str] | None`, strategy: AsofJoinStrategy, suffix: str) -> Self
 - `quantile` (pl)
-  - **Polars***: (`quantile: float | Expr`, `interpolation: QuantileMethod`) -> LazyFrame
+  - **Polars***: (`quantile: float | Expr`, interpolation: QuantileMethod) -> LazyFrame
   - **pql**: (`quantile: float`) -> Self
 - `rename` (nw)
   - **Narwhals**: (`mapping: dict[str, str]`) -> Self
@@ -437,7 +437,7 @@ The first value of each tuple is for `Narwhals` and the second value is for `Pol
 - `tail`
   - **Polars**: (n: int) -> LazyFrame
 
-### [!] Signature Mismatches (5)
+### [!] Signature Mismatches (4)
 
 - `agg` (nw)
   - **Narwhals**: (`*aggs: Expr | Iterable[Expr]`, `**named_aggs: Expr`) -> LazyFrameT
@@ -452,9 +452,6 @@ The first value of each tuple is for `Narwhals` and the second value is for `Pol
 - `len` (pl)
   - **Polars***: (`name: str | None`) -> LazyFrame
   - **pql**: (`name: str`) -> LazyFrame
-- `quantile` (pl)
-  - **Polars***: (quantile: float, `interpolation: QuantileMethod`) -> LazyFrame
-  - **pql**: (quantile: float, `interpolation: RollingInterpolationMethod`) -> LazyFrame
 
 ## ExprStrNameSpace
 
@@ -697,7 +694,7 @@ The first value of each tuple is for `Narwhals` and the second value is for `Pol
 
 ## ExprDtNameSpace
 
-### [x] Missing Methods (45)
+### [x] Missing Methods (18)
 
 - `add_business_days`
   - **Polars**: (n: int | IntoExpr, week_mask: Iterable[bool], holidays: Iterable[dt.date], roll: Roll) -> Expr
@@ -705,83 +702,24 @@ The first value of each tuple is for `Narwhals` and the second value is for `Pol
   - **Polars**: () -> Expr
 - `cast_time_unit`
   - **Polars**: (time_unit: TimeUnit) -> Expr
-- `century`
-  - **Polars**: () -> Expr
 - `combine`
   - **Polars**: (time: time | Expr, time_unit: TimeUnit) -> Expr
 - `convert_time_zone`
   - **Narwhals**: (time_zone: str) -> ExprT
   - **Polars**: (time_zone: str) -> Expr
-- `date`
-  - **Narwhals**: () -> ExprT
-  - **Polars**: () -> Expr
-- `day`
-  - **Narwhals**: () -> ExprT
-  - **Polars**: () -> Expr
 - `days_in_month`
   - **Polars**: () -> Expr
 - `dst_offset`
   - **Polars**: () -> Expr
-- `epoch`
-  - **Polars**: (time_unit: EpochTimeUnit) -> Expr
-- `hour`
-  - **Narwhals**: () -> ExprT
-  - **Polars**: () -> Expr
 - `is_business_day`
   - **Polars**: (week_mask: Iterable[bool], holidays: Iterable[dt.date]) -> Expr
 - `is_leap_year`
-  - **Polars**: () -> Expr
-- `iso_year`
-  - **Polars**: () -> Expr
-- `microsecond`
-  - **Narwhals**: () -> ExprT
-  - **Polars**: () -> Expr
-- `millennium`
-  - **Polars**: () -> Expr
-- `millisecond`
-  - **Narwhals**: () -> ExprT
-  - **Polars**: () -> Expr
-- `minute`
-  - **Narwhals**: () -> ExprT
-  - **Polars**: () -> Expr
-- `month`
-  - **Narwhals**: () -> ExprT
-  - **Polars**: () -> Expr
-- `month_end`
-  - **Polars**: () -> Expr
-- `month_start`
-  - **Polars**: () -> Expr
-- `nanosecond`
-  - **Narwhals**: () -> ExprT
-  - **Polars**: () -> Expr
-- `offset_by`
-  - **Narwhals**: (by: str) -> ExprT
-  - **Polars**: (by: str | Expr) -> Expr
-- `ordinal_day`
-  - **Narwhals**: () -> ExprT
-  - **Polars**: () -> Expr
-- `quarter`
   - **Polars**: () -> Expr
 - `replace`
   - **Polars**: (year: int | IntoExpr | None, month: int | IntoExpr | None, day: int | IntoExpr | None, hour: int | IntoExpr | None, minute: int | IntoExpr | None, second: int | IntoExpr | None, microsecond: int | IntoExpr | None, ambiguous: Ambiguous | Expr) -> Expr
 - `replace_time_zone`
   - **Narwhals**: (time_zone: str | None) -> ExprT
   - **Polars**: (time_zone: str | None, ambiguous: Ambiguous | Expr, non_existent: NonExistent) -> Expr
-- `round`
-  - **Polars**: (every: timedelta | IntoExprColumn) -> Expr
-- `second`
-  - **Narwhals**: () -> ExprT
-  - **Polars**: (fractional: bool) -> Expr
-- `strftime`
-  - **Polars**: (format: str) -> Expr
-- `time`
-  - **Polars**: () -> Expr
-- `timestamp`
-  - **Narwhals**: (time_unit: TimeUnit) -> ExprT
-  - **Polars**: (time_unit: TimeUnit) -> Expr
-- `to_string`
-  - **Narwhals**: (format: str) -> ExprT
-  - **Polars**: (format: str | None) -> Expr
 - `total_days`
   - **Polars**: (fractional: bool) -> Expr
 - `total_hours`
@@ -801,17 +739,23 @@ The first value of each tuple is for `Narwhals` and the second value is for `Pol
 - `total_seconds`
   - **Narwhals**: () -> ExprT
   - **Polars**: (fractional: bool) -> Expr
-- `truncate`
-  - **Narwhals**: (every: str) -> ExprT
-  - **Polars**: (every: timedelta | Expr) -> Expr
-- `week`
-  - **Polars**: () -> Expr
-- `weekday`
-  - **Narwhals**: () -> ExprT
-  - **Polars**: () -> Expr
-- `year`
-  - **Narwhals**: () -> ExprT
-  - **Polars**: () -> Expr
+
+### [!] Signature Mismatches (4)
+
+- `offset_by` (nw)
+  - **Narwhals**: (`by: str`) -> ExprT
+  - **Polars**: (`by: str | Expr`) -> Expr
+  - **pql**: (`by: IntoExpr`) -> Expr
+- `round` (pl)
+  - **Polars***: (`every: timedelta | IntoExprColumn`) -> Expr
+  - **pql**: (`every: str`) -> Expr
+- `strftime` (pl)
+  - **Polars***: (`format: str`) -> Expr
+  - **pql**: (`format: IntoExprColumn`) -> Expr
+- `to_string` (nw)
+  - **Narwhals**: (`format: str`) -> ExprT
+  - **Polars**: (`format: str | None`) -> Expr
+  - **pql**: (`format: IntoExprColumn`) -> Expr
 
 ### [+] Extra Methods (pql-only) (1)
 

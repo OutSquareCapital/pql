@@ -46,7 +46,6 @@ def sample_df() -> nw.LazyFrame[duckdb.DuckDBPyRelation]:
             datetime(2024, 1, 1, 10, 30, 15, 123_456),
             datetime(2024, 1, 2, 11, 45, 30, 1),
         ],
-        "dur": [0, 4_500_000_000, 86_430_000_000, 45_000_000, 0, 4_500_000_000],
     }
 
     return nw.from_native(duckdb.from_arrow(pl.DataFrame(data)))
