@@ -9,7 +9,7 @@ The first value of each tuple is for `Narwhals` and the second value is for `Pol
 
 | Class               | Coverage        | Total     | Matched  | Missing | Mismatched | Extra   |
 | ------------------- | --------------- | --------- | -------- | ------- | ---------- | ------- |
-| LazyFrame           | (53.8%, 32.5%)  | (26, 83)  | (14, 27) | (1, 32) | (11, 24)   | (34, 8) |
+| LazyFrame           | (53.8%, 32.5%)  | (26, 83)  | (14, 27) | (1, 32) | (11, 24)   | (35, 9) |
 | Expr                | (71.4%, 42.7%)  | (70, 213) | (50, 91) | (7, 93) | (13, 29)   | (58, 1) |
 | LazyGroupBy         | (0.0%, 50.0%)   | (1, 16)   | (0, 8)   | (0, 4)  | (1, 4)     | (11, 0) |
 | ExprStrNameSpace    | (42.1%, 27.7%)  | (19, 47)  | (8, 13)  | (0, 10) | (11, 24)   | (19, 1) |
@@ -108,7 +108,7 @@ The first value of each tuple is for `Narwhals` and the second value is for `Pol
   - **pql**: (`subset: str | Iterable[str] | None`) -> Self
 - `explain` (pl)
   - **Polars***: (`format: ExplainFormat`, `optimized: bool`, `type_coercion: bool`, `predicate_pushdown: bool`, `projection_pushdown: bool`, `simplify_expression: bool`, `slice_pushdown: bool`, `comm_subplan_elim: bool`, `comm_subexpr_elim: bool`, `cluster_with_columns: bool`, `collapse_joins: bool`, `streaming: bool`, `engine: EngineType`, `tree_format: bool | None`, `optimizations: QueryOptFlags`) -> str
-  - **pql**: () -> str
+  - **pql**: (`kind: Literal['standard', 'analyze']`) -> str
 - `fill_null` (pl)
   - **Polars***: (`value: Any | Expr | None`, strategy: FillNullStrategy | None, limit: int | None, `matches_supertype: bool`) -> LazyFrame
   - **pql**: (`value: IntoExpr | None`, strategy: FillNullStrategy | None, limit: int | None) -> Self
@@ -146,8 +146,8 @@ The first value of each tuple is for `Narwhals` and the second value is for `Pol
   - **pql**: (`path: str | Path`) -> None
 - `sink_parquet` (nw)
   - **Narwhals**: (`file: str | Path | BytesIO`) -> None
-  - **Polars**: (`path: str | Path | IO[bytes] | PartitionBy`, compression: str, `compression_level: int | None`, `statistics: bool | str | dict[str, bool]`, `row_group_size: int | None`, `data_page_size: int | None`, `maintain_order: bool`, `storage_options: StorageOptionsDict | None`, `credential_provider: CredentialProviderFunction | Literal['auto'] | None`, `retries: int | None`, `sync_on_close: SyncOnCloseMethod | None`, `metadata: ParquetMetadata | None`, `arrow_schema: ArrowSchemaExportable | None`, `mkdir: bool`, `lazy: bool`, `engine: EngineType`, `optimizations: QueryOptFlags`) -> LazyFrame | None
-  - **pql**: (`path: str | Path`, `compression: str`) -> None
+  - **Polars**: (`path: str | Path | IO[bytes] | PartitionBy`, `compression: str`, `compression_level: int | None`, `statistics: bool | str | dict[str, bool]`, `row_group_size: int | None`, `data_page_size: int | None`, `maintain_order: bool`, `storage_options: StorageOptionsDict | None`, `credential_provider: CredentialProviderFunction | Literal['auto'] | None`, `retries: int | None`, `sync_on_close: SyncOnCloseMethod | None`, `metadata: ParquetMetadata | None`, `arrow_schema: ArrowSchemaExportable | None`, `mkdir: bool`, `lazy: bool`, `engine: EngineType`, `optimizations: QueryOptFlags`) -> LazyFrame | None
+  - **pql**: (`path: str | Path`, `compression: ParquetCompression`) -> None
 - `unnest` (pl)
   - **Polars***: (`columns: ColumnNameOrSelector | Collection[ColumnNameOrSelector]`, `*more_columns: ColumnNameOrSelector`, `separator: str | None`) -> LazyFrame
   - **pql**: (`columns: IntoExprColumn | Iterable[IntoExprColumn]`, `*more_columns: IntoExprColumn`) -> Self
@@ -156,7 +156,7 @@ The first value of each tuple is for `Narwhals` and the second value is for `Pol
   - **Polars**: (`*exprs: IntoExpr | Iterable[IntoExpr]`, **named_exprs: IntoExpr) -> LazyFrame
   - **pql**: (`expr: IntoExpr | Iterable[IntoExpr]`, `*more_exprs: IntoExpr`, **named_exprs: IntoExpr) -> Self
 
-### [+] Extra Methods (pql-only) (8)
+### [+] Extra Methods (pql-only) (9)
 
 - `from_df`
 - `from_mapping`
@@ -166,6 +166,7 @@ The first value of each tuple is for `Narwhals` and the second value is for `Pol
 - `from_table`
 - `from_table_function`
 - `inner`
+- `sql_query`
 
 ## Expr
 
