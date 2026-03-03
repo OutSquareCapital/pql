@@ -383,6 +383,28 @@ def test_rename_multiple_columns(sample_df: pl.DataFrame) -> None:
     assert_eq(result, expected)
 
 
+def test_with_columns_add_only_uses_star(sample_df: pl.DataFrame) -> None:
+    """Add-only with_columns must generate SELECT * instead of enumerating existing columns."""
+    sql = (
+        pql.LazyFrame(sample_df)
+        .with_columns(pql.col("age").mul(2).alias("age2"))
+        .sql_query()
+    )
+    outermost_select = sql.split("FROM")[0]
+    assert "SELECT *" in outermost_select
+
+
+def test_with_columns_override_enumerates_columns(sample_df: pl.DataFrame) -> None:
+    """Override with_columns must enumerate columns (no SELECT *) to preserve order."""
+    sql = (
+        pql.LazyFrame(sample_df)
+        .with_columns(pql.col("age").mul(2).alias("age"))
+        .sql_query()
+    )
+    outermost_select = sql.split("FROM")[0]
+    assert "SELECT *" not in outermost_select
+
+
 def test_with_columns_single_expr(sample_df: pl.DataFrame) -> None:
     assert_eq(
         (

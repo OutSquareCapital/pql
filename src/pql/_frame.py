@@ -9,9 +9,10 @@ from typing import TYPE_CHECKING, Any, Literal, NamedTuple, Self
 import pyochain as pc
 
 from . import sql
-from ._args_iter import check_by_arg, try_chain, try_flatten, try_iter
+from ._args_iter import check_by_arg, try_chain, try_iter
 from ._datatypes import DataType
 from ._expr import Expr, ExprPlan
+from ._parser import format_sql
 
 if TYPE_CHECKING:
     import polars as pl
@@ -225,12 +226,11 @@ class LazyFrame(sql.CoreHandler[sql.Relation]):
     def _select(
         self, exprs: IntoExprColumn | Iterable[IntoExprColumn], groups: str = ""
     ) -> Self:
-        return self.inner().select(*try_flatten(exprs), groups=groups).pipe(self._new)
+        return self.inner().select(*try_iter(exprs), groups=groups).pipe(self._new)
 
     def _filter(self, predicates: IntoExprColumn | Iterable[IntoExprColumn]) -> Self:
         return self._new(
             try_iter(predicates)
-            .flat_map(try_flatten)
             .map(lambda value: sql.into_expr(value, as_col=True))
             .reduce(sql.SqlExpr.and_)
             .pipe(self.inner().filter)
@@ -241,7 +241,7 @@ class LazyFrame(sql.CoreHandler[sql.Relation]):
         exprs: IntoExprColumn | Iterable[IntoExprColumn],
         group_expr: sql.SqlExpr | str = "",
     ) -> Self:
-        return self.inner().aggregate(try_flatten(exprs), group_expr).pipe(self._new)
+        return self.inner().aggregate(try_iter(exprs), group_expr).pipe(self._new)
 
     def _iter_slct(self, func: Callable[[str], sql.SqlExpr]) -> Self:
         return self.columns.iter().map(func).into(self._select)
@@ -287,11 +287,20 @@ class LazyFrame(sql.CoreHandler[sql.Relation]):
     ) -> Self:
         """Add or replace columns."""
         cols = self.columns
-        return (
-            ExprPlan.from_inputs(self.columns, try_chain(expr, more_exprs), named_exprs)
-            .to_updates()
-            .into(
-                lambda updates: (
+        updates = ExprPlan.from_inputs(
+            cols, try_chain(expr, more_exprs), named_exprs
+        ).to_updates()
+        match updates.keys().any(lambda name: name in cols):
+            case False:
+                return (
+                    updates.items()
+                    .iter()
+                    .map_star(lambda name, e: e.alias(name))
+                    .insert(sql.all())
+                    .into(self._select)
+                )
+            case True:
+                return (
                     cols.iter()
                     .map(
                         lambda name: updates.get_item(name).map_or(
@@ -302,12 +311,10 @@ class LazyFrame(sql.CoreHandler[sql.Relation]):
                         updates.items()
                         .iter()
                         .filter_star(lambda name, _expr: name not in cols)
-                        .map_star(lambda name, expr: expr.alias(name))
+                        .map_star(lambda name, e: e.alias(name))
                     )
+                    .into(self._select)
                 )
-            )
-            .into(self._select)
-        )
 
     def filter(
         self,
@@ -514,29 +521,7 @@ class LazyFrame(sql.CoreHandler[sql.Relation]):
 
         If `sqlparse` is installed, the SQL output will be formatted for better readability.
         """
-
-        def _try_import() -> pc.Option[Any]:  # pragma: no cover
-            try:
-                import sqlparse
-
-                return pc.Some(sqlparse)
-            except ImportError:
-                return pc.NONE
-
-        qry = self.inner().sql_query()
-        return (
-            _try_import()
-            .map(
-                lambda sp: sp.format(
-                    qry,
-                    indent_width=4,
-                    reindent=True,
-                    keyword_case="upper",
-                    use_space_around_operators=True,
-                )
-            )
-            .unwrap_or(qry)
-        )
+        return format_sql(self.inner().sql_query())
 
     def explain(self, kind: Literal["standard", "analyze"] = "standard") -> str:
         return self.inner().explain(kind)  # pyright: ignore[reportArgumentType]

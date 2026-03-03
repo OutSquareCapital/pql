@@ -55,17 +55,3 @@ def try_chain[T](vals: T | Iterable[T], other_vals: Iterable[T]) -> pc.Iter[T]:
         pc.Iter[T]: An iterator over the chained values.
     """
     return try_iter(vals).chain(other_vals)
-
-
-def try_flatten[T](vals: T | Iterable[T]) -> pc.Iter[T]:
-    """Try to flatten a value that may be nested iterables.
-
-    A value that is not an iterable will be treated as a single element iterable.
-
-    Args:
-        vals (T | Iterable[T]): The value to try to flatten.
-
-    Returns:
-        pc.Iter[T]: An iterator over the flattened values.
-    """
-    return try_iter(vals).flat_map(try_iter)
