@@ -1,4 +1,3 @@
-from collections.abc import Iterable
 from typing import TYPE_CHECKING, Literal
 
 import pyochain as pc
@@ -17,4 +16,3 @@ type FillNullStrategy = Literal[
     "forward", "backward", "min", "max", "mean", "zero", "one"
 ]
 type JoinKeysRes[T: pc.Seq[str] | str] = pc.Result[JoinKeys[T], ValueError]
-type OptIter[T] = pc.Option[T | Iterable[T]]

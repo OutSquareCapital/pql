@@ -7,12 +7,17 @@ import pyochain as pc
 
 from .sql.typing import NonNestedLiteral
 
+type TryIter[T] = Iterable[T] | T
+"""Represent a value that may or may not be an `Iterable`."""
+type TrySeq[T] = Sequence[T] | T
+"""Represent a value that may or may not be a `Sequence`."""
 
-def try_iter[T](val: Iterable[T] | T) -> pc.Iter[T]:
+
+def try_iter[T](val: TryIter[T]) -> pc.Iter[T]:
     """Try to iterate over a value that may or may not be iterable.
 
     Args:
-        val (Iterable[T] | T): The value to try to iterate over.
+        val (TryIter[T]): The value to try to iterate over.
 
     Returns:
         pc.Iter[T]: An iterator over the value if it is iterable, otherwise an iterator over a single element.
@@ -27,7 +32,7 @@ def try_iter[T](val: Iterable[T] | T) -> pc.Iter[T]:
 
 
 def check_by_arg[T: NonNestedLiteral](
-    compared: pc.Seq[Any], name: str, arg: T | Sequence[T]
+    compared: pc.Seq[Any], name: str, arg: TrySeq[T]
 ) -> pc.Result[pc.Iter[T], ValueError]:
     length = compared.length()
     match arg:
@@ -44,11 +49,11 @@ def check_by_arg[T: NonNestedLiteral](
             return pc.Ok(pc.Iter.once(arg).cycle().take(length))
 
 
-def try_chain[T](vals: T | Iterable[T], other_vals: Iterable[T]) -> pc.Iter[T]:
+def try_chain[T](vals: TryIter[T], other_vals: Iterable[T]) -> pc.Iter[T]:
     """Try to chain a value that may or may not be iterable with another iterable.
 
     Args:
-        vals (T | Iterable[T]): The value to try to chain.
+        vals (TryIter[T]): The value to try to chain.
         other_vals (Iterable[T]): The other iterable to chain with.
 
     Returns:

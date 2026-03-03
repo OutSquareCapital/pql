@@ -2,14 +2,14 @@
 
 from __future__ import annotations
 
-from collections.abc import Callable, Iterable, Mapping, Sequence
+from collections.abc import Callable, Iterable, Mapping
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Literal, NamedTuple, Self
 
 import pyochain as pc
 
 from . import sql
-from ._args_iter import check_by_arg, try_chain, try_iter
+from ._args_iter import TryIter, TrySeq, check_by_arg, try_chain, try_iter
 from ._datatypes import DataType
 from ._expr import Expr, ExprPlan
 from ._parser import format_sql
@@ -23,7 +23,6 @@ if TYPE_CHECKING:
         FillNullStrategy,
         JoinKeysRes,
         JoinStrategy,
-        OptIter,
         UniqueKeepStrategy,
     )
     from .sql.typing import (
@@ -40,6 +39,7 @@ TEMP_NAME = "__pql_temp__"
 TEMP_COL = sql.col(TEMP_NAME)
 MAX_I64 = 9_223_372_036_854_775_807
 type OptSeq = pc.Option[pc.Seq[str]]
+type OptTryIter[T] = pc.Option[TryIter[T]]
 
 
 class JoinKeys[T: pc.Seq[str] | str](NamedTuple):
@@ -64,7 +64,7 @@ class JoinKeys[T: pc.Seq[str] | str](NamedTuple):
 
     @staticmethod
     def from_by(
-        by: OptIter[str], by_left: OptIter[str], by_right: OptIter[str]
+        by: OptTryIter[str], by_left: OptTryIter[str], by_right: OptTryIter[str]
     ) -> JoinKeysRes[pc.Seq[str]]:
         match (by, by_left, by_right):
             case (pc.Some(by_key), pc.NONE, pc.NONE):
@@ -80,7 +80,8 @@ class JoinKeys[T: pc.Seq[str] | str](NamedTuple):
                         msg = "`by_left` and `by_right` must have the same length."
                         return pc.Err(ValueError(msg))
             case (pc.NONE, pc.NONE, pc.NONE):
-                return pc.Ok(JoinKeys(pc.Seq[str].new(), pc.Seq[str].new()))
+                fn = pc.Seq[str].new
+                return pc.Ok(JoinKeys(fn(), fn()))
             case (pc.NONE, _, _):
                 msg = "Can not specify only `by_left` or `by_right`, you need to specify both."
                 return pc.Err(ValueError(msg))
@@ -165,7 +166,7 @@ class LazyGroupBy:
 
     def agg(
         self,
-        aggregate: IntoExpr | Iterable[IntoExpr],
+        aggregate: TryIter[IntoExpr],
         *more_aggregates: IntoExpr,
         **named_aggs: IntoExpr,
     ) -> LazyFrame:
@@ -256,10 +257,7 @@ class LazyFrame(sql.CoreHandler[sql.Relation]):
         return self.inner().pl()
 
     def select(
-        self,
-        expr: IntoExpr | Iterable[IntoExpr],
-        *more_exprs: IntoExpr,
-        **named_exprs: IntoExpr,
+        self, expr: TryIter[IntoExpr], *more_exprs: IntoExpr, **named_exprs: IntoExpr
     ) -> Self:
         """Select columns or expressions."""
         plan = ExprPlan.from_inputs(
@@ -276,10 +274,7 @@ class LazyFrame(sql.CoreHandler[sql.Relation]):
                         return plan.aliased_sql().into(self._select)
 
     def with_columns(
-        self,
-        expr: IntoExpr | Iterable[IntoExpr],
-        *more_exprs: IntoExpr,
-        **named_exprs: IntoExpr,
+        self, expr: TryIter[IntoExpr], *more_exprs: IntoExpr, **named_exprs: IntoExpr
     ) -> Self:
         """Add or replace columns."""
         cols = self.columns
@@ -314,7 +309,7 @@ class LazyFrame(sql.CoreHandler[sql.Relation]):
 
     def filter(
         self,
-        predicate: IntoExprColumn | Iterable[IntoExprColumn],
+        predicate: TryIter[IntoExprColumn],
         *more_predicates: IntoExprColumn,
         **constraints: IntoExpr,
     ) -> Self:
@@ -341,10 +336,10 @@ class LazyFrame(sql.CoreHandler[sql.Relation]):
 
     def sort(
         self,
-        by: IntoExpr | Iterable[IntoExpr],
+        by: TryIter[IntoExpr],
         *more_by: IntoExpr,
-        descending: bool | Sequence[bool] = False,
-        nulls_last: bool | Sequence[bool] = False,
+        descending: TrySeq[bool] = False,
+        nulls_last: TrySeq[bool] = False,
     ) -> Self:
         """Sort by columns."""
         return (
@@ -430,7 +425,7 @@ class LazyFrame(sql.CoreHandler[sql.Relation]):
         """Drop columns from the frame."""
         return self._select((sql.all(exclude=columns),))
 
-    def drop_nulls(self, subset: str | Iterable[str] | None = None) -> Self:
+    def drop_nulls(self, subset: TryIter[str] | None = None) -> Self:
         """Drop rows that contain null values."""
         return (
             pc.Option(subset)
@@ -440,7 +435,7 @@ class LazyFrame(sql.CoreHandler[sql.Relation]):
             .into(self._filter)
         )
 
-    def explode(self, columns: str | Sequence[str], *more_columns: str) -> Self:
+    def explode(self, columns: TrySeq[str], *more_columns: str) -> Self:
         """Explode list-like columns."""
         to_explode_names = try_chain(columns, more_columns).collect()
         to_explode = to_explode_names.iter().map(sql.col).collect()
@@ -523,9 +518,7 @@ class LazyFrame(sql.CoreHandler[sql.Relation]):
         return self.inner().explain(kind)  # pyright: ignore[reportArgumentType]
 
     def unnest(
-        self,
-        columns: IntoExprColumn | Iterable[IntoExprColumn],
-        *more_columns: IntoExprColumn,
+        self, columns: TryIter[IntoExprColumn], *more_columns: IntoExprColumn
     ) -> Self:
         return (
             try_chain(columns, more_columns)
@@ -657,7 +650,7 @@ class LazyFrame(sql.CoreHandler[sql.Relation]):
         return self.schema
 
     def group_by(
-        self, *keys: IntoExpr | Iterable[IntoExpr], drop_null_keys: bool = False
+        self, *keys: TryIter[IntoExpr], drop_null_keys: bool = False
     ) -> LazyGroupBy:
         """Start a group by operation."""
         key_exprs = (
@@ -676,11 +669,11 @@ class LazyFrame(sql.CoreHandler[sql.Relation]):
     def join(  # noqa: PLR0913
         self,
         other: Self,
-        on: str | Iterable[str] | None = None,
+        on: TryIter[str] | None = None,
         how: JoinStrategy = "inner",
         *,
-        left_on: str | Iterable[str] | None = None,
-        right_on: str | Iterable[str] | None = None,
+        left_on: TryIter[str] | None = None,
+        right_on: TryIter[str] | None = None,
         suffix: str = "_right",
     ) -> Self:
         """Join with another LazyFrame."""
@@ -763,9 +756,9 @@ class LazyFrame(sql.CoreHandler[sql.Relation]):
         left_on: str | None = None,
         right_on: str | None = None,
         on: str | None = None,
-        by_left: str | Iterable[str] | None = None,
-        by_right: str | Iterable[str] | None = None,
-        by: str | Iterable[str] | None = None,
+        by_left: TryIter[str] | None = None,
+        by_right: TryIter[str] | None = None,
+        by: TryIter[str] | None = None,
         strategy: AsofJoinStrategy = "backward",
         suffix: str = "_right",
     ) -> Self:
@@ -871,7 +864,7 @@ class LazyFrame(sql.CoreHandler[sql.Relation]):
         subset: str | list[str] | None = None,
         *,
         keep: UniqueKeepStrategy = "any",
-        order_by: str | Sequence[str] | None = None,
+        order_by: TrySeq[str] | None = None,
     ) -> Self:
         """Drop duplicate rows from this LazyFrame."""
         order_by_opt = pc.Option(order_by).map(lambda value: try_iter(value).collect())
@@ -949,27 +942,18 @@ class LazyFrame(sql.CoreHandler[sql.Relation]):
             _rel=self.inner().inner(),
         )
 
-    def with_row_index(
-        self,
-        name: str,
-        *,
-        order_by: str | Sequence[str],
-    ) -> Self:
+    def with_row_index(self, name: str, *, order_by: TrySeq[str]) -> Self:
         """Insert row index based on order_by."""
         return self._select(
             (sql.row_number().over(order_by=order_by).sub(1).alias(name), sql.all())
         )
 
     def top_k(
-        self,
-        k: int,
-        by: IntoExpr | Iterable[IntoExpr],
-        *,
-        reverse: bool | Sequence[bool] = False,
+        self, k: int, by: TryIter[IntoExpr], *, reverse: TrySeq[bool] = False
     ) -> Self:
         """Return top k rows by column(s)."""
 
-        def _descending() -> bool | Sequence[bool]:
+        def _descending() -> TrySeq[bool]:
             match reverse:
                 case bool():
                     return not reverse
@@ -979,11 +963,7 @@ class LazyFrame(sql.CoreHandler[sql.Relation]):
         return self.sort(by, descending=_descending()).head(k)
 
     def bottom_k(
-        self,
-        k: int,
-        by: IntoExpr | Iterable[IntoExpr],
-        *,
-        reverse: bool | Sequence[bool] = False,
+        self, k: int, by: TryIter[IntoExpr], *, reverse: TrySeq[bool] = False
     ) -> Self:
         """Return bottom k rows by column(s)."""
         return self.sort(by, descending=reverse).head(k)
