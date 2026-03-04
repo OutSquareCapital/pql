@@ -74,7 +74,6 @@ def over_expr(  # noqa: PLR0913
     nulls_last: Iterable[bool] | bool = False,
     ignore_nulls: bool = False,
 ) -> duckdb.Expression:
-    has_order_by = order_by.map(lambda _: True).unwrap_or_else(lambda: False)
     return duckdb.SQLExpression(
         _build_over(
             handle_nulls(expr, ignore_nulls=ignore_nulls),
@@ -82,7 +81,7 @@ def over_expr(  # noqa: PLR0913
             order_by.map(lambda x: try_iter(x).collect()).into(
                 get_order_by, descending=descending, nulls_last=nulls_last
             ),
-            Kword.rows_clause(rows_start, rows_end, has_order_by=has_order_by),
+            Kword.rows_clause(rows_start, rows_end, has_order_by=order_by.is_some()),
         )
     )
 
