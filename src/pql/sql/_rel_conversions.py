@@ -58,13 +58,13 @@ def from_query(relations: pc.Dict[str, IntoRel], query: str) -> duckdb.DuckDBPyR
 def from_sequence(data: SeqIntoVals) -> duckdb.DuckDBPyRelation:
     match data[0]:
         case Mapping():
-            vals = pc.Seq(cast(Sequence[Mapping[str, Any]], data))
+            vals = cast(Sequence[Mapping[str, Any]], data)
             return (
-                pc.Iter(vals.first().keys())
+                pc.Iter(vals[0].keys())
                 .map(
                     lambda key: (
                         key,
-                        vals.iter().map(lambda row: row[key]).collect(tuple),
+                        pc.Iter(vals).map(lambda row: row[key]).collect(tuple),
                     )
                 )
                 .into(from_mapping)
