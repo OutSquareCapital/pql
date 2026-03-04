@@ -4,6 +4,7 @@ from . import sql
 from ._creation import (
     from_df,
     from_dict,
+    from_dicts,
     from_numpy,
     from_query,
     from_records,
@@ -112,6 +113,7 @@ __all__ = [
     "element",
     "from_df",
     "from_dict",
+    "from_dicts",
     "from_numpy",
     "from_query",
     "from_records",

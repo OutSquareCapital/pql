@@ -43,8 +43,8 @@ def from_dict(mapping: IntoDict[str, PythonLiteral]) -> LazyFrame:
     return LazyFrame(sql.from_dict(mapping))
 
 
-def from_dicts(mapping: Sequence[Mapping[str, PythonLiteral]]) -> LazyFrame:
-    return LazyFrame(sql.from_dicts(mapping))
+def from_dicts(data: Sequence[Mapping[str, PythonLiteral]]) -> LazyFrame:
+    return LazyFrame(sql.from_dicts(data))
 
 
 def from_records(data: SeqIntoVals) -> LazyFrame:

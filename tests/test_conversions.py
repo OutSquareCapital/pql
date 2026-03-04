@@ -158,6 +158,7 @@ def test_from_seq_of_dicts() -> None:
     dicts = pc.Iter(range(10)).map(lambda _: _get_data()).collect()
     assert_eq(pql.LazyFrame(dicts).collect(), pl.DataFrame(dicts))
     assert_eq(pql.from_records(dicts).collect(), pl.from_records(dicts))
+    assert_eq(pql.from_dicts(dicts).collect(), pl.from_dicts(dicts))
 
 
 def test_from_seq_of_seqs() -> None:

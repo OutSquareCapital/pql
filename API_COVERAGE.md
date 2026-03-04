@@ -18,7 +18,7 @@ Each summary cell is `global (Narwhals, Polars)`.
 | ExprNameNameSpace   | 81.2% (100.0%, 70.0%) | 16 (6, 10)    | 13 (6, 7)    | 3 (0, 3)      | 0 (0, 0)    | 3 (2, 1)    |
 | ExprArrNameSpace    | 54.8% (100.0%, 54.8%) | 31 (0, 31)    | 17 (0, 17)   | 10 (0, 10)    | 4 (0, 4)    | 27 (24, 3)  |
 | ExprDtNameSpace     | 51.5% (60.9%, 46.7%)  | 68 (23, 45)   | 35 (14, 21)  | 25 (7, 18)    | 8 (2, 6)    | 13 (12, 1)  |
-| ModuleFunctions     | 22.5% (41.2%, 15.1%)  | 240 (68, 172) | 54 (28, 26)  | 149 (24, 125) | 37 (16, 21) | 27 (15, 12) |
+| ModuleFunctions     | 22.5% (41.2%, 15.1%)  | 240 (68, 172) | 54 (28, 26)  | 147 (23, 124) | 39 (17, 22) | 27 (15, 12) |
 
 ## LazyFrame
 
@@ -740,7 +740,7 @@ Each summary cell is `global (Narwhals, Polars)`.
 
 ## ModuleFunctions
 
-### [x] Missing Methods (134)
+### [x] Missing Methods (133)
 
 - `Any`
   - **Polars**: (*args, **kwargs)
@@ -861,9 +861,6 @@ Each summary cell is `global (Narwhals, Polars)`.
   - **Polars**: (data: RecordBatch | Iterable[pa.RecordBatch | pa.Table] | ArrowArrayExportable | ArrowStreamExportable, schema: SchemaDefinition | None, schema_overrides: SchemaDict | None, rechunk: bool) -> DataFrame | Series
 - `from_dataframe`
   - **Polars**: (df: SupportsInterchange | ArrowArrayExportable | ArrowStreamExportable, allow_copy: bool | None, rechunk: bool) -> DataFrame
-- `from_dicts`
-  - **Narwhals**: (data: Sequence[Mapping[str, Any]], schema: IntoSchema | Mapping[str, DType | None] | None, backend: IntoBackend[EagerAllowed]) -> DataFrame[Any]
-  - **Polars**: (data: Iterable[Mapping[str, Any]], schema: SchemaDefinition | None, schema_overrides: SchemaDict | None, strict: bool, infer_schema_length: int | None) -> DataFrame
 - `from_epoch`
   - **Polars**: (column: str | Expr | Series | Sequence[int], time_unit: EpochTimeUnit) -> Expr | Series
 - `from_pandas`
@@ -1026,7 +1023,7 @@ Each summary cell is `global (Narwhals, Polars)`.
 - `zeros`
   - **Polars**: (n: int | Expr, dtype: PolarsDataType, eager: bool) -> Expr | Series
 
-### [!] Signature Mismatches (15)
+### [!] Signature Mismatches (16)
 
 - `Array` (nw)
   - **Narwhals**: (`inner: IntoDType`, `shape: int | tuple[int, ...]`) -> None
@@ -1076,6 +1073,10 @@ Each summary cell is `global (Narwhals, Polars)`.
   - **Narwhals**: (`data: Mapping[str, Any]`, `schema: IntoSchema | Mapping[str, DType | None] | None`, `backend: IntoBackend[EagerAllowed] | None`, `native_namespace: ModuleType | None`) -> DataFrame[Any]
   - **Polars**: (`data: Mapping[str, Sequence[object] | Mapping[str, Sequence[object]] | Series]`, `schema: SchemaDefinition | None`, `schema_overrides: SchemaDict | None`, `strict: bool`) -> DataFrame
   - **pql**: (`mapping: IntoDict[str, PythonLiteral]`) -> LazyFrame
+- `from_dicts` (nw)
+  - **Narwhals**: (`data: Sequence[Mapping[str, Any]]`, `schema: IntoSchema | Mapping[str, DType | None] | None`, `backend: IntoBackend[EagerAllowed]`) -> DataFrame[Any]
+  - **Polars**: (`data: Iterable[Mapping[str, Any]]`, `schema: SchemaDefinition | None`, `schema_overrides: SchemaDict | None`, `strict: bool`, `infer_schema_length: int | None`) -> DataFrame
+  - **pql**: (`data: Sequence[Mapping[str, PythonLiteral]]`) -> LazyFrame
 - `from_numpy` (nw)
   - **Narwhals**: (`data: _2DArray`, `schema: IntoSchema | Sequence[str] | None`, `backend: IntoBackend[EagerAllowed]`) -> DataFrame[Any]
   - **Polars**: (`data: ndarray[Any, Any]`, `schema: SchemaDefinition | None`, `schema_overrides: SchemaDict | None`, `orient: Orientation | None`) -> DataFrame
