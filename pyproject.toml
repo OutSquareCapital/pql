@@ -15,13 +15,14 @@
         "polars>=1.37.1",
         "pyarrow-stubs>=20.0.0.20251215",
         "pyarrow>=23.0.0",
+        "pyright>=1.1.408",
         "pytest-cov>=7.0.0",
         "pytest>=9.0.2",
         "pytz>=2025.2",
         "ruff>=0.14.14",
         "sqlparse>=0.5.5",
         "typer>=0.21.1",
-    ]
+]
 [build-system]
     build-backend = "uv_build"
     requires      = ["uv_build>=0.8.15,<0.9.0"]
