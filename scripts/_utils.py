@@ -69,6 +69,7 @@ class Dunders(KwordEnum):
 
 
 class Pql(KwordEnum):
+    SELECTORS = auto()
     SQLEXPR = "SqlExpr"
     EXPR = pql.Expr.__name__
     INTO_EXPR = "IntoExpr"

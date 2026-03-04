@@ -80,6 +80,9 @@ def get_comparisons() -> str:
                         Pql.MODULE_FUNCTIONS
                     ).unwrap(),
                 ),
+                ClassComparison(
+                    pc.Some(nw.selectors), pl.selectors, pql.selectors, Pql.SELECTORS
+                ),
             )
         )
         .map(lambda comp: comp.to_report())
