@@ -18,7 +18,7 @@ Each summary cell is `global (Narwhals, Polars)`.
 | ExprNameNameSpace   | 81.2% (100.0%, 70.0%) | 16 (6, 10)    | 13 (6, 7)    | 3 (0, 3)      | 0 (0, 0)    | 3 (2, 1)   |
 | ExprArrNameSpace    | 54.8% (100.0%, 54.8%) | 31 (0, 31)    | 17 (0, 17)   | 10 (0, 10)    | 4 (0, 4)    | 27 (24, 3) |
 | ExprDtNameSpace     | 51.5% (60.9%, 46.7%)  | 68 (23, 45)   | 35 (14, 21)  | 25 (7, 18)    | 8 (2, 6)    | 13 (12, 1) |
-| ModuleFunctions     | 21.1% (38.4%, 14.2%)  | 256 (73, 183) | 54 (28, 26)  | 170 (31, 139) | 32 (14, 18) | 18 (10, 8) |
+| ModuleFunctions     | 22.5% (41.2%, 15.1%)  | 240 (68, 172) | 54 (28, 26)  | 154 (26, 128) | 32 (14, 18) | 18 (10, 8) |
 
 ## LazyFrame
 
@@ -747,7 +747,7 @@ Each summary cell is `global (Narwhals, Polars)`.
 
 ## ModuleFunctions
 
-### [x] Missing Methods (152)
+### [x] Missing Methods (137)
 
 - `Any`
   - **Polars**: (*args, **kwargs)
@@ -755,15 +755,10 @@ Each summary cell is `global (Narwhals, Polars)`.
   - **Polars**: (name: str, storage: PolarsDataType, metadata: str | None) -> None
 - `Catalog`
   - **Polars**: (workspace_url: str, bearer_token: str | None, require_https: bool) -> None
-- `Categorical`
-  - **Narwhals**: ()
-  - **Polars**: (categories: Categories | str | None, ordering: CategoricalOrdering | None) -> None
 - `Categories`
   - **Polars**: (name: str | None, namespace: str, physical: PolarsDataType) -> None
 - `CompatLevel`
   - **Polars**: () -> None
-- `Config`
-  - **Polars**: (restore_defaults: bool, apply_on_context_enter: bool, **options: Unpack[ConfigParameters]) -> None
 - `DataTypeExpr`
   - **Polars**: ()
 - `Extension`
@@ -771,25 +766,13 @@ Each summary cell is `global (Narwhals, Polars)`.
 - `Field`
   - **Narwhals**: (name: str, dtype: IntoDType) -> None
   - **Polars**: (name: str, dtype: PolarsDataType) -> None
-- `FileProviderArgs`
-  - **Polars**: (index_in_partition: int, partition_keys: DataFrame) -> None
 - `Float16`
   - **Polars**: ()
-- `GPUEngine`
-  - **Polars**: (device: int | None, memory_resource: Any | None, raise_on_fail: bool, **kwargs: Any) -> None
-- `Implementation`
-  - **Narwhals**: (*values)
 - `Null`
   - **Polars**: ()
 - `Object`
   - **Narwhals**: ()
   - **Polars**: ()
-- `PartitionBy`
-  - **Polars**: (base_path: str | Path, file_path_provider: Callable[[FileProviderArgs], str | Path | IO[bytes] | IO[str]] | None, key: str | Expr | Sequence[str | Expr] | Mapping[str, Expr] | None, include_key: bool | None, max_rows_per_file: int | None, approximate_bytes_per_file: int | Literal['auto'] | None) -> None
-- `QueryOptFlags`
-  - **Polars**: (predicate_pushdown: None | bool, projection_pushdown: None | bool, simplify_expression: None | bool, slice_pushdown: None | bool, comm_subplan_elim: None | bool, comm_subexpr_elim: None | bool, cluster_with_columns: None | bool, collapse_joins: None | bool, check_order_observe: None | bool, fast_projection: None | bool) -> None
-- `SQLContext`
-  - **Polars**: (frames: Mapping[str, CompatibleFrameType | None] | None, register_globals: bool | int, eager: bool, **named_frames: CompatibleFrameType | None) -> None
 - `ScanCastOptions`
   - **Polars**: (integer_cast: Literal['upcast', 'forbid'], float_cast: Literal['forbid'] | FloatCastOption | Collection[FloatCastOption], datetime_cast: Literal['forbid'] | DatetimeCastOption | Collection[DatetimeCastOption], missing_struct_fields: Literal['insert', 'raise'], extra_struct_fields: Literal['ignore', 'raise'], categorical_to_string: Literal['allow', 'forbid'],_internal_call: bool) -> None
 - `Schema`
@@ -860,8 +843,6 @@ Each summary cell is `global (Narwhals, Polars)`.
   - **Polars**: (start: datetime | date | IntoExprColumn, end: datetime | date | IntoExprColumn, interval: str | timedelta, closed: ClosedInterval, time_unit: TimeUnit | None, time_zone: str | None, eager: bool) -> Series | Expr
 - `defer`
   - **Polars**: (function: Callable[[], DataFrame], schema: SchemaDict | Callable[[], SchemaDict], validate_schema: bool) -> LazyFrame
-- `disable_string_cache`
-  - **Polars**: () -> None
 - `dtype_of`
   - **Polars**: (col_or_expr: str | Expr) -> DataTypeExpr
 - `duration`
@@ -906,14 +887,8 @@ Each summary cell is `global (Narwhals, Polars)`.
   - **Polars**: (data: str) -> DataFrame | Series
 - `from_torch`
   - **Polars**: (tensor: Tensor, schema: SchemaDefinition | None, schema_overrides: SchemaDict | None, orient: Orientation | None, force: bool) -> DataFrame
-- `generate_temporary_column_name`
-  - **Narwhals**: (n_bytes: int, columns: Container[str], prefix: str) -> str
-- `get_extension_type`
-  - **Polars**: (ext_name: str) -> type[dt.BaseExtension] | str | None
 - `get_index_type`
   - **Polars**: () -> PolarsIntegerType
-- `get_native_namespace`
-  - **Narwhals**: (*obj: Frame | Series[Any] | IntoFrame | IntoSeries) -> Any
 - `groups`
   - **Polars**: (column: str) -> Expr
 - `head`
@@ -924,8 +899,6 @@ Each summary cell is `global (Narwhals, Polars)`.
   - **Polars**: (start: int | IntoExprColumn, end: int | IntoExprColumn | None, step: int, dtype: PolarsIntegerType | DataTypeExpr, eager: bool) -> Expr | Series
 - `int_ranges`
   - **Polars**: (start: int | IntoExprColumn, end: int | IntoExprColumn | None, step: int | IntoExprColumn, dtype: PolarsIntegerType | DataTypeExpr, eager: bool) -> Expr | Series
-- `is_ordered_categorical`
-  - **Narwhals**: (series: Series[Any]) -> bool
 - `json_normalize`
   - **Polars**: (data: dict[Any, Any] | Sequence[dict[Any, Any] | Any], separator: str, max_level: int | None, schema: Schema | None, strict: bool, infer_schema_length: int | None, encoder: JSONEncoder | None) -> DataFrame
 - `last`
@@ -1059,10 +1032,6 @@ Each summary cell is `global (Narwhals, Polars)`.
   - **Narwhals**: (scalar_like: Any) -> Any
 - `union`
   - **Polars**: (items: Iterable[PolarsType], how: ConcatMethod, strict: bool) -> PolarsType
-- `unregister_extension_type`
-  - **Polars**: (ext_name: str) -> None
-- `using_string_cache`
-  - **Polars**: () -> bool
 - `var`
   - **Polars**: (column: str, ddof: int) -> Expr
 - `wrap_df`
