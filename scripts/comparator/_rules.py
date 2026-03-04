@@ -44,14 +44,11 @@ IGNORED_MEMBERS: IgnoredMembers = pc.Dict(
             "CredentialProviderFunctionReturn",
             "CredentialProviderGCP",
             "DataFrame",
-        )
+            "enable_string_cache",
+        ),
+        Pql.LAZY_FRAME: _args("to_native", "cache", "clear"),
     }
 )
-
-
-def ignored_members_for(class_name: Pql) -> pc.Set[str]:
-    return IGNORED_MEMBERS.get_item(class_name).unwrap_or_else(pc.Set.new)
-
 
 IGNORED_PARAMS: IgnoredParams = pc.Dict(
     {

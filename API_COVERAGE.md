@@ -9,7 +9,7 @@ Each summary cell is `global (Narwhals, Polars)`.
 
 | Class               | Coverage              | Implemented   | Matched      | Missing       | Mismatched  | Extra      |
 | ------------------- | --------------------- | ------------- | ------------ | ------------- | ----------- | ---------- |
-| LazyFrame           | 41.3% (61.5%, 34.9%)  | 109 (26, 83)  | 45 (16, 29)  | 33 (1, 32)    | 31 (9, 22)  | 44 (35, 9) |
+| LazyFrame           | 42.5% (64.0%, 35.8%)  | 106 (25, 81)  | 45 (16, 29)  | 30 (0, 30)    | 31 (9, 22)  | 44 (35, 9) |
 | Expr                | 49.8% (71.4%, 42.7%)  | 283 (70, 213) | 141 (50, 91) | 100 (7, 93)   | 42 (13, 29) | 59 (58, 1) |
 | LazyGroupBy         | 52.9% (0.0%, 56.2%)   | 17 (1, 16)    | 9 (0, 9)     | 4 (0, 4)      | 4 (1, 3)    | 11 (11, 0) |
 | ExprStrNameSpace    | 31.8% (42.1%, 27.7%)  | 66 (19, 47)   | 21 (8, 13)   | 10 (0, 10)    | 35 (11, 24) | 20 (19, 1) |
@@ -18,16 +18,12 @@ Each summary cell is `global (Narwhals, Polars)`.
 | ExprNameNameSpace   | 81.2% (100.0%, 70.0%) | 16 (6, 10)    | 13 (6, 7)    | 3 (0, 3)      | 0 (0, 0)    | 3 (2, 1)   |
 | ExprArrNameSpace    | 54.8% (100.0%, 54.8%) | 31 (0, 31)    | 17 (0, 17)   | 10 (0, 10)    | 4 (0, 4)    | 27 (24, 3) |
 | ExprDtNameSpace     | 51.5% (60.9%, 46.7%)  | 68 (23, 45)   | 35 (14, 21)  | 25 (7, 18)    | 8 (2, 6)    | 13 (12, 1) |
-| ModuleFunctions     | 21.0% (38.4%, 14.1%)  | 257 (73, 184) | 54 (28, 26)  | 171 (31, 140) | 32 (14, 18) | 18 (10, 8) |
+| ModuleFunctions     | 21.1% (38.4%, 14.2%)  | 256 (73, 183) | 54 (28, 26)  | 170 (31, 139) | 32 (14, 18) | 18 (10, 8) |
 
 ## LazyFrame
 
-### [x] Missing Methods (33)
+### [x] Missing Methods (30)
 
-- `cache`
-  - **Polars**: () -> LazyFrame
-- `clear`
-  - **Polars**: (n: int) -> LazyFrame
 - `collect_async`
   - **Polars**: (gevent: bool, engine: EngineType, optimizations: QueryOptFlags) -> Awaitable[DataFrame] | _GeventDataFrameResult[DataFrame]
 - `collect_batches`
@@ -84,8 +80,6 @@ Each summary cell is `global (Narwhals, Polars)`.
   - **Polars**: (path: str | Path | IO[bytes] | PartitionBy, compression: IpcCompression | None, compat_level: CompatLevel | None, record_batch_size: int | None, maintain_order: bool, storage_options: StorageOptionsDict | None, credential_provider: CredentialProviderFunction | Literal['auto'] | None, retries: int | None, sync_on_close: SyncOnCloseMethod | None, mkdir: bool, lazy: bool, engine: EngineType, optimizations: QueryOptFlags, _record_batch_statistics: bool) -> LazyFrame | None
 - `sql`
   - **Polars**: (query: str, table_name: str) -> LazyFrame
-- `to_native`
-  - **Narwhals**: () -> LazyFrameT
 - `update`
   - **Polars**: (other: LazyFrame, on: str | Sequence[str] | None, how: Literal['left', 'inner', 'full'], left_on: str | Sequence[str] | None, right_on: str | Sequence[str] | None, include_nulls: bool, maintain_order: MaintainOrderJoin | None) -> LazyFrame
 - `with_columns_seq`
@@ -753,7 +747,7 @@ Each summary cell is `global (Narwhals, Polars)`.
 
 ## ModuleFunctions
 
-### [x] Missing Methods (153)
+### [x] Missing Methods (152)
 
 - `Any`
   - **Polars**: (*args, **kwargs)
@@ -872,8 +866,6 @@ Each summary cell is `global (Narwhals, Polars)`.
   - **Polars**: (col_or_expr: str | Expr) -> DataTypeExpr
 - `duration`
   - **Polars**: (weeks: Expr | str | int | float | None, days: Expr | str | int | float | None, hours: Expr | str | int | float | None, minutes: Expr | str | int | float | None, seconds: Expr | str | int | float | None, milliseconds: Expr | str | int | float | None, microseconds: Expr | str | int | float | None, nanoseconds: Expr | str | int | float | None, time_unit: TimeUnit | None) -> Expr
-- `enable_string_cache`
-  - **Polars**: () -> None
 - `escape_regex`
   - **Polars**: (s: str) -> str
 - `exclude`

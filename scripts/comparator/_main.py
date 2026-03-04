@@ -10,7 +10,7 @@ import pql
 from pql._frame import LazyGroupBy as pqlLazyGroupBy
 
 from .._utils import Pql
-from ._rules import ignored_members_for
+from ._rules import IGNORED_MEMBERS
 from ._text import ClassComparison, header, render_summary_table
 
 
@@ -22,7 +22,11 @@ def get_comparisons() -> str:
         pc.Iter(
             (
                 ClassComparison(
-                    pc.Some(nw.LazyFrame), pl.LazyFrame, pql.LazyFrame, Pql.LAZY_FRAME
+                    pc.Some(nw.LazyFrame),
+                    pl.LazyFrame,
+                    pql.LazyFrame,
+                    Pql.LAZY_FRAME,
+                    ignored_names=IGNORED_MEMBERS.get_item(Pql.LAZY_FRAME).unwrap(),
                 ),
                 ClassComparison(pc.Some(nw.Expr), pl.Expr, pql.Expr, Pql.EXPR),
                 ClassComparison(
@@ -72,7 +76,9 @@ def get_comparisons() -> str:
                     pl,
                     pql,
                     Pql.MODULE_FUNCTIONS,
-                    ignored_names=ignored_members_for(Pql.MODULE_FUNCTIONS),
+                    ignored_names=IGNORED_MEMBERS.get_item(
+                        Pql.MODULE_FUNCTIONS
+                    ).unwrap(),
                 ),
             )
         )
