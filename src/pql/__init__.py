@@ -1,6 +1,15 @@
 """PQL - Polars Query Language over DuckDB."""
 
 from . import sql
+from ._creation import (
+    from_df,
+    from_dict,
+    from_numpy,
+    from_query,
+    from_records,
+    from_table,
+    from_table_function,
+)
 from ._datatypes import (
     UUID,
     Array,
@@ -101,6 +110,13 @@ __all__ = [
     "coalesce",
     "col",
     "element",
+    "from_df",
+    "from_dict",
+    "from_numpy",
+    "from_query",
+    "from_records",
+    "from_table",
+    "from_table_function",
     "len",
     "lit",
     "max",

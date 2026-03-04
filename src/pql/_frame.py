@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Callable, Iterable, Mapping
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Literal, NamedTuple, Self
+from typing import TYPE_CHECKING, Literal, NamedTuple, Self
 
 import pyochain as pc
 
@@ -16,7 +16,6 @@ from .sql.utils import TryIter, TrySeq, check_by_arg, try_chain, try_iter
 
 if TYPE_CHECKING:
     import polars as pl
-    from narwhals.typing import IntoFrame
 
     from ._typing import (
         AsofJoinStrategy,
@@ -25,15 +24,7 @@ if TYPE_CHECKING:
         JoinStrategy,
         UniqueKeepStrategy,
     )
-    from .sql.typing import (
-        IntoDict,
-        IntoExpr,
-        IntoExprColumn,
-        IntoRel,
-        NPArrayLike,
-        ParquetCompression,
-        SeqIntoVals,
-    )
+    from .sql.typing import IntoExpr, IntoExprColumn, IntoRel, ParquetCompression
 
 TEMP_NAME = "__pql_temp__"
 TEMP_COL = sql.col(TEMP_NAME)
@@ -194,34 +185,6 @@ class LazyFrame(sql.CoreHandler[sql.Relation]):
                 self._inner = data
             case _:
                 self._inner = sql.Relation(data)
-
-    @classmethod
-    def from_query(cls, query: str, **relations: IntoRel) -> Self:
-        return cls(pc.Dict.from_ref(relations).into(sql.from_query, query))
-
-    @classmethod
-    def from_table(cls, table: str) -> Self:
-        return cls(sql.from_table(table))
-
-    @classmethod
-    def from_table_function(cls, function: str) -> Self:
-        return cls(sql.from_table_function(function))
-
-    @classmethod
-    def from_df(cls, df: IntoFrame) -> Self:
-        return cls(sql.from_df(df))
-
-    @classmethod
-    def from_numpy(cls, arr: NPArrayLike[Any, Any]) -> Self:
-        return cls(sql.from_numpy(arr))
-
-    @classmethod
-    def from_mapping(cls, mapping: IntoDict[str, Any]) -> Self:
-        return cls(sql.from_mapping(mapping))
-
-    @classmethod
-    def from_sequence(cls, data: SeqIntoVals) -> Self:
-        return cls(sql.from_sequence(data))
 
     def _select(self, exprs: Iterable[IntoExprColumn], groups: str = "") -> Self:
         return self.inner().select(*exprs, groups=groups).pipe(self._new)
@@ -803,14 +766,16 @@ class LazyFrame(sql.CoreHandler[sql.Relation]):
         lhs_cols = lhs_select.chain(rhs_select).map(_expr_sql).join(", ")
 
         def _simple_asof_join(comparison: Callable[[sql.SqlExpr], sql.SqlExpr]) -> Self:
-            return self.from_query(
-                f"""--sql
+            return self.__class__(
+                sql.from_query(
+                    f"""--sql
                         SELECT {lhs_cols}
                         FROM _lhs
                         ASOF LEFT JOIN _rhs ON {by_cond.chain(pc.Iter.once(comparison(rhs_key))).reduce(sql.SqlExpr.and_)}
                         """,
-                _lhs=self.inner().set_alias(lhs).inner(),
-                _rhs=other.inner().set_alias(rhs).inner(),
+                    _lhs=self.inner().set_alias(lhs).inner(),
+                    _rhs=other.inner().set_alias(rhs).inner(),
+                )
             )
 
         match strategy:
@@ -924,13 +889,15 @@ class LazyFrame(sql.CoreHandler[sql.Relation]):
             .unwrap_or(self.columns.iter().filter(lambda name: name not in index_cols))
             .join(", ")
         )
-        return self.from_query(
-            f"""--sql
+        return self.__class__(
+            sql.from_query(
+                f"""--sql
                     SELECT {index_cols.iter().chain((variable_name, value_name)).join(", ")}
                     FROM (UNPIVOT _rel ON {on_cols}
                     INTO NAME {variable_name} VALUE {value_name})
                     """,
-            _rel=self.inner().inner(),
+                _rel=self.inner().inner(),
+            )
         )
 
     def with_row_index(self, name: str, *, order_by: TrySeq[str]) -> Self:

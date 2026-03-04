@@ -44,10 +44,11 @@ from ._funcs import (
 )
 from ._rel_conversions import (
     from_df,
-    from_mapping,
+    from_dict,
+    from_dicts,
     from_numpy,
     from_query,
-    from_sequence,
+    from_records,
 )
 from ._when import ChainedThen, ChainedWhen, Then, When, when
 from ._window import Kword
@@ -82,10 +83,11 @@ __all__ = [
     "element",
     "fn_once",
     "from_df",
-    "from_mapping",
+    "from_dict",
+    "from_dicts",
     "from_numpy",
     "from_query",
-    "from_sequence",
+    "from_records",
     "from_table",
     "from_table_function",
     "into_expr",

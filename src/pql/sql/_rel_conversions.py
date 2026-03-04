@@ -24,16 +24,16 @@ def frame_init_into_duckdb(data: IntoRel) -> duckdb.DuckDBPyRelation:  # noqa: P
         case DuckHandler():
             return duckdb.values(data.inner())
         case Mapping():
-            return from_mapping(data)
+            return from_dict(data)
         case NPArrayLike():
             return from_numpy(data)
         case FrameLike():
             return from_df(data)
         case Sequence():
-            return from_sequence(data)
+            return from_records(data)
 
 
-def from_query(relations: pc.Dict[str, IntoRel], query: str) -> duckdb.DuckDBPyRelation:
+def from_query(query: str, **relations: IntoRel) -> duckdb.DuckDBPyRelation:
     """Create a relation from a SQL query."""
 
     def _as_namespace(
@@ -45,7 +45,8 @@ def from_query(relations: pc.Dict[str, IntoRel], query: str) -> duckdb.DuckDBPyR
         return cast(duckdb.DuckDBPyRelation, namespace["relation"])
 
     return (
-        relations.then(
+        pc.Dict(relations)
+        .then(
             lambda d: (
                 d.items().iter().map_star(lambda k, v: (k, frame_init_into_duckdb(v)))
             )
@@ -55,27 +56,26 @@ def from_query(relations: pc.Dict[str, IntoRel], query: str) -> duckdb.DuckDBPyR
     )
 
 
-def from_sequence(data: SeqIntoVals) -> duckdb.DuckDBPyRelation:
+def from_dicts(data: Sequence[Mapping[str, Any]]) -> duckdb.DuckDBPyRelation:
+    return (
+        pc.Iter(data[0].keys())
+        .map(lambda key: (key, pc.Iter(data).map(lambda row: row[key]).collect(tuple)))
+        .into(from_dict)
+    )
+
+
+def from_records(data: SeqIntoVals) -> duckdb.DuckDBPyRelation:
     match data[0]:
         case Mapping():
             vals = cast(Sequence[Mapping[str, Any]], data)
-            return (
-                pc.Iter(vals[0].keys())
-                .map(
-                    lambda key: (
-                        key,
-                        pc.Iter(vals).map(lambda row: row[key]).collect(tuple),
-                    )
-                )
-                .into(from_mapping)
-            )
+            return from_dicts(vals)
         case Sequence():
             vals = cast(Sequence[Sequence[Any]], data)
             return (
                 pc.Iter(vals)
                 .enumerate()
                 .map_star(lambda k, v: (f"column_{k}", v))
-                .into(from_mapping)
+                .into(from_dict)
             )
         case duckdb.Expression():
             vals = cast(Sequence[duckdb.Expression], data)
@@ -95,7 +95,7 @@ def from_df(data: IntoFrame) -> duckdb.DuckDBPyRelation:
             return duckdb.from_arrow(lf.collect())
 
 
-def from_mapping(data: IntoDict[str, Any]) -> duckdb.DuckDBPyRelation:
+def from_dict(data: IntoDict[str, Any]) -> duckdb.DuckDBPyRelation:
     data = pc.Dict(data)
 
     raw_vals = (

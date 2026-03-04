@@ -46,12 +46,12 @@ def test_from_duckdb_relation(data: TestData) -> None:
 
 def test_from_table_function() -> None:
     rel = duckdb.table_function("duckdb_functions")
-    assert_eq(pql.LazyFrame.from_table_function("duckdb_functions").collect(), rel.pl())
+    assert_eq(pql.from_table_function("duckdb_functions").collect(), rel.pl())
 
 
 def test_from_table(data: TestData) -> None:
     duckdb.from_arrow(pl.DataFrame(data)).create("test_table")
-    assert_eq(pql.LazyFrame.from_table("test_table").collect(), pl.DataFrame(data))
+    assert_eq(pql.from_table("test_table").collect(), pl.DataFrame(data))
 
 
 def test_from_pl_lazyframe(data: TestData) -> None:
@@ -60,7 +60,7 @@ def test_from_pl_lazyframe(data: TestData) -> None:
         pl.DataFrame(data).lazy().collect(),
     )
     assert_eq(
-        pql.LazyFrame.from_df(pl.DataFrame(data).lazy()).collect(),
+        pql.from_df(pl.DataFrame(data).lazy()).collect(),
         pl.DataFrame(data).lazy().collect(),
     )
 
@@ -73,7 +73,7 @@ def test_from_pd_dataframe(data: TestData) -> None:
         pl.DataFrame(data),
     )
     assert_eq(
-        pql.LazyFrame.from_df(pd.DataFrame(data)).collect(),
+        pql.from_df(pd.DataFrame(data)).collect(),
         pl.DataFrame(data),
     )
 
@@ -84,14 +84,14 @@ def test_from_pl_dataframe(data: TestData) -> None:
         pl.DataFrame(data),
     )
     assert_eq(
-        pql.LazyFrame.from_df(pl.DataFrame(data)).collect(),
+        pql.from_df(pl.DataFrame(data)).collect(),
         pl.DataFrame(data),
     )
 
 
 def test_from_dict(data: TestData) -> None:
     assert_eq(pql.LazyFrame(data).collect(), pl.DataFrame(data))
-    assert_eq(pql.LazyFrame.from_mapping(data).collect(), pl.DataFrame(data))
+    assert_eq(pql.from_dict(data).collect(), pl.DataFrame(data))
 
 
 def test_from_np() -> None:
@@ -103,7 +103,7 @@ def test_from_np() -> None:
     FROM arr"""
     rel = duckdb.from_query(qry)
     assert_eq(pql.LazyFrame(arr).collect(), rel.pl())
-    assert_eq(pql.LazyFrame.from_numpy(arr).collect(), rel.pl())
+    assert_eq(pql.from_numpy(arr).collect(), rel.pl())
 
 
 def test_from_expr() -> None:
@@ -122,22 +122,22 @@ def test_from_tup_of_exprs() -> None:
     exprs = pc.Iter(range(10)).map(duckdb.ConstantExpression).collect()
     rel = duckdb.values(exprs.into(tuple))
     assert_eq(pql.LazyFrame(exprs).collect(), rel.pl())
-    assert_eq(pql.LazyFrame.from_sequence(exprs).collect(), rel.pl())
+    assert_eq(pql.from_records(exprs).collect(), rel.pl())
 
 
 def test_from_seq_of_dicts() -> None:
     dicts = pc.Iter(range(10)).map(lambda _: _get_data()).collect()
     assert_eq(pql.LazyFrame(dicts).collect(), pl.DataFrame(dicts))
-    assert_eq(pql.LazyFrame.from_sequence(dicts).collect(), pl.DataFrame(dicts))
+    assert_eq(pql.from_records(dicts).collect(), pl.DataFrame(dicts))
 
 
 def test_from_seq_of_seqs() -> None:
     seqs = pc.Iter(range(10)).map(lambda _: tuple(range(5))).collect()
     assert_eq(pql.LazyFrame(seqs).collect(), pl.DataFrame(seqs))
-    assert_eq(pql.LazyFrame.from_sequence(seqs).collect(), pl.DataFrame(seqs))
+    assert_eq(pql.from_records(seqs).collect(), pl.DataFrame(seqs))
 
 
 def test_from_seq_of_vals() -> None:
     vals = pc.Iter(range(10)).map(lambda _: 42).collect()
     assert_eq(pql.LazyFrame(vals).collect(), pl.DataFrame(vals))
-    assert_eq(pql.LazyFrame.from_sequence(vals).collect(), pl.DataFrame(vals))
+    assert_eq(pql.from_records(vals).collect(), pl.DataFrame(vals))

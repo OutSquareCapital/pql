@@ -7,18 +7,18 @@ This report shows the API coverage of pql compared to other libraries.
 
 Each summary cell is `global (Narwhals, Polars)`.
 
-| Class               | Coverage              | Implemented   | Matched      | Missing       | Mismatched  | Extra      |
-| ------------------- | --------------------- | ------------- | ------------ | ------------- | ----------- | ---------- |
-| LazyFrame           | 42.5% (64.0%, 35.8%)  | 106 (25, 81)  | 45 (16, 29)  | 30 (0, 30)    | 31 (9, 22)  | 44 (35, 9) |
-| Expr                | 49.8% (71.4%, 42.7%)  | 283 (70, 213) | 141 (50, 91) | 100 (7, 93)   | 42 (13, 29) | 59 (58, 1) |
-| LazyGroupBy         | 52.9% (0.0%, 56.2%)   | 17 (1, 16)    | 9 (0, 9)     | 4 (0, 4)      | 4 (1, 3)    | 11 (11, 0) |
-| ExprStrNameSpace    | 31.8% (42.1%, 27.7%)  | 66 (19, 47)   | 21 (8, 13)   | 10 (0, 10)    | 35 (11, 24) | 20 (19, 1) |
-| ExprListNameSpace   | 54.7% (90.0%, 46.5%)  | 53 (10, 43)   | 29 (9, 20)   | 20 (0, 20)    | 4 (1, 3)    | 15 (14, 1) |
-| ExprStructNameSpace | 33.3% (100.0%, 20.0%) | 6 (1, 5)      | 2 (1, 1)     | 2 (0, 2)      | 2 (0, 2)    | 4 (3, 1)   |
-| ExprNameNameSpace   | 81.2% (100.0%, 70.0%) | 16 (6, 10)    | 13 (6, 7)    | 3 (0, 3)      | 0 (0, 0)    | 3 (2, 1)   |
-| ExprArrNameSpace    | 54.8% (100.0%, 54.8%) | 31 (0, 31)    | 17 (0, 17)   | 10 (0, 10)    | 4 (0, 4)    | 27 (24, 3) |
-| ExprDtNameSpace     | 51.5% (60.9%, 46.7%)  | 68 (23, 45)   | 35 (14, 21)  | 25 (7, 18)    | 8 (2, 6)    | 13 (12, 1) |
-| ModuleFunctions     | 22.5% (41.2%, 15.1%)  | 240 (68, 172) | 54 (28, 26)  | 154 (26, 128) | 32 (14, 18) | 18 (10, 8) |
+| Class               | Coverage              | Implemented   | Matched      | Missing       | Mismatched  | Extra       |
+| ------------------- | --------------------- | ------------- | ------------ | ------------- | ----------- | ----------- |
+| LazyFrame           | 42.5% (64.0%, 35.8%)  | 106 (25, 81)  | 45 (16, 29)  | 30 (0, 30)    | 31 (9, 22)  | 30 (28, 2)  |
+| Expr                | 49.8% (71.4%, 42.7%)  | 283 (70, 213) | 141 (50, 91) | 100 (7, 93)   | 42 (13, 29) | 59 (58, 1)  |
+| LazyGroupBy         | 52.9% (0.0%, 56.2%)   | 17 (1, 16)    | 9 (0, 9)     | 4 (0, 4)      | 4 (1, 3)    | 11 (11, 0)  |
+| ExprStrNameSpace    | 31.8% (42.1%, 27.7%)  | 66 (19, 47)   | 21 (8, 13)   | 10 (0, 10)    | 35 (11, 24) | 20 (19, 1)  |
+| ExprListNameSpace   | 54.7% (90.0%, 46.5%)  | 53 (10, 43)   | 29 (9, 20)   | 20 (0, 20)    | 4 (1, 3)    | 15 (14, 1)  |
+| ExprStructNameSpace | 33.3% (100.0%, 20.0%) | 6 (1, 5)      | 2 (1, 1)     | 2 (0, 2)      | 2 (0, 2)    | 4 (3, 1)    |
+| ExprNameNameSpace   | 81.2% (100.0%, 70.0%) | 16 (6, 10)    | 13 (6, 7)    | 3 (0, 3)      | 0 (0, 0)    | 3 (2, 1)    |
+| ExprArrNameSpace    | 54.8% (100.0%, 54.8%) | 31 (0, 31)    | 17 (0, 17)   | 10 (0, 10)    | 4 (0, 4)    | 27 (24, 3)  |
+| ExprDtNameSpace     | 51.5% (60.9%, 46.7%)  | 68 (23, 45)   | 35 (14, 21)  | 25 (7, 18)    | 8 (2, 6)    | 13 (12, 1)  |
+| ModuleFunctions     | 22.5% (41.2%, 15.1%)  | 240 (68, 172) | 54 (28, 26)  | 149 (24, 125) | 37 (16, 21) | 27 (15, 12) |
 
 ## LazyFrame
 
@@ -143,15 +143,8 @@ Each summary cell is `global (Narwhals, Polars)`.
   - **Polars***: (`columns: ColumnNameOrSelector | Collection[ColumnNameOrSelector]`, `*more_columns: ColumnNameOrSelector`, `separator: str | None`) -> LazyFrame
   - **pql**: (`columns: TryIter[IntoExprColumn]`, `*more_columns: IntoExprColumn`) -> Self
 
-### [+] Extra Methods (pql-only) (9)
+### [+] Extra Methods (pql-only) (2)
 
-- `from_df`
-- `from_mapping`
-- `from_numpy`
-- `from_query`
-- `from_sequence`
-- `from_table`
-- `from_table_function`
 - `inner`
 - `sql_query`
 
@@ -747,7 +740,7 @@ Each summary cell is `global (Narwhals, Polars)`.
 
 ## ModuleFunctions
 
-### [x] Missing Methods (137)
+### [x] Missing Methods (134)
 
 - `Any`
   - **Polars**: (*args, **kwargs)
@@ -868,21 +861,13 @@ Each summary cell is `global (Narwhals, Polars)`.
   - **Polars**: (data: RecordBatch | Iterable[pa.RecordBatch | pa.Table] | ArrowArrayExportable | ArrowStreamExportable, schema: SchemaDefinition | None, schema_overrides: SchemaDict | None, rechunk: bool) -> DataFrame | Series
 - `from_dataframe`
   - **Polars**: (df: SupportsInterchange | ArrowArrayExportable | ArrowStreamExportable, allow_copy: bool | None, rechunk: bool) -> DataFrame
-- `from_dict`
-  - **Narwhals**: (data: Mapping[str, Any], schema: IntoSchema | Mapping[str, DType | None] | None, backend: IntoBackend[EagerAllowed] | None, native_namespace: ModuleType | None) -> DataFrame[Any]
-  - **Polars**: (data: Mapping[str, Sequence[object] | Mapping[str, Sequence[object]] | Series], schema: SchemaDefinition | None, schema_overrides: SchemaDict | None, strict: bool) -> DataFrame
 - `from_dicts`
   - **Narwhals**: (data: Sequence[Mapping[str, Any]], schema: IntoSchema | Mapping[str, DType | None] | None, backend: IntoBackend[EagerAllowed]) -> DataFrame[Any]
   - **Polars**: (data: Iterable[Mapping[str, Any]], schema: SchemaDefinition | None, schema_overrides: SchemaDict | None, strict: bool, infer_schema_length: int | None) -> DataFrame
 - `from_epoch`
   - **Polars**: (column: str | Expr | Series | Sequence[int], time_unit: EpochTimeUnit) -> Expr | Series
-- `from_numpy`
-  - **Narwhals**: (data: _2DArray, schema: IntoSchema | Sequence[str] | None, backend: IntoBackend[EagerAllowed]) -> DataFrame[Any]
-  - **Polars**: (data: ndarray[Any, Any], schema: SchemaDefinition | None, schema_overrides: SchemaDict | None, orient: Orientation | None) -> DataFrame
 - `from_pandas`
   - **Polars**: (data: Series[Any] | pd.Index[Any] | pd.DatetimeIndex, schema_overrides: SchemaDict | None, rechunk: bool, nan_to_null: bool, include_index: bool) -> DataFrame | Series
-- `from_records`
-  - **Polars**: (data: Sequence[Any], schema: SchemaDefinition | None, schema_overrides: SchemaDict | None, strict: bool, orient: Orientation | None, infer_schema_length: int | None) -> DataFrame
 - `from_repr`
   - **Polars**: (data: str) -> DataFrame | Series
 - `from_torch`
@@ -1041,7 +1026,7 @@ Each summary cell is `global (Narwhals, Polars)`.
 - `zeros`
   - **Polars**: (n: int | Expr, dtype: PolarsDataType, eager: bool) -> Expr | Series
 
-### [!] Signature Mismatches (12)
+### [!] Signature Mismatches (15)
 
 - `Array` (nw)
   - **Narwhals**: (`inner: IntoDType`, `shape: int | tuple[int, ...]`) -> None
@@ -1087,12 +1072,23 @@ Each summary cell is `global (Narwhals, Polars)`.
   - **Narwhals**: (exprs: IntoExpr | Iterable[IntoExpr], `*more_exprs: IntoExpr | NonNestedLiteral`) -> Expr
   - **Polars**: (exprs: IntoExpr | Iterable[IntoExpr], *more_exprs: IntoExpr, `eager: bool`) -> Expr | Series
   - **pql**: (exprs: TryIter[IntoExpr], `*more_exprs: IntoExpr`) -> Expr
+- `from_dict` (nw)
+  - **Narwhals**: (`data: Mapping[str, Any]`, `schema: IntoSchema | Mapping[str, DType | None] | None`, `backend: IntoBackend[EagerAllowed] | None`, `native_namespace: ModuleType | None`) -> DataFrame[Any]
+  - **Polars**: (`data: Mapping[str, Sequence[object] | Mapping[str, Sequence[object]] | Series]`, `schema: SchemaDefinition | None`, `schema_overrides: SchemaDict | None`, `strict: bool`) -> DataFrame
+  - **pql**: (`mapping: IntoDict[str, PythonLiteral]`) -> LazyFrame
+- `from_numpy` (nw)
+  - **Narwhals**: (`data: _2DArray`, `schema: IntoSchema | Sequence[str] | None`, `backend: IntoBackend[EagerAllowed]`) -> DataFrame[Any]
+  - **Polars**: (`data: ndarray[Any, Any]`, `schema: SchemaDefinition | None`, `schema_overrides: SchemaDict | None`, `orient: Orientation | None`) -> DataFrame
+  - **pql**: (`arr: NPArrayLike[Any, Any]`) -> LazyFrame
+- `from_records` (pl)
+  - **Polars***: (`data: Sequence[Any]`, `schema: SchemaDefinition | None`, `schema_overrides: SchemaDict | None`, `strict: bool`, `orient: Orientation | None`, `infer_schema_length: int | None`) -> DataFrame
+  - **pql**: (`data: SeqIntoVals`) -> LazyFrame
 - `lit` (nw)
   - **Narwhals**: (value: PythonLiteral, `dtype: IntoDType | None`) -> Expr
   - **Polars**: (value: Any, `dtype: PolarsDataType | None`, `allow_object: bool`) -> Expr
   - **pql**: (value: PythonLiteral) -> Expr
 
-### [+] Extra Methods (pql-only) (8)
+### [+] Extra Methods (pql-only) (12)
 
 - `BitString`
 - `DatetimeTZ`
@@ -1102,3 +1098,7 @@ Each summary cell is `global (Narwhals, Polars)`.
 - `TimeTZ`
 - `UUID`
 - `Union`
+- `from_df`
+- `from_query`
+- `from_table`
+- `from_table_function`
