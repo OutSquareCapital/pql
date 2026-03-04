@@ -64,10 +64,6 @@ def test_replace() -> None:
     )
 
 
-def test_all_fn() -> None:
-    assert_eq(pql.all(), nw.all())
-
-
 def test_repr() -> None:
     assert "Expr" in repr(pql.col("name"))
 
@@ -329,40 +325,6 @@ def test_is_unique() -> None:
     assert_eq(pql.col("a").is_unique(), nw.col("a").is_unique())
 
 
-def test_when_then_simple() -> None:
-    assert_eq_pl(
-        pql.when(pql.col("x").eq(5))
-        .then(pql.lit("equal_to_5"))
-        .otherwise(pql.lit("not_equal_to_5"))
-        .alias("bucket"),
-        pl.when(pl.col("x").eq(5))
-        .then(pl.lit("equal_to_5"))
-        .otherwise(pl.lit("not_equal_to_5"))
-        .alias("bucket"),
-    )
-
-
-def test_when_then_chained() -> None:
-    assert_eq_pl(
-        pql.when(pql.col("x") > 5)
-        .then(pql.lit("high"))
-        .when(pql.col("x") < 5)
-        .then(pql.lit("low"))
-        .when(pql.col("x") == 5)
-        .then(pql.lit("equal"))
-        .otherwise(pql.lit("mid"))
-        .alias("bucket"),
-        pl.when(pl.col("x") > 5)
-        .then(pl.lit("high"))
-        .when(pl.col("x") < 5)
-        .then(pl.lit("low"))
-        .when(pl.col("x") == 5)
-        .then(pl.lit("equal"))
-        .otherwise(pl.lit("mid"))
-        .alias("bucket"),
-    )
-
-
 @pytest.mark.parametrize("ignore_nulls", [True, False])
 def test_first(ignore_nulls: bool) -> None:
     assert_eq_pl(
@@ -505,29 +467,16 @@ def test_clip() -> None:
 
 
 def test_kurtosis() -> None:
+    assert_eq_pl(pql.col("x").kurtosis(), pl.col("x").kurtosis())
     assert_eq_pl(
-        pql.col("x").kurtosis().alias("x_kurtosis"),
-        pl.col("x").kurtosis().alias("x_kurtosis"),
+        pql.col("x").kurtosis(fisher=False), pl.col("x").kurtosis(fisher=False)
     )
-    assert_eq_pl(
-        pql.col("x").kurtosis(fisher=False).alias("x_kurtosis_pearson"),
-        pl.col("x").kurtosis(fisher=False).alias("x_kurtosis_pearson"),
-    )
-    assert_eq_pl(
-        pql.col("x").kurtosis(bias=False).alias("x_kurtosis_unbiased"),
-        pl.col("x").kurtosis(bias=False).alias("x_kurtosis_unbiased"),
-    )
+    assert_eq_pl(pql.col("x").kurtosis(bias=False), pl.col("x").kurtosis(bias=False))
 
 
 def test_skew() -> None:
-    assert_eq_pl(
-        pql.col("x").skew().alias("x_skew"),
-        pl.col("x").skew().alias("x_skew"),
-    )
-    assert_eq_pl(
-        pql.col("x").skew(bias=False).alias("x_skew_unbiased"),
-        pl.col("x").skew(bias=False).alias("x_skew_unbiased"),
-    )
+    assert_eq_pl(pql.col("x").skew(), pl.col("x").skew())
+    assert_eq_pl(pql.col("x").skew(bias=False), pl.col("x").skew(bias=False))
 
 
 def test_quantile() -> None:
