@@ -74,6 +74,10 @@ class ExprMeta:
     has_window: bool = False
     is_unique_projection: bool = False
     is_multi: bool = False
+    selected_names: pc.Option[pc.Seq[str]] = field(default_factory=lambda: pc.NONE)
+    multi_agg: pc.Option[Callable[[sql.SqlExpr], sql.SqlExpr]] = field(
+        default_factory=lambda: pc.NONE
+    )
     excluded_names: pc.Set[str] = field(default_factory=pc.Set[str].new)
 
     @property
@@ -213,9 +217,13 @@ def _resolve_projection(
     match value:
         case Expr() as expr:
             base_names = (
-                columns.iter()
-                .filter(lambda name: name not in expr.meta.excluded_names)
-                .collect()
+                expr.meta.selected_names.unwrap_or_else(
+                    lambda: (
+                        columns.iter()
+                        .filter(lambda name: name not in expr.meta.excluded_names)
+                        .collect()
+                    )
+                )
                 if expr.meta.is_multi
                 else pc.Seq((expr.meta.root_name,))
             )
@@ -227,7 +235,9 @@ def _resolve_projection(
                         .zip(output_names)
                         .map_star(
                             lambda column_name, output_name: ExprProjection(
-                                sql.col(column_name),
+                                expr.meta.multi_agg.map(
+                                    lambda agg: sql.col(column_name).pipe(agg)
+                                ).unwrap_or(sql.col(column_name)),
                                 expr.meta.from_projection(output_name),
                             )
                         )

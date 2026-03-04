@@ -1,4 +1,4 @@
-from collections.abc import Iterable
+from collections.abc import Callable, Iterable
 
 import pyochain as pc
 
@@ -19,6 +19,51 @@ class Col:
 def lit(value: PythonLiteral) -> Expr:
     """Create a literal expression."""
     return Expr(sql.lit(value))
+
+
+def len() -> Expr:
+    """Return the number of rows."""
+    return Expr(sql.lit(1), pc.Some(ExprMeta("len"))).count()
+
+
+def _agg_expr(
+    agg: Callable[[sql.SqlExpr], sql.SqlExpr], columns: tuple[str, ...]
+) -> Expr:
+    selected_names = pc.Seq(columns).then_some()
+    return Expr(
+        selected_names.map(lambda vals: sql.col(vals.first())).unwrap_or_else(
+            lambda: sql.lit(0)
+        ),
+        pc.Some(
+            ExprMeta(
+                selected_names.map(lambda vals: vals.first()).unwrap_or("all"),
+                is_scalar_like=True,
+                is_multi=True,
+                selected_names=selected_names,
+                multi_agg=pc.Some(agg),
+            )
+        ),
+    )
+
+
+def sum(*columns: str) -> Expr:
+    return _agg_expr(sql.SqlExpr.sum, columns)
+
+
+def mean(*columns: str) -> Expr:
+    return _agg_expr(sql.SqlExpr.mean, columns)
+
+
+def median(*columns: str) -> Expr:
+    return _agg_expr(sql.SqlExpr.median, columns)
+
+
+def min(*columns: str) -> Expr:
+    return _agg_expr(sql.SqlExpr.min, columns)
+
+
+def max(*columns: str) -> Expr:
+    return _agg_expr(sql.SqlExpr.max, columns)
 
 
 col: Col = Col()

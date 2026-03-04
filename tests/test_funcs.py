@@ -1,5 +1,6 @@
 import narwhals as nw
 import polars as pl
+import pytest
 
 import pql
 
@@ -10,24 +11,26 @@ def test_all_fn() -> None:
     assert_eq(pql.all(), nw.all())
 
 
-def test_sum_horizontal() -> None:
-    assert_eq(pql.sum_horizontal("x", "n"), nw.sum_horizontal("x", "n"))
+def test_len_fn() -> None:
+    assert_eq(pql.len(), nw.len())
 
 
-def test_sum_horizontal_iterable() -> None:
-    assert_eq(pql.sum_horizontal(("x", "n")), nw.sum_horizontal(("x", "n")))
+_MULTI_FNS = [
+    "sum",
+    "mean",
+    "median",
+    "min",
+    "max",
+    "sum_horizontal",
+    "min_horizontal",
+    "max_horizontal",
+    "mean_horizontal",
+]
 
 
-def test_min_horizontal() -> None:
-    assert_eq(pql.min_horizontal("x", "n"), nw.min_horizontal("x", "n"))
-
-
-def test_max_horizontal() -> None:
-    assert_eq(pql.max_horizontal("x", "n"), nw.max_horizontal("x", "n"))
-
-
-def test_mean_horizontal() -> None:
-    assert_eq(pql.mean_horizontal("x", "n"), nw.mean_horizontal("x", "n"))
+@pytest.mark.parametrize("fn", _MULTI_FNS)
+def test_multi_col(fn: str) -> None:
+    assert_eq(getattr(pql, fn)("x", "n"), getattr(nw, fn)("x", "n"))
 
 
 def test_all_horizontal() -> None:

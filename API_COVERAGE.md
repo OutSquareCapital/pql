@@ -7,18 +7,18 @@ This report shows the API coverage of pql compared to other libraries.
 
 The first value of each tuple is for `Narwhals` and the second value is for `Polars`.
 
-| Class               | Coverage        | Total     | Matched  | Missing  | Mismatched | Extra   |
-| ------------------- | --------------- | --------- | -------- | -------- | ---------- | ------- |
-| LazyFrame           | (61.5%, 34.9%)  | (26, 83)  | (16, 29) | (1, 32)  | (9, 22)    | (35, 9) |
-| Expr                | (71.4%, 42.7%)  | (70, 213) | (50, 91) | (7, 93)  | (13, 29)   | (58, 1) |
-| LazyGroupBy         | (0.0%, 56.2%)   | (1, 16)   | (0, 9)   | (0, 4)   | (1, 3)     | (11, 0) |
-| ExprStrNameSpace    | (42.1%, 27.7%)  | (19, 47)  | (8, 13)  | (0, 10)  | (11, 24)   | (19, 1) |
-| ExprListNameSpace   | (90.0%, 46.5%)  | (10, 43)  | (9, 20)  | (0, 20)  | (1, 3)     | (14, 1) |
-| ExprStructNameSpace | (100.0%, 20.0%) | (1, 5)    | (1, 1)   | (0, 2)   | (0, 2)     | (3, 1)  |
-| ExprNameNameSpace   | (100.0%, 70.0%) | (6, 10)   | (6, 7)   | (0, 3)   | (0, 0)     | (2, 1)  |
-| ExprArrNameSpace    | (100.0%, 54.8%) | (0, 31)   | (0, 17)  | (0, 10)  | (0, 4)     | (24, 3) |
-| ExprDtNameSpace     | (60.9%, 46.7%)  | (23, 45)  | (14, 21) | (7, 18)  | (2, 6)     | (12, 1) |
-| ModuleFunctions     | (20.0%, 23.8%)  | (20, 21)  | (4, 5)   | (10, 10) | (6, 6)     | (1, 0)  |
+| Class               | Coverage        | Total     | Matched  | Missing | Mismatched | Extra   |
+| ------------------- | --------------- | --------- | -------- | ------- | ---------- | ------- |
+| LazyFrame           | (61.5%, 34.9%)  | (26, 83)  | (16, 29) | (1, 32) | (9, 22)    | (35, 9) |
+| Expr                | (71.4%, 42.7%)  | (70, 213) | (50, 91) | (7, 93) | (13, 29)   | (58, 1) |
+| LazyGroupBy         | (0.0%, 56.2%)   | (1, 16)   | (0, 9)   | (0, 4)  | (1, 3)     | (11, 0) |
+| ExprStrNameSpace    | (42.1%, 27.7%)  | (19, 47)  | (8, 13)  | (0, 10) | (11, 24)   | (19, 1) |
+| ExprListNameSpace   | (90.0%, 46.5%)  | (10, 43)  | (9, 20)  | (0, 20) | (1, 3)     | (14, 1) |
+| ExprStructNameSpace | (100.0%, 20.0%) | (1, 5)    | (1, 1)   | (0, 2)  | (0, 2)     | (3, 1)  |
+| ExprNameNameSpace   | (100.0%, 70.0%) | (6, 10)   | (6, 7)   | (0, 3)  | (0, 0)     | (2, 1)  |
+| ExprArrNameSpace    | (100.0%, 54.8%) | (0, 31)   | (0, 17)  | (0, 10) | (0, 4)     | (24, 3) |
+| ExprDtNameSpace     | (60.9%, 46.7%)  | (23, 45)  | (14, 21) | (7, 18) | (2, 6)     | (12, 1) |
+| ModuleFunctions     | (50.0%, 38.1%)  | (20, 21)  | (10, 8)  | (4, 4)  | (6, 9)     | (1, 0)  |
 
 ## LazyFrame
 
@@ -753,7 +753,7 @@ The first value of each tuple is for `Narwhals` and the second value is for `Pol
 
 ## ModuleFunctions
 
-### [x] Missing Methods (10)
+### [x] Missing Methods (4)
 
 - `concat`
   - **Narwhals**: (items: Iterable[FrameT], how: ConcatMethod) -> FrameT
@@ -764,27 +764,9 @@ The first value of each tuple is for `Narwhals` and the second value is for `Pol
 - `format`
   - **Narwhals**: (f_string: str, *args: IntoExpr) -> Expr
   - **Polars**: (f_string: str, *args: Expr | str) -> Expr
-- `len`
-  - **Narwhals**: () -> Expr
-  - **Polars**: () -> Expr
-- `max`
-  - **Narwhals**: (*columns: str) -> Expr
-  - **Polars**: (*names: str) -> Expr
-- `mean`
-  - **Narwhals**: (*columns: str) -> Expr
-  - **Polars**: (*columns: str) -> Expr
-- `median`
-  - **Narwhals**: (*columns: str) -> Expr
-  - **Polars**: (*columns: str) -> Expr
-- `min`
-  - **Narwhals**: (*columns: str) -> Expr
-  - **Polars**: (*names: str) -> Expr
 - `nth`
   - **Narwhals**: (*indices: int | Sequence[int]) -> Expr
   - **Polars**: (*indices: int | Sequence[int], strict: bool) -> Expr
-- `sum`
-  - **Narwhals**: (*columns: str) -> Expr
-  - **Polars**: (*names: str) -> Expr
 
 ### [!] Signature Mismatches (4)
 
