@@ -1,5 +1,6 @@
 from collections.abc import Callable
 from dataclasses import dataclass, field
+from types import ModuleType
 
 import pyochain as pc
 
@@ -91,8 +92,15 @@ class ClassComparison:
         def _get_public_methods(
             cls: object, names: pc.Option[pc.Set[str]]
         ) -> pc.Set[str]:
+            def _module_public_names() -> pc.Set[str]:
+                match cls:
+                    case ModuleType() as mod:
+                        return pc.Set(mod.__all__)
+                    case _:
+                        return pc.Set(dir(cls))
+
             return (
-                names.unwrap_or_else(lambda: pc.Iter(dir(cls)).collect(pc.Set))
+                names.unwrap_or_else(_module_public_names)
                 .iter()
                 .filter(
                     lambda name: (
