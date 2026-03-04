@@ -24,7 +24,13 @@ if TYPE_CHECKING:
         JoinStrategy,
         UniqueKeepStrategy,
     )
-    from .sql.typing import IntoExpr, IntoExprColumn, IntoRel, ParquetCompression
+    from .sql.typing import (
+        IntoExpr,
+        IntoExprColumn,
+        IntoRel,
+        Orientation,
+        ParquetCompression,
+    )
 
 TEMP_NAME = "__pql_temp__"
 TEMP_COL = sql.col(TEMP_NAME)
@@ -179,12 +185,12 @@ class LazyFrame(sql.CoreHandler[sql.Relation]):
 
     __slots__ = ()
 
-    def __init__(self, data: IntoRel) -> None:
+    def __init__(self, data: IntoRel, orient: Orientation = "col") -> None:
         match data:
             case sql.Relation():
                 self._inner = data
             case _:
-                self._inner = sql.Relation(data)
+                self._inner = sql.Relation(data, orient)
 
     def _select(self, exprs: Iterable[IntoExprColumn], groups: str = "") -> Self:
         return self.inner().select(*exprs, groups=groups).pipe(self._new)

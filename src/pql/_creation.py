@@ -9,7 +9,14 @@ from ._frame import LazyFrame
 if TYPE_CHECKING:
     from narwhals.typing import IntoFrame
 
-    from .sql.typing import IntoDict, IntoRel, NPArrayLike, PythonLiteral, SeqIntoVals
+    from .sql.typing import (
+        IntoDict,
+        IntoRel,
+        NPArrayLike,
+        Orientation,
+        PythonLiteral,
+        SeqIntoVals,
+    )
 
 
 def from_query(query: str, **relations: IntoRel) -> LazyFrame:
@@ -28,8 +35,8 @@ def from_df(df: IntoFrame) -> LazyFrame:
     return LazyFrame(sql.from_df(df))
 
 
-def from_numpy(arr: NPArrayLike[Any, Any]) -> LazyFrame:
-    return LazyFrame(sql.from_numpy(arr))
+def from_numpy(arr: NPArrayLike[Any, Any], orient: Orientation = "col") -> LazyFrame:
+    return LazyFrame(sql.from_numpy(arr, orient=orient))
 
 
 def from_dict(mapping: IntoDict[str, PythonLiteral]) -> LazyFrame:

@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Iterable, Iterator, Mapping, Sequence
-from typing import TYPE_CHECKING, Any, Literal, Protocol, runtime_checkable
+from typing import TYPE_CHECKING, Any, Literal, Protocol, Self, runtime_checkable
 
 import duckdb
 from narwhals.typing import IntoFrame
@@ -68,6 +68,8 @@ class NPArrayLike[S: tuple[Any, ...], D](NPProtocol, Protocol):
     def shape(self) -> S: ...  # noqa: D102
     @property
     def size(self) -> int: ...  # noqa: D102
+    @property
+    def T(self) -> Self: ...  # noqa: D102, N802
 
 
 type IntoDict[K, V] = Mapping[K, V] | Iterable[tuple[K, V]]
@@ -135,3 +137,4 @@ type AllDateParts = IntervalPart | DatePart
 
 type RoundMode = Literal["half_to_even", "half_away_from_zero"]
 type ParquetCompression = DuckParquetCompression
+type Orientation = Literal["row", "col"]

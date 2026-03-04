@@ -16,6 +16,7 @@ if TYPE_CHECKING:
         IntoExpr,
         IntoExprColumn,
         IntoRel,
+        Orientation,
     )
 
 
@@ -103,8 +104,8 @@ class RelHandler(CoreHandler[duckdb.DuckDBPyRelation]):
 
     __slots__ = ()
 
-    def __init__(self, data: IntoRel) -> None:
-        self._inner = frame_init_into_duckdb(data)
+    def __init__(self, data: IntoRel, orient: Orientation = "col") -> None:
+        self._inner = frame_init_into_duckdb(data, orient=orient)
 
 
 @dataclass(slots=True)

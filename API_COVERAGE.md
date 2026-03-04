@@ -1055,7 +1055,7 @@ Each summary cell is `global (Narwhals, Polars)`.
 - `LazyFrame` (nw)
   - **Narwhals**: (`df: Any`, `level: Literal['full', 'lazy', 'interchange']`) -> None
   - **Polars**: (`data: FrameInitTypes | None`, `schema: SchemaDefinition | None`, `schema_overrides: SchemaDict | None`, `strict: bool`, `orient: Orientation | None`, `infer_schema_length: int | None`, `nan_to_null: bool`, `height: int | None`) -> None
-  - **pql**: (`data: IntoRel`) -> None
+  - **pql**: (`data: IntoRel`, `orient: Orientation`) -> None
 - `List` (nw)
   - **Narwhals**: (`inner: IntoDType`) -> None
   - **Polars**: (`inner: PolarsDataType | PythonDataType`) -> None
@@ -1079,7 +1079,7 @@ Each summary cell is `global (Narwhals, Polars)`.
 - `from_numpy` (nw)
   - **Narwhals**: (`data: _2DArray`, `schema: IntoSchema | Sequence[str] | None`, `backend: IntoBackend[EagerAllowed]`) -> DataFrame[Any]
   - **Polars**: (`data: ndarray[Any, Any]`, `schema: SchemaDefinition | None`, `schema_overrides: SchemaDict | None`, `orient: Orientation | None`) -> DataFrame
-  - **pql**: (`arr: NPArrayLike[Any, Any]`) -> LazyFrame
+  - **pql**: (`arr: NPArrayLike[Any, Any]`, `orient: Orientation`) -> LazyFrame
 - `from_records` (pl)
   - **Polars***: (`data: Sequence[Any]`, `schema: SchemaDefinition | None`, `schema_overrides: SchemaDict | None`, `strict: bool`, `orient: Orientation | None`, `infer_schema_length: int | None`) -> DataFrame
   - **pql**: (`data: SeqIntoVals`) -> LazyFrame

@@ -1,4 +1,4 @@
-from collections.abc import Mapping, Sequence
+from collections.abc import Callable, Mapping, Sequence
 from typing import Any, cast
 
 import duckdb
@@ -6,14 +6,30 @@ import narwhals as nw
 import pyochain as pc
 from narwhals.typing import IntoFrame
 
-from .typing import FrameLike, IntoDict, IntoRel, NPArrayLike, SeqIntoVals
+from .typing import (
+    FrameLike,
+    IntoDict,
+    IntoRel,
+    NPArrayLike,
+    Orientation,
+    PythonLiteral,
+    SeqIntoVals,
+)
+
+COL0 = "column_0"
+
+
+def _to_expr(k: str, v: PythonLiteral) -> duckdb.Expression:
+    return duckdb.ConstantExpression(v).alias(k)
 
 
 def _unnest(k: str) -> duckdb.Expression:
     return duckdb.FunctionExpression("unnest", duckdb.ColumnExpression(k)).alias(k)
 
 
-def frame_init_into_duckdb(data: IntoRel) -> duckdb.DuckDBPyRelation:  # noqa: PLR0911
+def frame_init_into_duckdb(  # noqa: PLR0911
+    data: IntoRel, orient: Orientation = "col"
+) -> duckdb.DuckDBPyRelation:
     from ._core import DuckHandler
 
     match data:
@@ -26,7 +42,7 @@ def frame_init_into_duckdb(data: IntoRel) -> duckdb.DuckDBPyRelation:  # noqa: P
         case Mapping():
             return from_dict(data)
         case NPArrayLike():
-            return from_numpy(data)
+            return from_numpy(data, orient=orient)
         case FrameLike():
             return from_df(data)
         case Sequence():
@@ -81,10 +97,7 @@ def from_records(data: SeqIntoVals) -> duckdb.DuckDBPyRelation:
             vals = cast(Sequence[duckdb.Expression], data)
             return duckdb.values(tuple(vals))
         case _:
-            col = "column_0"
-            return duckdb.values(
-                duckdb.ConstantExpression(tuple(data)).alias(col)
-            ).select(_unnest(col))
+            return duckdb.values(_to_expr(COL0, tuple(data))).select(_unnest(COL0))
 
 
 def from_df(data: IntoFrame) -> duckdb.DuckDBPyRelation:
@@ -98,20 +111,48 @@ def from_df(data: IntoFrame) -> duckdb.DuckDBPyRelation:
 def from_dict(data: IntoDict[str, Any]) -> duckdb.DuckDBPyRelation:
     data = pc.Dict(data)
 
-    raw_vals = (
-        data.items()
-        .iter()
-        .map_star(lambda k, v: duckdb.ConstantExpression(v).alias(k))
-        .collect(tuple)
-    )
+    raw_vals = data.items().iter().map_star(_to_expr).collect(tuple)
     unnested = data.keys().iter().map(_unnest)
     return duckdb.values(raw_vals).select(*unnested)
 
 
-def from_numpy(data: NPArrayLike[Any, Any]) -> duckdb.DuckDBPyRelation:
-    _arr = data
-    qry = """--sql
-        SELECT *
-        FROM _arr
-        """
-    return duckdb.from_query(qry)
+def from_numpy(
+    data: NPArrayLike[Any, Any], orient: Orientation = "col"
+) -> duckdb.DuckDBPyRelation:
+
+    match data.ndim:
+        case 1:
+            return duckdb.values(_to_expr(COL0, data)).select(_unnest(COL0))
+        case _:
+            arr = data.T if orient == "col" else data
+
+            def _array_strategy(
+                data: NPArrayLike[Any, Any],
+            ) -> tuple[int, Callable[[int], NPArrayLike[Any, Any]]]:
+                match (data.ndim, orient):
+                    case (2, _) | (_, "row"):
+
+                        def _arr_getter(j: int) -> NPArrayLike[Any, Any]:
+                            return arr[:, j]
+
+                        return 1, _arr_getter
+                    case _:
+
+                        def _arr_getter(j: int) -> NPArrayLike[Any, Any]:
+                            return arr[j]
+
+                        return 0, _arr_getter
+
+            axis, _arr_getter = _array_strategy(arr)
+
+            names = (
+                pc.Iter(range(arr.shape[axis])).map(lambda j: f"column_{j}").collect()
+            )
+            vals = (
+                names.iter()
+                .enumerate()
+                .map_star(lambda j, name: _to_expr(name, _arr_getter(j)))
+                .collect(tuple)
+            )
+
+            return duckdb.values(vals).select(*names.iter().map(_unnest))
