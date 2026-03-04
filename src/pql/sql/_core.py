@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING, Concatenate, Self, overload
 import duckdb
 import pyochain as pc
 
-from ._rel_conversions import frame_init_into_duckdb
+from ._creation import frame_init_into_duckdb
 
 if TYPE_CHECKING:
     from .typing import (

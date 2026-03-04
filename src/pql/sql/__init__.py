@@ -5,6 +5,14 @@ from duckdb import table as from_table, table_function as from_table_function
 from . import typing, utils
 from ._code_gen import Relation
 from ._core import CoreHandler
+from ._creation import (
+    from_df,
+    from_dict,
+    from_dicts,
+    from_numpy,
+    from_query,
+    from_records,
+)
 from ._datatypes import (
     ArrayType,
     DecimalType,
@@ -41,14 +49,6 @@ from ._funcs import (
     row_number,
     sum_horizontal,
     unnest,
-)
-from ._rel_conversions import (
-    from_df,
-    from_dict,
-    from_dicts,
-    from_numpy,
-    from_query,
-    from_records,
 )
 from ._when import ChainedThen, ChainedWhen, Then, When, when
 from ._window import Kword
