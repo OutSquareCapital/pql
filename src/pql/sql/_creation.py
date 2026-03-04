@@ -49,6 +49,9 @@ def frame_init_into_duckdb(  # noqa: PLR0911
             return from_records(data)
 
 
+_QRY_ERR = "No relation provided"
+
+
 def from_query(query: str, **relations: IntoRel) -> duckdb.DuckDBPyRelation:
     """Create a relation from a SQL query."""
 
@@ -68,7 +71,7 @@ def from_query(query: str, **relations: IntoRel) -> duckdb.DuckDBPyRelation:
             )
         )
         .map(_as_namespace)
-        .unwrap_or_else(lambda: duckdb.from_query(query))
+        .expect(_QRY_ERR)
     )
 
 

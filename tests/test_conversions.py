@@ -40,6 +40,17 @@ def data() -> TestData:
     return _get_data()
 
 
+def test_from_query(data: TestData) -> None:
+    _df = pl.DataFrame(data)
+    qry = """--sql
+    SELECT *
+    FROM _df
+    """
+    pql_df = pql.from_query(qry, _df=_df).collect()
+    pl_df = duckdb.from_query(qry).pl()
+    assert_eq(pql_df, pl_df)
+
+
 def test_from_duckdb_relation(data: TestData) -> None:
     rel = duckdb.from_arrow(pl.DataFrame(data))
     assert_eq(pql.LazyFrame(rel).collect(), rel.pl())
