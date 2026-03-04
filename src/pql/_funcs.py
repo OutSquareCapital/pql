@@ -10,7 +10,7 @@ from .sql.utils import TryIter, try_iter
 
 class Col:
     def __call__(self, name: str) -> Expr:
-        return Expr(sql.col(name))
+        return Expr(sql.col(name), pc.Some(ExprMeta(name)))
 
     def __getattr__(self, name: str) -> Expr:
         return self(name)
@@ -71,7 +71,10 @@ col: Col = Col()
 
 def coalesce(exprs: TryIter[IntoExpr], *more_exprs: IntoExpr) -> Expr:
     """Create a coalesce expression."""
-    return Expr(sql.coalesce(exprs, *more_exprs))
+    expr_name = (
+        try_iter(exprs).next().map(sql.into_expr, as_col=True).unwrap().get_name()
+    )
+    return Expr(sql.coalesce(exprs, *more_exprs), pc.Some(ExprMeta(expr_name)))
 
 
 def all(exclude: Iterable[IntoExprColumn] | None = None) -> Expr:

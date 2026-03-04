@@ -22,7 +22,7 @@ class When:
     _when: sql.When
 
     def then(self, value: IntoExpr) -> Then:
-        return Then(self._when.then(value), pc.Some(ExprMeta("literal")))
+        return Then(self._when.then(value))
 
 
 class Then(Expr):

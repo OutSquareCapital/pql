@@ -270,7 +270,7 @@ class Expr(sql.CoreHandler[sql.SqlExpr]):
 
     def __init__(self, inner: sql.SqlExpr, meta: pc.Option[ExprMeta] = pc.NONE) -> None:
         self._inner = inner
-        self.meta = meta.map(replace).unwrap_or_else(lambda: ExprMeta(inner.get_name()))
+        self.meta = meta.map(replace).unwrap_or_else(lambda: ExprMeta("literal"))
 
     def _new(self, value: sql.SqlExpr, meta: pc.Option[ExprMeta] = pc.NONE) -> Self:
         return self.__class__(
@@ -1545,7 +1545,7 @@ class ExprStructNameSpace(ExprNameSpaceBase):
 
     def field(self, name: str) -> Expr:
         """Retrieve a struct field by name."""
-        return self._new(self.inner().struct.extract(sql.lit(name)))
+        return self._new(self.inner().struct.extract(sql.lit(name))).alias(name)
 
     def json_encode(self) -> Expr:
         """Encode struct values as JSON strings."""

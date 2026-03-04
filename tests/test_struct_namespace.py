@@ -7,10 +7,7 @@ from ._utils import assert_eq, assert_eq_pl
 
 
 def test_field() -> None:
-    assert_eq(
-        pql.col("structs").struct.field("a").alias("a"),
-        nw.col("structs").struct.field("a").alias("a"),
-    )
+    assert_eq(pql.col("structs").struct.field("a"), nw.col("structs").struct.field("a"))
 
 
 def test_with_fields() -> None:
