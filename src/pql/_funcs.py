@@ -13,7 +13,7 @@ class Col:
         return Expr(sql.col(name))
 
     def __getattr__(self, name: str) -> Expr:
-        return self.__call__(name)
+        return self(name)
 
 
 def lit(value: PythonLiteral) -> Expr:
@@ -22,6 +22,11 @@ def lit(value: PythonLiteral) -> Expr:
 
 
 col: Col = Col()
+
+
+def coalesce(exprs: TryIter[IntoExpr], *more_exprs: IntoExpr) -> Expr:
+    """Create a coalesce expression."""
+    return Expr(sql.coalesce(exprs, *more_exprs))
 
 
 def all(exclude: Iterable[IntoExprColumn] | None = None) -> Expr:
@@ -53,29 +58,27 @@ def _horizontal_meta(exprs: TryIter[IntoExpr]) -> pc.Option[ExprMeta]:
     )
 
 
-def sum_horizontal(exprs: IntoExpr | Iterable[IntoExpr], *more_exprs: IntoExpr) -> Expr:
+def sum_horizontal(exprs: TryIter[IntoExpr], *more_exprs: IntoExpr) -> Expr:
     return Expr(sql.sum_horizontal(exprs, *more_exprs), _horizontal_meta(exprs))
 
 
-def min_horizontal(exprs: IntoExpr | Iterable[IntoExpr], *more_exprs: IntoExpr) -> Expr:
+def min_horizontal(exprs: TryIter[IntoExpr], *more_exprs: IntoExpr) -> Expr:
     return Expr(sql.min_horizontal(exprs, *more_exprs), _horizontal_meta(exprs))
 
 
-def max_horizontal(exprs: IntoExpr | Iterable[IntoExpr], *more_exprs: IntoExpr) -> Expr:
+def max_horizontal(exprs: TryIter[IntoExpr], *more_exprs: IntoExpr) -> Expr:
     return Expr(sql.max_horizontal(exprs, *more_exprs), _horizontal_meta(exprs))
 
 
-def mean_horizontal(
-    exprs: IntoExpr | Iterable[IntoExpr], *more_exprs: IntoExpr
-) -> Expr:
+def mean_horizontal(exprs: TryIter[IntoExpr], *more_exprs: IntoExpr) -> Expr:
     return Expr(sql.mean_horizontal(exprs, *more_exprs), _horizontal_meta(exprs))
 
 
-def all_horizontal(exprs: IntoExpr | Iterable[IntoExpr], *more_exprs: IntoExpr) -> Expr:
+def all_horizontal(exprs: TryIter[IntoExpr], *more_exprs: IntoExpr) -> Expr:
     return Expr(sql.all_horizontal(exprs, *more_exprs), _horizontal_meta(exprs))
 
 
-def any_horizontal(exprs: IntoExpr | Iterable[IntoExpr], *more_exprs: IntoExpr) -> Expr:
+def any_horizontal(exprs: TryIter[IntoExpr], *more_exprs: IntoExpr) -> Expr:
     return Expr(sql.any_horizontal(exprs, *more_exprs), _horizontal_meta(exprs))
 
 

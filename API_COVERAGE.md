@@ -18,6 +18,7 @@ The first value of each tuple is for `Narwhals` and the second value is for `Pol
 | ExprNameNameSpace   | (100.0%, 70.0%) | (6, 10)   | (6, 7)   | (0, 3)  | (0, 0)     | (2, 1)  |
 | ExprArrNameSpace    | (100.0%, 54.8%) | (0, 31)   | (0, 17)  | (0, 10) | (0, 4)     | (24, 3) |
 | ExprDtNameSpace     | (60.9%, 46.7%)  | (23, 45)  | (14, 21) | (7, 18) | (2, 6)     | (12, 1) |
+| ModuleFunctions     | (40.0%, 45.5%)  | (10, 11)  | (4, 5)   | (0, 0)  | (6, 6)     | (1, 0)  |
 
 ## LazyFrame
 
@@ -749,3 +750,24 @@ The first value of each tuple is for `Narwhals` and the second value is for `Pol
 ### [+] Extra Methods (pql-only) (1)
 
 - `inner`
+
+## ModuleFunctions
+
+### [!] Signature Mismatches (4)
+
+- `all` (nw)
+  - **Narwhals**: () -> Expr
+  - **Polars**: (`*names: str`, `ignore_nulls: bool`) -> Expr
+  - **pql**: (`exclude: Iterable[IntoExprColumn] | None`) -> Expr
+- `coalesce` (nw)
+  - **Narwhals**: (exprs: IntoExpr | Iterable[IntoExpr], `*more_exprs: IntoExpr | NonNestedLiteral`) -> Expr
+  - **Polars**: (exprs: IntoExpr | Iterable[IntoExpr], *more_exprs: IntoExpr, `eager: bool`) -> Expr | Series
+  - **pql**: (exprs: TryIter[IntoExpr], `*more_exprs: IntoExpr`) -> Expr
+- `lit` (nw)
+  - **Narwhals**: (value: PythonLiteral, `dtype: IntoDType | None`) -> Expr
+  - **Polars**: (value: Any, `dtype: PolarsDataType | None`, `allow_object: bool`) -> Expr
+  - **pql**: (value: PythonLiteral) -> Expr
+- `when` (nw)
+  - **Narwhals**: (`*predicates: IntoExpr | Iterable[IntoExpr]`) -> When
+  - **Polars**: (`*predicates: IntoExprColumn | Iterable[IntoExprColumn] | bool`, `**constraints: Any`) -> When
+  - **pql**: (`condition: IntoExpr`) -> When

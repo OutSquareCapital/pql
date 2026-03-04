@@ -77,7 +77,7 @@ class Col:
         return SqlExpr(duckdb.ColumnExpression(name))
 
     def __getattr__(self, name: str) -> SqlExpr:
-        return self.__call__(name)
+        return self(name)
 
 
 col = Col()

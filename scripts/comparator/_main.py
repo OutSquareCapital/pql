@@ -12,6 +12,22 @@ from pql._frame import LazyGroupBy as pqlLazyGroupBy
 from .._utils import Pql
 from ._text import ClassComparison, header, render_summary_table
 
+PURE_MODULE_FUNCTIONS: pc.Set[str] = pc.Set(
+    {
+        "all",
+        "all_horizontal",
+        "any_horizontal",
+        "coalesce",
+        "element",
+        "lit",
+        "max_horizontal",
+        "mean_horizontal",
+        "min_horizontal",
+        "sum_horizontal",
+        "when",
+    }
+)
+
 
 def get_comparisons() -> str:
     pl_col = pl.col("x")
@@ -65,6 +81,13 @@ def get_comparisons() -> str:
                     pl_col.dt.__class__,
                     pql_col.dt.__class__,
                     Pql.EXPR_DT_NAME_SPACE,
+                ),
+                ClassComparison(
+                    pc.Some(nw),
+                    pl,
+                    pql,
+                    Pql.MODULE_FUNCTIONS,
+                    pc.Some(PURE_MODULE_FUNCTIONS),
                 ),
             )
         )

@@ -1,5 +1,5 @@
 from collections.abc import Callable
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 import pyochain as pc
 
@@ -70,17 +70,21 @@ def _summary_header() -> pc.Seq[str]:
 class ClassComparison:
     """Converter between entry arguments and ComparisonReport."""
 
-    narwhals_cls: pc.Option[type]
-    polars_cls: type
-    pql_cls: type
+    narwhals_cls: pc.Option[object]
+    polars_cls: object
+    pql_cls: object
     name: Pql
+    names: pc.Option[pc.Set[str]] = field(default_factory=lambda: pc.NONE)
 
     def to_report(self) -> ComparisonReport:
         """Compare two classes and return comparison results."""
 
-        def _get_public_methods(cls: type) -> pc.Set[str]:
+        def _get_public_methods(
+            cls: object, names: pc.Option[pc.Set[str]]
+        ) -> pc.Set[str]:
             return (
-                pc.Iter(dir(cls))
+                names.unwrap_or_else(lambda: pc.Iter(dir(cls)).collect(pc.Set))
+                .iter()
                 .filter(
                     lambda name: (
                         not name.startswith("_")
@@ -106,10 +110,10 @@ class ClassComparison:
 
         return ComparisonReport(
             self.name,
-            self.narwhals_cls.map(_get_public_methods)
+            self.narwhals_cls.map(lambda cls: _get_public_methods(cls, self.names))
             .unwrap_or_else(pc.Set.new)
-            .union(_get_public_methods(self.polars_cls))
-            .union(_get_public_methods(self.pql_cls))
+            .union(_get_public_methods(self.polars_cls, self.names))
+            .union(_get_public_methods(self.pql_cls, self.names))
             .iter()
             .map(
                 lambda name: ComparisonResult.from_method(

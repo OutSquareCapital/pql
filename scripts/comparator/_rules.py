@@ -45,6 +45,14 @@ IGNORED_PARAMS: IgnoredParams = pc.Dict(
             agg=_args("more_aggs"),
             quantile=_args(_Arg.INTERPOLATION),
         ),
+        Pql.MODULE_FUNCTIONS: pc.Dict.from_kwargs(
+            all_horizontal=_args(_Arg.MORE_EXPRS),
+            any_horizontal=_args(_Arg.MORE_EXPRS),
+            max_horizontal=_args(_Arg.MORE_EXPRS),
+            mean_horizontal=_args(_Arg.MORE_EXPRS),
+            min_horizontal=_args(_Arg.MORE_EXPRS),
+            sum_horizontal=_args(_Arg.MORE_EXPRS),
+        ),
     }
 )
 

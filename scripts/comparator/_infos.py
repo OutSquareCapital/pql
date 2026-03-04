@@ -8,12 +8,7 @@ import pyochain as pc
 
 from .._utils import Builtins, Pql, Typing, get_attr
 from ._parse import extract_last_name, normalize_annotation
-from ._rules import (
-    IGNORED_PARAMS,
-    MismatchOn,
-    RefBackend,
-    Status,
-)
+from ._rules import IGNORED_PARAMS, MismatchOn, RefBackend, Status
 
 type MapInfo = pc.Dict[str, ParamInfo]
 
@@ -245,9 +240,9 @@ class ComparisonResult:
     @classmethod
     def from_method(
         cls,
-        narwhals_cls: pc.Option[type],
-        polars_cls: type,
-        pql_cls: type,
+        narwhals_cls: pc.Option[object],
+        polars_cls: object,
+        pql_cls: object,
         method_name: str,
         class_name: Pql,
     ) -> Self:
@@ -318,7 +313,7 @@ class ComparisonResult:
                 return pc.Iter.once(f"- `{self.method_name}`")
 
 
-def _get_method_info(cls: type, name: str) -> pc.Option[MethodInfo]:
+def _get_method_info(cls: object, name: str) -> pc.Option[MethodInfo]:
     return get_attr(cls, name).and_then(_build_method_info, name)
 
 
