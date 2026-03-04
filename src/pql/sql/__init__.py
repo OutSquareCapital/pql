@@ -2,7 +2,7 @@
 
 from duckdb import table as from_table, table_function as from_table_function
 
-from . import typing
+from . import typing, utils
 from ._code_gen import Relation
 from ._core import CoreHandler
 from ._datatypes import (
@@ -37,6 +37,7 @@ from ._funcs import (
     max_horizontal,
     mean_horizontal,
     min_horizontal,
+    reduce,
     row_number,
     sum_horizontal,
     unnest,
@@ -93,9 +94,11 @@ __all__ = [
     "mean_horizontal",
     "min_horizontal",
     "parse_dtype",
+    "reduce",
     "row_number",
     "sum_horizontal",
     "typing",
     "unnest",
+    "utils",
     "when",
 ]

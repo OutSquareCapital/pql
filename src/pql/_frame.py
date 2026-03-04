@@ -9,10 +9,10 @@ from typing import TYPE_CHECKING, Any, Literal, NamedTuple, Self
 import pyochain as pc
 
 from . import sql
-from ._args_iter import TryIter, TrySeq, check_by_arg, try_chain, try_iter
 from ._datatypes import DataType
 from ._expr import Expr, ExprPlan
 from ._parser import format_sql
+from .sql.utils import TryIter, TrySeq, check_by_arg, try_chain, try_iter
 
 if TYPE_CHECKING:
     import polars as pl
@@ -226,11 +226,12 @@ class LazyFrame(sql.CoreHandler[sql.Relation]):
     def _select(self, exprs: Iterable[IntoExprColumn], groups: str = "") -> Self:
         return self.inner().select(*exprs, groups=groups).pipe(self._new)
 
-    def _filter(self, predicates: Iterable[IntoExprColumn]) -> Self:
+    def _filter(
+        self, preds: Iterable[IntoExprColumn], *more_preds: IntoExprColumn
+    ) -> Self:
         return self._new(
-            pc.Iter(predicates)
-            .map(lambda value: sql.into_expr(value, as_col=True))
-            .reduce(sql.SqlExpr.and_)
+            try_chain(preds, more_preds)
+            .into(sql.reduce, sql.SqlExpr.and_)
             .pipe(self.inner().filter)
         )
 

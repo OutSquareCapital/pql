@@ -10,10 +10,11 @@ from ._expr import Expr, ExprMeta
 
 if TYPE_CHECKING:
     from .sql.typing import IntoExpr
+    from .sql.utils import TryIter
 
 
-def when(condition: IntoExpr) -> When:
-    return When(sql.when(condition))
+def when(predicates: TryIter[IntoExpr], *more_predicates: IntoExpr) -> When:
+    return When(sql.when(predicates, *more_predicates))
 
 
 @dataclass(slots=True)
@@ -28,8 +29,10 @@ class Then(Expr):
     _inner: sql.Then
     __slots__ = ()
 
-    def when(self, predicate: IntoExpr) -> ChainedWhen:
-        return ChainedWhen(self._inner.when(predicate), self.meta)
+    def when(
+        self, predicates: TryIter[IntoExpr], *more_predicates: IntoExpr
+    ) -> ChainedWhen:
+        return ChainedWhen(self._inner.when(predicates, *more_predicates), self.meta)
 
     def otherwise(self, statement: IntoExpr) -> Expr:
         return Expr(self._inner.otherwise(statement), pc.Some(self.meta))
@@ -48,8 +51,10 @@ class ChainedThen(Expr):
     _inner: sql.ChainedThen
     __slots__ = ()
 
-    def when(self, predicate: IntoExpr) -> ChainedWhen:
-        return ChainedWhen(self._inner.when(predicate), self.meta)
+    def when(
+        self, predicates: TryIter[IntoExpr], *more_predicates: IntoExpr
+    ) -> ChainedWhen:
+        return ChainedWhen(self._inner.when(predicates, *more_predicates), self.meta)
 
     def otherwise(self, statement: IntoExpr) -> Expr:
         return Expr(self._inner.otherwise(statement), pc.Some(self.meta))

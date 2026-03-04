@@ -12,8 +12,8 @@ from typing import TYPE_CHECKING, NamedTuple, Self
 import pyochain as pc
 
 from . import _datatypes as dt, sql  # pyright: ignore[reportPrivateUsage]
-from ._args_iter import try_chain, try_iter
 from ._computations import fill_nulls
+from .sql.utils import try_chain, try_iter
 
 if TYPE_CHECKING:
     from ._datatypes import DataType

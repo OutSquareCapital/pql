@@ -5,7 +5,7 @@ from typing import Any
 
 import pyochain as pc
 
-from .sql.typing import NonNestedLiteral
+from .typing import NonNestedLiteral
 
 type TryIter[T] = Iterable[T] | T
 """Represent a value that may or may not be an `Iterable`."""
@@ -34,6 +34,12 @@ def try_iter[T](val: TryIter[T]) -> pc.Iter[T]:
 def check_by_arg[T: NonNestedLiteral](
     compared: pc.Seq[Any], name: str, arg: TrySeq[T]
 ) -> pc.Result[pc.Iter[T], ValueError]:
+    """Checks if the sequence arg matches the length of compared.
+
+    Returns an iterator over arg if lengths match, otherwise returns a ValueError.
+
+    If arg is not a sequence, repeats its value to match the length of compared.
+    """
     length = compared.length()
     match arg:
         case Sequence():

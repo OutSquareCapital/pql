@@ -26,7 +26,7 @@ from __future__ import annotations
 {Import(Pyochain).as_("pc")}
 {From(DuckDB).import_(DuckDB.EXPLAIN_TYPE, DuckDB.RENDER_MODE)}
 from .._core import {Pql.CORE_HANDLER}, {Pql.REL_HANDLER}, {Pql.INTO_DUCKDB}, {Pql.INTO_DUCKDB_MAPPING}, {Pql.DUCK_HANDLER}
-from ..._args_iter import {Pql.TRY_ITER}
+from ..utils import {Pql.TRY_ITER}
 if {Typing.TYPE_CHECKING}:
     {From(CollectionsABC).import_(CollectionsABC.CALLABLE, CollectionsABC.ITERABLE, CollectionsABC.MAPPING)}
 

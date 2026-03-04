@@ -1,19 +1,24 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from functools import partial
 from typing import TYPE_CHECKING
 
 import duckdb
 
 from ._expr import SqlExpr
-from ._funcs import into_duckdb
+from ._funcs import into_duckdb, reduce
+from .utils import try_chain
 
 if TYPE_CHECKING:
     from .typing import IntoExpr
+    from .utils import TryIter
+
+_red_fn = partial(reduce, function=SqlExpr.and_)
 
 
-def when(condition: IntoExpr) -> When:
-    return When(condition)
+def when(predicates: TryIter[IntoExpr], *more_predicates: IntoExpr) -> When:
+    return _red_fn(try_chain(predicates, more_predicates)).pipe(When)
 
 
 @dataclass(slots=True)
@@ -27,8 +32,10 @@ class When:
 
 @dataclass(slots=True)
 class Then(SqlExpr):
-    def when(self, predicate: IntoExpr) -> ChainedWhen:
-        return ChainedWhen(self, predicate)
+    def when(
+        self, predicates: TryIter[IntoExpr], *more_predicates: IntoExpr
+    ) -> ChainedWhen:
+        return ChainedWhen(self, _red_fn(try_chain(predicates, more_predicates)))
 
     def otherwise(self, statement: IntoExpr) -> SqlExpr:
         return SqlExpr(self.inner().otherwise(into_duckdb(statement)))
@@ -49,8 +56,10 @@ class ChainedWhen:
 
 @dataclass(slots=True)
 class ChainedThen(SqlExpr):
-    def when(self, predicate: IntoExpr) -> ChainedWhen:
-        return ChainedWhen(self, predicate)
+    def when(
+        self, predicates: TryIter[IntoExpr], *more_predicates: IntoExpr
+    ) -> ChainedWhen:
+        return ChainedWhen(self, _red_fn(try_chain(predicates, more_predicates)))
 
     def otherwise(self, statement: IntoExpr) -> SqlExpr:
         return SqlExpr(self.inner().otherwise(into_duckdb(statement)))

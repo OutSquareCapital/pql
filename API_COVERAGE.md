@@ -18,7 +18,7 @@ Each summary cell is `global (Narwhals, Polars)`.
 | ExprNameNameSpace   | 81.2% (100.0%, 70.0%) | 16 (6, 10)    | 13 (6, 7)    | 3 (0, 3)      | 0 (0, 0)    | 3 (2, 1)   |
 | ExprArrNameSpace    | 54.8% (100.0%, 54.8%) | 31 (0, 31)    | 17 (0, 17)   | 10 (0, 10)    | 4 (0, 4)    | 27 (24, 3) |
 | ExprDtNameSpace     | 51.5% (60.9%, 46.7%)  | 68 (23, 45)   | 35 (14, 21)  | 25 (7, 18)    | 8 (2, 6)    | 13 (12, 1) |
-| ModuleFunctions     | 20.6% (37.0%, 14.1%)  | 257 (73, 184) | 53 (27, 26)  | 171 (31, 140) | 33 (15, 18) | 18 (10, 8) |
+| ModuleFunctions     | 21.0% (38.4%, 14.1%)  | 257 (73, 184) | 54 (28, 26)  | 171 (31, 140) | 32 (14, 18) | 18 (10, 8) |
 
 ## LazyFrame
 
@@ -1080,7 +1080,7 @@ Each summary cell is `global (Narwhals, Polars)`.
 - `zeros`
   - **Polars**: (n: int | Expr, dtype: PolarsDataType, eager: bool) -> Expr | Series
 
-### [!] Signature Mismatches (13)
+### [!] Signature Mismatches (12)
 
 - `Array` (nw)
   - **Narwhals**: (`inner: IntoDType`, `shape: int | tuple[int, ...]`) -> None
@@ -1130,10 +1130,6 @@ Each summary cell is `global (Narwhals, Polars)`.
   - **Narwhals**: (value: PythonLiteral, `dtype: IntoDType | None`) -> Expr
   - **Polars**: (value: Any, `dtype: PolarsDataType | None`, `allow_object: bool`) -> Expr
   - **pql**: (value: PythonLiteral) -> Expr
-- `when` (nw)
-  - **Narwhals**: (`*predicates: IntoExpr | Iterable[IntoExpr]`) -> When
-  - **Polars**: (`*predicates: IntoExprColumn | Iterable[IntoExprColumn] | bool`, `**constraints: Any`) -> When
-  - **pql**: (`condition: IntoExpr`) -> When
 
 ### [+] Extra Methods (pql-only) (8)
 

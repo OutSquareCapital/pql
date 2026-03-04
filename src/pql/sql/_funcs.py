@@ -4,10 +4,22 @@ from functools import partial
 import duckdb
 import pyochain as pc
 
-from .._args_iter import TryIter, try_chain
 from ._core import DuckHandler, func, into_duckdb
 from ._expr import SqlExpr
 from .typing import IntoExpr, IntoExprColumn, PythonLiteral
+from .utils import TryIter, try_chain
+
+
+def reduce(
+    exprs: Iterable[IntoExpr], function: Callable[[SqlExpr, IntoExpr], SqlExpr]
+) -> SqlExpr:
+    """Reduces an `Iterable` of `IntoExpr` into a single `SqlExpr`.
+
+    Done by applying a binary *fn* (defaulting to logical `AND`) to each item, after converting them with `into_expr`.
+    """
+    return (
+        pc.Iter(exprs).map(lambda value: into_expr(value, as_col=True)).reduce(function)
+    )
 
 
 def row_number() -> SqlExpr:
@@ -116,18 +128,6 @@ def _horizontal_fn(
     )
 
 
-def _horizontal_reduce(
-    exprs: TryIter[IntoExpr],
-    more_exprs: Iterable[IntoExpr],
-    fn: Callable[[SqlExpr, IntoExpr], SqlExpr],
-) -> SqlExpr:
-    return (
-        try_chain(exprs, more_exprs)
-        .map(lambda value: into_expr(value, as_col=True))
-        .reduce(fn)
-    )
-
-
 def min_horizontal(exprs: TryIter[IntoExpr], *more_exprs: IntoExpr) -> SqlExpr:
     return _horizontal_fn(exprs, more_exprs, SqlExpr.least)
 
@@ -137,17 +137,17 @@ def max_horizontal(exprs: TryIter[IntoExpr], *more_exprs: IntoExpr) -> SqlExpr:
 
 
 def sum_horizontal(exprs: TryIter[IntoExpr], *more_exprs: IntoExpr) -> SqlExpr:
-    return _horizontal_reduce(
-        exprs, more_exprs, lambda lhs, rhs: lhs.add(coalesce(rhs, 0))
+    return try_chain(exprs, more_exprs).into(
+        reduce, lambda lhs, rhs: lhs.add(coalesce(rhs, 0))
     )
 
 
 def all_horizontal(exprs: TryIter[IntoExpr], *more_exprs: IntoExpr) -> SqlExpr:
-    return _horizontal_reduce(exprs, more_exprs, SqlExpr.and_)
+    return try_chain(exprs, more_exprs).into(reduce, SqlExpr.and_)
 
 
 def any_horizontal(exprs: TryIter[IntoExpr], *more_exprs: IntoExpr) -> SqlExpr:
-    return _horizontal_reduce(exprs, more_exprs, SqlExpr.or_)
+    return try_chain(exprs, more_exprs).into(reduce, SqlExpr.or_)
 
 
 def mean_horizontal(exprs: TryIter[IntoExpr], *more_exprs: IntoExpr) -> SqlExpr:

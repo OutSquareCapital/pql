@@ -20,6 +20,7 @@ class _Arg(StrEnum):
     FORCE_PARALLEL = auto()
     MULTITHREADED = auto()
     MORE_EXPRS = auto()
+    MORE_PREDICATES = auto()
     INTERPOLATION = auto()
 
 
@@ -59,9 +60,9 @@ IGNORED_PARAMS: IgnoredParams = pc.Dict(
             join=_args(_Arg.ALLOW_PARALLEL, _Arg.FORCE_PARALLEL),
             join_asof=_args(_Arg.ALLOW_PARALLEL, _Arg.FORCE_PARALLEL),
             collect=_args("backend", "kwargs"),
-            quantile=_args("interpolation"),
+            quantile=_args(_Arg.INTERPOLATION),
             select=_args(_Arg.MORE_EXPRS),
-            filter=_args("more_predicates"),
+            filter=_args(_Arg.MORE_PREDICATES),
             with_columns=_args(_Arg.MORE_EXPRS),
         ),
         Pql.EXPR: pc.Dict.from_kwargs(
@@ -80,6 +81,7 @@ IGNORED_PARAMS: IgnoredParams = pc.Dict(
             mean_horizontal=_args(_Arg.MORE_EXPRS),
             min_horizontal=_args(_Arg.MORE_EXPRS),
             sum_horizontal=_args(_Arg.MORE_EXPRS),
+            when=_args(_Arg.MORE_PREDICATES),
         ),
     }
 )

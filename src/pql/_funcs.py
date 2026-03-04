@@ -3,9 +3,9 @@ from collections.abc import Callable, Iterable
 import pyochain as pc
 
 from . import sql
-from ._args_iter import TryIter, try_iter
 from ._expr import Expr, ExprMeta
 from .sql.typing import IntoExpr, IntoExprColumn, PythonLiteral
+from .sql.utils import TryIter, try_iter
 
 
 class Col:
