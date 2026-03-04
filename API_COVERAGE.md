@@ -9,9 +9,9 @@ The first value of each tuple is for `Narwhals` and the second value is for `Pol
 
 | Class               | Coverage        | Total     | Matched  | Missing | Mismatched | Extra   |
 | ------------------- | --------------- | --------- | -------- | ------- | ---------- | ------- |
-| LazyFrame           | (53.8%, 32.5%)  | (26, 83)  | (14, 27) | (1, 32) | (11, 24)   | (35, 9) |
+| LazyFrame           | (61.5%, 34.9%)  | (26, 83)  | (16, 29) | (1, 32) | (9, 22)    | (35, 9) |
 | Expr                | (71.4%, 42.7%)  | (70, 213) | (50, 91) | (7, 93) | (13, 29)   | (58, 1) |
-| LazyGroupBy         | (0.0%, 50.0%)   | (1, 16)   | (0, 8)   | (0, 4)  | (1, 4)     | (11, 0) |
+| LazyGroupBy         | (0.0%, 56.2%)   | (1, 16)   | (0, 9)   | (0, 4)  | (1, 3)     | (11, 0) |
 | ExprStrNameSpace    | (42.1%, 27.7%)  | (19, 47)  | (8, 13)  | (0, 10) | (11, 24)   | (19, 1) |
 | ExprListNameSpace   | (90.0%, 46.5%)  | (10, 43)  | (9, 20)  | (0, 20) | (1, 3)     | (14, 1) |
 | ExprStructNameSpace | (100.0%, 20.0%) | (1, 5)    | (1, 1)   | (0, 2)  | (0, 2)     | (3, 1)  |
@@ -90,7 +90,7 @@ The first value of each tuple is for `Narwhals` and the second value is for `Pol
 - `with_columns_seq`
   - **Polars**: (*exprs: IntoExpr | Iterable[IntoExpr], **named_exprs: IntoExpr) -> LazyFrame
 
-### [!] Signature Mismatches (18)
+### [!] Signature Mismatches (16)
 
 - `cast` (pl)
   - **Polars***: (`dtypes: Mapping[ColumnNameOrSelector | PolarsDataType, PolarsDataType | PythonDataType] | PolarsDataType | pl.DataTypeExpr | Schema`, `strict: bool`) -> LazyFrame
@@ -105,7 +105,7 @@ The first value of each tuple is for `Narwhals` and the second value is for `Pol
 - `drop_nulls` (nw)
   - **Narwhals**: (`subset: str | list[str] | None`) -> Self
   - **Polars**: (`subset: ColumnNameOrSelector | Collection[ColumnNameOrSelector] | None`) -> LazyFrame
-  - **pql**: (`subset: str | Iterable[str] | None`) -> Self
+  - **pql**: (`subset: TryIter[str] | None`) -> Self
 - `explain` (pl)
   - **Polars***: (`format: ExplainFormat`, `optimized: bool`, `type_coercion: bool`, `predicate_pushdown: bool`, `projection_pushdown: bool`, `simplify_expression: bool`, `slice_pushdown: bool`, `comm_subplan_elim: bool`, `comm_subexpr_elim: bool`, `cluster_with_columns: bool`, `collapse_joins: bool`, `streaming: bool`, `engine: EngineType`, `tree_format: bool | None`, `optimizations: QueryOptFlags`) -> str
   - **pql**: (`kind: Literal['standard', 'analyze']`) -> str
@@ -115,15 +115,15 @@ The first value of each tuple is for `Narwhals` and the second value is for `Pol
 - `filter` (nw)
   - **Narwhals**: (`*predicates: IntoExpr | Iterable[IntoExpr]`, **constraints: Any) -> Self
   - **Polars**: (`*predicates: IntoExprColumn | Iterable[IntoExprColumn] | bool | list[bool]`, **constraints: Any) -> LazyFrame
-  - **pql**: (`predicate: IntoExprColumn | Iterable[IntoExprColumn]`, `*more_predicates: IntoExprColumn`, `**constraints: IntoExpr`) -> Self
+  - **pql**: (`predicates: TryIter[IntoExprColumn]`, *more_predicates: IntoExprColumn, `**constraints: IntoExpr`) -> Self
 - `join` (nw)
   - **Narwhals**: (other: Self, `on: str | list[str] | None`, how: JoinStrategy, `left_on: str | list[str] | None`, `right_on: str | list[str] | None`, suffix: str) -> Self
   - **Polars**: (other: LazyFrame, `on: str | Expr | Sequence[str | Expr] | None`, how: JoinStrategy, `left_on: str | Expr | Sequence[str | Expr] | None`, `right_on: str | Expr | Sequence[str | Expr] | None`, suffix: str, `validate: JoinValidation`, `nulls_equal: bool`, `coalesce: bool | None`, `maintain_order: MaintainOrderJoin | None`, allow_parallel: bool, force_parallel: bool) -> LazyFrame
-  - **pql**: (other: Self, `on: str | Iterable[str] | None`, how: JoinStrategy, `left_on: str | Iterable[str] | None`, `right_on: str | Iterable[str] | None`, suffix: str) -> Self
+  - **pql**: (other: Self, `on: TryIter[str] | None`, how: JoinStrategy, `left_on: TryIter[str] | None`, `right_on: TryIter[str] | None`, suffix: str) -> Self
 - `join_asof` (nw)
   - **Narwhals**: (other: Self, left_on: str | None, right_on: str | None, on: str | None, `by_left: str | list[str] | None`, `by_right: str | list[str] | None`, `by: str | list[str] | None`, strategy: AsofJoinStrategy, suffix: str) -> Self
   - **Polars**: (other: LazyFrame, `left_on: str | None | Expr`, `right_on: str | None | Expr`, `on: str | None | Expr`, `by_left: str | Sequence[str] | None`, `by_right: str | Sequence[str] | None`, `by: str | Sequence[str] | None`, strategy: AsofJoinStrategy, suffix: str, `tolerance: str | int | float | timedelta | None`, allow_parallel: bool, force_parallel: bool, `coalesce: bool`, `allow_exact_matches: bool`, `check_sortedness: bool`) -> LazyFrame
-  - **pql**: (other: Self, left_on: str | None, right_on: str | None, on: str | None, `by_left: str | Iterable[str] | None`, `by_right: str | Iterable[str] | None`, `by: str | Iterable[str] | None`, strategy: AsofJoinStrategy, suffix: str) -> Self
+  - **pql**: (other: Self, left_on: str | None, right_on: str | None, on: str | None, `by_left: TryIter[str] | None`, `by_right: TryIter[str] | None`, `by: TryIter[str] | None`, strategy: AsofJoinStrategy, suffix: str) -> Self
 - `quantile` (pl)
   - **Polars***: (`quantile: float | Expr`, interpolation: QuantileMethod) -> LazyFrame
   - **pql**: (`quantile: float`) -> Self
@@ -131,10 +131,6 @@ The first value of each tuple is for `Narwhals` and the second value is for `Pol
   - **Narwhals**: (`mapping: dict[str, str]`) -> Self
   - **Polars**: (`mapping: Mapping[str, str] | Callable[[str], str]`, `strict: bool`) -> LazyFrame
   - **pql**: (`mapping: Mapping[str, str]`) -> Self
-- `select` (nw)
-  - **Narwhals**: (`*exprs: IntoExpr | Iterable[IntoExpr]`, **named_exprs: IntoExpr) -> Self
-  - **Polars**: (`*exprs: IntoExpr | Iterable[IntoExpr]`, **named_exprs: IntoExpr) -> LazyFrame
-  - **pql**: (`expr: IntoExpr | Iterable[IntoExpr]`, `*more_exprs: IntoExpr`, **named_exprs: IntoExpr) -> Self
 - `shift` (pl)
   - **Polars***: (`n: int | IntoExprColumn`, fill_value: IntoExpr | None) -> LazyFrame
   - **pql**: (`n: int`, fill_value: IntoExpr | None) -> Self
@@ -150,11 +146,7 @@ The first value of each tuple is for `Narwhals` and the second value is for `Pol
   - **pql**: (`path: str | Path`, `compression: ParquetCompression`) -> None
 - `unnest` (pl)
   - **Polars***: (`columns: ColumnNameOrSelector | Collection[ColumnNameOrSelector]`, `*more_columns: ColumnNameOrSelector`, `separator: str | None`) -> LazyFrame
-  - **pql**: (`columns: IntoExprColumn | Iterable[IntoExprColumn]`, `*more_columns: IntoExprColumn`) -> Self
-- `with_columns` (nw)
-  - **Narwhals**: (`*exprs: IntoExpr | Iterable[IntoExpr]`, **named_exprs: IntoExpr) -> Self
-  - **Polars**: (`*exprs: IntoExpr | Iterable[IntoExpr]`, **named_exprs: IntoExpr) -> LazyFrame
-  - **pql**: (`expr: IntoExpr | Iterable[IntoExpr]`, `*more_exprs: IntoExpr`, **named_exprs: IntoExpr) -> Self
+  - **pql**: (`columns: TryIter[IntoExprColumn]`, `*more_columns: IntoExprColumn`) -> Self
 
 ### [+] Extra Methods (pql-only) (9)
 
@@ -438,12 +430,8 @@ The first value of each tuple is for `Narwhals` and the second value is for `Pol
 - `tail`
   - **Polars**: (n: int) -> LazyFrame
 
-### [!] Signature Mismatches (4)
+### [!] Signature Mismatches (3)
 
-- `agg` (nw)
-  - **Narwhals**: (`*aggs: Expr | Iterable[Expr]`, `**named_aggs: Expr`) -> LazyFrameT
-  - **Polars**: (`*aggs: IntoExpr | Iterable[IntoExpr]`, **named_aggs: IntoExpr) -> LazyFrame
-  - **pql**: (`aggregate: IntoExpr | Iterable[IntoExpr]`, `*more_aggregates: IntoExpr`, `**named_aggs: IntoExpr`) -> LazyFrame
 - `first` (pl)
   - **Polars***: (`ignore_nulls: bool`) -> LazyFrame
   - **pql**: () -> LazyFrame

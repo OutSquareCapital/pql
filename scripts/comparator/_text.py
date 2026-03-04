@@ -107,7 +107,7 @@ class ClassComparison:
         return ComparisonReport(
             self.name,
             self.narwhals_cls.map(_get_public_methods)
-            .unwrap_or(pc.Set[str].new())
+            .unwrap_or_else(pc.Set.new)
             .union(_get_public_methods(self.polars_cls))
             .union(_get_public_methods(self.pql_cls))
             .iter()

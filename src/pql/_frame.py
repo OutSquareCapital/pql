@@ -165,14 +165,11 @@ class LazyGroupBy:
         )
 
     def agg(
-        self,
-        aggregate: TryIter[IntoExpr],
-        *more_aggregates: IntoExpr,
-        **named_aggs: IntoExpr,
+        self, aggs: TryIter[IntoExpr], *more_aggs: IntoExpr, **named_aggs: IntoExpr
     ) -> LazyFrame:
         plan = (
             self._col_names.into(
-                ExprPlan.from_inputs, try_chain(aggregate, more_aggregates), named_aggs
+                ExprPlan.from_inputs, try_chain(aggs, more_aggs), named_aggs
             )
             .into_iter()
             .map(lambda p: p.implode_or_scalar())
@@ -259,11 +256,11 @@ class LazyFrame(sql.CoreHandler[sql.Relation]):
         return self.inner().pl()
 
     def select(
-        self, expr: TryIter[IntoExpr], *more_exprs: IntoExpr, **named_exprs: IntoExpr
+        self, exprs: TryIter[IntoExpr], *more_exprs: IntoExpr, **named_exprs: IntoExpr
     ) -> Self:
         """Select columns or expressions."""
         plan = ExprPlan.from_inputs(
-            self.columns, try_chain(expr, more_exprs), named_exprs
+            self.columns, try_chain(exprs, more_exprs), named_exprs
         )
         match plan.can_use_unique():
             case True:
@@ -276,12 +273,12 @@ class LazyFrame(sql.CoreHandler[sql.Relation]):
                         return plan.aliased_sql().into(self._select)
 
     def with_columns(
-        self, expr: TryIter[IntoExpr], *more_exprs: IntoExpr, **named_exprs: IntoExpr
+        self, exprs: TryIter[IntoExpr], *more_exprs: IntoExpr, **named_exprs: IntoExpr
     ) -> Self:
         """Add or replace columns."""
         cols = self.columns
         updates = ExprPlan.from_inputs(
-            cols, try_chain(expr, more_exprs), named_exprs
+            cols, try_chain(exprs, more_exprs), named_exprs
         ).to_updates()
         match updates.keys().any(lambda name: name in cols):
             case False:
@@ -311,13 +308,13 @@ class LazyFrame(sql.CoreHandler[sql.Relation]):
 
     def filter(
         self,
-        predicate: TryIter[IntoExprColumn],
+        predicates: TryIter[IntoExprColumn],
         *more_predicates: IntoExprColumn,
         **constraints: IntoExpr,
     ) -> Self:
         """Filter rows based on predicates and equality constraints."""
         return (
-            try_chain(predicate, more_predicates)
+            try_chain(predicates, more_predicates)
             .map(lambda value: sql.into_expr(value, as_col=True))
             .chain(
                 pc.Option(constraints)

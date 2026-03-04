@@ -9,7 +9,7 @@ import pyochain as pc
 from .._utils import Builtins, Pql, Typing, get_attr
 from ._parse import extract_last_name, normalize_annotation
 from ._rules import (
-    IGNORED_PARAMS_BY_CLASS_AND_METHOD,
+    IGNORED_PARAMS,
     MismatchOn,
     RefBackend,
     Status,
@@ -228,9 +228,9 @@ def _without_ignored_params(mapping: MapInfo, ignored: pc.Set[str]) -> MapInfo:
 
 def ignored_params_for(class_name: Pql, method_name: str) -> pc.Set[str]:
     return (
-        IGNORED_PARAMS_BY_CLASS_AND_METHOD.get_item(class_name)
+        IGNORED_PARAMS.get_item(class_name)
         .and_then(lambda method_map: method_map.get_item(method_name))
-        .unwrap_or(default=pc.Set[str].new())
+        .unwrap_or_else(pc.Set.new)
     )
 
 

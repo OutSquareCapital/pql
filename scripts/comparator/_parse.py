@@ -10,9 +10,46 @@ GENERIC_SYMBOL_PATTERN = re.compile(r"^[A-Z][A-Z0-9_]*$")
 SELF_PATTERN = re.compile(r"\b(Self|Expr|LazyFrame)\b")
 
 
+def _slice_to_expr(slice_node: ast.expr) -> ast.expr:
+    match slice_node:
+        case ast.Tuple() | ast.Name() | ast.Subscript() | ast.BinOp() | ast.Attribute():
+            return slice_node
+        case _:
+            return ast.Name(id="Any", ctx=ast.Load())
+
+
+class _AliasExpander(ast.NodeTransformer):
+    _single_param_aliases: pc.Dict[str, str] = pc.Dict.from_kwargs(
+        TryIter="Iterable[{arg}] | {arg}",
+        TrySeq="Sequence[{arg}] | {arg}",
+    )
+
+    def visit_Subscript(self, node: ast.Subscript) -> ast.AST:
+        rewritten = self.generic_visit(node)
+        match rewritten:
+            case ast.Subscript(value=ast.Name(id=alias_name), slice=slice_node):
+                return (
+                    self._single_param_aliases.get_item(alias_name)
+                    .map(
+                        lambda template: ast.copy_location(
+                            ast.parse(
+                                template.format(
+                                    arg=ast.unparse(_slice_to_expr(slice_node))
+                                ),
+                                mode="eval",
+                            ).body,
+                            rewritten,
+                        )
+                    )
+                    .unwrap_or(rewritten)
+                )
+            case _:
+                return rewritten
+
+
 class _GenericCanonicalizer(ast.NodeTransformer):
     def __init__(self) -> None:
-        self._mapping: pc.Dict[str, str] = pc.Dict.new()
+        self._mapping = pc.Dict[str, str].new()
 
     def visit_Name(self, node: ast.Name) -> ast.AST:
         match node.id:
@@ -77,6 +114,16 @@ class _UnionCanonicalizer(ast.NodeTransformer):
 
 
 def normalize_annotation(annotation: str) -> str:
+    def _normalize_aliases(annotation: str) -> str:
+        try:
+            parsed = ast.parse(annotation, mode="eval")
+        except SyntaxError:
+            return annotation
+
+        normalized = _AliasExpander().visit(parsed)
+        ast.fix_missing_locations(normalized)
+        return ast.unparse(normalized)
+
     def _normalize_unions(annotation: str) -> str:
         try:
             parsed = ast.parse(annotation, mode="eval")
@@ -90,7 +137,9 @@ def normalize_annotation(annotation: str) -> str:
     return extract_last_name(
         SELF_PATTERN.sub(
             "__SELF__",
-            extract_last_name(_normalize_unions(_normalize(annotation))),
+            extract_last_name(
+                _normalize_unions(_normalize(_normalize_aliases(annotation)))
+            ),
         )
     )
 
