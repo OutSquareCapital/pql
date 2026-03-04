@@ -55,14 +55,22 @@ This report shows the API coverage of pql compared to other libraries.
 
 ## Summary
 
-The first value of each tuple is for `Narwhals` and the second value is for `Polars`.
+Each summary cell is `global (Narwhals, Polars)`.
 """
     return pc.Iter.once(txt)
 
 
 def _summary_header() -> pc.Seq[str]:
     return pc.Seq(
-        ("Class", "Coverage", "Total", "Matched", "Missing", "Mismatched", "Extra")
+        (
+            "Class",
+            "Coverage",
+            "Implemented",
+            "Matched",
+            "Missing",
+            "Mismatched",
+            "Extra",
+        )
     )
 
 
@@ -75,6 +83,7 @@ class ClassComparison:
     pql_cls: object
     name: Pql
     names: pc.Option[pc.Set[str]] = field(default_factory=lambda: pc.NONE)
+    ignored_names: pc.Set[str] = field(default_factory=pc.Set[str].new)
 
     def to_report(self) -> ComparisonReport:
         """Compare two classes and return comparison results."""
@@ -88,6 +97,7 @@ class ClassComparison:
                 .filter(
                     lambda name: (
                         not name.startswith("_")
+                        and not self.ignored_names.contains(name)
                         and not (
                             get_attr(cls, name)
                             .and_then(lambda attr: get_attr(attr, Dunders.DEPRECATED))
@@ -194,20 +204,39 @@ def _count_cell(
     predicate: Callable[[ComparisonResult, RefBackend], bool],
 ) -> str:
     return _for_each_ref(lambda ref: _count_for_ref(results, ref, predicate)).into(
-        lambda pair: f"({pair[0]}, {pair[1]})"
+        _int_pair_with_total
     )
 
 
 def _status_cell(results: pc.Vec[ComparisonResult], status: Status) -> str:
     return _for_each_ref(lambda ref: _count_for_ref_status(results, ref, status)).into(
-        lambda pair: f"({pair[0]}, {pair[1]})"
+        _int_pair_with_total
     )
 
 
 def _coverage_cell(results: pc.Vec[ComparisonResult]) -> str:
     return _for_each_ref(lambda ref: _coverage_percent(results, ref)).into(
-        lambda pair: f"({pair[0]:.1f}%, {pair[1]:.1f}%)"
+        lambda pair: (
+            f"{_global_coverage_percent(results):.1f}% ({pair[0]:.1f}%, {pair[1]:.1f}%)"
+        )
     )
+
+
+def _int_pair_with_total(pair: pc.Seq[int]) -> str:
+    return f"{pair.sum()} ({pair[0]}, {pair[1]})"
+
+
+def _global_coverage_percent(results: pc.Vec[ComparisonResult]) -> float:
+    totals = _for_each_ref(lambda ref: _count_for_ref(results, ref, _has_reference))
+    matched = _for_each_ref(
+        lambda ref: _count_for_ref_status(results, ref, Status.MATCH)
+    )
+    total = totals.sum()
+    match total:
+        case 0:
+            return 100.0
+        case _:
+            return (matched.sum() / total) * 100
 
 
 def _coverage_percent(results: pc.Vec[ComparisonResult], ref: RefBackend) -> float:

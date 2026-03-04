@@ -5,20 +5,20 @@ This report shows the API coverage of pql compared to other libraries.
 
 ## Summary
 
-The first value of each tuple is for `Narwhals` and the second value is for `Polars`.
+Each summary cell is `global (Narwhals, Polars)`.
 
-| Class               | Coverage        | Total     | Matched  | Missing | Mismatched | Extra   |
-| ------------------- | --------------- | --------- | -------- | ------- | ---------- | ------- |
-| LazyFrame           | (61.5%, 34.9%)  | (26, 83)  | (16, 29) | (1, 32) | (9, 22)    | (35, 9) |
-| Expr                | (71.4%, 42.7%)  | (70, 213) | (50, 91) | (7, 93) | (13, 29)   | (58, 1) |
-| LazyGroupBy         | (0.0%, 56.2%)   | (1, 16)   | (0, 9)   | (0, 4)  | (1, 3)     | (11, 0) |
-| ExprStrNameSpace    | (42.1%, 27.7%)  | (19, 47)  | (8, 13)  | (0, 10) | (11, 24)   | (19, 1) |
-| ExprListNameSpace   | (90.0%, 46.5%)  | (10, 43)  | (9, 20)  | (0, 20) | (1, 3)     | (14, 1) |
-| ExprStructNameSpace | (100.0%, 20.0%) | (1, 5)    | (1, 1)   | (0, 2)  | (0, 2)     | (3, 1)  |
-| ExprNameNameSpace   | (100.0%, 70.0%) | (6, 10)   | (6, 7)   | (0, 3)  | (0, 0)     | (2, 1)  |
-| ExprArrNameSpace    | (100.0%, 54.8%) | (0, 31)   | (0, 17)  | (0, 10) | (0, 4)     | (24, 3) |
-| ExprDtNameSpace     | (60.9%, 46.7%)  | (23, 45)  | (14, 21) | (7, 18) | (2, 6)     | (12, 1) |
-| ModuleFunctions     | (50.0%, 38.1%)  | (20, 21)  | (10, 8)  | (4, 4)  | (6, 9)     | (1, 0)  |
+| Class               | Coverage              | Implemented   | Matched      | Missing       | Mismatched  | Extra      |
+| ------------------- | --------------------- | ------------- | ------------ | ------------- | ----------- | ---------- |
+| LazyFrame           | 41.3% (61.5%, 34.9%)  | 109 (26, 83)  | 45 (16, 29)  | 33 (1, 32)    | 31 (9, 22)  | 44 (35, 9) |
+| Expr                | 49.8% (71.4%, 42.7%)  | 283 (70, 213) | 141 (50, 91) | 100 (7, 93)   | 42 (13, 29) | 59 (58, 1) |
+| LazyGroupBy         | 52.9% (0.0%, 56.2%)   | 17 (1, 16)    | 9 (0, 9)     | 4 (0, 4)      | 4 (1, 3)    | 11 (11, 0) |
+| ExprStrNameSpace    | 31.8% (42.1%, 27.7%)  | 66 (19, 47)   | 21 (8, 13)   | 10 (0, 10)    | 35 (11, 24) | 20 (19, 1) |
+| ExprListNameSpace   | 54.7% (90.0%, 46.5%)  | 53 (10, 43)   | 29 (9, 20)   | 20 (0, 20)    | 4 (1, 3)    | 15 (14, 1) |
+| ExprStructNameSpace | 33.3% (100.0%, 20.0%) | 6 (1, 5)      | 2 (1, 1)     | 2 (0, 2)      | 2 (0, 2)    | 4 (3, 1)   |
+| ExprNameNameSpace   | 81.2% (100.0%, 70.0%) | 16 (6, 10)    | 13 (6, 7)    | 3 (0, 3)      | 0 (0, 0)    | 3 (2, 1)   |
+| ExprArrNameSpace    | 54.8% (100.0%, 54.8%) | 31 (0, 31)    | 17 (0, 17)   | 10 (0, 10)    | 4 (0, 4)    | 27 (24, 3) |
+| ExprDtNameSpace     | 51.5% (60.9%, 46.7%)  | 68 (23, 45)   | 35 (14, 21)  | 25 (7, 18)    | 8 (2, 6)    | 13 (12, 1) |
+| ModuleFunctions     | 20.6% (37.0%, 14.1%)  | 257 (73, 184) | 53 (27, 26)  | 171 (31, 140) | 33 (15, 18) | 18 (10, 8) |
 
 ## LazyFrame
 
@@ -753,23 +753,371 @@ The first value of each tuple is for `Narwhals` and the second value is for `Pol
 
 ## ModuleFunctions
 
-### [x] Missing Methods (4)
+### [x] Missing Methods (153)
 
+- `Any`
+  - **Polars**: (*args, **kwargs)
+- `BaseExtension`
+  - **Polars**: (name: str, storage: PolarsDataType, metadata: str | None) -> None
+- `Catalog`
+  - **Polars**: (workspace_url: str, bearer_token: str | None, require_https: bool) -> None
+- `Categorical`
+  - **Narwhals**: ()
+  - **Polars**: (categories: Categories | str | None, ordering: CategoricalOrdering | None) -> None
+- `Categories`
+  - **Polars**: (name: str | None, namespace: str, physical: PolarsDataType) -> None
+- `CompatLevel`
+  - **Polars**: () -> None
+- `Config`
+  - **Polars**: (restore_defaults: bool, apply_on_context_enter: bool, **options: Unpack[ConfigParameters]) -> None
+- `DataTypeExpr`
+  - **Polars**: ()
+- `Extension`
+  - **Polars**: (name: str, storage: PolarsDataType, metadata: str | None) -> None
+- `Field`
+  - **Narwhals**: (name: str, dtype: IntoDType) -> None
+  - **Polars**: (name: str, dtype: PolarsDataType) -> None
+- `FileProviderArgs`
+  - **Polars**: (index_in_partition: int, partition_keys: DataFrame) -> None
+- `Float16`
+  - **Polars**: ()
+- `GPUEngine`
+  - **Polars**: (device: int | None, memory_resource: Any | None, raise_on_fail: bool, **kwargs: Any) -> None
+- `Implementation`
+  - **Narwhals**: (*values)
+- `Null`
+  - **Polars**: ()
+- `Object`
+  - **Narwhals**: ()
+  - **Polars**: ()
+- `PartitionBy`
+  - **Polars**: (base_path: str | Path, file_path_provider: Callable[[FileProviderArgs], str | Path | IO[bytes] | IO[str]] | None, key: str | Expr | Sequence[str | Expr] | Mapping[str, Expr] | None, include_key: bool | None, max_rows_per_file: int | None, approximate_bytes_per_file: int | Literal['auto'] | None) -> None
+- `QueryOptFlags`
+  - **Polars**: (predicate_pushdown: None | bool, projection_pushdown: None | bool, simplify_expression: None | bool, slice_pushdown: None | bool, comm_subplan_elim: None | bool, comm_subexpr_elim: None | bool, cluster_with_columns: None | bool, collapse_joins: None | bool, check_order_observe: None | bool, fast_projection: None | bool) -> None
+- `SQLContext`
+  - **Polars**: (frames: Mapping[str, CompatibleFrameType | None] | None, register_globals: bool | int, eager: bool, **named_frames: CompatibleFrameType | None) -> None
+- `ScanCastOptions`
+  - **Polars**: (integer_cast: Literal['upcast', 'forbid'], float_cast: Literal['forbid'] | FloatCastOption | Collection[FloatCastOption], datetime_cast: Literal['forbid'] | DatetimeCastOption | Collection[DatetimeCastOption], missing_struct_fields: Literal['insert', 'raise'], extra_struct_fields: Literal['ignore', 'raise'], categorical_to_string: Literal['allow', 'forbid'],_internal_call: bool) -> None
+- `Schema`
+  - **Narwhals**: (schema: Mapping[str, DType] | Iterable[tuple[str, DType]] | None) -> None
+  - **Polars**: (schema: Mapping[str, SchemaInitDataType] | Iterable[tuple[str, SchemaInitDataType] | ArrowSchemaExportable] | ArrowSchemaExportable | None, check_dtypes: bool) -> None
+- `Unknown`
+  - **Narwhals**: ()
+  - **Polars**: ()
+- `align_frames`
+  - **Polars**: (*frames: FrameType | Iterable[FrameType], on: str | Expr | Sequence[str] | Sequence[Expr] | Sequence[str | Expr], how: JoinStrategy, select: str | Expr | Sequence[str | Expr] | None, descending: bool | Sequence[bool]) -> list[FrameType]
+- `any`
+  - **Polars**: (*names: str, ignore_nulls: bool) -> Expr | bool | None
+- `approx_n_unique`
+  - **Polars**: (*columns: str) -> Expr
+- `arange`
+  - **Polars**: (start: int | IntoExprColumn, end: int | IntoExprColumn | None, step: int, dtype: PolarsIntegerType | DataTypeExpr, eager: bool) -> Expr | Series
+- `arctan2`
+  - **Polars**: (y: str | Expr, x: str | Expr) -> Expr
+- `arg_sort_by`
+  - **Polars**: (exprs: IntoExpr | Iterable[IntoExpr], *more_exprs: IntoExpr, descending: bool | Sequence[bool], nulls_last: bool | Sequence[bool], multithreaded: bool, maintain_order: bool) -> Expr
+- `arg_where`
+  - **Polars**: (condition: Expr | Series, eager: bool) -> Expr | Series
+- `build_info`
+  - **Polars**: () -> dict[str, Any]
+- `business_day_count`
+  - **Polars**: (start: date | IntoExprColumn, end: date | IntoExprColumn, week_mask: Iterable[bool], holidays: Iterable[date]) -> Expr
+- `collect_all`
+  - **Polars**: (lazy_frames: Iterable[LazyFrame], type_coercion: bool, predicate_pushdown: bool, projection_pushdown: bool, simplify_expression: bool, no_optimization: bool, slice_pushdown: bool, comm_subplan_elim: bool, comm_subexpr_elim: bool, cluster_with_columns: bool, collapse_joins: bool, optimizations: QueryOptFlags, engine: EngineType, lazy: bool) -> list[DataFrame] | LazyFrame
+- `collect_all_async`
+  - **Polars**: (lazy_frames: Iterable[LazyFrame], gevent: bool, engine: EngineType, optimizations: QueryOptFlags) -> Awaitable[list[DataFrame]] |_GeventDataFrameResult[list[DataFrame]]
 - `concat`
   - **Narwhals**: (items: Iterable[FrameT], how: ConcatMethod) -> FrameT
   - **Polars**: (items: Iterable[PolarsType], how: ConcatMethod, rechunk: bool, parallel: bool, strict: bool) -> PolarsType
+- `concat_arr`
+  - **Polars**: (exprs: IntoExpr | Iterable[IntoExpr], *more_exprs: IntoExpr) -> Expr
+- `concat_list`
+  - **Polars**: (exprs: IntoExpr | Iterable[IntoExpr], *more_exprs: IntoExpr) -> Expr
 - `concat_str`
   - **Narwhals**: (exprs: IntoExpr | Iterable[IntoExpr], *more_exprs: IntoExpr, separator: str, ignore_nulls: bool) -> Expr
   - **Polars**: (exprs: IntoExpr | Iterable[IntoExpr], *more_exprs: IntoExpr, separator: str, ignore_nulls: bool) -> Expr
+- `corr`
+  - **Polars**: (a: IntoExpr, b: IntoExpr, method: CorrelationMethod, ddof: int | None, propagate_nans: bool, eager: bool) -> Expr | Series
+- `count`
+  - **Polars**: (*columns: str) -> Expr
+- `cov`
+  - **Polars**: (a: IntoExpr, b: IntoExpr, ddof: int, eager: bool) -> Expr | Series
+- `cum_count`
+  - **Polars**: (*columns: str, reverse: bool) -> Expr
+- `cum_fold`
+  - **Polars**: (acc: IntoExpr, function: Callable[[Series, Series], Series], exprs: Sequence[Expr | str] | Expr, returns_scalar: bool, return_dtype: DataTypeExpr | PolarsDataType | None, include_init: bool) -> Expr
+- `cum_reduce`
+  - **Polars**: (function: Callable[[Series, Series], Series], exprs: Sequence[Expr | str] | Expr, returns_scalar: bool, return_dtype: DataTypeExpr | PolarsDataType | None) -> Expr
+- `cum_sum`
+  - **Polars**: (*names: str) -> Expr
+- `cum_sum_horizontal`
+  - **Polars**: (*exprs: IntoExpr | Iterable[IntoExpr]) -> Expr
+- `date`
+  - **Polars**: (year: Expr | str | int, month: Expr | str | int, day: Expr | str | int) -> Expr
+- `date_range`
+  - **Polars**: (start: date | datetime | IntoExprColumn, end: date | datetime | IntoExprColumn, interval: str | timedelta, closed: ClosedInterval, eager: bool) -> Series | Expr
+- `date_ranges`
+  - **Polars**: (start: date | datetime | IntoExprColumn, end: date | datetime | IntoExprColumn, interval: str | timedelta, closed: ClosedInterval, eager: bool) -> Series | Expr
+- `datetime`
+  - **Polars**: (year: int | IntoExpr, month: int | IntoExpr, day: int | IntoExpr, hour: int | IntoExpr | None, minute: int | IntoExpr | None, second: int | IntoExpr | None, microsecond: int | IntoExpr | None, time_unit: TimeUnit, time_zone: str | None, ambiguous: Ambiguous | Expr) -> Expr
+- `datetime_range`
+  - **Polars**: (start: datetime | date | IntoExprColumn, end: datetime | date | IntoExprColumn, interval: str | timedelta, closed: ClosedInterval, time_unit: TimeUnit | None, time_zone: str | None, eager: bool) -> Series | Expr
+- `datetime_ranges`
+  - **Polars**: (start: datetime | date | IntoExprColumn, end: datetime | date | IntoExprColumn, interval: str | timedelta, closed: ClosedInterval, time_unit: TimeUnit | None, time_zone: str | None, eager: bool) -> Series | Expr
+- `defer`
+  - **Polars**: (function: Callable[[], DataFrame], schema: SchemaDict | Callable[[], SchemaDict], validate_schema: bool) -> LazyFrame
+- `disable_string_cache`
+  - **Polars**: () -> None
+- `dtype_of`
+  - **Polars**: (col_or_expr: str | Expr) -> DataTypeExpr
+- `duration`
+  - **Polars**: (weeks: Expr | str | int | float | None, days: Expr | str | int | float | None, hours: Expr | str | int | float | None, minutes: Expr | str | int | float | None, seconds: Expr | str | int | float | None, milliseconds: Expr | str | int | float | None, microseconds: Expr | str | int | float | None, nanoseconds: Expr | str | int | float | None, time_unit: TimeUnit | None) -> Expr
+- `enable_string_cache`
+  - **Polars**: () -> None
+- `escape_regex`
+  - **Polars**: (s: str) -> str
+- `exclude`
+  - **Narwhals**: (*names: str | Iterable[str]) -> Expr
+  - **Polars**: (columns: str | PolarsDataType | Collection[str] | Collection[PolarsDataType], *more_columns: str | PolarsDataType) -> Expr
+- `explain_all`
+  - **Polars**: (lazy_frames: Iterable[LazyFrame], optimizations: QueryOptFlags) -> str
+- `field`
+  - **Polars**: (name: str | list[str]) -> Expr
+- `first`
+  - **Polars**: (*columns: str) -> Expr
+- `fold`
+  - **Polars**: (acc: IntoExpr, function: Callable[[Series, Series], Series], exprs: Sequence[Expr | str] | Expr, returns_scalar: bool, return_dtype: DataTypeExpr | PolarsDataType | None) -> Expr
 - `format`
   - **Narwhals**: (f_string: str, *args: IntoExpr) -> Expr
   - **Polars**: (f_string: str, *args: Expr | str) -> Expr
+- `from_arrow`
+  - **Narwhals**: (native_frame: IntoArrowTable, backend: IntoBackend[EagerAllowed]) -> DataFrame[Any]
+  - **Polars**: (data: RecordBatch | Iterable[pa.RecordBatch | pa.Table] | ArrowArrayExportable | ArrowStreamExportable, schema: SchemaDefinition | None, schema_overrides: SchemaDict | None, rechunk: bool) -> DataFrame | Series
+- `from_dataframe`
+  - **Polars**: (df: SupportsInterchange | ArrowArrayExportable | ArrowStreamExportable, allow_copy: bool | None, rechunk: bool) -> DataFrame
+- `from_dict`
+  - **Narwhals**: (data: Mapping[str, Any], schema: IntoSchema | Mapping[str, DType | None] | None, backend: IntoBackend[EagerAllowed] | None, native_namespace: ModuleType | None) -> DataFrame[Any]
+  - **Polars**: (data: Mapping[str, Sequence[object] | Mapping[str, Sequence[object]] | Series], schema: SchemaDefinition | None, schema_overrides: SchemaDict | None, strict: bool) -> DataFrame
+- `from_dicts`
+  - **Narwhals**: (data: Sequence[Mapping[str, Any]], schema: IntoSchema | Mapping[str, DType | None] | None, backend: IntoBackend[EagerAllowed]) -> DataFrame[Any]
+  - **Polars**: (data: Iterable[Mapping[str, Any]], schema: SchemaDefinition | None, schema_overrides: SchemaDict | None, strict: bool, infer_schema_length: int | None) -> DataFrame
+- `from_epoch`
+  - **Polars**: (column: str | Expr | Series | Sequence[int], time_unit: EpochTimeUnit) -> Expr | Series
+- `from_numpy`
+  - **Narwhals**: (data: _2DArray, schema: IntoSchema | Sequence[str] | None, backend: IntoBackend[EagerAllowed]) -> DataFrame[Any]
+  - **Polars**: (data: ndarray[Any, Any], schema: SchemaDefinition | None, schema_overrides: SchemaDict | None, orient: Orientation | None) -> DataFrame
+- `from_pandas`
+  - **Polars**: (data: Series[Any] | pd.Index[Any] | pd.DatetimeIndex, schema_overrides: SchemaDict | None, rechunk: bool, nan_to_null: bool, include_index: bool) -> DataFrame | Series
+- `from_records`
+  - **Polars**: (data: Sequence[Any], schema: SchemaDefinition | None, schema_overrides: SchemaDict | None, strict: bool, orient: Orientation | None, infer_schema_length: int | None) -> DataFrame
+- `from_repr`
+  - **Polars**: (data: str) -> DataFrame | Series
+- `from_torch`
+  - **Polars**: (tensor: Tensor, schema: SchemaDefinition | None, schema_overrides: SchemaDict | None, orient: Orientation | None, force: bool) -> DataFrame
+- `generate_temporary_column_name`
+  - **Narwhals**: (n_bytes: int, columns: Container[str], prefix: str) -> str
+- `get_extension_type`
+  - **Polars**: (ext_name: str) -> type[dt.BaseExtension] | str | None
+- `get_index_type`
+  - **Polars**: () -> PolarsIntegerType
+- `get_native_namespace`
+  - **Narwhals**: (*obj: Frame | Series[Any] | IntoFrame | IntoSeries) -> Any
+- `groups`
+  - **Polars**: (column: str) -> Expr
+- `head`
+  - **Polars**: (column: str, n: int) -> Expr
+- `implode`
+  - **Polars**: (*columns: str) -> Expr
+- `int_range`
+  - **Polars**: (start: int | IntoExprColumn, end: int | IntoExprColumn | None, step: int, dtype: PolarsIntegerType | DataTypeExpr, eager: bool) -> Expr | Series
+- `int_ranges`
+  - **Polars**: (start: int | IntoExprColumn, end: int | IntoExprColumn | None, step: int | IntoExprColumn, dtype: PolarsIntegerType | DataTypeExpr, eager: bool) -> Expr | Series
+- `is_ordered_categorical`
+  - **Narwhals**: (series: Series[Any]) -> bool
+- `json_normalize`
+  - **Polars**: (data: dict[Any, Any] | Sequence[dict[Any, Any] | Any], separator: str, max_level: int | None, schema: Schema | None, strict: bool, infer_schema_length: int | None, encoder: JSONEncoder | None) -> DataFrame
+- `last`
+  - **Polars**: (*columns: str) -> Expr
+- `linear_space`
+  - **Polars**: (start: NumericLiteral | TemporalLiteral | IntoExpr, end: NumericLiteral | TemporalLiteral | IntoExpr, num_samples: int | IntoExpr, closed: ClosedInterval, eager: bool) -> Expr | Series
+- `linear_spaces`
+  - **Polars**: (start: NumericLiteral | TemporalLiteral | IntoExprColumn, end: NumericLiteral | TemporalLiteral | IntoExprColumn, num_samples: int | IntoExprColumn, closed: ClosedInterval, as_array: bool, eager: bool) -> Expr | Series
+- `map_batches`
+  - **Polars**: (exprs: Sequence[str | Expr], function: Callable[[Sequence[Series]], Series | Any], return_dtype: DataTypeExpr | None, is_elementwise: bool, returns_scalar: bool) -> Expr
+- `map_groups`
+  - **Polars**: (exprs: Sequence[str | Expr], function: Callable[[Sequence[Series]], Series | Any], return_dtype: DataTypeExpr | None, is_elementwise: bool, returns_scalar: bool) -> Expr
+- `maybe_align_index`
+  - **Narwhals**: (lhs: FrameOrSeriesT, rhs: Series[Any] | DataFrame[Any] | LazyFrame[Any]) -> FrameOrSeriesT
+- `maybe_convert_dtypes`
+  - **Narwhals**: (obj: FrameOrSeriesT, *args: bool, **kwargs: bool | str) -> FrameOrSeriesT
+- `maybe_get_index`
+  - **Narwhals**: (obj: DataFrame[Any] | LazyFrame[Any] | Series[Any]) -> Any | None
+- `maybe_reset_index`
+  - **Narwhals**: (obj: FrameOrSeriesT) -> FrameOrSeriesT
+- `maybe_set_index`
+  - **Narwhals**: (obj: FrameOrSeriesT, column_names: str | list[str] | None, index: Series[IntoSeriesT] | list[Series[IntoSeriesT]] | None) -> FrameOrSeriesT
+- `n_unique`
+  - **Polars**: (*columns: str) -> Expr
+- `narwhalify`
+  - **Narwhals**: (func: Callable[..., Any] | None, pass_through: bool, eager_only: bool, series_only: bool, allow_series: bool | None) -> Callable[..., Any]
+- `new_series`
+  - **Narwhals**: (name: str, values: Any, dtype: IntoDType | None, backend: IntoBackend[EagerAllowed]) -> Series[Any]
 - `nth`
   - **Narwhals**: (*indices: int | Sequence[int]) -> Expr
   - **Polars**: (*indices: int | Sequence[int], strict: bool) -> Expr
+- `ones`
+  - **Polars**: (n: int | Expr, dtype: PolarsDataType, eager: bool) -> Expr | Series
+- `quantile`
+  - **Polars**: (column: str, quantile: float | Expr, interpolation: QuantileMethod) -> Expr
+- `read_avro`
+  - **Polars**: (source: str | Path | IO[bytes] | bytes, columns: list[int] | list[str] | None, n_rows: int | None) -> DataFrame
+- `read_clipboard`
+  - **Polars**: (separator: str, **kwargs: Any) -> DataFrame
+- `read_csv`
+  - **Narwhals**: (source: FileSource, backend: IntoBackend[EagerAllowed], separator: str, **kwargs: Any) -> DataFrame[Any]
+  - **Polars**: (source: str | Path | IO[str] | IO[bytes] | bytes, has_header: bool, columns: Sequence[int] | Sequence[str] | None, new_columns: Sequence[str] | None, separator: str, comment_prefix: str | None, quote_char: str | None, skip_rows: int, skip_lines: int, schema: SchemaDict | None, schema_overrides: Mapping[str, PolarsDataType] | Sequence[PolarsDataType] | None, null_values: str | Sequence[str] | dict[str, str] | None, missing_utf8_is_empty_string: bool, ignore_errors: bool, try_parse_dates: bool, n_threads: int | None, infer_schema: bool, infer_schema_length: int | None, batch_size: int, n_rows: int | None, encoding: CsvEncoding | str, low_memory: bool, rechunk: bool, use_pyarrow: bool, storage_options: StorageOptionsDict | None, skip_rows_after_header: int, row_index_name: str | None, row_index_offset: int, sample_size: int, eol_char: str, raise_if_empty: bool, truncate_ragged_lines: bool, decimal_comma: bool, glob: bool) -> DataFrame
+- `read_database`
+  - **Polars**: (query: str | TextClause | Selectable, connection: ConnectionOrCursor | str, iter_batches: bool, batch_size: int | None, schema_overrides: SchemaDict | None, infer_schema_length: int | None, execute_options: dict[str, Any] | None) -> DataFrame | Iterator[DataFrame]
+- `read_database_uri`
+  - **Polars**: (query: list[str] | str, uri: str, partition_on: str | None, partition_range: tuple[int, int] | None, partition_num: int | None, protocol: str | None, engine: DbReadEngine | None, schema_overrides: SchemaDict | None, execute_options: dict[str, Any] | None, pre_execution_query: str | list[str] | None) -> DataFrame
+- `read_delta`
+  - **Polars**: (source: str | Path | DeltaTable, version: int | str | datetime | None, columns: list[str] | None, rechunk: bool | None, storage_options: StorageOptionsDict | None, credential_provider: CredentialProviderFunction | Literal['auto'] | None, delta_table_options: dict[str, Any] | None, use_pyarrow: bool, pyarrow_options: dict[str, Any] | None) -> DataFrame
+- `read_excel`
+  - **Polars**: (source: FileSource, sheet_id: int | Sequence[int] | None, sheet_name: str | list[str] | tuple[str, ...] | None, table_name: str | None, engine: ExcelSpreadsheetEngine, engine_options: dict[str, Any] | None, read_options: dict[str, Any] | None, has_header: bool, columns: Sequence[int] | Sequence[str] | str | None, schema_overrides: SchemaDict | None, infer_schema_length: int | None, include_file_paths: str | None, drop_empty_rows: bool, drop_empty_cols: bool, raise_if_empty: bool) -> DataFrame | dict[str, pl.DataFrame]
+- `read_ipc`
+  - **Polars**: (source: str | Path | IO[bytes] | bytes, columns: list[int] | list[str] | None, n_rows: int | None, use_pyarrow: bool, memory_map: bool, storage_options: StorageOptionsDict | None, row_index_name: str | None, row_index_offset: int, rechunk: bool) -> DataFrame
+- `read_ipc_schema`
+  - **Polars**: (source: str | Path | IO[bytes] | bytes) -> dict[str, DataType]
+- `read_ipc_stream`
+  - **Polars**: (source: str | Path | IO[bytes] | bytes, columns: list[int] | list[str] | None, n_rows: int | None, use_pyarrow: bool, storage_options: StorageOptionsDict | None, row_index_name: str | None, row_index_offset: int, rechunk: bool) -> DataFrame
+- `read_json`
+  - **Polars**: (source: str | Path | IOBase | bytes, schema: SchemaDefinition | None, schema_overrides: SchemaDefinition | None, infer_schema_length: int | None) -> DataFrame
+- `read_lines`
+  - **Polars**: (source: str | Path | IO[str] | IO[bytes] | bytes | list[str] | list[Path] | list[IO[str]] | list[IO[bytes]], name: str, n_rows: int | None, row_index_name: str | None, row_index_offset: int, glob: bool, storage_options: StorageOptionsDict | None, credential_provider: CredentialProviderFunction | Literal['auto'] | None, include_file_paths: str | None) -> DataFrame
+- `read_ndjson`
+  - **Polars**: (source: str | Path | IO[str] | IO[bytes] | bytes | list[str] | list[Path] | list[IO[str]] | list[IO[bytes]], schema: SchemaDefinition | None, schema_overrides: SchemaDefinition | None, infer_schema_length: int | None, batch_size: int | None, n_rows: int | None, low_memory: bool, rechunk: bool, row_index_name: str | None, row_index_offset: int, ignore_errors: bool, storage_options: StorageOptionsDict | None, credential_provider: CredentialProviderFunction | Literal['auto'] | None, retries: int | None, file_cache_ttl: int | None, include_file_paths: str | None) -> DataFrame
+- `read_ods`
+  - **Polars**: (source: FileSource, sheet_id: int | Sequence[int] | None, sheet_name: str | list[str] | tuple[str, ...] | None, has_header: bool, columns: Sequence[int] | Sequence[str] | None, schema_overrides: SchemaDict | None, infer_schema_length: int | None, include_file_paths: str | None, drop_empty_rows: bool, drop_empty_cols: bool, raise_if_empty: bool) -> DataFrame | dict[str, pl.DataFrame]
+- `read_parquet`
+  - **Narwhals**: (source: FileSource, backend: IntoBackend[EagerAllowed], **kwargs: Any) -> DataFrame[Any]
+  - **Polars**: (source: FileSource, columns: list[int] | list[str] | None, n_rows: int | None, row_index_name: str | None, row_index_offset: int, parallel: ParallelStrategy, use_statistics: bool, hive_partitioning: bool | None, glob: bool, schema: SchemaDict | None, hive_schema: SchemaDict | None, try_parse_hive_dates: bool, rechunk: bool, low_memory: bool, storage_options: StorageOptionsDict | None, credential_provider: CredentialProviderFunction | Literal['auto'] | None, retries: int | None, use_pyarrow: bool, pyarrow_options: dict[str, Any] | None, memory_map: bool, include_file_paths: str | None, missing_columns: Literal['insert', 'raise'], allow_missing_columns: bool | None) -> DataFrame
+- `read_parquet_metadata`
+  - **Polars**: (source: str | Path | IO[bytes] | bytes, storage_options: StorageOptionsDict | None, credential_provider: CredentialProviderFunction | Literal['auto'] | None, retries: int | None) -> dict[str, str]
+- `read_parquet_schema`
+  - **Polars**: (source: str | Path | IO[bytes] | bytes) -> dict[str, DataType]
+- `reduce`
+  - **Polars**: (function: Callable[[Series, Series], Series], exprs: Sequence[Expr | str] | Expr, returns_scalar: bool, return_dtype: DataTypeExpr | PolarsDataType | None) -> Expr
+- `register_extension_type`
+  - **Polars**: (ext_name: str, ext_class: type[dt.BaseExtension] | None, as_storage: bool) -> None
+- `repeat`
+  - **Polars**: (value: IntoExpr | None, n: int | Expr, dtype: PolarsDataType | None, eager: bool) -> Expr | Series
+- `rolling_corr`
+  - **Polars**: (a: str | Expr, b: str | Expr, window_size: int, min_samples: int | None, ddof: int) -> Expr
+- `rolling_cov`
+  - **Polars**: (a: str | Expr, b: str | Expr, window_size: int, min_samples: int | None, ddof: int) -> Expr
+- `row_index`
+  - **Polars**: (name: str) -> Expr
+- `scan_csv`
+  - **Narwhals**: (source: FileSource, backend: IntoBackend[Backend], separator: str, **kwargs: Any) -> LazyFrame[Any]
+  - **Polars**: (source: str | Path | IO[str] | IO[bytes] | bytes | list[str] | list[Path] | list[IO[str]] | list[IO[bytes]] | list[bytes], has_header: bool, separator: str, comment_prefix: str | None, quote_char: str | None, skip_rows: int, skip_lines: int, schema: SchemaDict | None, schema_overrides: SchemaDict | Sequence[PolarsDataType] | None, null_values: str | Sequence[str] | dict[str, str] | None, missing_utf8_is_empty_string: bool, ignore_errors: bool, cache: bool, with_column_names: Callable[[list[str]], list[str]] | None, infer_schema: bool, infer_schema_length: int | None, n_rows: int | None, encoding: CsvEncoding, low_memory: bool, rechunk: bool, skip_rows_after_header: int, row_index_name: str | None, row_index_offset: int, try_parse_dates: bool, eol_char: str, new_columns: Sequence[str] | None, raise_if_empty: bool, truncate_ragged_lines: bool, decimal_comma: bool, glob: bool, storage_options: StorageOptionsDict | None, credential_provider: CredentialProviderFunction | Literal['auto'] | None, retries: int | None, file_cache_ttl: int | None, include_file_paths: str | None) -> LazyFrame
+- `scan_delta`
+  - **Polars**: (source: str | Path | DeltaTable, version: int | str | datetime | None, storage_options: StorageOptionsDict | None, credential_provider: CredentialProviderFunction | Literal['auto'] | None, delta_table_options: dict[str, Any] | None, use_pyarrow: bool, pyarrow_options: dict[str, Any] | None, rechunk: bool | None) -> LazyFrame
+- `scan_iceberg`
+  - **Polars**: (source: str | Table, snapshot_id: int | None, storage_options: StorageOptionsDict | None, reader_override: Literal['native', 'pyiceberg'] | None, use_metadata_statistics: bool, fast_deletion_count: bool | None, use_pyiceberg_filter: bool) -> LazyFrame
+- `scan_ipc`
+  - **Polars**: (source: str | Path | IO[bytes] | bytes | list[str] | list[Path] | list[IO[bytes]] | list[bytes], n_rows: int | None, cache: bool, rechunk: bool, row_index_name: str | None, row_index_offset: int, glob: bool, storage_options: StorageOptionsDict | None, credential_provider: CredentialProviderFunction | Literal['auto'] | None, memory_map: bool, retries: int | None, file_cache_ttl: int | None, hive_partitioning: bool | None, hive_schema: SchemaDict | None, try_parse_hive_dates: bool, include_file_paths: str | None,_record_batch_statistics: bool) -> LazyFrame
+- `scan_lines`
+  - **Polars**: (source: str | Path | IO[str] | IO[bytes] | bytes | list[str] | list[Path] | list[IO[str]] | list[IO[bytes]], name: str, n_rows: int | None, row_index_name: str | None, row_index_offset: int, glob: bool, storage_options: StorageOptionsDict | None, credential_provider: CredentialProviderFunction | Literal['auto'] | None, include_file_paths: str | None) -> LazyFrame
+- `scan_ndjson`
+  - **Polars**: (source: str | Path | IO[str] | IO[bytes] | bytes | list[str] | list[Path] | list[IO[str]] | list[IO[bytes]], schema: SchemaDefinition | None, schema_overrides: SchemaDefinition | None, infer_schema_length: int | None, batch_size: int | None, n_rows: int | None, low_memory: bool, rechunk: bool, row_index_name: str | None, row_index_offset: int, ignore_errors: bool, storage_options: StorageOptionsDict | None, credential_provider: CredentialProviderFunction | Literal['auto'] | None, retries: int | None, file_cache_ttl: int | None, include_file_paths: str | None) -> LazyFrame
+- `scan_parquet`
+  - **Narwhals**: (source: FileSource, backend: IntoBackend[Backend], **kwargs: Any) -> LazyFrame[Any]
+  - **Polars**: (source: FileSource, n_rows: int | None, row_index_name: str | None, row_index_offset: int, parallel: ParallelStrategy, use_statistics: bool, hive_partitioning: bool | None, glob: bool, hidden_file_prefix: str | Sequence[str] | None, schema: SchemaDict | None, hive_schema: SchemaDict | None, try_parse_hive_dates: bool, rechunk: bool, low_memory: bool, cache: bool, storage_options: StorageOptionsDict | None, credential_provider: CredentialProviderFunction | Literal['auto'] | None, retries: int | None, include_file_paths: str | None, missing_columns: Literal['insert', 'raise'], allow_missing_columns: bool | None, extra_columns: Literal['ignore', 'raise'], cast_options: ScanCastOptions | None,_column_mapping: ColumnMapping | None,_default_values: DefaultFieldValues | None,_deletion_files: DeletionFiles | None,_table_statistics: DataFrame | None,_row_count: tuple[int, int] | None) -> LazyFrame
+- `scan_pyarrow_dataset`
+  - **Polars**: (source: Dataset, allow_pyarrow_filter: bool, batch_size: int | None) -> LazyFrame
+- `select`
+  - **Polars**: (*exprs: IntoExpr | Iterable[IntoExpr], eager: bool, **named_exprs: IntoExpr) -> DataFrame | LazyFrame
+- `self_dtype`
+  - **Polars**: () -> DataTypeExpr
+- `set_random_seed`
+  - **Polars**: (seed: int) -> None
+- `sql`
+  - **Polars**: (query: str, eager: bool) -> DataFrame | LazyFrame
+- `sql_expr`
+  - **Polars**: (sql: str | Sequence[str]) -> Expr | list[Expr]
+- `std`
+  - **Polars**: (column: str, ddof: int) -> Expr
+- `struct`
+  - **Polars**: (*exprs: IntoExpr | Iterable[IntoExpr], schema: SchemaDict | None, eager: bool, **named_exprs: IntoExpr) -> Expr | Series
+- `struct_with_fields`
+  - **Polars**: (mapping: Mapping[str, PolarsDataType | pl.DataTypeExpr]) -> DataTypeExpr
+- `tail`
+  - **Polars**: (column: str, n: int) -> Expr
+- `thread_pool_size`
+  - **Polars**: () -> int
+- `time`
+  - **Polars**: (hour: Expr | str | int | None, minute: Expr | str | int | None, second: Expr | str | int | None, microsecond: Expr | str | int | None) -> Expr
+- `time_range`
+  - **Polars**: (start: time | IntoExprColumn | None, end: time | IntoExprColumn | None, interval: str | timedelta, closed: ClosedInterval, eager: bool) -> Series | Expr
+- `time_ranges`
+  - **Polars**: (start: time | IntoExprColumn | None, end: time | IntoExprColumn | None, interval: str | timedelta, closed: ClosedInterval, eager: bool) -> Series | Expr
+- `to_native`
+  - **Narwhals**: (narwhals_object: DataFrame[IntoDataFrameT] | LazyFrame[IntoLazyFrameT] | Series[IntoSeriesT], pass_through: bool) -> IntoDataFrameT | IntoLazyFrameT | IntoSeriesT | Any
+- `to_py_scalar`
+  - **Narwhals**: (scalar_like: Any) -> Any
+- `union`
+  - **Polars**: (items: Iterable[PolarsType], how: ConcatMethod, strict: bool) -> PolarsType
+- `unregister_extension_type`
+  - **Polars**: (ext_name: str) -> None
+- `using_string_cache`
+  - **Polars**: () -> bool
+- `var`
+  - **Polars**: (column: str, ddof: int) -> Expr
+- `wrap_df`
+  - **Polars**: (df: PyDataFrame) -> DataFrame
+- `wrap_s`
+  - **Polars**: (s: PySeries) -> Series
+- `zeros`
+  - **Polars**: (n: int | Expr, dtype: PolarsDataType, eager: bool) -> Expr | Series
 
-### [!] Signature Mismatches (4)
+### [!] Signature Mismatches (13)
 
+- `Array` (nw)
+  - **Narwhals**: (`inner: IntoDType`, `shape: int | tuple[int, ...]`) -> None
+  - **Polars**: (`inner: PolarsDataType | PythonDataType`, `shape: int | tuple[int, ...] | None`, `width: int | None`) -> None
+  - **pql**: (`inner: DataType`, `size: int`) -> None
+- `Datetime` (nw)
+  - **Narwhals**: (`time_unit: TimeUnit`, `time_zone: str | timezone | None`) -> None
+  - **Polars**: (`time_unit: TimeUnit`, `time_zone: str | tzinfo | None`) -> None
+  - **pql**: (`time_unit: EpochTimeUnit`) -> None
+- `Decimal` (nw)
+  - **Narwhals**: (`precision: int | None`, scale: int) -> None
+  - **Polars**: (`precision: int | None`, scale: int) -> None
+  - **pql**: (`precision: int`, scale: int) -> None
+- `Duration` (nw)
+  - **Narwhals**: (`time_unit: TimeUnit`) -> None
+  - **Polars**: (`time_unit: TimeUnit`) -> None
+  - **pql**: () -> None
+- `Enum` (nw)
+  - **Narwhals**: (`categories: Iterable[str] | type[enum.Enum]`) -> None
+  - **Polars**: (`categories: Series | Iterable[str] | type[enum.Enum]`) -> None
+  - **pql**: (`categories: Iterable[str] | type[PyEnum]`) -> None
+- `Expr` (nw)
+  - **Narwhals**: (`*nodes: ExprNode`) -> None
+  - **Polars**: ()
+  - **pql**: (`inner: SqlExpr`, `meta: Option[ExprMeta]`) -> None
+- `LazyFrame` (nw)
+  - **Narwhals**: (`df: Any`, `level: Literal['full', 'lazy', 'interchange']`) -> None
+  - **Polars**: (`data: FrameInitTypes | None`, `schema: SchemaDefinition | None`, `schema_overrides: SchemaDict | None`, `strict: bool`, `orient: Orientation | None`, `infer_schema_length: int | None`, `nan_to_null: bool`, `height: int | None`) -> None
+  - **pql**: (`data: IntoRel`) -> None
+- `List` (nw)
+  - **Narwhals**: (`inner: IntoDType`) -> None
+  - **Polars**: (`inner: PolarsDataType | PythonDataType`) -> None
+  - **pql**: (`inner: DataType`) -> None
+- `Struct` (nw)
+  - **Narwhals**: (`fields: Sequence[Field] | Mapping[str, IntoDType]`) -> None
+  - **Polars**: (`fields: Sequence[Field] | SchemaDict`) -> None
+  - **pql**: (`fields: IntoDict[str, DataType]`) -> None
 - `all` (nw)
   - **Narwhals**: () -> Expr
   - **Polars**: (`*names: str`, `ignore_nulls: bool`) -> Expr
@@ -786,3 +1134,14 @@ The first value of each tuple is for `Narwhals` and the second value is for `Pol
   - **Narwhals**: (`*predicates: IntoExpr | Iterable[IntoExpr]`) -> When
   - **Polars**: (`*predicates: IntoExprColumn | Iterable[IntoExprColumn] | bool`, `**constraints: Any`) -> When
   - **pql**: (`condition: IntoExpr`) -> When
+
+### [+] Extra Methods (pql-only) (8)
+
+- `BitString`
+- `DatetimeTZ`
+- `Json`
+- `Map`
+- `Number`
+- `TimeTZ`
+- `UUID`
+- `Union`

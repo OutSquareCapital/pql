@@ -24,6 +24,34 @@ class _Arg(StrEnum):
 
 
 type IgnoredParams = pc.Dict[Pql, pc.Dict[str, pc.Set[str]]]
+type IgnoredMembers = pc.Dict[Pql, pc.Set[str]]
+
+
+IGNORED_MEMBERS: IgnoredMembers = pc.Dict(
+    {
+        Pql.MODULE_FUNCTIONS: _args(
+            "show_versions",
+            "col",
+            "from_native",
+            "Utf8",
+            "StringCache",
+            "Series",
+            "CredentialProvider",
+            "CredentialProviderAWS",
+            "CredentialProviderAzure",
+            "CredentialProviderFunction",
+            "CredentialProviderFunctionReturn",
+            "CredentialProviderGCP",
+            "DataFrame",
+        )
+    }
+)
+
+
+def ignored_members_for(class_name: Pql) -> pc.Set[str]:
+    return IGNORED_MEMBERS.get_item(class_name).unwrap_or_else(pc.Set.new)
+
+
 IGNORED_PARAMS: IgnoredParams = pc.Dict(
     {
         Pql.LAZY_FRAME: pc.Dict.from_kwargs(

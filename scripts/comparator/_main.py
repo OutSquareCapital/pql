@@ -10,33 +10,8 @@ import pql
 from pql._frame import LazyGroupBy as pqlLazyGroupBy
 
 from .._utils import Pql
+from ._rules import ignored_members_for
 from ._text import ClassComparison, header, render_summary_table
-
-PURE_MODULE_FUNCTIONS: pc.Set[str] = pc.Set(
-    {
-        "all",
-        "all_horizontal",
-        "any_horizontal",
-        "coalesce",
-        "concat",
-        "concat_str",
-        "element",
-        "lit",
-        "format",
-        "len",
-        "max",
-        "mean",
-        "median",
-        "min",
-        "max_horizontal",
-        "mean_horizontal",
-        "min_horizontal",
-        "nth",
-        "sum",
-        "sum_horizontal",
-        "when",
-    }
-)
 
 
 def get_comparisons() -> str:
@@ -97,7 +72,7 @@ def get_comparisons() -> str:
                     pl,
                     pql,
                     Pql.MODULE_FUNCTIONS,
-                    pc.Some(PURE_MODULE_FUNCTIONS),
+                    ignored_names=ignored_members_for(Pql.MODULE_FUNCTIONS),
                 ),
             )
         )
