@@ -3,8 +3,9 @@ from collections.abc import Iterable
 import pyochain as pc
 
 from . import sql
+from ._args_iter import TryIter, try_iter
 from ._expr import Expr, ExprMeta
-from .sql.typing import IntoExprColumn, PythonLiteral
+from .sql.typing import IntoExpr, IntoExprColumn, PythonLiteral
 
 
 class Col:
@@ -41,6 +42,41 @@ def all(exclude: Iterable[IntoExprColumn] | None = None) -> Expr:
         ExprMeta(inner.get_name(), is_multi=True, excluded_names=excluded_names)
     )
     return Expr(inner, meta)
+
+
+def _horizontal_meta(exprs: TryIter[IntoExpr]) -> pc.Option[ExprMeta]:
+    return (
+        try_iter(exprs)
+        .next()
+        .map(lambda v: sql.into_expr(v, as_col=True).get_name())
+        .map(ExprMeta)
+    )
+
+
+def sum_horizontal(exprs: IntoExpr | Iterable[IntoExpr], *more_exprs: IntoExpr) -> Expr:
+    return Expr(sql.sum_horizontal(exprs, *more_exprs), _horizontal_meta(exprs))
+
+
+def min_horizontal(exprs: IntoExpr | Iterable[IntoExpr], *more_exprs: IntoExpr) -> Expr:
+    return Expr(sql.min_horizontal(exprs, *more_exprs), _horizontal_meta(exprs))
+
+
+def max_horizontal(exprs: IntoExpr | Iterable[IntoExpr], *more_exprs: IntoExpr) -> Expr:
+    return Expr(sql.max_horizontal(exprs, *more_exprs), _horizontal_meta(exprs))
+
+
+def mean_horizontal(
+    exprs: IntoExpr | Iterable[IntoExpr], *more_exprs: IntoExpr
+) -> Expr:
+    return Expr(sql.mean_horizontal(exprs, *more_exprs), _horizontal_meta(exprs))
+
+
+def all_horizontal(exprs: IntoExpr | Iterable[IntoExpr], *more_exprs: IntoExpr) -> Expr:
+    return Expr(sql.all_horizontal(exprs, *more_exprs), _horizontal_meta(exprs))
+
+
+def any_horizontal(exprs: IntoExpr | Iterable[IntoExpr], *more_exprs: IntoExpr) -> Expr:
+    return Expr(sql.any_horizontal(exprs, *more_exprs), _horizontal_meta(exprs))
 
 
 _ELEMENT = Expr(sql.element())

@@ -38,7 +38,18 @@ from ._datatypes import (
 )
 from ._expr import Expr
 from ._frame import LazyFrame
-from ._funcs import all, col, element, lit
+from ._funcs import (
+    all,
+    all_horizontal,
+    any_horizontal,
+    col,
+    element,
+    lit,
+    max_horizontal,
+    mean_horizontal,
+    min_horizontal,
+    sum_horizontal,
+)
 from ._when import when
 
 __all__ = [
@@ -78,9 +89,15 @@ __all__ = [
     "UInt128",
     "Union",
     "all",
+    "all_horizontal",
+    "any_horizontal",
     "col",
     "element",
     "lit",
+    "max_horizontal",
+    "mean_horizontal",
+    "min_horizontal",
     "sql",
+    "sum_horizontal",
     "when",
 ]
