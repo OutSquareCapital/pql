@@ -58,7 +58,7 @@ class FloatType(NumericType):
 
 
 @dataclass(slots=True)
-class IntegerType(DataType):
+class IntegerType(NumericType):
     """Base class for integer data types."""
 
 
