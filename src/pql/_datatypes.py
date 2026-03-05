@@ -43,135 +43,43 @@ class DataType(ABC):
 
 
 @dataclass(slots=True)
-class Binary(DataType):
-    raw = sql.ScalarType.BLOB
+class StringType(DataType):
+    """Base class for string data types."""
 
 
 @dataclass(slots=True)
-class Time(DataType):
-    raw = sql.ScalarType.TIME
+class NumericType(DataType):
+    """Base class for numeric data types."""
 
 
 @dataclass(slots=True)
-class TimeTZ(DataType):
-    raw = sql.ScalarType.TIME_TZ
+class FloatType(NumericType):
+    """Base class for floating-point data types."""
 
 
 @dataclass(slots=True)
-class Duration(DataType):
-    raw = sql.ScalarType.INTERVAL
+class IntegerType(DataType):
+    """Base class for integer data types."""
 
 
 @dataclass(slots=True)
-class Boolean(DataType):
-    raw = sql.ScalarType.BOOLEAN
+class SignedIntegerType(IntegerType):
+    """Base class for signed integer data types."""
 
 
 @dataclass(slots=True)
-class String(DataType):
-    raw = sql.ScalarType.VARCHAR
+class UnsignedIntegerType(IntegerType):
+    """Base class for unsigned integer data types."""
 
 
 @dataclass(slots=True)
-class Date(DataType):
-    raw = sql.ScalarType.DATE
+class TemporalType(DataType):
+    """Base class for temporal data types."""
 
 
 @dataclass(slots=True)
-class DatetimeTZ(DataType):
-    raw = sql.ScalarType.TIMESTAMP_TZ
-
-
-@dataclass(slots=True)
-class Float32(DataType):
-    raw = sql.ScalarType.FLOAT
-
-
-@dataclass(slots=True)
-class Float64(DataType):
-    raw = sql.ScalarType.DOUBLE
-
-
-@dataclass(slots=True)
-class Int8(DataType):
-    raw = sql.ScalarType.TINYINT
-
-
-@dataclass(slots=True)
-class Int16(DataType):
-    raw = sql.ScalarType.SMALLINT
-
-
-@dataclass(slots=True)
-class Int32(DataType):
-    raw = sql.ScalarType.INTEGER
-
-
-@dataclass(slots=True)
-class Int64(DataType):
-    raw = sql.ScalarType.BIGINT
-
-
-@dataclass(slots=True)
-class Int128(DataType):
-    raw = sql.ScalarType.HUGEINT
-
-
-@dataclass(slots=True)
-class UInt8(DataType):
-    raw = sql.ScalarType.UTINYINT
-
-
-@dataclass(slots=True)
-class UInt16(DataType):
-    raw = sql.ScalarType.USMALLINT
-
-
-@dataclass(slots=True)
-class UInt32(DataType):
-    raw = sql.ScalarType.UINTEGER
-
-
-@dataclass(slots=True)
-class UInt64(DataType):
-    raw = sql.ScalarType.UBIGINT
-
-
-@dataclass(slots=True)
-class UInt128(DataType):
-    raw = sql.ScalarType.UHUGEINT
-
-
-@dataclass(slots=True)
-class Json(DataType):
-    raw = sql.ScalarType.JSON
-
-
-@dataclass(slots=True)
-class BitString(DataType):
-    raw = sql.ScalarType.BIT
-
-
-@dataclass(slots=True)
-class Number(DataType):
-    raw = sql.ScalarType.BIGNUM
-
-
-@dataclass(slots=True)
-class UUID(DataType):
-    raw = sql.ScalarType.UUID
-
-
-@dataclass(slots=True, init=False)
-class Datetime(DataType):
-    raw: sql.DType
-    time_unit: EpochTimeUnit
-
-    def __init__(self, time_unit: EpochTimeUnit = "ns") -> None:
-        self.raw = PRECISION_MAP.get_item(time_unit).expect(
-            f"Unsupported time unit: {time_unit}"
-        )
-        self.time_unit = time_unit
+class NestedType(DataType):
+    """Base class for nested data types."""
 
 
 @dataclass(slots=True, init=False)
@@ -201,8 +109,164 @@ class ComplexDataType[T: sql.SqlType](DataType):
         return instance
 
 
+@dataclass(slots=True)
+class Time(TemporalType):
+    raw = sql.ScalarType.TIME
+
+
+@dataclass(slots=True)
+class TimeTZ(TemporalType):
+    raw = sql.ScalarType.TIME_TZ
+
+
+@dataclass(slots=True)
+class Duration(TemporalType):
+    raw = sql.ScalarType.INTERVAL
+
+
+@dataclass(slots=True)
+class Date(TemporalType):
+    raw = sql.ScalarType.DATE
+
+
+@dataclass(slots=True)
+class DatetimeTZ(TemporalType):
+    raw = sql.ScalarType.TIMESTAMP_TZ
+
+
 @dataclass(slots=True, init=False)
-class Union(ComplexDataType[sql.UnionType]):
+class Datetime(TemporalType):
+    raw: sql.DType
+    time_unit: EpochTimeUnit
+
+    def __init__(self, time_unit: EpochTimeUnit = "ns") -> None:
+        self.raw = PRECISION_MAP.get_item(time_unit).expect(
+            f"Unsupported time unit: {time_unit}"
+        )
+        self.time_unit = time_unit
+
+
+@dataclass(slots=True)
+class Boolean(DataType):
+    raw = sql.ScalarType.BOOLEAN
+
+
+@dataclass(slots=True)
+class Number(NumericType):
+    raw = sql.ScalarType.BIGNUM
+
+
+@dataclass(slots=True)
+class UUID(NumericType):
+    raw = sql.ScalarType.UUID
+
+
+@dataclass(slots=True)
+class Float32(FloatType):
+    raw = sql.ScalarType.FLOAT
+
+
+@dataclass(slots=True)
+class Float64(FloatType):
+    raw = sql.ScalarType.DOUBLE
+
+
+@dataclass(slots=True, init=False)
+class Decimal(FloatType, ComplexDataType[sql.DecimalType]):
+    def __init__(self, precision: int = 18, scale: int = 0) -> None:
+        self.raw = sql.DecimalType.new(precision, scale)
+
+    @property
+    def precision(self) -> int:
+        return self.raw.precision.value
+
+    @property
+    def scale(self) -> int:
+        return self.raw.scale.value
+
+
+@dataclass(slots=True)
+class Int8(SignedIntegerType):
+    raw = sql.ScalarType.TINYINT
+
+
+@dataclass(slots=True)
+class Int16(SignedIntegerType):
+    raw = sql.ScalarType.SMALLINT
+
+
+@dataclass(slots=True)
+class Int32(SignedIntegerType):
+    raw = sql.ScalarType.INTEGER
+
+
+@dataclass(slots=True)
+class Int64(SignedIntegerType):
+    raw = sql.ScalarType.BIGINT
+
+
+@dataclass(slots=True)
+class Int128(SignedIntegerType):
+    raw = sql.ScalarType.HUGEINT
+
+
+@dataclass(slots=True)
+class UInt8(UnsignedIntegerType):
+    raw = sql.ScalarType.UTINYINT
+
+
+@dataclass(slots=True)
+class UInt16(UnsignedIntegerType):
+    raw = sql.ScalarType.USMALLINT
+
+
+@dataclass(slots=True)
+class UInt32(UnsignedIntegerType):
+    raw = sql.ScalarType.UINTEGER
+
+
+@dataclass(slots=True)
+class UInt64(UnsignedIntegerType):
+    raw = sql.ScalarType.UBIGINT
+
+
+@dataclass(slots=True)
+class UInt128(UnsignedIntegerType):
+    raw = sql.ScalarType.UHUGEINT
+
+
+@dataclass(slots=True)
+class Binary(StringType):
+    raw = sql.ScalarType.BLOB
+
+
+@dataclass(slots=True)
+class String(StringType):
+    raw = sql.ScalarType.VARCHAR
+
+
+@dataclass(slots=True)
+class Json(StringType):
+    raw = sql.ScalarType.JSON
+
+
+@dataclass(slots=True)
+class BitString(StringType):
+    raw = sql.ScalarType.BIT
+
+
+@dataclass(slots=True, init=False)
+class Enum(StringType, ComplexDataType[sql.EnumType]):
+    def __init__(self, categories: Iterable[str] | type[PyEnum]) -> None:
+        self.raw = sql.EnumType.new(categories)
+
+    @property
+    def categories(self) -> pc.Vec[str]:
+        return self.raw.child.values
+
+
+@dataclass(slots=True, init=False)
+class Union(NestedType, ComplexDataType[sql.UnionType]):
     _fields: pc.Option[pc.Seq[DataType]] = field(default_factory=lambda: pc.NONE)
 
     def __init__(self, fields: Iterable[DataType]) -> None:
@@ -222,7 +286,7 @@ class Union(ComplexDataType[sql.UnionType]):
 
 
 @dataclass(slots=True, init=False)
-class Map(ComplexDataType[sql.MapType]):
+class Map(NestedType, ComplexDataType[sql.MapType]):
     _key: pc.Option[DataType] = field(default_factory=lambda: pc.NONE)
     _value: pc.Option[DataType] = field(default_factory=lambda: pc.NONE)
 
@@ -243,57 +307,7 @@ class Map(ComplexDataType[sql.MapType]):
 
 
 @dataclass(slots=True, init=False)
-class Decimal(ComplexDataType[sql.DecimalType]):
-    def __init__(self, precision: int = 18, scale: int = 0) -> None:
-        self.raw = sql.DecimalType.new(precision, scale)
-
-    @property
-    def precision(self) -> int:
-        return self.raw.precision.value
-
-    @property
-    def scale(self) -> int:
-        return self.raw.scale.value
-
-
-@dataclass(slots=True, init=False)
-class Array(ComplexDataType[sql.ArrayType]):
-    _inner: pc.Option[DataType] = field(default_factory=lambda: pc.NONE)
-
-    def __init__(self, inner: DataType, size: int = 1) -> None:
-        self.raw = sql.ArrayType.new(inner.raw.to_duckdb(), size)
-
-    def with_dim(self, size: int) -> Self:
-        """Add another level of nesting to the array."""
-        return self.__class__(self, size)
-
-    @property
-    def inner(self) -> DataType:
-        if self._inner.is_none():
-            self._inner = pc.Some(DataType.__from_sql__(self.raw.child.dtype))
-        return self._inner.unwrap()
-
-    @property
-    def shape(self) -> int:
-        return self.raw.size.value
-
-
-@dataclass(slots=True, init=False)
-class List(ComplexDataType[sql.ListType]):
-    _inner: pc.Option[DataType] = field(default_factory=lambda: pc.NONE)
-
-    def __init__(self, inner: DataType) -> None:
-        self.raw = sql.ListType.new(inner.raw.to_duckdb())
-
-    @property
-    def inner(self) -> DataType:
-        if self._inner.is_none():
-            self._inner = pc.Some(DataType.__from_sql__(self.raw.child.dtype))
-        return self._inner.unwrap()
-
-
-@dataclass(slots=True, init=False)
-class Struct(ComplexDataType[sql.StructType]):
+class Struct(NestedType, ComplexDataType[sql.StructType]):
     _fields: pc.Option[pc.Dict[str, DataType]] = field(default_factory=lambda: pc.NONE)
 
     def __init__(self, fields: IntoDict[str, DataType]) -> None:
@@ -317,13 +331,39 @@ class Struct(ComplexDataType[sql.StructType]):
 
 
 @dataclass(slots=True, init=False)
-class Enum(ComplexDataType[sql.EnumType]):
-    def __init__(self, categories: Iterable[str] | type[PyEnum]) -> None:
-        self.raw = sql.EnumType.new(categories)
+class Array(NestedType, ComplexDataType[sql.ArrayType]):
+    _inner: pc.Option[DataType] = field(default_factory=lambda: pc.NONE)
+
+    def __init__(self, inner: DataType, size: int = 1) -> None:
+        self.raw = sql.ArrayType.new(inner.raw.to_duckdb(), size)
+
+    def with_dim(self, size: int) -> Self:
+        """Add another level of nesting to the array."""
+        return self.__class__(self, size)
 
     @property
-    def categories(self) -> pc.Vec[str]:
-        return self.raw.child.values
+    def inner(self) -> DataType:
+        if self._inner.is_none():
+            self._inner = pc.Some(DataType.__from_sql__(self.raw.child.dtype))
+        return self._inner.unwrap()
+
+    @property
+    def shape(self) -> int:
+        return self.raw.size.value
+
+
+@dataclass(slots=True, init=False)
+class List(NestedType, ComplexDataType[sql.ListType]):
+    _inner: pc.Option[DataType] = field(default_factory=lambda: pc.NONE)
+
+    def __init__(self, inner: DataType) -> None:
+        self.raw = sql.ListType.new(inner.raw.to_duckdb())
+
+    @property
+    def inner(self) -> DataType:
+        if self._inner.is_none():
+            self._inner = pc.Some(DataType.__from_sql__(self.raw.child.dtype))
+        return self._inner.unwrap()
 
 
 PRECISION_MAP: pc.Dict[EpochTimeUnit, sql.DType] = pc.Dict.from_ref(
