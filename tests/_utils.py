@@ -73,5 +73,11 @@ def assert_eq_pl(
     )
 
 
+def assert_lf_eq_pl(pql_lf: pql.LazyFrame, polars_lf: pl.LazyFrame) -> None:
+    assert_frame_equal(
+        pql_lf.collect(), polars_lf.collect(), check_dtypes=False, check_row_order=False
+    )
+
+
 def on_simple_fn(pql_expr: object, pl_expr: object, fn_name: str) -> None:
     assert_eq_pl(getattr(pql_expr, fn_name)(), getattr(pl_expr, fn_name)())
