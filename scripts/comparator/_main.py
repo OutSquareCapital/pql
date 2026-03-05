@@ -81,7 +81,11 @@ def get_comparisons() -> str:
                     ).unwrap(),
                 ),
                 ClassComparison(
-                    pc.Some(nw.selectors), pl.selectors, pql.selectors, Pql.SELECTORS
+                    pc.Some(nw.selectors),
+                    pl.selectors,
+                    pql.selectors,
+                    Pql.SELECTORS,
+                    ignored_names=IGNORED_MEMBERS.get_item(Pql.SELECTORS).unwrap(),
                 ),
             )
         )
