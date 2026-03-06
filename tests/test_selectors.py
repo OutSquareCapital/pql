@@ -48,6 +48,15 @@ def test_union() -> None:
         cs.numeric().union(cs.string()), cs_pl.numeric().__or__(cs_pl.string())
     )
 
+    assert_eq_pl(
+        cs.numeric().__or__(cs.string()), cs_pl.numeric().__or__(cs_pl.string())
+    )
+
+    assert_lf_eq_pl(
+        pql.LazyFrame(_SAMPLE_DF).select(cs.boolean().__or__(pql.lit(value=True))),
+        _SAMPLE_DF.select(cs_pl.boolean().__or__(pl.lit(value=True))),
+    )
+
 
 def test_intersection() -> None:
     assert_eq_pl(
@@ -55,11 +64,30 @@ def test_intersection() -> None:
         cs_pl.numeric().__and__(cs_pl.by_dtype(pl.Int64)),
     )
 
+    assert_eq_pl(
+        cs.numeric().__and__(cs.by_dtype(pql.Int64)),
+        cs_pl.numeric().__and__(cs_pl.by_dtype(pl.Int64)),
+    )
+
+    assert_lf_eq_pl(
+        pql.LazyFrame(_SAMPLE_DF).select(cs.boolean().__and__(pql.lit(value=True))),
+        _SAMPLE_DF.select(cs_pl.boolean().__and__(pl.lit(value=True))),
+    )
+
 
 def test_difference() -> None:
     assert_eq_pl(
         cs.numeric().difference(cs.by_dtype(pql.Float64)),
         cs_pl.numeric().__sub__(cs_pl.by_dtype(pl.Float64)),
+    )
+    assert_eq_pl(
+        cs.numeric().__sub__(cs.by_dtype(pql.Float64)),
+        cs_pl.numeric().__sub__(cs_pl.by_dtype(pl.Float64)),
+    )
+
+    assert_lf_eq_pl(
+        pql.LazyFrame(_SAMPLE_DF).select(cs.numeric().__sub__(pql.lit(1))),
+        _SAMPLE_DF.select(cs_pl.numeric().__sub__(pl.lit(1))),
     )
 
 
