@@ -10,10 +10,12 @@ Same story for `SQLFrame`.
 The goal is to use as much as possible of the existing Expression/Relational API and functions from duckdb. raw SQL is only used when no other choice exist.
 
 The `sql` folder is the internal API to create duckdb Expressions.
-Roles:
-    - Wraps the duckdb API to provide better naming/usage ergonomics
-    - Extends the existing methods
-    - Handles conversion of raw inputs to duckdb expressions.
+
+### Roles
+
+- Wraps the duckdb API to provide better naming/usage ergonomics
+- Extends the existing methods
+- Handles conversion of raw inputs to duckdb expressions.
 
 Then the "surface" level modules are wrappers on top of this API, to provide the actual user-facing API.
 
