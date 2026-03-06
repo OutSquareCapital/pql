@@ -107,21 +107,25 @@ class JoinKeys[T: pc.Seq[str] | str](NamedTuple):
 
 
 class LazyGroupBy:
-    __slots__ = ("_col_names", "_frame", "_group_expr", "_keys")
+    __slots__ = ("_agg_schema", "_frame", "_group_expr", "_keys")
 
     def __init__(self, frame: LazyFrame, keys: pc.Seq[sql.SqlExpr]) -> None:
         self._frame = frame
         self._keys = keys
         keys_names = keys.iter().map(sql.SqlExpr.get_name).collect(pc.Set)
-        self._col_names = (
-            frame.columns.iter().filter(lambda name: name not in keys_names).collect()
+        self._agg_schema = (
+            frame.schema.items()
+            .iter()
+            .filter_star(lambda name, _: name not in keys_names)
+            .collect(pc.Dict)
         )
         self._group_expr = keys.iter().map(str).join(", ")
 
     def _agg_columns(self, func: Callable[[Expr], Expr]) -> LazyFrame:
 
         return (
-            self._col_names.iter()
+            self._agg_schema.keys()
+            .iter()
             .map(lambda name: sql.col(name).pipe(Expr).pipe(func).alias(name))
             .into(self.agg)
         )
@@ -165,10 +169,10 @@ class LazyGroupBy:
         self, aggs: TryIter[IntoExpr], *more_aggs: IntoExpr, **named_aggs: IntoExpr
     ) -> LazyFrame:
         plan = (
-            self._col_names.into(
+            self._agg_schema.into(
                 ExprPlan.from_inputs, try_chain(aggs, more_aggs), named_aggs
             )
-            .into_iter()
+            .iter()
             .map(lambda p: p.implode_or_scalar())
         )
 
@@ -230,7 +234,7 @@ class LazyFrame(sql.CoreHandler[sql.Relation]):
     ) -> Self:
         """Select columns or expressions."""
         plan = ExprPlan.from_inputs(
-            self.columns, try_chain(exprs, more_exprs), named_exprs
+            self.schema, try_chain(exprs, more_exprs), named_exprs
         )
         match plan.can_use_unique():
             case True:
@@ -246,11 +250,12 @@ class LazyFrame(sql.CoreHandler[sql.Relation]):
         self, exprs: TryIter[IntoExpr], *more_exprs: IntoExpr, **named_exprs: IntoExpr
     ) -> Self:
         """Add or replace columns."""
-        cols = self.columns
+        schema = self.schema
+        col_keys = schema.keys()
         updates = ExprPlan.from_inputs(
-            cols, try_chain(exprs, more_exprs), named_exprs
+            schema, try_chain(exprs, more_exprs), named_exprs
         ).to_updates()
-        match updates.keys().any(lambda name: name in cols):
+        match updates.keys().any(lambda name: name in col_keys):
             case False:
                 return (
                     updates.items()
@@ -261,7 +266,7 @@ class LazyFrame(sql.CoreHandler[sql.Relation]):
                 )
             case True:
                 return (
-                    cols.iter()
+                    col_keys.iter()
                     .map(
                         lambda name: updates.get_item(name).map_or(
                             sql.col(name), lambda c: c.alias(name)
@@ -270,7 +275,7 @@ class LazyFrame(sql.CoreHandler[sql.Relation]):
                     .chain(
                         updates.items()
                         .iter()
-                        .filter_star(lambda name, _expr: name not in cols)
+                        .filter_star(lambda name, _expr: name not in col_keys)
                         .map_star(lambda name, e: e.alias(name))
                     )
                     .into(self._select)

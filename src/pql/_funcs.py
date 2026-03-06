@@ -4,6 +4,7 @@ import pyochain as pc
 
 from . import sql
 from ._expr import Expr, ExprMeta
+from .selectors import all_columns_resolver, exclude_resolver, fixed_resolver
 from .sql.typing import IntoExpr, IntoExprColumn, PythonLiteral
 from .sql.utils import TryIter, try_iter
 
@@ -14,6 +15,9 @@ class Col:
 
     def __getattr__(self, name: str) -> Expr:
         return self(name)
+
+
+col: Col = Col()
 
 
 def lit(value: PythonLiteral) -> Expr:
@@ -29,17 +33,15 @@ def len() -> Expr:
 def _agg_expr(
     agg: Callable[[sql.SqlExpr], sql.SqlExpr], columns: tuple[str, ...]
 ) -> Expr:
-    selected_names = pc.Seq(columns).then_some()
+    cols = pc.Seq(columns)
+    resolver = cols.then(fixed_resolver).unwrap_or(all_columns_resolver)
     return Expr(
-        selected_names.map(lambda vals: sql.col(vals.first())).unwrap_or_else(
-            lambda: sql.lit(0)
-        ),
+        cols.then(lambda c: sql.col(c.first())).unwrap_or_else(lambda: sql.lit(0)),
         pc.Some(
             ExprMeta(
-                selected_names.map(lambda vals: vals.first()).unwrap_or("all"),
+                cols.then(lambda c: c.first()).unwrap_or("all"),
                 is_scalar_like=True,
-                is_multi=True,
-                selected_names=selected_names,
+                column_resolver=pc.Some(resolver),
                 multi_agg=pc.Some(agg),
             )
         ),
@@ -66,9 +68,6 @@ def max(*columns: str) -> Expr:
     return _agg_expr(sql.SqlExpr.max, columns)
 
 
-col: Col = Col()
-
-
 def coalesce(exprs: TryIter[IntoExpr], *more_exprs: IntoExpr) -> Expr:
     """Create a coalesce expression."""
     expr_name = (
@@ -80,21 +79,21 @@ def coalesce(exprs: TryIter[IntoExpr], *more_exprs: IntoExpr) -> Expr:
 def all(exclude: Iterable[IntoExprColumn] | None = None) -> Expr:
     """Create an expression representing all columns (equivalent to pl.all())."""
     inner = sql.all(exclude)
-    excluded_names = (
+    resolver = (
         pc.Option(exclude)
         .map(
             lambda exc: (
                 pc.Iter(exc)
                 .map(lambda value: sql.into_expr(value, as_col=True).get_name())
                 .collect(pc.Set)
+                .into(exclude_resolver)
             )
         )
-        .unwrap_or_else(pc.Set[str].new)
+        .unwrap_or(all_columns_resolver)
     )
-    meta = pc.Some(
-        ExprMeta(inner.get_name(), is_multi=True, excluded_names=excluded_names)
+    return Expr(
+        inner, pc.Some(ExprMeta(inner.get_name(), column_resolver=pc.Some(resolver)))
     )
-    return Expr(inner, meta)
 
 
 def _horizontal_meta(exprs: TryIter[IntoExpr]) -> pc.Option[ExprMeta]:
