@@ -172,7 +172,7 @@ class Float64(FloatType):
 
 
 @dataclass(slots=True, init=False)
-class Decimal(FloatType, ComplexDataType[sql.DecimalType]):
+class Decimal(NumericType, ComplexDataType[sql.DecimalType]):
     def __init__(self, precision: int = 18, scale: int = 0) -> None:
         self.raw = sql.DecimalType.new(precision, scale)
 

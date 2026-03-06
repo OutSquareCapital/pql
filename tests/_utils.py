@@ -8,47 +8,57 @@ from polars.testing import assert_frame_equal
 
 import pql
 
+nan = float("nan")
+
+_DATA = {
+    "a": [True, False, True, None, True, False],
+    "b": [True, True, False, None, True, False],
+    "x": [-10, 2, -3, 5, -10, 20],
+    "uint": [1, 2, 3, None, 1, 2],
+    "float_vals": [1.3652, 2.7525, 3.7314, None, 1.3685, 2.7785],
+    "decimal_vals": [1.3652, 2.7525, 3.7314, None, 1.3685, 2.7785],
+    "n": [None, 3, 1, None, 2, 3],
+    "s": ["1", "2", "3", None, "1", "2"],
+    "age": [25, 30, 35, None, 25, 30],
+    "salary": [50000.0, 60000.0, 70000.0, None, 50000.0, 60000.0],
+    "nested": [[1, 2], [3, 4], [5], None, [1, 2], [3, 4]],
+    "nan_vals": [1.0, nan, 3.0, nan, 5.0, nan],
+    "structs": [
+        {"a": 1, "b": 2, "c": 3, "d": 4},
+        {"a": 5, "b": 6, "c": 7, "d": 8},
+        {"a": 5, "b": 6, "c": 7, "d": 8},
+        {"a": 5, "b": 6, "c": 7, "d": 8},
+        {"a": 5, "b": 6, "c": 7, "d": 8},
+        {"a": 5, "b": 6, "c": 7, "d": 8},
+    ],
+    "d": [
+        date(2024, 1, 1),
+        date(2024, 1, 2),
+        date(2024, 1, 3),
+        date(2024, 1, 4),
+        date(2024, 1, 1),
+        date(2024, 1, 2),
+    ],
+    "dt": [
+        datetime(2024, 1, 1, 10, 30, 15, 123_456),
+        datetime(2024, 1, 2, 11, 45, 30, 1),
+        datetime(2024, 1, 3, 23, 59, 59, 999_001),
+        datetime(2024, 1, 4, 0, 0, 0, 0),
+        datetime(2024, 1, 1, 10, 30, 15, 123_456),
+        datetime(2024, 1, 2, 11, 45, 30, 1),
+    ],
+}
+_SCHEMA = {
+    "uint": pl.UInt16(),
+    "decimal_vals": pl.Decimal(10, 4),
+}
+_DF = nw.from_native(
+    pl.DataFrame(_DATA, schema_overrides=_SCHEMA).pipe(duckdb.from_arrow)
+)
+
 
 def sample_df() -> nw.LazyFrame[duckdb.DuckDBPyRelation]:
-    nan = float("nan")
-    data = {
-        "a": [True, False, True, None, True, False],
-        "b": [True, True, False, None, True, False],
-        "x": [10, 2, 3, 5, 10, 20],
-        "float_vals": [1.36, 2.75, 3.14, None, 1.36, 2.75],
-        "n": [None, 3, 1, None, 2, 3],
-        "s": ["1", "2", "3", None, "1", "2"],
-        "age": [25, 30, 35, None, 25, 30],
-        "salary": [50000.0, 60000.0, 70000.0, None, 50000.0, 60000.0],
-        "nested": [[1, 2], [3, 4], [5], None, [1, 2], [3, 4]],
-        "nan_vals": [1.0, nan, 3.0, nan, 5.0, nan],
-        "structs": [
-            {"a": 1, "b": 2, "c": 3, "d": 4},
-            {"a": 5, "b": 6, "c": 7, "d": 8},
-            {"a": 5, "b": 6, "c": 7, "d": 8},
-            {"a": 5, "b": 6, "c": 7, "d": 8},
-            {"a": 5, "b": 6, "c": 7, "d": 8},
-            {"a": 5, "b": 6, "c": 7, "d": 8},
-        ],
-        "d": [
-            date(2024, 1, 1),
-            date(2024, 1, 2),
-            date(2024, 1, 3),
-            date(2024, 1, 4),
-            date(2024, 1, 1),
-            date(2024, 1, 2),
-        ],
-        "dt": [
-            datetime(2024, 1, 1, 10, 30, 15, 123_456),
-            datetime(2024, 1, 2, 11, 45, 30, 1),
-            datetime(2024, 1, 3, 23, 59, 59, 999_001),
-            datetime(2024, 1, 4, 0, 0, 0, 0),
-            datetime(2024, 1, 1, 10, 30, 15, 123_456),
-            datetime(2024, 1, 2, 11, 45, 30, 1),
-        ],
-    }
-
-    return nw.from_native(duckdb.from_arrow(pl.DataFrame(data)))
+    return _DF
 
 
 def assert_eq(
