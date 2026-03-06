@@ -172,13 +172,10 @@ _SIMPLE_FNS = {
     "sign",
     "floor",
     "ceil",
-    "sqrt",
     "cbrt",
     "abs",
     "approx_n_unique",
     "is_last_distinct",
-    "log10",
-    "log1p",
     "exp",
     "sin",
     "cos",
@@ -198,8 +195,11 @@ def test_simple_methods(fn: str) -> None:
     on_simple_fn(pql.col("x"), pl.col("x"), fn)
 
 
-def test_log() -> None:
-    assert_eq(pql.col("x").log(10), nw.col("x").log(10))
+def test_uint_only_simple() -> None:
+    assert_eq(pql.col("uint").log(2), nw.col("uint").log(2))
+    assert_eq_pl(pql.col("uint").log10(), pl.col("uint").log10())
+    assert_eq_pl(pql.col("uint").log1p(), pl.col("uint").log1p())
+    assert_eq(pql.col("uint").sqrt(), nw.col("uint").sqrt())
 
 
 def test_is_first_distinct() -> None:
