@@ -62,7 +62,7 @@ IGNORED_MEMBERS: IgnoredMembers = pc.Dict(
             "disable_string_cache",
         ),
         Pql.LAZY_FRAME: _args("to_native", "cache", "clear"),
-        Pql.SELECTORS: _args("Selector"),
+        Pql.SELECTORS: _args("Selector", "categorical"),
     }
 )
 
