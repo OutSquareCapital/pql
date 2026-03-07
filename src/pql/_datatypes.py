@@ -236,7 +236,7 @@ class UInt128(UnsignedIntegerType):
 
 
 @dataclass(slots=True)
-class Binary(StringType):
+class Binary(DataType):
     raw = sql.ScalarType.BLOB
 
 
