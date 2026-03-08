@@ -1,5 +1,5 @@
 from collections.abc import Iterable
-from datetime import date, datetime
+from datetime import date, datetime, time
 
 import duckdb
 import narwhals as nw
@@ -49,6 +49,14 @@ _DATA = {
         datetime(2024, 1, 2, 11, 45, 30, 1),
     ],
     "binary": [b"foo", b"bar", b"baz", None, b"foo", b"bar"],
+    "time": [
+        time(10, 30, 15, 123_456),
+        time(11, 45, 30, 1),
+        time(23, 59, 59, 999_001),
+        time(0, 0, 0, 0),
+        time(10, 30, 15, 123_456),
+        time(11, 45, 30, 1),
+    ],
 }
 _SCHEMA = {
     "uint": pl.UInt16(),
