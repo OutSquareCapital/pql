@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from datetime import timedelta
+
 import polars as pl
 import polars.selectors as cs_pl
 import pytest
@@ -133,11 +135,19 @@ def test_empty_selector() -> None:
         "decimal",
         "binary",
         "time",
-        "duration",
     ],
 )
 def test_simple_selector(fn_name: str) -> None:
     assert_eq_pl(getattr(cs, fn_name)(), getattr(cs_pl, fn_name)())
+
+
+def test_duration_selector() -> None:
+    """Dedicated test: DuckDB INTERVAL can't roundtrip via Arrow to Polars."""
+    col_names = ["dur"]
+    pl_lf = pl.LazyFrame({"x": [1, 2], "dur": [timedelta(hours=1), timedelta(days=2)]})
+    pql_lf = pql.LazyFrame(pl_lf)
+    assert pql_lf.select(cs.duration()).columns.into(list) == col_names
+    assert pl_lf.select(cs_pl.duration()).collect_schema().names() == col_names
 
 
 def test_enum() -> None:
