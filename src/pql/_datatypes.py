@@ -412,6 +412,7 @@ NON_NESTED_MAP: pc.Dict[StrIntoDType, DataType] = pc.Dict.from_ref(
         "boolean": Boolean(),
         "interval": Duration(),
         "time": Time(),
+        "time_ns": Time(),
         "time with time zone": TimeTZ(),
         "blob": Binary(),
         "json": Json(),

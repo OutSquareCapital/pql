@@ -19,7 +19,7 @@ Each summary cell is `global (Narwhals, Polars)`.
 | ExprArrNameSpace    | 54.8% (100.0%, 54.8%) | 31 (0, 31)    | 17 (0, 17)   | 10 (0, 10)    | 4 (0, 4)    | 27 (24, 3)  |
 | ExprDtNameSpace     | 51.5% (60.9%, 46.7%)  | 68 (23, 45)   | 35 (14, 21)  | 25 (7, 18)    | 8 (2, 6)    | 13 (12, 1)  |
 | ModuleFunctions     | 22.8% (41.2%, 15.4%)  | 237 (68, 169) | 54 (28, 26)  | 144 (23, 121) | 39 (17, 22) | 27 (15, 12) |
-| selectors           | 11.4% (37.5%, 5.6%)   | 44 (8, 36)    | 5 (3, 2)     | 36 (4, 32)    | 3 (1, 2)    | 0 (0, 0)    |
+| selectors           | 57.1% (71.4%, 54.3%)  | 42 (7, 35)    | 24 (5, 19)   | 13 (1, 12)    | 5 (1, 4)    | 17 (17, 0)  |
 
 ## LazyFrame
 
@@ -1101,80 +1101,43 @@ Each summary cell is `global (Narwhals, Polars)`.
 
 ## selectors
 
-### [x] Missing Methods (32)
+### [x] Missing Methods (12)
 
-- `all`
-  - **Narwhals**: () -> Selector
-  - **Polars**: () -> Selector
 - `alpha`
   - **Polars**: (ascii_only: bool, ignore_spaces: bool) -> Selector
 - `alphanumeric`
   - **Polars**: (ascii_only: bool, ignore_spaces: bool) -> Selector
 - `array`
   - **Polars**: (inner: Selector | None, width: int | None) -> Selector
-- `binary`
-  - **Polars**: () -> Selector
 - `by_index`
   - **Polars**: (*indices: int | range | Sequence[int | range], require_all: bool) -> Selector
-- `by_name`
-  - **Polars**: (*names: str | Collection[str], require_all: bool) -> Selector
-- `categorical`
-  - **Narwhals**: () -> Selector
-  - **Polars**: () -> Selector
-- `contains`
-  - **Polars**: (*substring: str) -> Selector
-- `date`
-  - **Polars**: () -> Selector
 - `datetime`
   - **Narwhals**: (time_unit: TimeUnit | Iterable[TimeUnit] | None, time_zone: str | timezone | Iterable[str | timezone | None] | None) -> Selector
   - **Polars**: (time_unit: TimeUnit | Collection[TimeUnit] | None, time_zone: timezone | Collection[str | pydatetime.timezone | None] | None) -> Selector
-- `decimal`
-  - **Polars**: () -> Selector
 - `digit`
   - **Polars**: (ascii_only: bool) -> Selector
-- `duration`
-  - **Polars**: (time_unit: TimeUnit | Collection[TimeUnit] | None) -> Selector
-- `ends_with`
-  - **Polars**: (*suffix: str) -> Selector
-- `enum`
-  - **Polars**: () -> Selector
 - `exclude`
   - **Polars**: (columns: str | PolarsDataType | Selector | Expr | Collection[str | PolarsDataType | Selector | Expr], *more_columns: str | PolarsDataType | Selector | Expr) -> Selector
 - `expand_selector`
   - **Polars**: (target: DataFrame | LazyFrame | Mapping[str, PolarsDataType], selector: Selector | Expr, strict: bool) -> tuple[str, ...]
 - `first`
   - **Polars**: (strict: bool) -> Selector
-- `float`
-  - **Polars**: () -> Selector
-- `integer`
-  - **Polars**: () -> Selector
 - `is_selector`
   - **Polars**: (obj: Any) -> bool
 - `last`
   - **Polars**: (strict: bool) -> Selector
 - `list`
   - **Polars**: (inner: None | Selector) -> Selector
-- `matches`
-  - **Narwhals**: (pattern: str) -> Selector
-  - **Polars**: (pattern: str) -> Selector
-- `nested`
-  - **Polars**: () -> Selector
-- `signed_integer`
-  - **Polars**: () -> Selector
-- `starts_with`
-  - **Polars**: (*prefix: str) -> Selector
-- `struct`
-  - **Polars**: () -> Selector
-- `temporal`
-  - **Polars**: () -> Selector
-- `time`
-  - **Polars**: () -> Selector
-- `unsigned_integer`
-  - **Polars**: () -> Selector
 
-### [!] Signature Mismatches (1)
+### [!] Signature Mismatches (3)
 
 - `by_dtype` (nw)
   - **Narwhals**: (`*dtypes: DType | type[DType] | Iterable[DType | type[DType]]`) -> Selector
   - **Polars**: (`*dtypes: PolarsDataType | PythonDataType | Iterable[PolarsDataType] | Iterable[PythonDataType]`) -> Selector
   - **pql**: (`*dtypes: type[dt.DataType]`) -> Selector
+- `by_name` (pl)
+  - **Polars***: (`*names: str | Collection[str]`, `require_all: bool`) -> Selector
+  - **pql**: (`*names: str`) -> Selector
+- `duration` (pl)
+  - **Polars***: (`time_unit: TimeUnit | Collection[TimeUnit] | None`) -> Selector
+  - **pql**: () -> Selector

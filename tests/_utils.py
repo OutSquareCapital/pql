@@ -15,6 +15,7 @@ _DATA = {
     "b": [True, True, False, None, True, False],
     "x": [-10, 2, -3, 5, -10, 20],
     "uint": [1, 2, 3, None, 1, 2],
+    "enum": ["foo", "bar", "baz", None, "foo", "bar"],
     "float_vals": [1.3652, 2.7525, 3.7314, None, 1.3685, 2.7785],
     "decimal_vals": [1.3652, 2.7525, 3.7314, None, 1.3685, 2.7785],
     "n": [None, 3, 1, None, 2, 3],
@@ -47,10 +48,12 @@ _DATA = {
         datetime(2024, 1, 1, 10, 30, 15, 123_456),
         datetime(2024, 1, 2, 11, 45, 30, 1),
     ],
+    "binary": [b"foo", b"bar", b"baz", None, b"foo", b"bar"],
 }
 _SCHEMA = {
     "uint": pl.UInt16(),
     "decimal_vals": pl.Decimal(10, 4),
+    "binary": pl.Binary(),
 }
 _DF = nw.from_native(
     pl.DataFrame(_DATA, schema_overrides=_SCHEMA).pipe(duckdb.from_arrow)
