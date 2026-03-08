@@ -5,6 +5,7 @@ from datetime import timedelta
 import polars as pl
 import polars.selectors as cs_pl
 import pytest
+from duckdb import ParserException
 
 import pql
 import pql.selectors as cs
@@ -168,10 +169,10 @@ def test_matches_select() -> None:
 
 
 def test_matches_no_match() -> None:
-    assert_lf_eq_pl(
-        pql.LazyFrame(_SAMPLE_DF).select(cs.matches("^zzz")),
-        _SAMPLE_DF.select(cs_pl.matches("^zzz")),
-    )
+    """DuckDB doesn't allow `SELECT` with an empty selection list, so we need to raise an error instead of returning an empty DataFrame."""
+    assert _SAMPLE_DF.select(cs_pl.matches("^zzz")).collect().shape == (0, 0)
+    with pytest.raises(ParserException, match="SELECT clause without selection list"):
+        pql.LazyFrame(_SAMPLE_DF).select(cs.matches("^zzz")).collect()
 
 
 def test_by_name_single() -> None:
