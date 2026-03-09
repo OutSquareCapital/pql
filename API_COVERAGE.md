@@ -9,7 +9,7 @@ Each summary cell is `global (Narwhals, Polars)`.
 
 | Class               | Coverage              | Implemented   | Matched      | Missing       | Mismatched  | Extra       |
 | ------------------- | --------------------- | ------------- | ------------ | ------------- | ----------- | ----------- |
-| LazyFrame           | 42.5% (64.0%, 35.8%)  | 106 (25, 81)  | 45 (16, 29)  | 30 (0, 30)    | 31 (9, 22)  | 30 (28, 2)  |
+| LazyFrame           | 41.5% (60.0%, 35.8%)  | 106 (25, 81)  | 44 (15, 29)  | 30 (0, 30)    | 32 (10, 22) | 30 (28, 2)  |
 | Expr                | 49.8% (71.4%, 42.7%)  | 283 (70, 213) | 141 (50, 91) | 100 (7, 93)   | 42 (13, 29) | 59 (58, 1)  |
 | LazyGroupBy         | 52.9% (0.0%, 56.2%)   | 17 (1, 16)    | 9 (0, 9)     | 4 (0, 4)      | 4 (1, 3)    | 11 (11, 0)  |
 | ExprStrNameSpace    | 31.8% (42.1%, 27.7%)  | 66 (19, 47)   | 21 (8, 13)   | 10 (0, 10)    | 35 (11, 24) | 20 (19, 1)  |
@@ -88,7 +88,7 @@ Each summary cell is `global (Narwhals, Polars)`.
 - `with_columns_seq`
   - **Polars**: (*exprs: IntoExpr | Iterable[IntoExpr], **named_exprs: IntoExpr) -> LazyFrame
 
-### [!] Signature Mismatches (16)
+### [!] Signature Mismatches (17)
 
 - `cast` (pl)
   - **Polars***: (`dtypes: Mapping[ColumnNameOrSelector | PolarsDataType, PolarsDataType | PythonDataType] | PolarsDataType | pl.DataTypeExpr | Schema`, `strict: bool`) -> LazyFrame
@@ -114,6 +114,10 @@ Each summary cell is `global (Narwhals, Polars)`.
   - **Narwhals**: (`*predicates: IntoExpr | Iterable[IntoExpr]`, **constraints: Any) -> Self
   - **Polars**: (`*predicates: IntoExprColumn | Iterable[IntoExprColumn] | bool | list[bool]`, **constraints: Any) -> LazyFrame
   - **pql**: (`predicates: TryIter[IntoExprColumn]`, *more_predicates: IntoExprColumn, `**constraints: IntoExpr`) -> Self
+- `group_by` (nw)
+  - **Narwhals**: (`*keys: IntoExpr | Iterable[IntoExpr]`, drop_null_keys: bool) -> LazyGroupBy[Self]
+  - **Polars**: (`*by: IntoExpr | Iterable[IntoExpr]`, `maintain_order: bool`, `**named_by: IntoExpr`) -> LazyGroupBy
+  - **pql**: (`keys: IntoExpr`, `*more_keys: IntoExpr`, drop_null_keys: bool) -> LazyGroupBy
 - `join` (nw)
   - **Narwhals**: (other: Self, `on: str | list[str] | None`, how: JoinStrategy, `left_on: str | list[str] | None`, `right_on: str | list[str] | None`, suffix: str) -> Self
   - **Polars**: (other: LazyFrame, `on: str | Expr | Sequence[str | Expr] | None`, how: JoinStrategy, `left_on: str | Expr | Sequence[str | Expr] | None`, `right_on: str | Expr | Sequence[str | Expr] | None`, suffix: str, `validate: JoinValidation`, `nulls_equal: bool`, `coalesce: bool | None`, `maintain_order: MaintainOrderJoin | None`, allow_parallel: bool, force_parallel: bool) -> LazyFrame

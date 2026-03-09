@@ -7,7 +7,7 @@ from narwhals.group_by import LazyGroupBy as nwLazyGroupBy
 from polars.lazyframe.group_by import LazyGroupBy as plLazyGroupBy
 
 import pql
-from pql._frame import LazyGroupBy as pqlLazyGroupBy
+from pql._groupby import LazyGroupBy as pqlLazyGroupBy
 
 from .._utils import Pql
 from ._rules import IGNORED_MEMBERS

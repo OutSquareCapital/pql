@@ -20,6 +20,7 @@ if TYPE_CHECKING:
     from narwhals.typing import IntoFrameT
 
     from ._datatypes import DataType
+    from ._groupby import LazyGroupBy
     from ._typing import (
         AsofJoinStrategy,
         FillNullStrategy,
@@ -108,84 +109,6 @@ class JoinKeys[T: pc.Seq[str] | str](NamedTuple):
             case _:
                 msg = f"Either (`left_on` and `right_on`) or `on` keys should be specified for {how}."
                 return pc.Err(ValueError(msg))
-
-
-class LazyGroupBy:
-    __slots__ = ("_agg_schema", "_frame", "_group_expr", "_keys")
-
-    def __init__(self, frame: LazyFrame, keys: pc.Seq[sql.SqlExpr]) -> None:
-        self._frame = frame
-        self._keys = keys
-        keys_names = keys.iter().map(sql.SqlExpr.get_name).collect(pc.Set)
-        self._agg_schema = (
-            frame.schema.items()
-            .iter()
-            .filter_star(lambda name, _: name not in keys_names)
-            .collect(Schema)
-        )
-        self._group_expr = keys.iter().map(str).join(", ")
-
-    def _agg_columns(self, func: Callable[[Expr], Expr]) -> LazyFrame:
-
-        return (
-            self._agg_schema.keys()
-            .iter()
-            .map(lambda name: sql.col(name).pipe(Expr).pipe(func).alias(name))
-            .into(self.agg)
-        )
-
-    def len(self, name: str = "len") -> LazyFrame:
-        return self.agg(Expr(sql.lit(1)).count().alias(name))
-
-    def all(self) -> LazyFrame:
-        return self._agg_columns(Expr.implode)
-
-    def sum(self) -> LazyFrame:
-        return self._agg_columns(Expr.sum)
-
-    def mean(self) -> LazyFrame:
-        return self._agg_columns(Expr.mean)
-
-    def median(self) -> LazyFrame:
-        return self._agg_columns(Expr.median)
-
-    def min(self) -> LazyFrame:
-        return self._agg_columns(Expr.min)
-
-    def max(self) -> LazyFrame:
-        return self._agg_columns(Expr.max)
-
-    def first(self) -> LazyFrame:
-        return self._agg_columns(Expr.first)
-
-    def last(self) -> LazyFrame:
-        return self._agg_columns(Expr.last)
-
-    def n_unique(self) -> LazyFrame:
-        return self._agg_columns(Expr.n_unique)
-
-    def quantile(self, quantile: float, *, interpolation: bool = True) -> LazyFrame:
-        return self._agg_columns(
-            lambda expr: expr.quantile(quantile, interpolation=interpolation)
-        )
-
-    def agg(
-        self, aggs: TryIter[IntoExpr], *more_aggs: IntoExpr, **named_aggs: IntoExpr
-    ) -> LazyFrame:
-        plan = (
-            self._agg_schema.into(
-                ExprPlan.from_inputs, try_chain(aggs, more_aggs), named_aggs
-            )
-            .iter()
-            .map(lambda p: p.implode_or_scalar())
-        )
-
-        return (
-            self._keys.iter()
-            .chain(plan)
-            .into(self._frame.inner().aggregate, self._group_expr)
-            .pipe(self._frame.__class__)
-        )
 
 
 class LazyFrame(sql.CoreHandler[sql.SqlFrame]):
@@ -306,6 +229,27 @@ class LazyFrame(sql.CoreHandler[sql.SqlFrame]):
             )
             .into(self._filter)
         )
+
+    def group_by(
+        self,
+        keys: TryIter[IntoExpr],
+        *more_keys: IntoExpr,
+        drop_null_keys: bool = False,
+    ) -> LazyGroupBy:
+        """Start a group by operation."""
+        from ._groupby import LazyGroupBy
+
+        key_exprs = (
+            try_chain(keys, more_keys)
+            .map(lambda key: sql.into_expr(key, as_col=True))
+            .collect()
+        )
+        grouped_frame = (
+            key_exprs.iter().map(lambda key: key.is_not_null()).into(self._filter)
+            if drop_null_keys
+            else self
+        )
+        return LazyGroupBy(grouped_frame, key_exprs)
 
     def sort(
         self,
@@ -621,23 +565,6 @@ class LazyFrame(sql.CoreHandler[sql.SqlFrame]):
     def collect_schema(self) -> Schema:
         """Collect the schema (same as schema property for lazy)."""
         return self.schema
-
-    def group_by(
-        self, *keys: TryIter[IntoExpr], drop_null_keys: bool = False
-    ) -> LazyGroupBy:
-        """Start a group by operation."""
-        key_exprs = (
-            try_iter(keys)
-            .flat_map(try_iter)
-            .map(lambda key: sql.into_expr(key, as_col=True))
-            .collect()
-        )
-        grouped_frame = (
-            key_exprs.iter().map(lambda key: key.is_not_null()).into(self._filter)
-            if drop_null_keys
-            else self
-        )
-        return LazyGroupBy(grouped_frame, key_exprs)
 
     def join(  # noqa: PLR0913
         self,
