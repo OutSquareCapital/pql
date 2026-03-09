@@ -10,8 +10,7 @@ from pyochain.traits import PyoCollection, PyoIterable
 from . import sql
 
 if TYPE_CHECKING:
-    from ._datatypes import DataType
-    from .selectors import ColumnResolver
+    from ._schema import ColumnResolver, Schema
     from .sql.typing import IntoExpr
 
 
@@ -107,7 +106,7 @@ class ExprPlan(PyoIterable[ExprProjection]):
     @classmethod
     def from_inputs(
         cls,
-        schema: pc.Dict[str, DataType],
+        schema: Schema,
         exprs: pc.Iter[IntoExpr],
         named_exprs: dict[str, IntoExpr] | None = None,
     ) -> Self:
@@ -193,10 +192,7 @@ class ExprPlan(PyoIterable[ExprProjection]):
 
 
 def _resolve_projection(
-    schema: pc.Dict[str, DataType],
-    value: IntoExpr,
-    *,
-    alias_override: pc.Option[str] = pc.NONE,
+    schema: Schema, value: IntoExpr, *, alias_override: pc.Option[str] = pc.NONE
 ) -> pc.Iter[ExprProjection]:
     from ._expr import Expr
 

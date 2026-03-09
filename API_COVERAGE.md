@@ -21,7 +21,7 @@ Each summary cell is `global (Narwhals, Polars)`.
 | ModuleFunctions     | 22.9% (41.2%, 15.5%)  | 236 (68, 168) | 54 (28, 26)  | 141 (22, 119) | 41 (18, 23) | 27 (15, 12) |
 | selectors           | 57.1% (71.4%, 54.3%)  | 42 (7, 35)    | 24 (5, 19)   | 13 (1, 12)    | 5 (1, 4)    | 17 (17, 0)  |
 | DataType            | 12.5% (100.0%, 6.7%)  | 16 (1, 15)    | 2 (1, 1)     | 14 (0, 14)    | 0 (0, 0)    | 0 (0, 0)    |
-| Schema              | 0.0% (0.0%, 0.0%)     | 36 (20, 16)   | 0 (0, 0)     | 36 (20, 16)   | 0 (0, 0)    | 0 (0, 0)    |
+| Schema              | 33.3% (30.0%, 37.5%)  | 36 (20, 16)   | 12 (6, 6)    | 22 (13, 9)    | 2 (1, 1)    | 62 (31, 31) |
 
 ## LazyFrame
 
@@ -1052,7 +1052,7 @@ Each summary cell is `global (Narwhals, Polars)`.
 - `Schema` (nw)
   - **Narwhals**: (`schema: Mapping[str, DType] | Iterable[tuple[str, DType]] | None`) -> None
   - **Polars**: (`schema: Mapping[str, SchemaInitDataType] | Iterable[tuple[str, SchemaInitDataType] | ArrowSchemaExportable] | ArrowSchemaExportable | None`, `check_dtypes: bool`) -> None
-  - **pql**: ()
+  - **pql**: (`data: IntoDict[str, DataType]`) -> None
 - `Struct` (nw)
   - **Narwhals**: (`fields: Sequence[Field] | Mapping[str, IntoDType]`) -> None
   - **Polars**: (`fields: Sequence[Field] | SchemaDict`) -> None
@@ -1178,11 +1178,8 @@ Each summary cell is `global (Narwhals, Polars)`.
 
 ## Schema
 
-### [x] Missing Methods (24)
+### [x] Missing Methods (15)
 
-- `clear`
-  - **Narwhals**: ()
-  - **Polars**: ()
 - `copy`
   - **Narwhals**: ()
   - **Polars**: ()
@@ -1200,15 +1197,6 @@ Each summary cell is `global (Narwhals, Polars)`.
 - `fromkeys`
   - **Narwhals**: (iterable, value=...)
   - **Polars**: (iterable, value=...)
-- `get`
-  - **Narwhals**: (key, default=...)
-  - **Polars**: (key, default=...)
-- `items`
-  - **Narwhals**: ()
-  - **Polars**: ()
-- `keys`
-  - **Narwhals**: ()
-  - **Polars**: ()
 - `len`
   - **Narwhals**: () -> int
   - **Polars**: () -> int
@@ -1218,13 +1206,6 @@ Each summary cell is `global (Narwhals, Polars)`.
 - `names`
   - **Narwhals**: () -> list[str]
   - **Polars**: () -> list[str]
-- `pop`
-- `popitem`
-  - **Narwhals**: (last=...)
-  - **Polars**: (last=...)
-- `setdefault`
-  - **Narwhals**: (key, default=...)
-  - **Polars**: (key, default=...)
 - `to_arrow`
   - **Narwhals**: () -> Schema
   - **Polars**: (compat_level: CompatLevel | None) -> Schema
@@ -1236,7 +1217,44 @@ Each summary cell is `global (Narwhals, Polars)`.
   - **Narwhals**: () -> Schema
 - `to_python`
   - **Polars**: () -> dict[str, type]
+
+### [!] Signature Mismatches (1)
+
+- `popitem` (nw)
+  - **Narwhals**: (`last=...`)
+  - **Polars**: (`last=...`)
+  - **pql**: ()
+
+### [+] Extra Methods (pql-only) (31)
+
+- `all`
+- `any`
+- `contains`
+- `first`
+- `from_frame`
+- `get_item`
+- `insert`
+- `inspect`
+- `into`
+- `is_empty`
+- `iter`
+- `join`
+- `last`
+- `length`
+- `max`
+- `max_by`
+- `min`
+- `min_by`
+- `new`
+- `ok_or`
+- `ok_or_else`
+- `pop`
+- `remove`
+- `remove_entry`
+- `repeat`
+- `second`
+- `sum`
+- `then`
+- `then_some`
+- `try_insert`
 - `update`
-- `values`
-  - **Narwhals**: ()
-  - **Polars**: ()

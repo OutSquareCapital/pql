@@ -14,9 +14,8 @@ from . import _datatypes as dt, sql  # pyright: ignore[reportPrivateUsage]
 from ._expr import Expr, ExprMeta
 
 if TYPE_CHECKING:
+    from ._schema import ColumnResolver, Schema
     from .sql.typing import IntoExpr
-type Schema = pc.Dict[str, dt.DataType]
-type ColumnResolver = Callable[[Schema], pc.traits.PyoCollection[str]]
 
 _SENTINEL = "__pql_selector__"
 _SENTINEL_COL = sql.col(_SENTINEL)

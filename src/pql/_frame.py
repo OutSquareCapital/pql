@@ -10,15 +10,16 @@ import narwhals as nw
 import pyochain as pc
 
 from . import sql
-from ._datatypes import DataType
 from ._expr import Expr, ExprPlan
 from ._parser import format_sql
+from ._schema import Schema
 from .sql.utils import TryIter, TrySeq, check_by_arg, try_chain, try_iter
 
 if TYPE_CHECKING:
     import polars as pl
     from narwhals.typing import IntoFrameT
 
+    from ._datatypes import DataType
     from ._typing import (
         AsofJoinStrategy,
         FillNullStrategy,
@@ -120,7 +121,7 @@ class LazyGroupBy:
             frame.schema.items()
             .iter()
             .filter_star(lambda name, _: name not in keys_names)
-            .collect(pc.Dict)
+            .collect(Schema)
         )
         self._group_expr = keys.iter().map(str).join(", ")
 
@@ -190,7 +191,7 @@ class LazyGroupBy:
 class LazyFrame(sql.CoreHandler[sql.Relation]):
     """LazyFrame providing Polars-like API over DuckDB relations."""
 
-    _cached_schema: pc.Option[pc.Dict[str, DataType]]
+    _cached_schema: pc.Option[Schema]
     __slots__ = ("_cached_schema",)
 
     def __init__(self, data: IntoRel, orient: Orientation = "col") -> None:
@@ -604,21 +605,16 @@ class LazyFrame(sql.CoreHandler[sql.Relation]):
         return self.columns.length()
 
     @property
-    def schema(self) -> pc.Dict[str, DataType]:
+    def schema(self) -> Schema:
         match self._cached_schema:
             case pc.Some(schma):
                 return schma
             case _:
-                dtypes = (
-                    self.inner()
-                    .dtypes.iter()
-                    .map(lambda d: DataType.__from_sql__(sql.parse_dtype(d)))
-                )
-                schma = self.columns.iter().zip(dtypes, strict=True).collect(pc.Dict)
+                schma = self.inner().pipe(Schema.from_frame)
                 self._cached_schema = pc.Some(schma)
                 return schma
 
-    def collect_schema(self) -> pc.Dict[str, DataType]:
+    def collect_schema(self) -> Schema:
         """Collect the schema (same as schema property for lazy)."""
         return self.schema
 
