@@ -36,7 +36,7 @@ class Schema(PyoMutableMapping[str, DataType]):
         del self._inner[key]
 
     @classmethod
-    def from_frame(cls, frame: sql.Relation) -> Self:
+    def from_frame(cls, frame: sql.SqlFrame) -> Self:
         dtypes = frame.dtypes.iter().map(
             lambda d: DataType.__from_sql__(sql.parse_dtype(d))
         )

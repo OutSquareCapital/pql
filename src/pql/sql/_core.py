@@ -7,16 +7,12 @@ from typing import TYPE_CHECKING, Concatenate, Self, overload
 import duckdb
 import pyochain as pc
 
-from ._creation import frame_init_into_duckdb
-
 if TYPE_CHECKING:
     from .typing import (
         IntoDuckExpr,
         IntoDuckExprCol,
         IntoExpr,
         IntoExprColumn,
-        IntoRel,
-        Orientation,
     )
 
 
@@ -74,6 +70,12 @@ class DuckHandler(CoreHandler[duckdb.Expression]):
     __slots__ = ()
 
 
+class RelHandler(CoreHandler[duckdb.DuckDBPyRelation]):
+    """A wrapper for DuckDB relations."""
+
+    __slots__ = ()
+
+
 def into_duckdb_mapping(value: Mapping[str, IntoExpr]) -> pc.Dict[str, IntoDuckExpr]:
     return (
         pc.Iter(value.items())
@@ -97,15 +99,6 @@ def into_duckdb(value: IntoExpr | IntoExprColumn) -> IntoDuckExpr | IntoDuckExpr
             return value.inner().inner()
         case _:
             return value
-
-
-class RelHandler(CoreHandler[duckdb.DuckDBPyRelation]):
-    """A wrapper for DuckDB relations."""
-
-    __slots__ = ()
-
-    def __init__(self, data: IntoRel, orient: Orientation = "col") -> None:
-        self._inner = frame_init_into_duckdb(data, orient=orient)
 
 
 @dataclass(slots=True)

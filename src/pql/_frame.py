@@ -188,7 +188,7 @@ class LazyGroupBy:
         )
 
 
-class LazyFrame(sql.CoreHandler[sql.Relation]):
+class LazyFrame(sql.CoreHandler[sql.SqlFrame]):
     """LazyFrame providing Polars-like API over DuckDB relations."""
 
     _cached_schema: pc.Option[Schema]
@@ -196,10 +196,10 @@ class LazyFrame(sql.CoreHandler[sql.Relation]):
 
     def __init__(self, data: IntoRel, orient: Orientation = "col") -> None:
         match data:
-            case sql.Relation():
+            case sql.SqlFrame():
                 self._inner = data
             case _:
-                self._inner = sql.Relation(data, orient)
+                self._inner = sql.SqlFrame(data, orient)
         self._cached_schema = pc.NONE
 
     def _select(self, exprs: Iterable[IntoExprColumn], groups: str = "") -> Self:
@@ -264,7 +264,7 @@ class LazyFrame(sql.CoreHandler[sql.Relation]):
                             case False:
                                 return plan.aliased_sql().into(self._select)
             case _:
-                return self._new(sql.Relation({_EMPTY_MARKER: []}))
+                return self._new(sql.SqlFrame({_EMPTY_MARKER: []}))
 
     def with_columns(
         self, exprs: TryIter[IntoExpr], *more_exprs: IntoExpr, **named_exprs: IntoExpr

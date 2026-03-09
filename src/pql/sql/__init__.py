@@ -3,7 +3,6 @@
 from duckdb import table as from_table, table_function as from_table_function
 
 from . import typing, utils
-from ._code_gen import Relation
 from ._core import CoreHandler
 from ._creation import (
     from_df,
@@ -32,6 +31,7 @@ from ._expr import (
     SqlExprDateTimeNameSpace,
     SqlExprListNameSpace,
 )
+from ._frame import SqlFrame
 from ._funcs import (
     all,
     all_horizontal,
@@ -64,12 +64,12 @@ __all__ = [
     "Kword",
     "ListType",
     "MapType",
-    "Relation",
     "ScalarType",
     "SqlExpr",
     "SqlExprArrayNameSpace",
     "SqlExprDateTimeNameSpace",
     "SqlExprListNameSpace",
+    "SqlFrame",
     "SqlType",
     "StructType",
     "Then",
