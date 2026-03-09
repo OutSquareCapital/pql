@@ -319,10 +319,25 @@ def _get_method_info(cls: object, name: str) -> pc.Option[MethodInfo]:
 
 def _build_method_info(attr: object, name: str) -> pc.Option[MethodInfo]:
     match attr:
-        case property():
-            return pc.Some(
-                MethodInfo(name, pc.Seq[ParamInfo].new(), pc.NONE, is_property=True)
-            )
+        case property() as prop:
+            match prop.fget:
+                case None:
+                    return pc.Some(
+                        MethodInfo(
+                            name, pc.Seq[ParamInfo].new(), pc.NONE, is_property=True
+                        )
+                    )
+                case getter:
+                    return pc.Some(
+                        MethodInfo(
+                            name,
+                            pc.Seq[ParamInfo].new(),
+                            _get_annotation_str(
+                                inspect.signature(getter).return_annotation
+                            ),
+                            is_property=True,
+                        )
+                    )
         case attr if callable(attr):
             try:
                 return pc.Some(

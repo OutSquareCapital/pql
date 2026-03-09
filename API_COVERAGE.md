@@ -36,7 +36,7 @@ Each summary cell is `global (Narwhals, Polars)`.
 - `drop_nans`
   - **Polars**: (subset: ColumnNameOrSelector | Collection[ColumnNameOrSelector] | None) -> LazyFrame
 - `dtypes`
-  - **Polars**: ()
+  - **Polars**: () -> list[DataType]
 - `group_by_dynamic`
   - **Polars**: (index_column: IntoExpr, every: str | timedelta, period: str | timedelta | None, offset: str | timedelta | None, include_boundaries: bool, closed: ClosedInterval, label: Label, group_by: IntoExpr | Iterable[IntoExpr] | None, start_by: StartBy) -> LazyGroupBy
 - `inspect`
@@ -172,7 +172,7 @@ Each summary cell is `global (Narwhals, Polars)`.
 - `arg_unique`
   - **Polars**: () -> Expr
 - `bin`
-  - **Polars**: ()
+  - **Polars**: () -> ExprBinaryNameSpace
 - `bitwise_count_ones`
   - **Polars**: () -> Expr
 - `bitwise_count_zeros`
@@ -190,8 +190,8 @@ Each summary cell is `global (Narwhals, Polars)`.
 - `bottom_k_by`
   - **Polars**: (by: IntoExpr | Iterable[IntoExpr], k: int | IntoExprColumn, reverse: bool | Sequence[bool]) -> Expr
 - `cat`
-  - **Narwhals**: ()
-  - **Polars**: ()
+  - **Narwhals**: () -> ExprCatNamespace[Self]
+  - **Polars**: () -> ExprCatNameSpace
 - `cumulative_eval`
   - **Polars**: (expr: Expr, min_samples: int) -> Expr
 - `cut`
@@ -223,7 +223,7 @@ Each summary cell is `global (Narwhals, Polars)`.
 - `explode`
   - **Polars**: (empty_as_null: bool, keep_nulls: bool) -> Expr
 - `ext`
-  - **Polars**: ()
+  - **Polars**: () -> ExprExtensionNameSpace
 - `extend_constant`
   - **Polars**: (value: IntoExpr, n: int | IntoExprColumn) -> Expr
 - `filter`
@@ -261,7 +261,7 @@ Each summary cell is `global (Narwhals, Polars)`.
 - `map_elements`
   - **Polars**: (function: Callable[[Any], Any], return_dtype: DataTypeExpr | None, skip_nulls: bool, pass_name: bool, strategy: MapElementsStrategy, returns_scalar: bool) -> Expr
 - `meta`
-  - **Polars**: ()
+  - **Polars**: () -> ExprMetaNameSpace
 - `nan_max`
   - **Polars**: () -> Expr
 - `nan_min`
