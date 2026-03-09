@@ -21,7 +21,7 @@ Each summary cell is `global (Narwhals, Polars)`.
 | ModuleFunctions     | 22.9% (41.2%, 15.5%)  | 236 (68, 168) | 54 (28, 26)  | 141 (22, 119) | 41 (18, 23) | 27 (15, 12) |
 | selectors           | 57.1% (71.4%, 54.3%)  | 42 (7, 35)    | 24 (5, 19)   | 13 (1, 12)    | 5 (1, 4)    | 17 (17, 0)  |
 | DataType            | 12.5% (100.0%, 6.7%)  | 16 (1, 15)    | 2 (1, 1)     | 14 (0, 14)    | 0 (0, 0)    | 0 (0, 0)    |
-| Schema              | 33.3% (30.0%, 37.5%)  | 36 (20, 16)   | 12 (6, 6)    | 22 (13, 9)    | 2 (1, 1)    | 62 (31, 31) |
+| Schema              | 33.3% (30.0%, 37.5%)  | 36 (20, 16)   | 12 (6, 6)    | 22 (13, 9)    | 2 (1, 1)    | 68 (34, 34) |
 
 ## LazyFrame
 
@@ -115,9 +115,9 @@ Each summary cell is `global (Narwhals, Polars)`.
   - **Polars**: (`*predicates: IntoExprColumn | Iterable[IntoExprColumn] | bool | list[bool]`, **constraints: Any) -> LazyFrame
   - **pql**: (`predicates: TryIter[IntoExprColumn]`, *more_predicates: IntoExprColumn, `**constraints: IntoExpr`) -> Self
 - `group_by` (nw)
-  - **Narwhals**: (`*keys: IntoExpr | Iterable[IntoExpr]`, drop_null_keys: bool) -> LazyGroupBy[Self]
+  - **Narwhals**: (*keys: IntoExpr | Iterable[IntoExpr], drop_null_keys: bool) -> LazyGroupBy[Self]
   - **Polars**: (`*by: IntoExpr | Iterable[IntoExpr]`, `maintain_order: bool`, `**named_by: IntoExpr`) -> LazyGroupBy
-  - **pql**: (`keys: IntoExpr`, `*more_keys: IntoExpr`, drop_null_keys: bool) -> LazyGroupBy
+  - **pql**: (keys: TryIter[IntoExpr], `*more_keys: IntoExpr`, drop_null_keys: bool) -> LazyGroupBy
 - `join` (nw)
   - **Narwhals**: (other: Self, `on: str | list[str] | None`, how: JoinStrategy, `left_on: str | list[str] | None`, `right_on: str | list[str] | None`, suffix: str) -> Self
   - **Polars**: (other: LazyFrame, `on: str | Expr | Sequence[str | Expr] | None`, how: JoinStrategy, `left_on: str | Expr | Sequence[str | Expr] | None`, `right_on: str | Expr | Sequence[str | Expr] | None`, suffix: str, `validate: JoinValidation`, `nulls_equal: bool`, `coalesce: bool | None`, `maintain_order: MaintainOrderJoin | None`, allow_parallel: bool, force_parallel: bool) -> LazyFrame
@@ -1050,7 +1050,7 @@ Each summary cell is `global (Narwhals, Polars)`.
 - `Schema` (nw)
   - **Narwhals**: (`schema: Mapping[str, DType] | Iterable[tuple[str, DType]] | None`) -> None
   - **Polars**: (`schema: Mapping[str, SchemaInitDataType] | Iterable[tuple[str, SchemaInitDataType] | ArrowSchemaExportable] | ArrowSchemaExportable | None`, `check_dtypes: bool`) -> None
-  - **pql**: (`data: IntoDict[str, DataType]`) -> None
+  - **pql**: (`data: DictConvertible[K, V]`) -> None
 - `Struct` (nw)
   - **Narwhals**: (`fields: Sequence[Field] | Mapping[str, IntoDType]`) -> None
   - **Polars**: (`fields: Sequence[Field] | SchemaDict`) -> None
@@ -1223,13 +1223,16 @@ Each summary cell is `global (Narwhals, Polars)`.
   - **Polars**: (`last=...`)
   - **pql**: ()
 
-### [+] Extra Methods (pql-only) (31)
+### [+] Extra Methods (pql-only) (34)
 
 - `all`
 - `any`
 - `contains`
 - `first`
 - `from_frame`
+- `from_kwargs`
+- `from_object`
+- `from_ref`
 - `get_item`
 - `insert`
 - `inspect`
