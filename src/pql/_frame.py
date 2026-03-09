@@ -554,6 +554,10 @@ class LazyFrame(sql.CoreHandler[sql.SqlFrame]):
         """Return the null count of each column."""
         return self._iter_agg(lambda c: c.is_null().count_if())
 
+    def quantile(self, quantile: float) -> Self:
+        """Compute quantile for each column."""
+        return self._iter_agg(lambda c: c.quantile_cont(quantile))
+
     def fill_nan(self, value: float | Expr | None) -> Self:
         """Fill NaN values."""
         return self._iter_slct(
@@ -825,10 +829,6 @@ class LazyFrame(sql.CoreHandler[sql.SqlFrame]):
                     .select(sql.all(exclude=(asof_rank, asof_order, TEMP_NAME)))
                     .pipe(self._new)
                 )
-
-    def quantile(self, quantile: float) -> Self:
-        """Compute quantile for each column."""
-        return self._iter_agg(lambda c: c.quantile_cont(quantile))
 
     def unique(
         self,

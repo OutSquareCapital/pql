@@ -14,7 +14,7 @@ Each summary cell is `global (Narwhals, Polars)`.
 | LazyGroupBy         | 52.9% (0.0%, 56.2%)   | 17 (1, 16)    | 9 (0, 9)     | 4 (0, 4)      | 4 (1, 3)    | 11 (11, 0)  |
 | ExprStrNameSpace    | 31.8% (42.1%, 27.7%)  | 66 (19, 47)   | 21 (8, 13)   | 10 (0, 10)    | 35 (11, 24) | 20 (19, 1)  |
 | ExprListNameSpace   | 54.7% (90.0%, 46.5%)  | 53 (10, 43)   | 29 (9, 20)   | 20 (0, 20)    | 4 (1, 3)    | 15 (14, 1)  |
-| ExprStructNameSpace | 33.3% (100.0%, 20.0%) | 6 (1, 5)      | 2 (1, 1)     | 2 (0, 2)      | 2 (0, 2)    | 4 (3, 1)    |
+| ExprStructNameSpace | 50.0% (100.0%, 40.0%) | 6 (1, 5)      | 3 (1, 2)     | 2 (0, 2)      | 1 (0, 1)    | 4 (3, 1)    |
 | ExprNameNameSpace   | 81.2% (100.0%, 70.0%) | 16 (6, 10)    | 13 (6, 7)    | 3 (0, 3)      | 0 (0, 0)    | 3 (2, 1)    |
 | ExprArrNameSpace    | 54.8% (100.0%, 54.8%) | 31 (0, 31)    | 17 (0, 17)   | 10 (0, 10)    | 4 (0, 4)    | 27 (24, 3)  |
 | ExprDtNameSpace     | 51.5% (60.9%, 46.7%)  | 68 (23, 45)   | 35 (14, 21)  | 25 (7, 18)    | 8 (2, 6)    | 13 (12, 1)  |
@@ -600,12 +600,6 @@ Each summary cell is `global (Narwhals, Polars)`.
   - **Polars**: (names: Sequence[str]) -> Expr
 - `unnest`
   - **Polars**: () -> Expr
-
-### [!] Signature Mismatches (1)
-
-- `with_fields` (pl)
-  - **Polars***: (`*exprs: IntoExpr | Iterable[IntoExpr]`, **named_exprs: IntoExpr) -> Expr
-  - **pql**: (`expr: IntoExpr | Iterable[IntoExpr]`, `*more_exprs: IntoExpr`, **named_exprs: IntoExpr) -> Expr
 
 ### [+] Extra Methods (pql-only) (1)
 

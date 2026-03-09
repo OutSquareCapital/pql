@@ -82,6 +82,9 @@ IGNORED_PARAMS: IgnoredParams = pc.Dict(
         Pql.EXPR: pc.Dict.from_kwargs(
             sort_by=_args(_Arg.MULTITHREADED), quantile=_args(_Arg.INTERPOLATION)
         ),
+        Pql.EXPR_STRUCT_NAME_SPACE: pc.Dict.from_kwargs(
+            with_fields=_args(_Arg.MORE_EXPRS)
+        ),
         Pql.EXPR_LIST_NAME_SPACE: pc.Dict.from_kwargs(eval=_args(_Arg.PARALLEL)),
         Pql.EXPR_ARR_NAME_SPACE: pc.Dict.from_kwargs(eval=_args(_Arg.PARALLEL)),
         Pql.LAZY_GROUP_BY: pc.Dict.from_kwargs(

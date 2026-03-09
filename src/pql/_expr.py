@@ -13,11 +13,12 @@ import pyochain as pc
 
 from . import _datatypes as dt, sql  # pyright: ignore[reportPrivateUsage]
 from ._computations import fill_nulls
-from ._datatypes import DataType
 from ._meta import ExprMeta, ExprPlan
+from ._schema import Schema
 from .sql.utils import try_chain, try_iter
 
 if TYPE_CHECKING:
+    from ._datatypes import DataType
     from ._typing import (
         ClosedInterval,
         EpochTimeUnit,
@@ -1358,15 +1359,13 @@ class ExprStructNameSpace(ExprNameSpaceBase):
 
     def with_fields(
         self,
-        expr: IntoExpr | Iterable[IntoExpr],
+        exprs: IntoExpr | Iterable[IntoExpr],
         *more_exprs: IntoExpr,
         **named_exprs: IntoExpr,
     ) -> Expr:
         """Return a new struct with updated or additional fields."""
         return (
-            ExprPlan.from_inputs(
-                pc.Dict[str, DataType].new(), try_chain(expr, more_exprs), named_exprs
-            )
+            ExprPlan.from_inputs(Schema({}), try_chain(exprs, more_exprs), named_exprs)
             .aliased_sql()
             .into(lambda args: self._new(self.inner().struct.insert(*args)))
         )
