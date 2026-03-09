@@ -190,7 +190,8 @@ class LazyGroupBy:
 class LazyFrame(sql.CoreHandler[sql.Relation]):
     """LazyFrame providing Polars-like API over DuckDB relations."""
 
-    __slots__ = ()
+    _cached_schema: pc.Option[pc.Dict[str, DataType]]
+    __slots__ = ("_cached_schema",)
 
     def __init__(self, data: IntoRel, orient: Orientation = "col") -> None:
         match data:
@@ -198,6 +199,7 @@ class LazyFrame(sql.CoreHandler[sql.Relation]):
                 self._inner = data
             case _:
                 self._inner = sql.Relation(data, orient)
+        self._cached_schema = pc.NONE
 
     def _select(self, exprs: Iterable[IntoExprColumn], groups: str = "") -> Self:
         return self.inner().select(*exprs, groups=groups).pipe(self._new)
@@ -603,12 +605,18 @@ class LazyFrame(sql.CoreHandler[sql.Relation]):
 
     @property
     def schema(self) -> pc.Dict[str, DataType]:
-        dtypes = (
-            self.inner()
-            .dtypes.iter()
-            .map(lambda d: DataType.__from_sql__(sql.parse_dtype(d)))
-        )
-        return self.columns.iter().zip(dtypes, strict=True).collect(pc.Dict)
+        match self._cached_schema:
+            case pc.Some(schma):
+                return schma
+            case _:
+                dtypes = (
+                    self.inner()
+                    .dtypes.iter()
+                    .map(lambda d: DataType.__from_sql__(sql.parse_dtype(d)))
+                )
+                schma = self.columns.iter().zip(dtypes, strict=True).collect(pc.Dict)
+                self._cached_schema = pc.Some(schma)
+                return schma
 
     def collect_schema(self) -> pc.Dict[str, DataType]:
         """Collect the schema (same as schema property for lazy)."""
