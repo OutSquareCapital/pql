@@ -87,6 +87,18 @@ def get_comparisons() -> str:
                     Pql.SELECTORS,
                     ignored_names=IGNORED_MEMBERS.get_item(Pql.SELECTORS).unwrap(),
                 ),
+                ClassComparison(
+                    pc.Some(nw.dtypes.DTypeClass),
+                    pl.DataType,
+                    pql.DataType,
+                    Pql.DATA_TYPE,
+                ),
+                ClassComparison(
+                    pc.Some(nw.Schema),
+                    pl.Schema,
+                    pql.Schema,
+                    Pql.SCHEMA,
+                ),
             )
         )
         .map(lambda comp: comp.to_report())

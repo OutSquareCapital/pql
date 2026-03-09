@@ -67,6 +67,7 @@ from ._funcs import (
     sum,
     sum_horizontal,
 )
+from ._schema import Schema
 from ._when import when
 
 __all__ = [
@@ -95,6 +96,7 @@ __all__ = [
     "List",
     "Map",
     "Number",
+    "Schema",
     "String",
     "Struct",
     "Time",

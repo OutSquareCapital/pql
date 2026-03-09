@@ -93,6 +93,8 @@ class Pql(KwordEnum):
     EXPR_DT_NAME_SPACE = "ExprDtNameSpace"
     MODULE_FUNCTIONS = "ModuleFunctions"
     SEQ_LITERAL = "SeqLiteral"
+    DATA_TYPE = "DataType"
+    SCHEMA = "Schema"
 
 
 class Pyochain(KwordEnum):

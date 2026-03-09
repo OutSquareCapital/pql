@@ -18,8 +18,10 @@ Each summary cell is `global (Narwhals, Polars)`.
 | ExprNameNameSpace   | 81.2% (100.0%, 70.0%) | 16 (6, 10)    | 13 (6, 7)    | 3 (0, 3)      | 0 (0, 0)    | 3 (2, 1)    |
 | ExprArrNameSpace    | 54.8% (100.0%, 54.8%) | 31 (0, 31)    | 17 (0, 17)   | 10 (0, 10)    | 4 (0, 4)    | 27 (24, 3)  |
 | ExprDtNameSpace     | 51.5% (60.9%, 46.7%)  | 68 (23, 45)   | 35 (14, 21)  | 25 (7, 18)    | 8 (2, 6)    | 13 (12, 1)  |
-| ModuleFunctions     | 22.9% (41.2%, 15.5%)  | 236 (68, 168) | 54 (28, 26)  | 143 (23, 120) | 39 (17, 22) | 27 (15, 12) |
+| ModuleFunctions     | 22.9% (41.2%, 15.5%)  | 236 (68, 168) | 54 (28, 26)  | 141 (22, 119) | 41 (18, 23) | 27 (15, 12) |
 | selectors           | 57.1% (71.4%, 54.3%)  | 42 (7, 35)    | 24 (5, 19)   | 13 (1, 12)    | 5 (1, 4)    | 17 (17, 0)  |
+| DataType            | 12.5% (100.0%, 6.7%)  | 16 (1, 15)    | 2 (1, 1)     | 14 (0, 14)    | 0 (0, 0)    | 0 (0, 0)    |
+| Schema              | 0.0% (0.0%, 0.0%)     | 36 (20, 16)   | 0 (0, 0)     | 36 (20, 16)   | 0 (0, 0)    | 0 (0, 0)    |
 
 ## LazyFrame
 
@@ -741,7 +743,7 @@ Each summary cell is `global (Narwhals, Polars)`.
 
 ## ModuleFunctions
 
-### [x] Missing Methods (129)
+### [x] Missing Methods (128)
 
 - `BaseExtension`
   - **Polars**: (name: str, storage: PolarsDataType, metadata: str | None) -> None
@@ -765,9 +767,6 @@ Each summary cell is `global (Narwhals, Polars)`.
   - **Polars**: ()
 - `ScanCastOptions`
   - **Polars**: (integer_cast: Literal['upcast', 'forbid'], float_cast: Literal['forbid'] | FloatCastOption | Collection[FloatCastOption], datetime_cast: Literal['forbid'] | DatetimeCastOption | Collection[DatetimeCastOption], missing_struct_fields: Literal['insert', 'raise'], extra_struct_fields: Literal['ignore', 'raise'], categorical_to_string: Literal['allow', 'forbid'],_internal_call: bool) -> None
-- `Schema`
-  - **Narwhals**: (schema: Mapping[str, DType] | Iterable[tuple[str, DType]] | None) -> None
-  - **Polars**: (schema: Mapping[str, SchemaInitDataType] | Iterable[tuple[str, SchemaInitDataType] | ArrowSchemaExportable] | ArrowSchemaExportable | None, check_dtypes: bool) -> None
 - `Unknown`
   - **Narwhals**: ()
   - **Polars**: ()
@@ -1016,7 +1015,7 @@ Each summary cell is `global (Narwhals, Polars)`.
 - `zeros`
   - **Polars**: (n: int | Expr, dtype: PolarsDataType, eager: bool) -> Expr | Series
 
-### [!] Signature Mismatches (16)
+### [!] Signature Mismatches (17)
 
 - `Array` (nw)
   - **Narwhals**: (`inner: IntoDType`, `shape: int | tuple[int, ...]`) -> None
@@ -1050,6 +1049,10 @@ Each summary cell is `global (Narwhals, Polars)`.
   - **Narwhals**: (`inner: IntoDType`) -> None
   - **Polars**: (`inner: PolarsDataType | PythonDataType`) -> None
   - **pql**: (`inner: DataType`) -> None
+- `Schema` (nw)
+  - **Narwhals**: (`schema: Mapping[str, DType] | Iterable[tuple[str, DType]] | None`) -> None
+  - **Polars**: (`schema: Mapping[str, SchemaInitDataType] | Iterable[tuple[str, SchemaInitDataType] | ArrowSchemaExportable] | ArrowSchemaExportable | None`, `check_dtypes: bool`) -> None
+  - **pql**: ()
 - `Struct` (nw)
   - **Narwhals**: (`fields: Sequence[Field] | Mapping[str, IntoDType]`) -> None
   - **Polars**: (`fields: Sequence[Field] | SchemaDict`) -> None
@@ -1139,3 +1142,101 @@ Each summary cell is `global (Narwhals, Polars)`.
 - `duration` (pl)
   - **Polars***: (`time_unit: TimeUnit | Collection[TimeUnit] | None`) -> Selector
   - **pql**: () -> Selector
+
+## DataType
+
+### [x] Missing Methods (14)
+
+- `base_type`
+  - **Polars**: () -> DataTypeClass
+- `from_python`
+  - **Polars**: (py_type: PythonDataType) -> PolarsDataType
+- `is_`
+  - **Polars**: (other: PolarsDataType) -> bool
+- `is_decimal`
+  - **Polars**: () -> bool
+- `is_float`
+  - **Polars**: () -> bool
+- `is_integer`
+  - **Polars**: () -> bool
+- `is_nested`
+  - **Polars**: () -> bool
+- `is_numeric`
+  - **Polars**: () -> bool
+- `is_object`
+  - **Polars**: () -> bool
+- `is_signed_integer`
+  - **Polars**: () -> bool
+- `is_temporal`
+  - **Polars**: () -> bool
+- `is_unsigned_integer`
+  - **Polars**: () -> bool
+- `to_dtype_expr`
+  - **Polars**: () -> DataTypeExpr
+- `to_python`
+  - **Polars**: () -> PythonDataType
+
+## Schema
+
+### [x] Missing Methods (24)
+
+- `clear`
+  - **Narwhals**: ()
+  - **Polars**: ()
+- `copy`
+  - **Narwhals**: ()
+  - **Polars**: ()
+- `dtypes`
+  - **Narwhals**: () -> list[DType]
+  - **Polars**: () -> list[DataType]
+- `from_arrow`
+  - **Narwhals**: (schema: IntoArrowSchema) -> Self
+- `from_native`
+  - **Narwhals**: (schema: IntoArrowSchema | IntoPolarsSchema | IntoPandasSchema) -> Self
+- `from_pandas_like`
+  - **Narwhals**: (schema: IntoPandasSchema) -> Self
+- `from_polars`
+  - **Narwhals**: (schema: IntoPolarsSchema) -> Self
+- `fromkeys`
+  - **Narwhals**: (iterable, value=...)
+  - **Polars**: (iterable, value=...)
+- `get`
+  - **Narwhals**: (key, default=...)
+  - **Polars**: (key, default=...)
+- `items`
+  - **Narwhals**: ()
+  - **Polars**: ()
+- `keys`
+  - **Narwhals**: ()
+  - **Polars**: ()
+- `len`
+  - **Narwhals**: () -> int
+  - **Polars**: () -> int
+- `move_to_end`
+  - **Narwhals**: (key, last=...)
+  - **Polars**: (key, last=...)
+- `names`
+  - **Narwhals**: () -> list[str]
+  - **Polars**: () -> list[str]
+- `pop`
+- `popitem`
+  - **Narwhals**: (last=...)
+  - **Polars**: (last=...)
+- `setdefault`
+  - **Narwhals**: (key, default=...)
+  - **Polars**: (key, default=...)
+- `to_arrow`
+  - **Narwhals**: () -> Schema
+  - **Polars**: (compat_level: CompatLevel | None) -> Schema
+- `to_frame`
+  - **Polars**: (eager: bool) -> DataFrame | LazyFrame
+- `to_pandas`
+  - **Narwhals**: (dtype_backend: DTypeBackend | Iterable[DTypeBackend]) -> dict[str, Any]
+- `to_polars`
+  - **Narwhals**: () -> Schema
+- `to_python`
+  - **Polars**: () -> dict[str, type]
+- `update`
+- `values`
+  - **Narwhals**: ()
+  - **Polars**: ()

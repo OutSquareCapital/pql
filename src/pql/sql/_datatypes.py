@@ -327,6 +327,8 @@ class ScalarType:
     UUID = DType.from_duckdb(sqltypes.UUID)
     JSON = DType.from_duckdb(duckdb.dtype("json"))
     BIGNUM = DType.from_duckdb(duckdb.dtype("bignum"))
+    VARIANT = DType.from_duckdb(duckdb.dtype("variant"))
+    TIME_NS = DType.from_duckdb(duckdb.dtype("time_ns"))
 
 
 def parse_dtype(dtype: DuckDBPyType) -> SqlType:
