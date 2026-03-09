@@ -6,6 +6,7 @@ from collections.abc import Callable, Iterable, Mapping
 from pathlib import Path
 from typing import TYPE_CHECKING, Literal, NamedTuple, Self
 
+import narwhals as nw
 import pyochain as pc
 
 from . import sql
@@ -16,6 +17,7 @@ from .sql.utils import TryIter, TrySeq, check_by_arg, try_chain, try_iter
 
 if TYPE_CHECKING:
     import polars as pl
+    from narwhals.typing import IntoFrameT
 
     from ._typing import (
         AsofJoinStrategy,
@@ -34,6 +36,7 @@ if TYPE_CHECKING:
 
 TEMP_NAME = "__pql_temp__"
 TEMP_COL = sql.col(TEMP_NAME)
+_EMPTY_MARKER = "__pql_empty__"
 MAX_I64 = 9_223_372_036_854_775_807
 type OptSeq = pc.Option[pc.Seq[str]]
 type OptTryIter[T] = pc.Option[TryIter[T]]
@@ -221,30 +224,44 @@ class LazyFrame(sql.CoreHandler[sql.Relation]):
             self.columns.iter().map(lambda c: func(sql.col(c)).alias(c)).into(self._agg)
         )
 
+    def _drop_marker(self, result: IntoFrameT) -> IntoFrameT:
+        match _EMPTY_MARKER in self.inner().columns:
+            case True:
+                return nw.from_native(result).drop(_EMPTY_MARKER).to_native()
+            case False:
+                return result
+
     def lazy(self) -> pl.LazyFrame:
         """Get a Polars LazyFrame."""
-        return self.inner().pl(lazy=True)
+        return self.inner().pl(lazy=True).pipe(self._drop_marker)
 
     def collect(self) -> pl.DataFrame:
         """Execute the query and return a Polars DataFrame."""
-        return self.inner().pl()
+        return self.inner().pl().pipe(self._drop_marker)
 
     def select(
         self, exprs: TryIter[IntoExpr], *more_exprs: IntoExpr, **named_exprs: IntoExpr
     ) -> Self:
         """Select columns or expressions."""
-        plan = ExprPlan.from_inputs(
-            self.schema, try_chain(exprs, more_exprs), named_exprs
-        )
-        match plan.can_use_unique():
-            case True:
-                return self.inner().unique(plan.unique().join(", ")).pipe(self._new)
-            case False:
-                match plan.is_scalar_select():
+        match self.schema.into(
+            ExprPlan.from_inputs, try_chain(exprs, more_exprs), named_exprs
+        ).as_result():
+            case pc.Some(plan):
+                match plan.can_use_unique():
                     case True:
-                        return plan.aliased_sql().into(self._agg)
+                        return (
+                            self.inner()
+                            .unique(plan.as_unique().join(", "))
+                            .pipe(self._new)
+                        )
                     case False:
-                        return plan.aliased_sql().into(self._select)
+                        match plan.is_scalar_select():
+                            case True:
+                                return plan.aliased_sql().into(self._agg)
+                            case False:
+                                return plan.aliased_sql().into(self._select)
+            case _:
+                return self._new(sql.Relation({_EMPTY_MARKER: []}))
 
     def with_columns(
         self, exprs: TryIter[IntoExpr], *more_exprs: IntoExpr, **named_exprs: IntoExpr
@@ -252,34 +269,38 @@ class LazyFrame(sql.CoreHandler[sql.Relation]):
         """Add or replace columns."""
         schema = self.schema
         col_keys = schema.keys()
-        updates = ExprPlan.from_inputs(
-            schema, try_chain(exprs, more_exprs), named_exprs
-        ).to_updates()
-        match updates.keys().any(lambda name: name in col_keys):
-            case False:
-                return (
-                    updates.items()
-                    .iter()
-                    .map_star(lambda name, e: e.alias(name))
-                    .insert(sql.all())
-                    .into(self._select)
-                )
-            case True:
-                return (
-                    col_keys.iter()
-                    .map(
-                        lambda name: updates.get_item(name).map_or(
-                            sql.col(name), lambda c: c.alias(name)
-                        )
-                    )
-                    .chain(
+        plan = ExprPlan.from_inputs(schema, try_chain(exprs, more_exprs), named_exprs)
+
+        def _resolved(updates: pc.Dict[str, sql.SqlExpr]) -> pc.Iter[sql.SqlExpr]:
+            match updates.keys().any(lambda name: name in col_keys):
+                case False:
+                    return (
                         updates.items()
                         .iter()
-                        .filter_star(lambda name, _expr: name not in col_keys)
                         .map_star(lambda name, e: e.alias(name))
+                        .insert(sql.all())
                     )
-                    .into(self._select)
-                )
+                case True:
+                    return (
+                        col_keys.iter()
+                        .map(
+                            lambda name: updates.get_item(name).map_or(
+                                sql.col(name), lambda c: c.alias(name)
+                            )
+                        )
+                        .chain(
+                            updates.items()
+                            .iter()
+                            .filter_star(lambda name, _expr: name not in col_keys)
+                            .map_star(lambda name, e: e.alias(name))
+                        )
+                    )
+
+        match plan.has_scalar():
+            case True:
+                return plan.to_updates().into(_resolved).into(self._agg)
+            case False:
+                return plan.to_updates().into(_resolved).into(self._select)
 
     def filter(
         self,

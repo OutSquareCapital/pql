@@ -42,6 +42,18 @@ def test_properties(sample_df: pl.DataFrame) -> None:
     assert isinstance(lf.lazy(), pl.LazyFrame)
 
 
+def test_empty_frame(sample_df: pl.DataFrame) -> None:
+    assert_lf_eq_pl(pql.LazyFrame(sample_df).select([]), sample_df.lazy().select([]))
+    assert_lf_eq_pl(
+        pql.LazyFrame(sample_df).with_columns(pql.col("age").sum()).select([]),
+        sample_df.lazy().with_columns(pl.col("age").sum()).select(),
+    )
+    assert_lf_eq_pl(
+        pql.LazyFrame(sample_df).drop("age").select([]),
+        sample_df.lazy().drop("age").select(),
+    )
+
+
 def test_repr(sample_df: pl.DataFrame) -> None:
     lf = pql.LazyFrame(sample_df)
     assert repr(lf) == repr(lf.inner()) == repr(lf.inner().inner())

@@ -199,7 +199,7 @@ class ExprPlan(PyoIterable[ExprProjection]):
     def aliased_sql(self) -> pc.Iter[sql.SqlExpr]:
         return self.iter().map(lambda p: p.as_aliased())
 
-    def unique(self) -> pc.Iter[str]:
+    def as_unique(self) -> pc.Iter[str]:
         return self.iter().map(lambda p: p.as_unique())
 
     def to_updates(self) -> pc.Dict[str, sql.SqlExpr]:
@@ -208,8 +208,18 @@ class ExprPlan(PyoIterable[ExprProjection]):
     def is_scalar_select(self) -> bool:
         return self.all(lambda p: p.meta.is_scalar_select)
 
+    def has_scalar(self) -> bool:
+        return self.any(lambda p: p.meta.is_scalar_select)
+
     def can_use_unique(self) -> bool:
         return self.all(lambda p: p.meta.is_unique_projection)
+
+    def as_result(self) -> pc.Option[Self]:
+        """Return `Some(self)` if non-empty, `NONE` otherwise.
+
+        This way, we can avoid runtime crash in case of empty selections/aggregations (e.g on an empty selector result).
+        """
+        return self.projections.then(lambda _: self)
 
 
 def _resolve_projection(
