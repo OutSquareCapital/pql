@@ -18,7 +18,7 @@ Each summary cell is `global (Narwhals, Polars)`.
 | ExprNameNameSpace   | 81.2% (100.0%, 70.0%) | 16 (6, 10)    | 13 (6, 7)    | 3 (0, 3)      | 0 (0, 0)    | 3 (2, 1)    |
 | ExprArrNameSpace    | 54.8% (100.0%, 54.8%) | 31 (0, 31)    | 17 (0, 17)   | 10 (0, 10)    | 4 (0, 4)    | 27 (24, 3)  |
 | ExprDtNameSpace     | 51.5% (60.9%, 46.7%)  | 68 (23, 45)   | 35 (14, 21)  | 25 (7, 18)    | 8 (2, 6)    | 13 (12, 1)  |
-| ModuleFunctions     | 22.8% (41.2%, 15.4%)  | 237 (68, 169) | 54 (28, 26)  | 144 (23, 121) | 39 (17, 22) | 27 (15, 12) |
+| ModuleFunctions     | 22.9% (41.2%, 15.5%)  | 236 (68, 168) | 54 (28, 26)  | 143 (23, 120) | 39 (17, 22) | 27 (15, 12) |
 | selectors           | 57.1% (71.4%, 54.3%)  | 42 (7, 35)    | 24 (5, 19)   | 13 (1, 12)    | 5 (1, 4)    | 17 (17, 0)  |
 
 ## LazyFrame
@@ -741,14 +741,12 @@ Each summary cell is `global (Narwhals, Polars)`.
 
 ## ModuleFunctions
 
-### [x] Missing Methods (130)
+### [x] Missing Methods (129)
 
 - `BaseExtension`
   - **Polars**: (name: str, storage: PolarsDataType, metadata: str | None) -> None
 - `Catalog`
   - **Polars**: (workspace_url: str, bearer_token: str | None, require_https: bool) -> None
-- `Categories`
-  - **Polars**: (name: str | None, namespace: str, physical: PolarsDataType) -> None
 - `CompatLevel`
   - **Polars**: () -> None
 - `DataTypeExpr`
