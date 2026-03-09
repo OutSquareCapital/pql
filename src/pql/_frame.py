@@ -271,36 +271,11 @@ class LazyFrame(sql.CoreHandler[sql.Relation]):
         col_keys = schema.keys()
         plan = ExprPlan.from_inputs(schema, try_chain(exprs, more_exprs), named_exprs)
 
-        def _resolved(updates: pc.Dict[str, sql.SqlExpr]) -> pc.Iter[sql.SqlExpr]:
-            match updates.keys().any(lambda name: name in col_keys):
-                case False:
-                    return (
-                        updates.items()
-                        .iter()
-                        .map_star(lambda name, e: e.alias(name))
-                        .insert(sql.all())
-                    )
-                case True:
-                    return (
-                        col_keys.iter()
-                        .map(
-                            lambda name: updates.get_item(name).map_or(
-                                sql.col(name), lambda c: c.alias(name)
-                            )
-                        )
-                        .chain(
-                            updates.items()
-                            .iter()
-                            .filter_star(lambda name, _expr: name not in col_keys)
-                            .map_star(lambda name, e: e.alias(name))
-                        )
-                    )
-
         match plan.has_scalar():
             case True:
-                return plan.to_updates().into(_resolved).into(self._agg)
+                return plan.resolve(col_keys).into(self._agg)
             case False:
-                return plan.to_updates().into(_resolved).into(self._select)
+                return plan.resolve(col_keys).into(self._select)
 
     def filter(
         self,
