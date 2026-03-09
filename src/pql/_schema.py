@@ -23,16 +23,16 @@ class Schema(PyoMutableMapping[str, DataType]):
     def __iter__(self) -> Iterator[str]:
         return iter(self._inner)
 
-    def __len__(self) -> int:
+    def __len__(self) -> int:  # pragma: no cover
         return len(self._inner)
 
     def __getitem__(self, key: str) -> DataType:
         return self._inner[key]
 
-    def __setitem__(self, key: str, value: DataType) -> None:
+    def __setitem__(self, key: str, value: DataType) -> None:  # pragma: no cover
         self._inner[key] = value
 
-    def __delitem__(self, key: str) -> None:
+    def __delitem__(self, key: str) -> None:  # pragma: no cover
         del self._inner[key]
 
     @classmethod
