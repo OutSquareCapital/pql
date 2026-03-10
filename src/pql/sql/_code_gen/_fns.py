@@ -3181,29 +3181,6 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("list_extract", self.inner(), index))
 
-    def filter(self, lambda_arg: IntoExprColumn) -> T:
-        """Constructs a list from those elements of the input `list` for which the `lambda` function returns `true`.
-
-        DuckDB must be able to cast the `lambda` function's return type to `BOOL`.
-
-        The return type of `list_filter` is the same as the input list's.
-
-        **SQL name**: *filter*
-
-        See Also:
-            array_filter, list_filter
-
-        Args:
-            lambda_arg (IntoExprColumn): `LAMBDA` expression
-
-        Examples:
-            filter([3, 4, 5], lambda x : x > 4)
-
-        Returns:
-            T
-        """
-        return self._new(func("filter", self.inner(), lambda_arg))
-
     def first(self) -> T:
         """SQL list_first function.
 
@@ -7086,29 +7063,6 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
             T
         """
         return self._new(func("array_extract", self.inner(), col1))
-
-    def filter(self, lambda_arg: IntoExprColumn) -> T:
-        """Constructs a list from those elements of the input `list` for which the `lambda` function returns `true`.
-
-        DuckDB must be able to cast the `lambda` function's return type to `BOOL`.
-
-        The return type of `list_filter` is the same as the input list's.
-
-        **SQL name**: *array_filter*
-
-        See Also:
-            filter, list_filter
-
-        Args:
-            lambda_arg (IntoExprColumn): `LAMBDA` expression
-
-        Examples:
-            array_filter([3, 4, 5], lambda x : x > 4)
-
-        Returns:
-            T
-        """
-        return self._new(func("array_filter", self.inner(), lambda_arg))
 
     def grade_up(
         self, col1: IntoExprColumn | None = None, col2: IntoExprColumn | None = None

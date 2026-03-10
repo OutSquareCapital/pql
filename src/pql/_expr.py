@@ -111,9 +111,9 @@ class Expr(sql.CoreHandler[sql.SqlExpr]):
     def _reversed(self, expr: sql.SqlExpr, *, reverse: bool = False) -> Self:
         match reverse:
             case True:
-                return self._as_window(expr.over(rows_start=0))
+                return self._as_window(expr.over(frame_start=0))
             case False:
-                return self._as_window(expr.over(rows_end=0))
+                return self._as_window(expr.over(frame_end=0))
 
     def _clear_alias_name(self) -> Expr:
         return self._new(self.inner(), pc.Some(self.meta.clear_alias()))
@@ -131,10 +131,12 @@ class Expr(sql.CoreHandler[sql.SqlExpr]):
             sql.when(
                 self.inner()
                 .count()
-                .over(rows_start=bounds.start, rows_end=bounds.end)
+                .over(frame_start=bounds.start, frame_end=bounds.end)
                 .ge(pc.Option(min_samples).unwrap_or(window_size))
             )
-            .then(agg(self.inner()).over(rows_start=bounds.start, rows_end=bounds.end))
+            .then(
+                agg(self.inner()).over(frame_start=bounds.start, frame_end=bounds.end)
+            )
             .otherwise(_NONE)
         )
 
@@ -786,15 +788,15 @@ class Expr(sql.CoreHandler[sql.SqlExpr]):
 
     def forward_fill(self) -> Self:
         """Fill null values with the last non-null value."""
-        return self._new(self.inner().last_value().over(rows_end=0, ignore_nulls=True))
+        return self._new(self.inner().last_value().over(frame_end=0, ignore_nulls=True))
 
     def backward_fill(self, limit: int | None = None) -> Self:
         """Fill null values with the next non-null value."""
         expr = self.inner().any_value()
         return (
             pc.Option(limit)
-            .map(lambda lmt: expr.over(rows_start=0, rows_end=lmt))
-            .unwrap_or_else(lambda: expr.over(rows_start=0))
+            .map(lambda lmt: expr.over(frame_start=0, frame_end=lmt))
+            .unwrap_or_else(lambda: expr.over(frame_start=0))
             .pipe(self._as_window)
         )
 
@@ -845,9 +847,7 @@ class Expr(sql.CoreHandler[sql.SqlExpr]):
 
     def repeat_by(self, by: Expr | int) -> Self:
         """Repeat values by count, returning a list."""
-        return self._new(
-            sql.into_expr(by).list.range().list.transform(sql.fn_once(self.inner()))
-        )
+        return self._new(sql.into_expr(by).list.range().list.eval(self.inner()))
 
     def is_duplicated(self) -> Self:
         """Check if value is duplicated."""
@@ -1168,13 +1168,11 @@ class ExprStringNameSpace(ExprNameSpaceBase):
             self.inner()
             .str.lower()
             .re.extract_all(_TITLECASE)
-            .list.transform(
-                sql.fn_once(
-                    sql.element()
-                    .list.extract(1)
-                    .str.upper()
-                    .str.concat(sql.element().str.substring(2))
-                )
+            .list.eval(
+                sql.element()
+                .list.extract(1)
+                .str.upper()
+                .str.concat(sql.element().str.substring(2))
             )
             .list.aggregate(_STR_AGG, _EMPTY_STR)
         )
@@ -1193,14 +1191,14 @@ class _VecNameSpace[T: sql.SqlExprListNameSpace | sql.SqlExprArrayNameSpace](
 
     def eval(self, expr: Expr) -> Expr:
         """Run an expression against each array element."""
-        return self._new(self._vec.transform(sql.fn_once(expr.inner())))
+        return self._new(self._vec.eval(expr.inner()))
 
     def filter(self, predicate: Expr) -> Expr:
-        return self._new(self._vec.filter(sql.fn_once(predicate.inner())))
+        return self._new(self._vec.filter(predicate.inner()))
 
     def drop_nulls(self) -> Expr:
         """Drop null values in each list."""
-        return self._new(self._vec.filter(sql.fn_once(sql.element().is_not_null())))
+        return self._new(self._vec.filter(sql.element().is_not_null()))
 
     def contains(self, item: IntoExpr) -> Expr:
         """Check if subarrays contain the given item."""
@@ -1292,7 +1290,7 @@ class ExprArrayNameSpace(_VecNameSpace[sql.SqlExprArrayNameSpace]):
     def count_matches(self, element: IntoExpr) -> Expr:
         """Count matches in each array."""
         return self._new(
-            self.inner().arr.filter(sql.fn_once(sql.element().eq(element))).arr.length()
+            self.inner().arr.filter(sql.element().eq(element)).arr.length()
         )
 
     def join(self, separator: IntoExprColumn, *, ignore_nulls: bool = True) -> Expr:
@@ -1305,7 +1303,7 @@ class ExprArrayNameSpace(_VecNameSpace[sql.SqlExprArrayNameSpace]):
                 return self._new(
                     sql.when(
                         self.inner()
-                        .arr.filter(sql.fn_once(sql.element().is_null()))
+                        .arr.filter(sql.element().is_null())
                         .arr.length()
                         .gt(0)
                     )
@@ -1330,9 +1328,7 @@ class ExprListNameSpace(_VecNameSpace[sql.SqlExprListNameSpace]):
     def count_matches(self, element: IntoExpr) -> Expr:
         """Count matches in each list."""
         return self._new(
-            self.inner()
-            .list.filter(sql.fn_once(sql.element().eq(element)))
-            .list.length()
+            self.inner().list.filter(sql.element().eq(element)).list.length()
         )
 
     def join(self, separator: IntoExprColumn, *, ignore_nulls: bool = True) -> Expr:
@@ -1345,7 +1341,7 @@ class ExprListNameSpace(_VecNameSpace[sql.SqlExprListNameSpace]):
                 return self._new(
                     sql.when(
                         self.inner()
-                        .list.filter(sql.fn_once(sql.element().is_null()))
+                        .list.filter(sql.element().is_null())
                         .list.length()
                         .gt(0)
                     )

@@ -138,3 +138,5 @@ type AllDateParts = IntervalPart | DatePart
 type RoundMode = Literal["half_to_even", "half_away_from_zero"]
 type ParquetCompression = DuckParquetCompression
 type Orientation = Literal["row", "col"]
+type FrameMode = Literal["ROWS", "RANGE", "GROUPS"]
+type WindowExclude = Literal["current_row", "group", "ties", "no_others"]

@@ -24,7 +24,7 @@ from ._core import func
 from ._window import over_expr
 
 if TYPE_CHECKING:
-    from .typing import IntoExpr, IntoExprColumn, RoundMode
+    from .typing import FrameMode, IntoExpr, IntoExprColumn, RoundMode, WindowExclude
 
 
 class SqlExpr(Expression, Fns):
@@ -174,8 +174,11 @@ class SqlExpr(Expression, Fns):
         self,
         partition_by: Iterable[IntoExprColumn] | IntoExprColumn | None = None,
         order_by: Iterable[IntoExprColumn] | IntoExprColumn | None = None,
-        rows_start: int | None = None,
-        rows_end: int | None = None,
+        frame_start: int | str | None = None,
+        frame_end: int | str | None = None,
+        frame_mode: FrameMode = "ROWS",
+        exclude: WindowExclude | None = None,
+        filter_cond: IntoExprColumn | None = None,
         *,
         descending: Iterable[bool] | bool = False,
         nulls_last: Iterable[bool] | bool = False,
@@ -186,8 +189,11 @@ class SqlExpr(Expression, Fns):
                 self,
                 pc.Option(partition_by),
                 pc.Option(order_by),
-                pc.Option(rows_start),
-                pc.Option(rows_end),
+                pc.Option(frame_start),
+                pc.Option(frame_end),
+                frame_mode=frame_mode,
+                exclude=pc.Option(exclude),
+                filter_cond=pc.Option(filter_cond),
                 descending=descending,
                 nulls_last=nulls_last,
                 ignore_nulls=ignore_nulls,
@@ -416,6 +422,12 @@ class SqlExprStringNameSpace(StringFns[SqlExpr]):
 class SqlExprListNameSpace(ListFns[SqlExpr]):
     """List function namespace for SQL expressions."""
 
+    def eval(self, expr: SqlExpr) -> SqlExpr:
+        """Run an expression against each array element."""
+        from ._funcs import fn_once
+
+        return self._new(self.transform(fn_once(expr.inner())).inner())
+
     def std(self, ddof: int = 1) -> SqlExpr:
         """Compute the standard deviation of the lists in the column."""
         match ddof:
@@ -431,6 +443,28 @@ class SqlExprListNameSpace(ListFns[SqlExpr]):
                 return self.var_pop()
             case _:
                 return self.var_samp()
+
+    def filter(self, lambda_arg: IntoExprColumn) -> SqlExpr:
+        """Constructs a list from those elements of the input `list` for which the `lambda` function returns `true`.
+
+        DuckDB must be able to cast the `lambda` function's return type to `BOOL`.
+
+        The return type of `list_filter` is the same as the input list's.
+
+        **SQL name**: *filter*
+
+        Args:
+            lambda_arg (IntoExprColumn): `LAMBDA` expression
+
+        Examples:
+            filter([3, 4, 5], lambda x : x > 4)
+
+        Returns:
+            T
+        """
+        from ._funcs import fn_once
+
+        return self._new(func("list_filter", self.inner(), fn_once(lambda_arg)))
 
 
 @dataclass(slots=True)
@@ -462,6 +496,34 @@ class SqlExprDateTimeNameSpace(DateTimeFns[SqlExpr]):
 @dataclass(slots=True)
 class SqlExprArrayNameSpace(ArrayFns[SqlExpr]):
     """Array function namespace for SQL expressions."""
+
+    def eval(self, expr: SqlExpr) -> SqlExpr:
+        """Run an expression against each array element."""
+        from ._funcs import fn_once
+
+        return self._new(self.transform(fn_once(expr.inner())).inner())
+
+    def filter(self, lambda_arg: IntoExprColumn) -> SqlExpr:
+        """Constructs a list from those elements of the input `list` for which the `lambda` function returns `true`.
+
+        DuckDB must be able to cast the `lambda` function's return type to `BOOL`.
+
+        The return type of `list_filter` is the same as the input list's.
+
+        **SQL name**: *filter*
+
+        Args:
+            lambda_arg (IntoExprColumn): `LAMBDA` expression
+
+        Examples:
+            filter([3, 4, 5], lambda x : x > 4)
+
+        Returns:
+            T
+        """
+        from ._funcs import fn_once
+
+        return self._new(func("array_filter", self.inner(), fn_once(lambda_arg)))
 
 
 @dataclass(slots=True)

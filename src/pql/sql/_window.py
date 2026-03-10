@@ -10,54 +10,72 @@ from .utils import try_iter
 
 if TYPE_CHECKING:
     from ._expr import SqlExpr
-    from .typing import IntoExprColumn
+    from .typing import FrameMode, IntoExprColumn, WindowExclude
+
+type FrameBound = int | str
+
+_EXCLUDE_CLAUSE: pc.Dict[WindowExclude, str] = pc.Dict.from_ref(
+    {
+        "current_row": "EXCLUDE CURRENT ROW",
+        "group": "EXCLUDE GROUP",
+        "ties": "EXCLUDE TIES",
+        "no_others": "EXCLUDE NO OTHERS",
+    }
+)
 
 
 class Kword:
     @classmethod
-    def rows_clause(
-        cls, row_start: pc.Option[int], row_end: pc.Option[int], *, has_order_by: bool
+    def frame_clause(
+        cls,
+        mode: FrameMode,
+        frame_start: pc.Option[FrameBound],
+        frame_end: pc.Option[FrameBound],
+        *,
+        has_order_by: bool,
     ) -> str:
-        match (row_start, row_end):
+        match (frame_start, frame_end):
             case (pc.Some(start), pc.Some(end)):
-                return f"""--sql
-                ROWS BETWEEN {-start} PRECEDING AND {end} FOLLOWING"""
+                return f"{mode} BETWEEN {_bound(start, 'PRECEDING')} AND {_bound(end, 'FOLLOWING')}"
             case (pc.Some(start), pc.NONE):
-                return f"""--sql
-                ROWS BETWEEN {-start} PRECEDING AND UNBOUNDED FOLLOWING"""
+                return f"{mode} BETWEEN {_bound(start, 'PRECEDING')} AND UNBOUNDED FOLLOWING"
             case (pc.NONE, pc.Some(end)):
-                return f"""--sql
-                ROWS BETWEEN UNBOUNDED PRECEDING AND {end} FOLLOWING"""
+                return (
+                    f"{mode} BETWEEN UNBOUNDED PRECEDING AND {_bound(end, 'FOLLOWING')}"
+                )
             case _ if has_order_by:
-                return """--sql
-                ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING"""
+                return f"{mode} BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING"
             case _:
                 return ""
+
+    @classmethod
+    def exclude_clause(cls, exclude: WindowExclude) -> str:
+        return _EXCLUDE_CLAUSE.get_item(exclude).expect("invalid exclude option")
 
     @classmethod
     def null_order(cls, *, last: bool) -> str:
         match last:
             case True:
-                return """--sql NULLS LAST"""
+                return "NULLS LAST"
             case False:
-                return """--sql NULLS FIRST"""
+                return "NULLS FIRST"
 
     @classmethod
     def sort_order(cls, *, desc: bool) -> str:
         match desc:
             case True:
-                return """--sql DESC"""
+                return "DESC"
             case False:
-                return """--sql ASC"""
+                return "ASC"
 
     @classmethod
     def partition_by(cls, by: str) -> str:
-        return f"""--sql
+        return f"""
         PARTITION BY {by}"""
 
     @classmethod
     def order_by(cls, by: str) -> str:
-        return f"""--sql
+        return f"""
         ORDER BY {by}"""
 
     @classmethod
@@ -65,12 +83,32 @@ class Kword:
         return f"{item} {cls.sort_order(desc=desc)} {cls.null_order(last=nulls_last)}"
 
 
+def _bound(value: FrameBound, direction: str) -> str:
+    """Convert a frame bound value into SQL syntax.
+
+    - 0 -> CURRENT ROW
+    - positive int -> N {direction}
+    - negative int for PRECEDING -> becomes positive FOLLOWING, etc.
+    - str -> raw SQL (e.g. "INTERVAL 3 DAYS") + direction
+    """
+    match value:
+        case 0:
+            return "CURRENT ROW"
+        case int(n):
+            return f"{abs(n)} {direction}"
+        case str(raw):
+            return f"{raw} {direction}"
+
+
 def over_expr(  # noqa: PLR0913
     expr: SqlExpr,
     partition_by: pc.Option[IntoExprColumn | Iterable[IntoExprColumn]],
     order_by: pc.Option[IntoExprColumn | Iterable[IntoExprColumn]],
-    rows_start: pc.Option[int],
-    rows_end: pc.Option[int],
+    frame_start: pc.Option[FrameBound],
+    frame_end: pc.Option[FrameBound],
+    frame_mode: FrameMode = "ROWS",
+    exclude: pc.Option[WindowExclude] = pc.NONE,
+    filter_cond: pc.Option[IntoExprColumn] = pc.NONE,
     *,
     descending: Iterable[bool] | bool = False,
     nulls_last: Iterable[bool] | bool = False,
@@ -78,18 +116,34 @@ def over_expr(  # noqa: PLR0913
 ) -> duckdb.Expression:
     return duckdb.SQLExpression(
         _build_over(
-            handle_nulls(expr, ignore_nulls=ignore_nulls),
+            _handle_filter(
+                handle_nulls(expr, ignore_nulls=ignore_nulls),
+                filter_cond,
+            ),
             partition_by.map(lambda x: try_iter(x).collect()).into(get_partition_by),
             order_by.map(lambda x: try_iter(x).collect()).into(
                 get_order_by, descending=descending, nulls_last=nulls_last
             ),
-            Kword.rows_clause(rows_start, rows_end, has_order_by=order_by.is_some()),
+            Kword.frame_clause(
+                frame_mode,
+                frame_start,
+                frame_end,
+                has_order_by=order_by.is_some(),
+            ),
+            exclude.map(Kword.exclude_clause).unwrap_or(""),
         )
     )
 
 
-def _build_over(expr: str, partition_by: str, order_by: str, row_between: str) -> str:
-    return f"{expr} OVER ({partition_by} {order_by} {row_between})"
+def _build_over(
+    expr: str, partition_by: str, order_by: str, frame: str, exclude: str
+) -> str:
+    clauses = pc.Iter((partition_by, order_by, frame, exclude)).filter(bool).join(" ")
+    return f"{expr} OVER ({clauses})"
+
+
+def _handle_filter(expr: str, filter_cond: pc.Option[IntoExprColumn]) -> str:
+    return filter_cond.map(lambda c: f"{expr} FILTER (WHERE {c})").unwrap_or(expr)
 
 
 def get_partition_by(partition_by: pc.Option[pc.Seq[IntoExprColumn]]) -> str:
