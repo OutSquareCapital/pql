@@ -11,15 +11,9 @@ from .utils import try_iter
 if TYPE_CHECKING:
     from ._expr import SqlExpr
     from .typing import IntoExprColumn
-from enum import StrEnum
 
 
-class Kword(StrEnum):
-    DESC = "DESC"
-    ASC = "ASC"
-    NULLS_LAST = "NULLS LAST"
-    NULLS_FIRST = "NULLS FIRST"
-
+class Kword:
     @classmethod
     def rows_clause(
         cls, row_start: pc.Option[int], row_end: pc.Option[int], *, has_order_by: bool
@@ -42,11 +36,19 @@ class Kword(StrEnum):
 
     @classmethod
     def null_order(cls, *, last: bool) -> str:
-        return cls.NULLS_LAST if last else cls.NULLS_FIRST
+        match last:
+            case True:
+                return """--sql NULLS LAST"""
+            case False:
+                return """--sql NULLS FIRST"""
 
     @classmethod
     def sort_order(cls, *, desc: bool) -> str:
-        return cls.DESC if desc else cls.ASC
+        match desc:
+            case True:
+                return """--sql DESC"""
+            case False:
+                return """--sql ASC"""
 
     @classmethod
     def partition_by(cls, by: str) -> str:
