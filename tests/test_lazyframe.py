@@ -10,28 +10,30 @@ import pql._typing
 
 from ._utils import assert_lf_eq_pl
 
+_DF = pl.DataFrame(
+    {
+        "id": [1, 2, 3, 4, 5],
+        "name": ["Alice", "Bob", "Charlie", "David", "Eve"],
+        "sex": ["F", "M", "M", "M", "F"],
+        "age": [25, 30, 35, 28, 22],
+        "salary": [50000.0, 60000.0, 75000.0, 55000.0, 45000.0],
+        "department": [
+            "Engineering",
+            "Sales",
+            "Engineering",
+            "Sales",
+            "Engineering",
+        ],
+        "is_active": [True, True, False, True, True],
+        "value": [10.0, None, 30.0, None, 50.0],
+        "category": ["A", "B", None, "A", "B"],
+    }
+)
+
 
 @pytest.fixture
 def sample_df() -> pl.DataFrame:
-    return pl.DataFrame(
-        {
-            "id": [1, 2, 3, 4, 5],
-            "name": ["Alice", "Bob", "Charlie", "David", "Eve"],
-            "sex": ["F", "M", "M", "M", "F"],
-            "age": [25, 30, 35, 28, 22],
-            "salary": [50000.0, 60000.0, 75000.0, 55000.0, 45000.0],
-            "department": [
-                "Engineering",
-                "Sales",
-                "Engineering",
-                "Sales",
-                "Engineering",
-            ],
-            "is_active": [True, True, False, True, True],
-            "value": [10.0, None, 30.0, None, 50.0],
-            "category": ["A", "B", None, "A", "B"],
-        }
-    )
+    return _DF
 
 
 def test_properties(sample_df: pl.DataFrame) -> None:
@@ -1025,9 +1027,7 @@ def test_pivot_multiple_value_columns(sample_df: pl.DataFrame) -> None:
     )
 
 
-@pytest.mark.parametrize(
-    "agg", ["min", "max", "first", "last", "sum", "mean", "median"]
-)
+@pytest.mark.parametrize("agg", ["min", "max", "first", "last", "mean", "median"])
 def test_pivot_aggregate_fns(
     sample_df: pl.DataFrame, agg: pql._typing.PivotAgg
 ) -> None:
@@ -1045,6 +1045,28 @@ def test_pivot_aggregate_fns(
             index="sex",
             values="salary",
             aggregate_function=agg,  # pyright: ignore[reportArgumentType]
+        ),
+    )
+
+
+def test_pivot_aggregate_sum(sample_df: pl.DataFrame) -> None:
+    """Sum in `polars` is at 0 for null values, but return null in `DuckDB`."""
+    assert_lf_eq_pl(
+        pql.LazyFrame(sample_df)
+        .pivot(
+            "department",
+            on_columns=["Engineering", "Sales"],
+            index="sex",
+            values="salary",
+            aggregate_function="sum",
+        )
+        .with_columns(pql.col("Sales").fill_null(0)),
+        sample_df.lazy().pivot(
+            "department",
+            on_columns=["Engineering", "Sales"],
+            index="sex",
+            values="salary",
+            aggregate_function="sum",
         ),
     )
 
@@ -1097,20 +1119,21 @@ def test_pivot_auto_detect_index(sample_df: pl.DataFrame) -> None:
 
 
 def test_pivot_integer_on_columns(sample_df: pl.DataFrame) -> None:
+    cols = (1, 2, 3, 4, 5)
     assert_lf_eq_pl(
         pql.LazyFrame(sample_df).pivot(
             "id",
-            on_columns=[1, 2, 3, 4, 5],
+            on_columns=cols,
             index="department",
             values="salary",
-            aggregate_function="sum",
+            aggregate_function="first",
         ),
         sample_df.lazy().pivot(
             "id",
-            on_columns=[1, 2, 3, 4, 5],
+            on_columns=cols,
             index="department",
             values="salary",
-            aggregate_function="sum",
+            aggregate_function="first",
         ),
     )
 
