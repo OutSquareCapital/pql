@@ -12,6 +12,7 @@
         "matplotlib>=3.10.8",
         "narwhals>=2.15.0",
         "numpy>=2.4.2",
+        "pandas-stubs>=3.0.0.260204",
         "pandas>=3.0.1",
         "polars>=1.37.1",
         "pyarrow-stubs>=20.0.0.20251215",
@@ -70,3 +71,7 @@
         combine-as-imports = true
 [tool.coverage.run]
     omit = ["src/pql/_types.py"]
+[tool.basedpyright]
+    reportImportCycles     = false
+    reportMissingSuperCall = false
+    typeCheckingMode       = "all"
