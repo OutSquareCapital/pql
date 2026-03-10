@@ -159,10 +159,7 @@ class OverBuilder:
     def handle_distinct(self, *, distinct: bool) -> Self:
         match distinct:
             case True:
-                idx = self.expr.index("(")
-                return self.__class__(
-                    f"{self.expr[: idx + 1]}DISTINCT {self.expr[idx + 1 :]}"
-                )
+                return self.__class__(self.expr.replace("(", "(DISTINCT ", 1))
             case False:
                 return self
 
