@@ -12,7 +12,7 @@ import pql
 
 assert_eq = partial(assert_frame_equal, check_dtypes=False, check_row_order=False)
 
-type TestData = dict[str, Any]
+type TestData = dict[str, Any]  # pyright: ignore[reportExplicitAny]
 
 
 def _get_data() -> TestData:
@@ -131,7 +131,7 @@ def test_from_numpy_4d(orient: pql.sql.typing.Orientation) -> None:
     expected = arr4d if orient == "row" else arr4d.T
     assert_eq(
         pql.from_numpy(arr4d, orient).collect(),
-        pl.DataFrame(expected.tolist(), orient=orient),
+        pl.DataFrame(expected.tolist(), orient=orient),  # pyright: ignore[reportAny]
     )
 
 

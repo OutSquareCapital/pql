@@ -31,20 +31,20 @@ class FrameLike(Protocol):
     """Protocol to check if a type is indeed a narwhals `IntoFrame`."""
 
     @property
-    def columns(self) -> Any: ...  # noqa: ANN401, D102
+    def columns(self) -> Any: ...  # noqa: ANN401, D102  # pyright: ignore[reportExplicitAny, reportAny]
 
 
 class NPProtocol(Protocol):
     """Base Protocol for numpy objects."""
 
     @property
-    def dtype(self) -> Any: ...  # noqa: ANN401, D102
+    def dtype(self) -> Any: ...  # noqa: ANN401, D102  # pyright: ignore[reportExplicitAny, reportAny]
     @property
     def ndim(self) -> int: ...  # noqa: D102
-    def __array__(self, *args: Any, **kwargs: Any) -> Any: ...  # noqa: ANN401, D105
-    def __array_wrap__(self, *args: Any, **kwargs: Any) -> Any: ...  # noqa: ANN401, D105
+    def __array__(self, *args: Any, **kwargs: Any) -> Any: ...  # noqa: ANN401, D105  # pyright: ignore[reportExplicitAny, reportAny]
+    def __array_wrap__(self, *args: Any, **kwargs: Any) -> Any: ...  # noqa: ANN401, D105  # pyright: ignore[reportExplicitAny, reportAny]
     @property
-    def __array_interface__(self) -> dict[str, Any]: ...  # noqa: D105
+    def __array_interface__(self) -> dict[str, Any]: ...  # noqa: D105  # pyright: ignore[reportExplicitAny]
     @property
     def __array_priority__(self) -> float: ...  # noqa: D105
 
@@ -61,9 +61,9 @@ class NPArrayLike[S: tuple[Any, ...], D](NPProtocol, Protocol):
     def __len__(self) -> int: ...  # noqa: D105
     def __contains__(self, value: object, /) -> bool: ...  # noqa: D105
     def __iter__(self) -> Iterator[D]: ...  # noqa: D105
-    def __array_finalize__(self, *args: Any, **kwargs: Any) -> None: ...  # noqa: ANN401, D105
-    def __getitem__(self, *args: Any, **kwargs: Any) -> Any: ...  # noqa: ANN401, D105
-    def __setitem__(self, *args: Any, **kwargs: Any) -> None: ...  # noqa: ANN401, D105
+    def __array_finalize__(self, *args: Any, **kwargs: Any) -> None: ...  # noqa: ANN401, D105  # pyright: ignore[reportExplicitAny, reportAny]
+    def __getitem__(self, *args: Any, **kwargs: Any) -> Any: ...  # noqa: ANN401, D105  # pyright: ignore[reportExplicitAny, reportAny]
+    def __setitem__(self, *args: Any, **kwargs: Any) -> None: ...  # noqa: ANN401, D105  # pyright: ignore[reportExplicitAny, reportAny]
     @property
     def shape(self) -> S: ...  # noqa: D102
     @property
@@ -87,7 +87,7 @@ type SeqIntoVals = (
     Sequence[duckdb.Expression]
     | Sequence[Mapping[str, PythonLiteral]]
     | Sequence[PythonLiteral]
-    | NPArrayLike[Any, Any]
+    | NPArrayLike[Any, Any]  # pyright: ignore[reportExplicitAny]
 )
 
 type IntoValues = ExprIntoVals | Mapping[str, Sequence[PythonLiteral]] | SeqIntoVals

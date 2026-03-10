@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from collections.abc import Callable, Iterator
 from dataclasses import dataclass, field, replace
-from typing import TYPE_CHECKING, Self
+from typing import TYPE_CHECKING, Self, override
 
 import pyochain as pc
 from pyochain.traits import PyoCollection, PyoIterable
@@ -133,6 +133,7 @@ class ExprPlan(PyoIterable[ExprProjection]):
             .collect()
         )
 
+    @override
     def __iter__(self) -> Iterator[ExprProjection]:
         return iter(self.projections)
 

@@ -6,14 +6,23 @@ Do not edit manually.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Literal, Self, SupportsInt, overload
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    ClassVar,
+    Literal,
+    Self,
+    SupportsInt,
+    overload,
+    override,
+)
 
 import pyochain as pc
-from duckdb import ExplainType, RenderMode
+from duckdb import DuckDBPyRelation, ExplainType, RenderMode
 
 from .._core import (
+    CoreHandler,
     DuckHandler,
-    RelHandler,
     into_duckdb,
     into_duckdb_mapping,
 )
@@ -23,7 +32,7 @@ if TYPE_CHECKING:
     from collections.abc import Callable, Iterable, Mapping
 
     import numpy as np
-    import pandas as pd  # pyright: ignore[reportMissingModuleSource]
+    import pandas as pd
     import polars as pl
     import pyarrow as pa
     from _duckdb._enums import (  # pyright: ignore[reportMissingModuleSource]
@@ -44,7 +53,7 @@ if TYPE_CHECKING:
     from ..typing import IntoExpr, IntoExprColumn, PythonLiteral
 
 
-class Relation(RelHandler):
+class Relation(CoreHandler[DuckDBPyRelation]):
     """Wrapper around DuckDBPyRelation that uses SqlExpr instead of duckdb.Expression.
 
     This is a composition-based wrapper: it stores a ``_expr: DuckDBPyRelation``
@@ -52,14 +61,14 @@ class Relation(RelHandler):
     at the boundary.
     """
 
-    __slots__ = ()
+    __slots__: ClassVar[Iterable[str]] = ()
 
-    def __arrow_c_stream__(self, requested_schema: object | None = None) -> Any:
+    def __arrow_c_stream__(self, requested_schema: object | None = None) -> Any:  # pyright: ignore[reportExplicitAny, reportAny]
         """Execute and return an ArrowArrayStream through the Arrow PyCapsule Interface.
 
         https://arrow.apache.org/docs/dev/format/CDataInterface/PyCapsuleInterface.html
         """
-        return self.inner().__arrow_c_stream__(requested_schema)
+        return self.inner().__arrow_c_stream__(requested_schema)  # pyright: ignore[reportAny]
 
     def __contains__(self, name: str) -> bool:
         return self.inner().__contains__(name)
@@ -346,7 +355,7 @@ class Relation(RelHandler):
         """Execute and return an Arrow Record Batch Reader that yields all rows."""
         return self.inner().fetch_record_batch(rows_per_batch)
 
-    def fetchall(self) -> pc.Vec[tuple[Any, ...]]:
+    def fetchall(self) -> pc.Vec[tuple[Any, ...]]:  # pyright: ignore[reportExplicitAny]
         """Execute and fetch all rows as a list of tuples."""
         return pc.Vec.from_ref(self.inner().fetchall())
 
@@ -354,15 +363,15 @@ class Relation(RelHandler):
         """Execute and fetch all rows as a pandas DataFrame."""
         return self.inner().fetchdf(date_as_object=date_as_object)
 
-    def fetchmany(self, size: SupportsInt = 1) -> pc.Vec[tuple[Any, ...]]:
+    def fetchmany(self, size: SupportsInt = 1) -> pc.Vec[tuple[Any, ...]]:  # pyright: ignore[reportExplicitAny]
         """Execute and fetch the next set of rows as a list of tuples."""
         return pc.Vec.from_ref(self.inner().fetchmany(size))
 
-    def fetchnumpy(self) -> pc.Dict[str, np.typing.NDArray[Any] | pd.Categorical]:
+    def fetchnumpy(self) -> pc.Dict[str, np.typing.NDArray[Any] | pd.Categorical]:  # pyright: ignore[reportExplicitAny]
         """Execute and fetch all rows as a Python dict mapping each column to one numpy arrays."""
         return pc.Dict.from_ref(self.inner().fetchnumpy())
 
-    def fetchone(self) -> tuple[Any, ...] | None:
+    def fetchone(self) -> tuple[Any, ...] | None:  # pyright: ignore[reportExplicitAny]
         """Execute and fetch a single row as a tuple."""
         return self.inner().fetchone()
 
@@ -818,7 +827,7 @@ class Relation(RelHandler):
             self.inner().sum(expression, groups, window_spec, projected_columns)
         )
 
-    def tf(self) -> pc.Dict[str, Any]:
+    def tf(self) -> pc.Dict[str, Any]:  # pyright: ignore[reportExplicitAny]
         """Fetch a result as dict of TensorFlow Tensors."""
         return pc.Dict.from_ref(self.inner().tf())
 
@@ -908,7 +917,7 @@ class Relation(RelHandler):
         """Creates a view named view_name that refers to the relation object."""
         return self._new(self.inner().to_view(view_name, replace))
 
-    def torch(self) -> pc.Dict[str, Any]:
+    def torch(self) -> pc.Dict[str, Any]:  # pyright: ignore[reportExplicitAny]
         """Fetch a result as dict of PyTorch Tensors."""
         return pc.Dict.from_ref(self.inner().torch())
 
@@ -1100,7 +1109,7 @@ class Expression(DuckHandler):
     at the boundary.
     """
 
-    __slots__ = ()
+    __slots__: ClassVar[Iterable[str]] = ()
 
     def __add__(self, other: IntoExpr) -> Self:
         """Add expr to self.
@@ -1144,6 +1153,7 @@ class Expression(DuckHandler):
     def div(self, other: IntoExpr) -> Self:
         return self.__div__(other)
 
+    @override
     def __eq__(self, other: IntoExpr) -> Self:  # pyright: ignore[reportIncompatibleMethodOverride]
         """Create an equality expression between two expressions.
 
@@ -1267,6 +1277,7 @@ class Expression(DuckHandler):
     def mul(self, other: IntoExpr) -> Self:
         return self.__mul__(other)
 
+    @override
     def __ne__(self, other: IntoExpr) -> Self:  # pyright: ignore[reportIncompatibleMethodOverride]
         """Create an inequality expression between two expressions.
 

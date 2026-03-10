@@ -3,7 +3,7 @@ from __future__ import annotations
 from collections.abc import Iterable
 from dataclasses import dataclass
 from enum import Enum
-from typing import TYPE_CHECKING, NamedTuple, Self, cast
+from typing import TYPE_CHECKING, NamedTuple, Self, cast, final, override
 
 import duckdb
 import pyochain as pc
@@ -103,6 +103,10 @@ class DType:
     physical: str
     type_id: DTypeIds
 
+    @override
+    def __hash__(self) -> int:
+        return hash((self.physical, self.type_id))
+
     @classmethod
     def from_duckdb(cls, dtype: DuckDBPyType) -> Self:
         return cls(str(dtype), dtype.id)
@@ -122,11 +126,13 @@ class DecimalType(DType):
     def new(cls, precision: int, scale: int) -> Self:
         return cls.from_duckdb(duckdb.decimal_type(precision, scale))
 
+    @override
     @classmethod
     def from_duckdb(cls, dtype: DuckDBPyType) -> Self:
         precision, scale = Cast.into_decimal(dtype.children)
         return cls(str(dtype), dtype.id, NamedInt(*precision), NamedInt(*scale))
 
+    @override
     def to_duckdb(self) -> DuckDBPyType:
         return duckdb.decimal_type(self.precision.value, self.scale.value)
 
@@ -141,18 +147,20 @@ class EnumType(DType):
     def new(cls, categories: Iterable[str] | type[Enum]) -> Self:
         match categories:
             case type():
-                cats = pc.Iter(categories).map(lambda i: i.value)
+                cats = pc.Iter(categories).map(lambda i: i.value)  # pyright: ignore[reportAny]
             case Iterable():
                 cats = pc.Iter(categories)
         raw_sql = f"ENUM{cats.collect(tuple)!r}"
         return cls.from_duckdb(DuckDBPyType(raw_sql))
 
+    @override
     @classmethod
     def from_duckdb(cls, dtype: DuckDBPyType) -> Self:
         return cls(
             str(dtype), dtype.id, NamedValues.from_raw(Cast.into_enum(dtype.children))
         )
 
+    @override
     def to_duckdb(self) -> DuckDBPyType:
         return duckdb.type(self.physical)
 
@@ -167,12 +175,14 @@ class ListType(DType):
     def new(cls, inner: DuckDBPyType) -> Self:
         return cls.from_duckdb(duckdb.list_type(inner))
 
+    @override
     @classmethod
     def from_duckdb(cls, dtype: DuckDBPyType) -> Self:
         return cls(
             str(dtype), dtype.id, Field.from_raw(*Cast.into_list(dtype.children))
         )
 
+    @override
     def to_duckdb(self) -> DuckDBPyType:
         return duckdb.list_type(self.child.dtype.to_duckdb())
 
@@ -188,11 +198,13 @@ class ArrayType(DType):
     def new(cls, child: DuckDBPyType, size: int) -> Self:
         return cls.from_duckdb(duckdb.array_type(child, size))
 
+    @override
     @classmethod
     def from_duckdb(cls, dtype: DuckDBPyType) -> Self:
         child, size = Cast.into_array(dtype.children)
         return cls(str(dtype), dtype.id, Field.from_raw(child), NamedInt(*size))
 
+    @override
     def to_duckdb(self) -> DuckDBPyType:
         return duckdb.array_type(self.child.dtype.to_duckdb(), self.size.value)
 
@@ -207,6 +219,7 @@ class StructType(DType):
     def new(cls, fields: IntoDict[str, DuckDBPyType]) -> Self:
         return cls.from_duckdb(duckdb.struct_type(dict(fields)))
 
+    @override
     @classmethod
     def from_duckdb(cls, dtype: DuckDBPyType) -> Self:
         return cls(
@@ -218,6 +231,7 @@ class StructType(DType):
             .collect(),
         )
 
+    @override
     def to_duckdb(self) -> DuckDBPyType:
         return duckdb.struct_type(
             self.fields.iter()
@@ -237,11 +251,13 @@ class MapType(DType):
     def new(cls, key: DuckDBPyType, value: DuckDBPyType) -> Self:
         return cls.from_duckdb(duckdb.map_type(key, value))
 
+    @override
     @classmethod
     def from_duckdb(cls, dtype: DuckDBPyType) -> Self:
         key, value = Cast.into_map(dtype.children)
         return cls(str(dtype), dtype.id, Field.from_raw(key), Field.from_raw(value))
 
+    @override
     def to_duckdb(self) -> DuckDBPyType:
         return duckdb.map_type(self.key.dtype.to_duckdb(), self.value.dtype.to_duckdb())
 
@@ -256,6 +272,7 @@ class UnionType(DType):
     def new(cls, fields: Iterable[DuckDBPyType]) -> Self:
         return cls.from_duckdb(duckdb.union_type(list(fields)))
 
+    @override
     @classmethod
     def from_duckdb(cls, dtype: DuckDBPyType) -> Self:
         return cls(
@@ -268,6 +285,7 @@ class UnionType(DType):
             .collect(),
         )
 
+    @override
     def to_duckdb(self) -> DuckDBPyType:
         return duckdb.union_type(
             self.fields.iter()
@@ -298,6 +316,7 @@ DTYPE_MAP: pc.Dict[DTypeIds, type[SqlType]] = pc.Dict.from_ref(
 If a type id is not present in this map, it will be parsed as a simple `DType`."""
 
 
+@final
 class ScalarType:
     HUGEINT = DType.from_duckdb(sqltypes.HUGEINT)
     BIGINT = DType.from_duckdb(sqltypes.BIGINT)

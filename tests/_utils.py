@@ -101,4 +101,4 @@ def assert_lf_eq_pl(pql_lf: pql.LazyFrame, polars_lf: pl.LazyFrame) -> None:
 
 
 def on_simple_fn(pql_expr: object, pl_expr: object, fn_name: str) -> None:
-    assert_eq_pl(getattr(pql_expr, fn_name)(), getattr(pl_expr, fn_name)())
+    assert_eq_pl(getattr(pql_expr, fn_name)(), getattr(pl_expr, fn_name)())  # pyright: ignore[reportAny]

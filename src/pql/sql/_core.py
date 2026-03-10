@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Concatenate, Self, overload
+from typing import TYPE_CHECKING, Concatenate, Self, overload, override
 
 import duckdb
 import pyochain as pc
@@ -16,7 +16,7 @@ if TYPE_CHECKING:
     )
 
 
-@dataclass(slots=True)
+@dataclass(slots=True, repr=False)
 class CoreHandler[T]:
     """A wrapper for an inner value.
 
@@ -25,9 +25,11 @@ class CoreHandler[T]:
 
     _inner: T
 
+    @override
     def __repr__(self) -> str:
         return self.inner().__repr__()
 
+    @override
     def __str__(self) -> str:
         return self.inner().__str__()
 
@@ -64,16 +66,9 @@ class CoreHandler[T]:
         return self._inner
 
 
+@dataclass(slots=True, repr=False)
 class DuckHandler(CoreHandler[duckdb.Expression]):
     """A wrapper for DuckDB expressions."""
-
-    __slots__ = ()
-
-
-class RelHandler(CoreHandler[duckdb.DuckDBPyRelation]):
-    """A wrapper for DuckDB relations."""
-
-    __slots__ = ()
 
 
 def into_duckdb_mapping(value: Mapping[str, IntoExpr]) -> pc.Dict[str, IntoDuckExpr]:

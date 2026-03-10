@@ -3,7 +3,8 @@ from collections.abc import Callable, Iterable
 import pyochain as pc
 
 from . import sql
-from ._expr import Expr, ExprMeta
+from ._expr import Expr
+from ._meta import ExprMeta
 from .selectors import all_columns_resolver, exclude_resolver, fixed_resolver
 from .sql.typing import IntoExpr, IntoExprColumn, PythonLiteral
 from .sql.utils import TryIter, try_iter

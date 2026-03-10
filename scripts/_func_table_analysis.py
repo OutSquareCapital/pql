@@ -9,12 +9,14 @@ import pyochain as pc
 from rich.console import Console
 from rich.table import Table
 
-from .fn_generator._query import (
-    DuckCols,
-    _filters,  # pyright: ignore[reportPrivateUsage]
-)
+from .fn_generator._query import _filters  # pyright: ignore[reportPrivateUsage]
+from .fn_generator._schemas import DuckCols
 
 CONSOLE = Console()
+
+
+def _df_to_iter(df: pl.DataFrame):
+    return pc.Iter(df.iter_rows())
 
 
 def _analyze_by_categories(lf: pl.LazyFrame) -> None:
@@ -36,9 +38,11 @@ def _analyze_by_categories(lf: pl.LazyFrame) -> None:
     table.add_column("%", justify="right", style="green")
 
     total = df.get_column("count").sum()
-    pc.Iter(df.head(20).iter_rows()).for_each_star(
-        lambda cat, count: table.add_row(
-            cat or "NULL", str(count), f"{count / total * 100:.1f}%"
+    df.head(20).pipe(_df_to_iter).for_each_star(
+        lambda cat, count: table.add_row(  # pyright: ignore[reportAny]
+            cat or "NULL",
+            str(count),  # pyright: ignore[reportAny]
+            f"{count / total * 100:.1f}%",
         )
     )
 
@@ -67,8 +71,8 @@ def _analyze_multi_category(lf: pl.LazyFrame) -> None:
     table.add_column("Categories", style="magenta")
     table.add_column("Count", justify="right", style="green")
 
-    pc.Iter(df.iter_rows()).for_each_star(
-        lambda name, cats, n: table.add_row(name, ", ".join(cats), str(n))
+    df.pipe(_df_to_iter).for_each_star(
+        lambda name, cats, n: table.add_row(name, ", ".join(cats), str(n))  # pyright: ignore[reportAny]
     )
 
     CONSOLE.print(table)

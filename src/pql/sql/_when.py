@@ -6,8 +6,9 @@ from typing import TYPE_CHECKING
 
 import duckdb
 
+from ._core import into_duckdb
 from ._expr import SqlExpr
-from ._funcs import into_duckdb, reduce
+from ._funcs import reduce
 from .utils import try_chain
 
 if TYPE_CHECKING:

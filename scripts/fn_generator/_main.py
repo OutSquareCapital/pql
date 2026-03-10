@@ -43,7 +43,7 @@ def run_pipeline(path: Path, *, profile: bool = False) -> str:
         .pipe(run_qry)
         .pipe(_inspect if profile else lambda lf: lf)
         .collect()
-        .map_rows(lambda x: FunctionInfo(*x), return_dtype=pl.Object)
+        .map_rows(lambda x: FunctionInfo(*x), return_dtype=pl.Object)  # pyright: ignore[reportAny]
         .pipe(lambda df: pc.Iter[FunctionInfo](df.to_series()))
         .collect()
         .inspect(

@@ -46,10 +46,10 @@ def gen_core(
     """Generate typed DuckDB wrappers from the database."""
     content = core_generator.generate(stub_path)
     output_path.parent.mkdir(parents=True, exist_ok=True)
-    output_path.write_text(content, encoding="utf-8")
+    res = output_path.write_text(content, encoding="utf-8")
     console.print(Text("Generated ").append(output_path.as_posix(), style="cyan"))
     _run_ruff(check_only=check_only, output=output_path)
-    console.print("Done!", style="bold green")
+    console.print(f"Done with exit code {res}!", style="bold green")
 
 
 @app.command()
@@ -67,10 +67,10 @@ def gen_fns(
     content = run_pipeline(data_path, profile=profile)
 
     output.parent.mkdir(parents=True, exist_ok=True)
-    output.write_text(content, encoding="utf-8")
+    res = output.write_text(content, encoding="utf-8")
     console.print(Text("Generated file at ").append(output.as_posix(), style="cyan"))
     _run_ruff(check_only=check_only, output=output)
-    console.print("Done!", style="bold green")
+    console.print(f"Done with exit code {res}!", style="bold green")
 
 
 @app.command()
@@ -82,11 +82,11 @@ def fns_to_parquet(path: InputPath = DATA_PATH) -> None:
 
 
 @app.command()
-def compare() -> None:
+def compare() -> int:
     """Run the comparison between polars/narwhals and pql and generate markdown report at the repo root."""
     from .comparator import get_comparisons
 
-    Path("API_COVERAGE.md").write_text(get_comparisons(), encoding="utf-8")
+    return Path("API_COVERAGE.md").write_text(get_comparisons(), encoding="utf-8")
 
 
 @app.command()
@@ -107,8 +107,8 @@ def _run_ruff(*, check_only: bool, output: Path) -> None:
     uv_args = ("uv", "run", "ruff")
     run_ruff = partial(subprocess.run, check=False)
 
-    run_ruff((*uv_args, "format", str(output)))
-    run_ruff((*uv_args, *_check_args(check_only=check_only), str(output)))
+    _ = run_ruff((*uv_args, "format", str(output)))
+    _ = run_ruff((*uv_args, *_check_args(check_only=check_only), str(output)))
 
 
 if __name__ == "__main__":

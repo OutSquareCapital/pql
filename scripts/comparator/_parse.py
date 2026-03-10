@@ -1,5 +1,6 @@
 import ast
 import re
+from typing import override
 
 import pyochain as pc
 
@@ -24,6 +25,7 @@ class _AliasExpander(ast.NodeTransformer):
         TrySeq="Sequence[{arg}] | {arg}",
     )
 
+    @override
     def visit_Subscript(self, node: ast.Subscript) -> ast.AST:
         rewritten = self.generic_visit(node)
         match rewritten:
@@ -49,8 +51,9 @@ class _AliasExpander(ast.NodeTransformer):
 
 class _GenericCanonicalizer(ast.NodeTransformer):
     def __init__(self) -> None:
-        self._mapping = pc.Dict[str, str].new()
+        self._mapping: pc.Dict[str, str] = pc.Dict.new()
 
+    @override
     def visit_Name(self, node: ast.Name) -> ast.AST:
         match node.id:
             case name if name not in {Typing.SELF, Pql.EXPR, Pql.LAZY_FRAME} and bool(
@@ -67,6 +70,7 @@ class _GenericCanonicalizer(ast.NodeTransformer):
 
 
 class _UnionCanonicalizer(ast.NodeTransformer):
+    @override
     def visit_BinOp(self, node: ast.BinOp) -> ast.AST:
         match self.generic_visit(node):
             case ast.BinOp(op=ast.BitOr()):
@@ -113,46 +117,33 @@ class _UnionCanonicalizer(ast.NodeTransformer):
                 return rewritten
 
 
+def _parse_annotation(annotation: str) -> pc.Option[ast.Expression]:
+    try:
+        return pc.Some(ast.parse(annotation, mode="eval"))
+    except SyntaxError:
+        return pc.NONE
+
+
+def _normalize(parsed: ast.Expression) -> str:
+    return ast.unparse(
+        ast.fix_missing_locations(  # pyright: ignore[reportAny]
+            _UnionCanonicalizer().visit(  # pyright: ignore[reportAny]
+                _GenericCanonicalizer().visit(_AliasExpander().visit(parsed))  # pyright: ignore[reportAny]
+            )
+        )
+    )
+
+
 def normalize_annotation(annotation: str) -> str:
-    def _normalize_aliases(annotation: str) -> str:
-        try:
-            parsed = ast.parse(annotation, mode="eval")
-        except SyntaxError:
-            return annotation
-
-        normalized = _AliasExpander().visit(parsed)
-        ast.fix_missing_locations(normalized)
-        return ast.unparse(normalized)
-
-    def _normalize_unions(annotation: str) -> str:
-        try:
-            parsed = ast.parse(annotation, mode="eval")
-        except SyntaxError:
-            return annotation
-
-        normalized = _UnionCanonicalizer().visit(parsed)
-        ast.fix_missing_locations(normalized)
-        return ast.unparse(normalized)
 
     return extract_last_name(
         SELF_PATTERN.sub(
             "__SELF__",
             extract_last_name(
-                _normalize_unions(_normalize(_normalize_aliases(annotation)))
+                _parse_annotation(annotation).map(_normalize).unwrap_or(annotation)
             ),
         )
     )
-
-
-def _normalize(annotation: str) -> str:
-    try:
-        parsed = ast.parse(annotation, mode="eval")
-    except SyntaxError:
-        return annotation
-
-    normalized = _GenericCanonicalizer().visit(parsed)
-    ast.fix_missing_locations(normalized)
-    return ast.unparse(normalized)
 
 
 def extract_last_name(annotation: str) -> str:

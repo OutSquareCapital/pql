@@ -4,8 +4,8 @@ from types import ModuleType
 
 import pyochain as pc
 
-from .._utils import Dunders, Pql
-from ._infos import ComparisonResult, get_attr
+from .._utils import Dunders, Pql, get_attr
+from ._infos import ComparisonResult
 from ._rules import RefBackend, Status
 
 
@@ -95,7 +95,7 @@ class ClassComparison:
             def _module_public_names() -> pc.Set[str]:
                 match cls:
                     case ModuleType() as mod:
-                        return pc.Set(mod.__all__)
+                        return pc.Set(mod.__all__)  # pyright: ignore[reportAny]
                     case _:
                         return pc.Set(dir(cls))
 

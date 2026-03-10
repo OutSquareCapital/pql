@@ -6,9 +6,10 @@ from typing import TYPE_CHECKING
 import pyochain as pc
 
 from . import sql
-from ._expr import Expr, ExprMeta
+from ._expr import Expr
 
 if TYPE_CHECKING:
+    from ._meta import ExprMeta
     from .sql.typing import IntoExpr
     from .sql.utils import TryIter
 
@@ -25,9 +26,9 @@ class When:
         return Then(self._when.then(value))
 
 
+@dataclass(slots=True, init=False)
 class Then(Expr):
-    _inner: sql.Then
-    __slots__ = ()
+    _inner: sql.Then  # pyright: ignore[reportIncompatibleVariableOverride]
 
     def when(
         self, predicates: TryIter[IntoExpr], *more_predicates: IntoExpr
@@ -47,9 +48,9 @@ class ChainedWhen:
         return ChainedThen(self._chained_when.then(statement), pc.Some(self._meta))
 
 
+@dataclass(slots=True, init=False)
 class ChainedThen(Expr):
-    _inner: sql.ChainedThen
-    __slots__ = ()
+    _inner: sql.ChainedThen  # pyright: ignore[reportIncompatibleVariableOverride]
 
     def when(
         self, predicates: TryIter[IntoExpr], *more_predicates: IntoExpr

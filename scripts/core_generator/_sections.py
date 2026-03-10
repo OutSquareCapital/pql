@@ -21,17 +21,17 @@ Do not edit manually.
 
 from __future__ import annotations
 
-{From(Typing).import_(Typing.TYPE_CHECKING, Typing.ANY, Typing.LITERAL, Typing.SELF, Typing.SUPPORTS_INT, Typing.OVERLOAD)}
+{From(Typing).import_(Typing.TYPE_CHECKING, Typing.ANY, Typing.LITERAL, Typing.SELF, Typing.SUPPORTS_INT, Typing.OVERLOAD, Typing.CLASSVAR)}
 {Import(DuckDB)}
 {Import(Pyochain).as_("pc")}
-{From(DuckDB).import_(DuckDB.EXPLAIN_TYPE, DuckDB.RENDER_MODE)}
+{From(DuckDB).import_(DuckDB.EXPLAIN_TYPE, DuckDB.RENDER_MODE, DuckDB.RELATION)}
 from .._core import {Pql.CORE_HANDLER}, {Pql.REL_HANDLER}, {Pql.INTO_DUCKDB}, {Pql.INTO_DUCKDB_MAPPING}, {Pql.DUCK_HANDLER}
 from ..utils import {Pql.TRY_ITER}
 if {Typing.TYPE_CHECKING}:
     {From(CollectionsABC).import_(CollectionsABC.CALLABLE, CollectionsABC.ITERABLE, CollectionsABC.MAPPING)}
 
     import numpy as np
-    import pandas  # pyright: ignore[reportMissingModuleSource]
+    import pandas
     import polars
     import pyarrow as pa
     from _duckdb._enums import (  # pyright: ignore[reportMissingModuleSource]
@@ -64,6 +64,6 @@ class {wrapper_class}({wrapper_base}):
     at the boundary.
     """
 
-    __slots__ = ()
+    __slots__: ClassVar[Iterable[str]] = ()
 
     ''')

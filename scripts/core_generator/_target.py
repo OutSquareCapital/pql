@@ -1,6 +1,6 @@
 import inspect
 from dataclasses import dataclass, field
-from typing import NamedTuple
+from typing import NamedTuple, cast, final
 
 import duckdb
 import pyochain as pc
@@ -90,10 +90,10 @@ class TargetSpec:
                 .unwrap_or(doc)
             )
 
-        cls = getattr(duckdb, self.stub_class)
-
         return (
-            pc.Iter(inspect.getmembers(cls))
+            pc.Iter[tuple[str, object]](
+                inspect.getmembers(cast(type, getattr(duckdb, self.stub_class)))
+            )
             .filter_map_star(
                 lambda name, member: (
                     pc.Option(inspect.getdoc(member))
@@ -105,12 +105,13 @@ class TargetSpec:
         )
 
 
+@final
 class Targets:
     RELATION = TargetSpec(
         stub_file_name="__init__.pyi",
         stub_class=DuckDB.RELATION,
         wrapper_class=Pql.RELATION,
-        wrapper_base=Pql.REL_HANDLER,
+        wrapper_base=Pql.CORE_HANDLER_RELATION,
         wrapped_return_type=DuckDB.RELATION,
     )
 

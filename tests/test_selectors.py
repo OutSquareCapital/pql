@@ -138,7 +138,7 @@ def test_empty_selector() -> None:
     ],
 )
 def test_simple_selector(fn_name: str) -> None:
-    assert_eq_pl(getattr(cs, fn_name)(), getattr(cs_pl, fn_name)())
+    assert_eq_pl(getattr(cs, fn_name)(), getattr(cs_pl, fn_name)())  # pyright: ignore[reportAny]
 
 
 def test_duration_selector() -> None:

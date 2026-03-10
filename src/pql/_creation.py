@@ -35,7 +35,7 @@ def from_df(df: IntoFrame) -> LazyFrame:
     return LazyFrame(sql.from_df(df))
 
 
-def from_numpy(arr: NPArrayLike[Any, Any], orient: Orientation = "col") -> LazyFrame:
+def from_numpy(arr: NPArrayLike[Any, Any], orient: Orientation = "col") -> LazyFrame:  # pyright: ignore[reportExplicitAny]
     return LazyFrame(sql.from_numpy(arr, orient=orient))
 
 

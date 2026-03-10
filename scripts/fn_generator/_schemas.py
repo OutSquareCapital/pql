@@ -1,4 +1,5 @@
 from dataclasses import asdict, dataclass, field
+from typing import final
 
 import polars as pl
 import pyochain as pc
@@ -23,6 +24,7 @@ def schema(cls: type[object]) -> pl.Schema:
     )
 
 
+@final
 @schema
 class TableSchema:
     """Schema for DuckDB functions table."""

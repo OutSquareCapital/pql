@@ -49,8 +49,8 @@ class ParamInfo:
             name=param.name,
             is_var_positional=param.kind == inspect.Parameter.VAR_POSITIONAL,
             is_var_keyword=param.kind == inspect.Parameter.VAR_KEYWORD,
-            has_default=param.default is not inspect.Parameter.empty,
-            annotation=_get_annotation_str(param.annotation),
+            has_default=param.default is not inspect.Parameter.empty,  # pyright: ignore[reportAny]
+            annotation=_get_annotation_str(param.annotation),  # pyright: ignore[reportAny]
         )
 
     def param_name(self) -> str:
@@ -80,7 +80,7 @@ class MethodInfo:
             params=pc.Iter(sig.parameters.values())
             .map(ParamInfo.from_signature)
             .collect(),
-            return_annotation=_get_annotation_str(sig.return_annotation),
+            return_annotation=_get_annotation_str(sig.return_annotation),  # pyright: ignore[reportAny]
         )
 
     def signature_str(self, highlight_names: pc.Option[pc.Set[str]] = pc.NONE) -> str:
@@ -333,7 +333,7 @@ def _build_method_info(attr: object, name: str) -> pc.Option[MethodInfo]:
                             name,
                             pc.Seq[ParamInfo].new(),
                             _get_annotation_str(
-                                inspect.signature(getter).return_annotation
+                                inspect.signature(getter).return_annotation  # pyright: ignore[reportAny]
                             ),
                             is_property=True,
                         )

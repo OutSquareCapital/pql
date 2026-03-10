@@ -3,11 +3,12 @@
 from __future__ import annotations
 
 import re
+from abc import ABC, abstractmethod
 from collections.abc import Callable, Collection, Iterable
 from dataclasses import dataclass, replace
 from enum import IntEnum
 from functools import partial
-from typing import TYPE_CHECKING, NamedTuple, Self
+from typing import TYPE_CHECKING, NamedTuple, Self, override
 
 import pyochain as pc
 
@@ -70,12 +71,14 @@ class RollingBounds(NamedTuple):
 class Expr(sql.CoreHandler[sql.SqlExpr]):
     """Expression wrapper providing Polars-like API over DuckDB expressions."""
 
+    _inner: sql.SqlExpr
     meta: ExprMeta
 
     def __init__(self, inner: sql.SqlExpr, meta: pc.Option[ExprMeta] = pc.NONE) -> None:
         self._inner = inner
         self.meta = meta.map(replace).unwrap_or_else(lambda: ExprMeta("literal"))
 
+    @override
     def _new(self, value: sql.SqlExpr, meta: pc.Option[ExprMeta] = pc.NONE) -> Self:
         return self.__class__(
             value,
@@ -210,10 +213,12 @@ class Expr(sql.CoreHandler[sql.SqlExpr]):
     def __neg__(self) -> Self:
         return self.neg()
 
-    def __eq__(self, other: IntoExpr) -> Self:  # type: ignore[override]
+    @override
+    def __eq__(self, other: IntoExpr) -> Self:  # pyright: ignore[reportIncompatibleMethodOverride]
         return self.eq(other)
 
-    def __ne__(self, other: IntoExpr) -> Self:  # type: ignore[override]
+    @override
+    def __ne__(self, other: IntoExpr) -> Self:  # pyright: ignore[reportIncompatibleMethodOverride]
         return self.ne(other)
 
     def __lt__(self, other: IntoExpr) -> Self:
@@ -246,6 +251,7 @@ class Expr(sql.CoreHandler[sql.SqlExpr]):
     def __invert__(self) -> Self:
         return self.not_()
 
+    @override
     def __hash__(self) -> int:
         return hash(str(self.inner()))
 
@@ -1176,11 +1182,12 @@ class ExprStringNameSpace(ExprNameSpaceBase):
 
 @dataclass(slots=True)
 class _VecNameSpace[T: sql.SqlExprListNameSpace | sql.SqlExprArrayNameSpace](
-    ExprNameSpaceBase
+    ExprNameSpaceBase, ABC
 ):
     """Common list/array operations namespace."""
 
     @property
+    @abstractmethod
     def _vec(self) -> T:  # pragma: no cover
         raise NotImplementedError
 
@@ -1274,6 +1281,7 @@ class ExprArrayNameSpace(_VecNameSpace[sql.SqlExprArrayNameSpace]):
     """Array operations namespace (equivalent to pl.Expr.array)."""
 
     @property
+    @override
     def _vec(self) -> sql.SqlExprArrayNameSpace:
         return self.inner().arr
 
@@ -1311,6 +1319,7 @@ class ExprListNameSpace(_VecNameSpace[sql.SqlExprListNameSpace]):
     """List operations namespace (equivalent to pl.Expr.list)."""
 
     @property
+    @override
     def _vec(self) -> sql.SqlExprListNameSpace:
         return self.inner().list
 

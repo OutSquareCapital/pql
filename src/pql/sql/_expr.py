@@ -3,7 +3,7 @@ from __future__ import annotations
 from collections.abc import Iterable
 from dataclasses import dataclass
 from datetime import date, datetime
-from typing import TYPE_CHECKING, Self
+from typing import TYPE_CHECKING, ClassVar, Self
 
 import pyochain as pc
 
@@ -30,7 +30,7 @@ if TYPE_CHECKING:
 class SqlExpr(Expression, Fns):
     """A wrapper around duckdb.Expression that provides operator overloading and SQL function methods."""
 
-    __slots__ = ()
+    __slots__: ClassVar[Iterable[str]] = ()
 
     @property
     def arr(self) -> SqlExprArrayNameSpace:

@@ -5,7 +5,7 @@ import polars as pl
 import pyochain as pc
 
 from .._utils import Pql, Typing
-from ._dtypes import FuncTypes
+from ._dtypes import DuckDbTypes, FuncTypes
 from ._rules import (
     CONVERTER,
     NAMESPACE_SPECS,
@@ -13,7 +13,6 @@ from ._rules import (
     RENAME_RULES,
     SHADOWERS,
     SPECIAL_CASES,
-    DuckDbTypes,
 )
 from ._schemas import DuckCols, ParamLens, ParamLists, Params, PyCols
 from ._str_builder import EMPTY_STR, format_kwords

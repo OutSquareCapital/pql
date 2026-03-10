@@ -1,12 +1,13 @@
 from __future__ import annotations
 
 from collections.abc import Callable
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, final
 
 import pyochain as pc
 
 from . import sql
-from ._expr import Expr, ExprPlan
+from ._expr import Expr
+from ._meta import ExprPlan
 from ._schema import Schema
 from .sql.utils import TryIter, try_chain
 
@@ -15,6 +16,7 @@ if TYPE_CHECKING:
     from .sql.typing import IntoExpr
 
 
+@final
 class LazyGroupBy:
     __slots__ = ("_agg_schema", "_frame", "_group_expr", "_keys")
 

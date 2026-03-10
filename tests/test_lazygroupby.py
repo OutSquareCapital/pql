@@ -72,16 +72,16 @@ def test_lazygroupby_simple_computations(
     sample_df: pl.DataFrame, method_name: str
 ) -> None:
     selected = ("department", "age", "salary")
-    result = (
-        getattr(
+    result: pl.DataFrame = (  # pyright: ignore[reportAny]
+        getattr(  # pyright: ignore[reportAny]
             pql.LazyFrame(sample_df).select(*selected).group_by("department"),
             method_name,
         )()
         .sort("department")
         .collect()
     )
-    expected = (
-        getattr(
+    expected: pl.DataFrame = (  # pyright: ignore[reportAny]
+        getattr(  # pyright: ignore[reportAny]
             sample_df.lazy().select(*selected).group_by("department"), method_name
         )()
         .sort("department")

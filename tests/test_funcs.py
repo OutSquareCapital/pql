@@ -31,7 +31,7 @@ _MULTI_FNS = [
 
 @pytest.mark.parametrize("fn", _MULTI_FNS)
 def test_multi_col(fn: str) -> None:
-    assert_eq(getattr(pql, fn)("x", "n"), getattr(nw, fn)("x", "n"))
+    assert_eq(getattr(pql, fn)("x", "n"), getattr(nw, fn)("x", "n"))  # pyright: ignore[reportAny]
 
 
 def test_all_horizontal() -> None:

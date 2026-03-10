@@ -75,7 +75,7 @@ def from_query(query: str, **relations: IntoRel) -> duckdb.DuckDBPyRelation:
     )
 
 
-def from_dicts(data: Sequence[Mapping[str, Any]]) -> duckdb.DuckDBPyRelation:
+def from_dicts(data: Sequence[Mapping[str, PythonLiteral]]) -> duckdb.DuckDBPyRelation:
     return (
         pc.Iter(data[0].keys())
         .map(lambda key: (key, pc.Iter(data).map(lambda row: row[key]).collect(tuple)))
@@ -86,10 +86,10 @@ def from_dicts(data: Sequence[Mapping[str, Any]]) -> duckdb.DuckDBPyRelation:
 def from_records(data: SeqIntoVals) -> duckdb.DuckDBPyRelation:
     match data[0]:
         case Mapping():
-            vals = cast(Sequence[Mapping[str, Any]], data)
+            vals = cast(Sequence[Mapping[str, Any]], data)  # pyright: ignore[reportExplicitAny]
             return from_dicts(vals)
         case Sequence():
-            vals = cast(Sequence[Sequence[Any]], data)
+            vals = cast(Sequence[Sequence[Any]], data)  # pyright: ignore[reportExplicitAny]
             return (
                 pc.Iter(vals)
                 .enumerate()
@@ -106,12 +106,12 @@ def from_records(data: SeqIntoVals) -> duckdb.DuckDBPyRelation:
 def from_df(data: IntoFrame) -> duckdb.DuckDBPyRelation:
     match nw.from_native(data):
         case nw.DataFrame() as df:
-            return df.lazy(backend="duckdb").to_native()
+            return df.lazy(backend="duckdb").to_native()  # pyright: ignore[reportAny]
         case nw.LazyFrame() as lf:
             return duckdb.from_arrow(lf.collect())
 
 
-def from_dict(data: IntoDict[str, Any]) -> duckdb.DuckDBPyRelation:
+def from_dict(data: IntoDict[str, Any]) -> duckdb.DuckDBPyRelation:  # pyright: ignore[reportExplicitAny]
     data = pc.Dict(data)
 
     raw_vals = data.items().iter().map_star(_to_expr).collect(tuple)
@@ -120,7 +120,8 @@ def from_dict(data: IntoDict[str, Any]) -> duckdb.DuckDBPyRelation:
 
 
 def from_numpy(
-    data: NPArrayLike[Any, Any], orient: Orientation = "col"
+    data: NPArrayLike[Any, Any],  # pyright: ignore[reportExplicitAny]
+    orient: Orientation = "col",
 ) -> duckdb.DuckDBPyRelation:
 
     match data.ndim:
@@ -130,26 +131,26 @@ def from_numpy(
             arr = data.T if orient == "col" else data
 
             def _array_strategy(
-                data: NPArrayLike[Any, Any],
-            ) -> tuple[int, Callable[[int], NPArrayLike[Any, Any]]]:
+                data: NPArrayLike[Any, Any],  # pyright: ignore[reportExplicitAny]
+            ) -> tuple[int, Callable[[int], NPArrayLike[Any, Any]]]:  # pyright: ignore[reportExplicitAny]
                 match (data.ndim, orient):
                     case (2, _) | (_, "row"):
 
-                        def _arr_getter(j: int) -> NPArrayLike[Any, Any]:
-                            return arr[:, j]
+                        def _arr_getter(j: int) -> NPArrayLike[Any, Any]:  # pyright: ignore[reportExplicitAny]
+                            return arr[:, j]  # pyright: ignore[reportAny]
 
                         return 1, _arr_getter
                     case _:
 
-                        def _arr_getter(j: int) -> NPArrayLike[Any, Any]:
-                            return arr[j]
+                        def _arr_getter(j: int) -> NPArrayLike[Any, Any]:  # pyright: ignore[reportExplicitAny]
+                            return arr[j]  # pyright: ignore[reportAny]
 
                         return 0, _arr_getter
 
             axis, _arr_getter = _array_strategy(arr)
 
             names = (
-                pc.Iter(range(arr.shape[axis])).map(lambda j: f"column_{j}").collect()
+                pc.Iter(range(arr.shape[axis])).map(lambda j: f"column_{j}").collect()  # pyright: ignore[reportAny]
             )
             vals = (
                 names.iter()

@@ -227,6 +227,10 @@ class MethodInfo:
 
         pos_params = self.params.iter().filter(lambda p: not p.is_kw_only).collect()
         kwonly_params = self.params.iter().filter(lambda p: p.is_kw_only).collect()
+
+        def _get_defaults_idx(item: tuple[int, pc.Option[str]]) -> pc.Option[int]:
+            return pc.Some(item[0]) if item[1].is_some() else pc.NONE
+
         return AstSignature(
             self.target.rename_method(self.name),
             ast.arguments(
@@ -246,11 +250,7 @@ class MethodInfo:
                     lambda ds: (
                         ds.iter()
                         .enumerate()
-                        .find_map(
-                            lambda item: (
-                                pc.Some(item[0]) if item[1].is_some() else pc.NONE
-                            )
-                        )
+                        .find_map(_get_defaults_idx)
                         .map(
                             lambda idx: (
                                 ds.iter()
@@ -323,8 +323,8 @@ class AstSignature(NamedTuple):
             decorator_list=decorators,
             returns=self.returns,
         )
-        ast.fix_missing_locations(rendered)
-        return indent(ast.unparse(rendered), INDENT)
+
+        return indent(ast.unparse(ast.fix_missing_locations(rendered)), INDENT)
 
     def render(
         self,

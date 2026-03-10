@@ -5,13 +5,14 @@ from __future__ import annotations
 import re
 from collections.abc import Callable
 from dataclasses import replace
-from typing import TYPE_CHECKING, Self, overload
+from typing import TYPE_CHECKING, Self, overload, override
 
 import duckdb
 import pyochain as pc
 
 from . import _datatypes as dt, sql  # pyright: ignore[reportPrivateUsage]
-from ._expr import Expr, ExprMeta
+from ._expr import Expr
+from ._meta import ExprMeta
 
 if TYPE_CHECKING:
     from ._schema import ColumnResolver, Schema
@@ -108,12 +109,13 @@ class Selector(Expr):
         )
         return cls(_SENTINEL_COL, pc.Some(meta))
 
+    @override
     def _new(self, value: sql.SqlExpr, meta: pc.Option[ExprMeta] = pc.NONE) -> Self:
         """Preserve column_resolver and build a transform from the sentinel-based SQL."""
         new_meta = replace(
             meta.unwrap_or(self.meta),
             column_resolver=self.meta.column_resolver,
-            multi_agg=pc.Some(lambda col: _replay_transform(str(value), str(col))),  # type: ignore[arg-type]
+            multi_agg=pc.Some(lambda col: _replay_transform(str(value), str(col))),  # pyright: ignore[reportUnknownArgumentType, reportUnknownLambdaType]
         )
         return self.__class__(value, pc.Some(new_meta))
 
@@ -137,6 +139,7 @@ class Selector(Expr):
     def __or__(self, other: Selector) -> Selector: ...
     @overload
     def __or__(self, other: IntoExpr) -> Expr: ...
+    @override
     def __or__(self, other: IntoExpr) -> Selector | Expr:
         return self.union(other)
 
@@ -160,6 +163,7 @@ class Selector(Expr):
     def __and__(self, other: Selector) -> Selector: ...
     @overload
     def __and__(self, other: IntoExpr) -> Expr: ...
+    @override
     def __and__(self, other: IntoExpr) -> Selector | Expr:
         return self.intersection(other)
 
@@ -183,6 +187,7 @@ class Selector(Expr):
     def __sub__(self, other: Selector) -> Selector: ...
     @overload
     def __sub__(self, other: IntoExpr) -> Expr: ...
+    @override
     def __sub__(self, other: IntoExpr) -> Selector | Expr:
         return self.difference(other)
 
@@ -191,6 +196,7 @@ class Selector(Expr):
             _complement_resolver(self.meta.column_resolver.unwrap())
         )
 
+    @override
     def __invert__(self) -> Selector:
         return self.complement()
 

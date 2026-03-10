@@ -23,10 +23,8 @@ def extract_methods_from_stub(
         .find(_is_target_class)
         .map(
             lambda cls: (
-                pc.Iter(cls.body)  # type: ignore[typeis]
-                .filter_map(
-                    lambda item: _parse_method(item, docs, target)  # type: ignore[typeis]
-                )
+                pc.Iter[ast.stmt](cls.body)  # pyright: ignore[reportUnknownMemberType, reportUnknownArgumentType, reportAttributeAccessIssue]
+                .filter_map(lambda item: _parse_method(item, docs, target))
                 .collect()
             )
         )

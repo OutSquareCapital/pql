@@ -32,7 +32,9 @@ def try_iter[T](val: TryIter[T]) -> pc.Iter[T]:
 
 
 def check_by_arg[T: NonNestedLiteral](
-    compared: pc.Seq[Any], name: str, arg: TrySeq[T]
+    compared: pc.Seq[Any],  # pyright: ignore[reportExplicitAny]
+    name: str,
+    arg: TrySeq[T],
 ) -> pc.Result[pc.Iter[T], ValueError]:
     """Checks if the sequence arg matches the length of compared.
 

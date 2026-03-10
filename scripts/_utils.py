@@ -51,6 +51,7 @@ class From[T: KwordEnum]:
 class Import[T: KwordEnum]:
     module: type[T]
 
+    @ty.override
     def __str__(self) -> str:
         return f"import {self.module.module()}"
 
@@ -95,6 +96,7 @@ class Pql(KwordEnum):
     SEQ_LITERAL = "SeqLiteral"
     DATA_TYPE = "DataType"
     SCHEMA = "Schema"
+    CORE_HANDLER_RELATION = "CoreHandler[DuckDBPyRelation]"
 
 
 class Pyochain(KwordEnum):
@@ -151,10 +153,12 @@ class Typing(KwordEnum):
     UNION = ty.Union.__name__  # pyright: ignore[reportDeprecated]
     SUPPORTS_INT = ty.SupportsInt.__name__
     OVERLOAD = ty.overload.__name__
+    CLASSVAR = ty.ClassVar.__name__
 
 
 class CollectionsABC(KwordEnum):
     @classmethod
+    @ty.override
     def module(cls) -> str:
         return "collections.abc"
 

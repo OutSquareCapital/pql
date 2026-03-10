@@ -1,11 +1,10 @@
 from collections.abc import Callable
 from functools import cache, partial
-from typing import Any
 
 import pyochain as pc
 
 
-def _get_kwords() -> dict[str, Any]:
+def _get_kwords() -> dict[str, object]:
     from sqlparse import tokens
 
     return {
