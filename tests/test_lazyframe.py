@@ -997,149 +997,126 @@ def test_join_asof_overlap_column_suffix() -> None:
     )
 
 
-def test_pivot_single_value_column() -> None:
-    df = pl.DataFrame(
-        {
-            "name": ["Cady", "Cady", "Karen", "Karen"],
-            "subject": ["maths", "physics", "maths", "physics"],
-            "score": [98, 99, 61, 58],
-        }
-    )
+def test_pivot_single_value_column(sample_df: pl.DataFrame) -> None:
     assert_lf_eq_pl(
-        pql.LazyFrame(df).pivot(
-            "subject", on_columns=["maths", "physics"], index="name", values="score"
+        pql.LazyFrame(sample_df).pivot(
+            "department",
+            on_columns=["Engineering", "Sales"],
+            index="id",
+            values="salary",
         ),
-        df.lazy().pivot(
-            "subject", on_columns=["maths", "physics"], index="name", values="score"
+        sample_df.lazy().pivot(
+            "department",
+            on_columns=["Engineering", "Sales"],
+            index="id",
+            values="salary",
         ),
     )
 
 
-def test_pivot_multiple_value_columns() -> None:
-    df = pl.DataFrame(
-        {
-            "name": ["Cady", "Cady", "Karen", "Karen"],
-            "subject": ["maths", "physics", "maths", "physics"],
-            "test_1": [98, 99, 61, 58],
-            "test_2": [100, 100, 60, 60],
-        }
-    )
+def test_pivot_multiple_value_columns(sample_df: pl.DataFrame) -> None:
     assert_lf_eq_pl(
-        pql.LazyFrame(df).pivot(
-            "subject", on_columns=["maths", "physics"], index="name"
+        pql.LazyFrame(sample_df).pivot(
+            "department", on_columns=["Engineering", "Sales"], index="id"
         ),
-        df.lazy().pivot("subject", on_columns=["maths", "physics"], index="name"),
+        sample_df.lazy().pivot(
+            "department", on_columns=["Engineering", "Sales"], index="id"
+        ),
     )
 
 
-def test_pivot_aggregate_sum() -> None:
-    df = pl.DataFrame(
-        {
-            "ix": [1, 1, 2, 2, 1, 2],
-            "col": ["a", "a", "a", "a", "b", "b"],
-            "foo": [0, 1, 2, 2, 7, 1],
-            "bar": [0, 2, 0, 0, 9, 4],
-        }
-    )
+@pytest.mark.parametrize(
+    "agg", ["min", "max", "first", "last", "sum", "mean", "median"]
+)
+def test_pivot_aggregate_fns(
+    sample_df: pl.DataFrame, agg: pql._typing.PivotAgg
+) -> None:
     assert_lf_eq_pl(
-        pql.LazyFrame(df).pivot(
-            "col", on_columns=["a", "b"], index="ix", aggregate_function="sum"
+        pql.LazyFrame(sample_df).pivot(
+            "department",
+            on_columns=["Engineering", "Sales"],
+            index="sex",
+            values="salary",
+            aggregate_function=agg,
         ),
-        df.lazy().pivot(
-            "col", on_columns=["a", "b"], index="ix", aggregate_function="sum"
+        sample_df.lazy().pivot(
+            "department",
+            on_columns=["Engineering", "Sales"],
+            index="sex",
+            values="salary",
+            aggregate_function=agg,  # pyright: ignore[reportArgumentType]
         ),
     )
 
 
-def test_pivot_aggregate_len() -> None:
-    df = pl.DataFrame(
-        {
-            "cat": ["a", "a", "b", "b", "a"],
-            "val": ["x", "x", "x", "y", "y"],
-            "num": [1, 2, 3, 4, 5],
-        }
-    )
+def test_pivot_aggregate_len(sample_df: pl.DataFrame) -> None:
     assert_lf_eq_pl(
-        pql.LazyFrame(df).pivot(
-            "val",
-            on_columns=["x", "y"],
-            index="cat",
-            values="num",
+        pql.LazyFrame(sample_df).pivot(
+            "category",
+            on_columns=["A", "B"],
+            index="sex",
+            values="id",
             aggregate_function="count",
         ),
-        df.lazy().pivot(
-            "val",
-            on_columns=["x", "y"],
-            index="cat",
-            values="num",
+        sample_df.lazy().pivot(
+            "category",
+            on_columns=["A", "B"],
+            index="sex",
+            values="id",
             aggregate_function="len",
         ),
     )
 
 
-def test_pivot_custom_separator() -> None:
-    df = pl.DataFrame(
-        {
-            "name": ["Cady", "Cady", "Karen", "Karen"],
-            "subject": ["maths", "physics", "maths", "physics"],
-            "test_1": [98, 99, 61, 58],
-            "test_2": [100, 100, 60, 60],
-        }
-    )
+def test_pivot_custom_separator(sample_df: pl.DataFrame) -> None:
     assert_lf_eq_pl(
-        pql.LazyFrame(df).pivot(
-            "subject", on_columns=["maths", "physics"], index="name", separator="__"
+        pql.LazyFrame(sample_df).pivot(
+            "department",
+            on_columns=["Engineering", "Sales"],
+            index="id",
+            separator="__",
         ),
-        df.lazy().pivot(
-            "subject", on_columns=["maths", "physics"], index="name", separator="__"
+        sample_df.lazy().pivot(
+            "department",
+            on_columns=["Engineering", "Sales"],
+            index="id",
+            separator="__",
         ),
     )
 
 
-def test_pivot_auto_detect_index() -> None:
-    df = pl.DataFrame(
-        {
-            "name": ["Cady", "Cady", "Karen", "Karen"],
-            "subject": ["maths", "physics", "maths", "physics"],
-            "test_1": [98, 99, 61, 58],
-            "test_2": [100, 100, 60, 60],
-        }
-    )
+def test_pivot_auto_detect_index(sample_df: pl.DataFrame) -> None:
     assert_lf_eq_pl(
-        pql.LazyFrame(df).pivot(
-            "subject", on_columns=["maths", "physics"], values="test_1"
+        pql.LazyFrame(sample_df).pivot(
+            "department", on_columns=["Engineering", "Sales"], values="salary"
         ),
-        df.lazy().pivot("subject", on_columns=["maths", "physics"], values="test_1"),
+        sample_df.lazy().pivot(
+            "department", on_columns=["Engineering", "Sales"], values="salary"
+        ),
     )
 
 
-def test_pivot_integer_on_columns() -> None:
-    df = pl.DataFrame(
-        {
-            "country": ["NL", "NL", "US", "US"],
-            "year": [2000, 2010, 2000, 2010],
-            "population": [1005, 1065, 564, 608],
-        }
-    )
+def test_pivot_integer_on_columns(sample_df: pl.DataFrame) -> None:
     assert_lf_eq_pl(
-        pql.LazyFrame(df).pivot(
-            "year",
-            on_columns=[2000, 2010],
-            index="country",
-            values="population",
+        pql.LazyFrame(sample_df).pivot(
+            "id",
+            on_columns=[1, 2, 3, 4, 5],
+            index="department",
+            values="salary",
             aggregate_function="sum",
         ),
-        df.lazy().pivot(
-            "year",
-            on_columns=[2000, 2010],
-            index="country",
-            values="population",
+        sample_df.lazy().pivot(
+            "id",
+            on_columns=[1, 2, 3, 4, 5],
+            index="department",
+            values="salary",
             aggregate_function="sum",
         ),
     )
 
 
-def test_pivot_no_index_no_values_error() -> None:
-    df = pl.DataFrame({"a": [1], "b": ["x"], "c": [10]})
+def test_pivot_no_index_no_values_error(sample_df: pl.DataFrame) -> None:
     with pytest.raises(ValueError, match=r"index.*or.*values"):
-        _ = pql.LazyFrame(df).pivot("b", on_columns=["x"])
+        _ = pql.LazyFrame(sample_df).pivot(
+            "department", on_columns=["Engineering", "Sales"]
+        )
