@@ -9,7 +9,7 @@ Each summary cell is `global (Narwhals, Polars)`.
 
 | Class               | Coverage              | Implemented   | Matched      | Missing       | Mismatched  | Extra       |
 | ------------------- | --------------------- | ------------- | ------------ | ------------- | ----------- | ----------- |
-| LazyFrame           | 41.5% (60.0%, 35.8%)  | 106 (25, 81)  | 44 (15, 29)  | 29 (0, 29)    | 33 (10, 23) | 31 (29, 2)  |
+| LazyFrame           | 40.6% (56.0%, 35.8%)  | 106 (25, 81)  | 43 (14, 29)  | 29 (0, 29)    | 34 (11, 23) | 31 (29, 2)  |
 | Expr                | 49.8% (71.4%, 42.7%)  | 283 (70, 213) | 141 (50, 91) | 100 (7, 93)   | 42 (13, 29) | 59 (58, 1)  |
 | LazyGroupBy         | 52.9% (0.0%, 56.2%)   | 17 (1, 16)    | 9 (0, 9)     | 4 (0, 4)      | 4 (1, 3)    | 11 (11, 0)  |
 | ExprStrNameSpace    | 31.8% (42.1%, 27.7%)  | 66 (19, 47)   | 21 (8, 13)   | 10 (0, 10)    | 35 (11, 24) | 20 (19, 1)  |
@@ -86,7 +86,7 @@ Each summary cell is `global (Narwhals, Polars)`.
 - `with_columns_seq`
   - **Polars**: (*exprs: IntoExpr | Iterable[IntoExpr], **named_exprs: IntoExpr) -> LazyFrame
 
-### [!] Signature Mismatches (18)
+### [!] Signature Mismatches (19)
 
 - `cast` (pl)
   - **Polars***: (`dtypes: Mapping[ColumnNameOrSelector | PolarsDataType, PolarsDataType | PythonDataType] | PolarsDataType | pl.DataTypeExpr | Schema`, `strict: bool`) -> LazyFrame
@@ -150,6 +150,10 @@ Each summary cell is `global (Narwhals, Polars)`.
 - `unnest` (pl)
   - **Polars***: (`columns: ColumnNameOrSelector | Collection[ColumnNameOrSelector]`, `*more_columns: ColumnNameOrSelector`, `separator: str | None`) -> LazyFrame
   - **pql**: (`columns: TryIter[IntoExprColumn]`, `*more_columns: IntoExprColumn`) -> Self
+- `unpivot` (nw)
+  - **Narwhals**: (`on: str | list[str] | None`, `index: str | list[str] | None`, variable_name: str, value_name: str) -> Self
+  - **Polars**: (`on: ColumnNameOrSelector | Sequence[ColumnNameOrSelector] | None`, `index: ColumnNameOrSelector | Sequence[ColumnNameOrSelector] | None`, `variable_name: str | None`, `value_name: str | None`, `streamable: bool`) -> LazyFrame
+  - **pql**: (`on: TryIter[str] | None`, `index: TryIter[str] | None`, variable_name: str, value_name: str) -> Self
 
 ### [+] Extra Methods (pql-only) (2)
 

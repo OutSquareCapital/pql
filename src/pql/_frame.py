@@ -907,33 +907,14 @@ class LazyFrame(sql.CoreHandler[sql.SqlFrame]):
 
     def unpivot(
         self,
-        on: str | list[str] | None = None,
-        *,
-        index: str | list[str] | None = None,
+        on: TryIter[str] | None = None,
+        index: TryIter[str] | None = None,
         variable_name: str = "variable",
         value_name: str = "value",
     ) -> Self:
         """Unpivot from wide to long format."""
-        index_cols = (
-            pc.Option(index)
-            .map(lambda value: try_iter(value).collect())
-            .unwrap_or_else(pc.Seq[str].new)
-        )
-        on_cols = (
-            pc.Option(on)
-            .map(try_iter)
-            .unwrap_or(self.columns.iter().filter(lambda name: name not in index_cols))
-            .join(", ")
-        )
-        return self.__class__(
-            sql.from_query(
-                f"""--sql
-                    SELECT {index_cols.iter().chain((variable_name, value_name)).join(", ")}
-                    FROM (UNPIVOT _rel ON {on_cols}
-                    INTO NAME {variable_name} VALUE {value_name})
-                    """,
-                _rel=self.inner().inner(),
-            )
+        return (
+            self.inner().unpivot(on, index, variable_name, value_name).pipe(self._new)
         )
 
     def with_row_index(self, name: str, *, order_by: TrySeq[str]) -> Self:
