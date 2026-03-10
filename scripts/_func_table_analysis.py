@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+from typing import Any
 
 import polars as pl
 import pyochain as pc
@@ -15,7 +16,7 @@ from .fn_generator._schemas import DuckCols
 CONSOLE = Console()
 
 
-def _df_to_iter(df: pl.DataFrame):
+def _df_to_iter(df: pl.DataFrame) -> pc.Iter[tuple[Any, ...]]:  # pyright: ignore[reportExplicitAny]
     return pc.Iter(df.iter_rows())
 
 

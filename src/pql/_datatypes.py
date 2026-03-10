@@ -114,25 +114,25 @@ class ComplexDataType[T: sql.SqlType](DataType):
 @final
 @dataclass(slots=True)
 class Time(TemporalType):
-    raw: DType = sql.ScalarType.TIME
+    raw: DType = field(init=False, default=sql.ScalarType.TIME)
 
 
 @final
 @dataclass(slots=True)
 class TimeTZ(TemporalType):
-    raw: DType = sql.ScalarType.TIME_TZ
+    raw: DType = field(init=False, default=sql.ScalarType.TIME_TZ)
 
 
 @final
 @dataclass(slots=True)
 class Duration(TemporalType):
-    raw: DType = sql.ScalarType.INTERVAL
+    raw: DType = field(init=False, default=sql.ScalarType.INTERVAL)
 
 
 @final
 @dataclass(slots=True)
 class Date(TemporalType):
-    raw: DType = sql.ScalarType.DATE
+    raw: DType = field(init=False, default=sql.ScalarType.DATE)
 
 
 @final
@@ -157,31 +157,31 @@ class Datetime(TemporalType):
 @final
 @dataclass(slots=True)
 class Boolean(DataType):
-    raw: DType = sql.ScalarType.BOOLEAN
+    raw: DType = field(init=False, default=sql.ScalarType.BOOLEAN)
 
 
 @final
 @dataclass(slots=True)
 class Number(NumericType):
-    raw: DType = sql.ScalarType.BIGNUM
+    raw: DType = field(init=False, default=sql.ScalarType.BIGNUM)
 
 
 @final
 @dataclass(slots=True)
 class UUID(NumericType):
-    raw: DType = sql.ScalarType.UUID
+    raw: DType = field(init=False, default=sql.ScalarType.UUID)
 
 
 @final
 @dataclass(slots=True)
 class Float32(FloatType):
-    raw: DType = sql.ScalarType.FLOAT
+    raw: DType = field(init=False, default=sql.ScalarType.FLOAT)
 
 
 @final
 @dataclass(slots=True)
 class Float64(FloatType):
-    raw: DType = sql.ScalarType.DOUBLE
+    raw: DType = field(init=False, default=sql.ScalarType.DOUBLE)
 
 
 @final
@@ -202,85 +202,85 @@ class Decimal(NumericType, ComplexDataType[sql.DecimalType]):
 @final
 @dataclass(slots=True)
 class Int8(SignedIntegerType):
-    raw: DType = sql.ScalarType.TINYINT
+    raw: DType = field(init=False, default=sql.ScalarType.TINYINT)
 
 
 @final
 @dataclass(slots=True)
 class Int16(SignedIntegerType):
-    raw: DType = sql.ScalarType.SMALLINT
+    raw: DType = field(init=False, default=sql.ScalarType.SMALLINT)
 
 
 @final
 @dataclass(slots=True)
 class Int32(SignedIntegerType):
-    raw: DType = sql.ScalarType.INTEGER
+    raw: DType = field(init=False, default=sql.ScalarType.INTEGER)
 
 
 @final
 @dataclass(slots=True)
 class Int64(SignedIntegerType):
-    raw: DType = sql.ScalarType.BIGINT
+    raw: DType = field(init=False, default=sql.ScalarType.BIGINT)
 
 
 @final
 @dataclass(slots=True)
 class Int128(SignedIntegerType):
-    raw: DType = sql.ScalarType.HUGEINT
+    raw: DType = field(init=False, default=sql.ScalarType.HUGEINT)
 
 
 @final
 @dataclass(slots=True)
 class UInt8(UnsignedIntegerType):
-    raw: DType = sql.ScalarType.UTINYINT
+    raw: DType = field(init=False, default=sql.ScalarType.UTINYINT)
 
 
 @final
 @dataclass(slots=True)
 class UInt16(UnsignedIntegerType):
-    raw: DType = sql.ScalarType.USMALLINT
+    raw: DType = field(init=False, default=sql.ScalarType.USMALLINT)
 
 
 @final
 @dataclass(slots=True)
 class UInt32(UnsignedIntegerType):
-    raw: DType = sql.ScalarType.UINTEGER
+    raw: DType = field(init=False, default=sql.ScalarType.UINTEGER)
 
 
 @final
 @dataclass(slots=True)
 class UInt64(UnsignedIntegerType):
-    raw: DType = sql.ScalarType.UBIGINT
+    raw: DType = field(init=False, default=sql.ScalarType.UBIGINT)
 
 
 @final
 @dataclass(slots=True)
 class UInt128(UnsignedIntegerType):
-    raw: DType = sql.ScalarType.UHUGEINT
+    raw: DType = field(init=False, default=sql.ScalarType.UHUGEINT)
 
 
 @final
 @dataclass(slots=True)
 class Binary(DataType):
-    raw: DType = sql.ScalarType.BLOB
+    raw: DType = field(init=False, default=sql.ScalarType.BLOB)
 
 
 @final
 @dataclass(slots=True)
 class String(StringType):
-    raw: DType = sql.ScalarType.VARCHAR
+    raw: DType = field(init=False, default=sql.ScalarType.VARCHAR)
 
 
 @final
 @dataclass(slots=True)
 class Json(StringType):
-    raw: DType = sql.ScalarType.JSON
+    raw: DType = field(init=False, default=sql.ScalarType.JSON)
 
 
 @final
 @dataclass(slots=True)
 class BitString(StringType):
-    raw: DType = sql.ScalarType.BIT
+    raw: DType = field(init=False, default=sql.ScalarType.BIT)
 
 
 @final
