@@ -6,7 +6,7 @@ from abc import ABC
 from collections.abc import Iterable
 from dataclasses import MISSING, Field, dataclass, field, fields
 from enum import Enum as PyEnum
-from typing import TYPE_CHECKING, Any, Self, final
+from typing import TYPE_CHECKING, Any, Self, TypeIs, final
 
 import pyochain as pc
 
@@ -19,7 +19,7 @@ if TYPE_CHECKING:
     from .sql.typing import DTypeIds, IntoDict, StrIntoDType
 
 
-@dataclass(slots=True, init=False)
+@dataclass(slots=True, init=False, unsafe_hash=True)
 class DataType(ABC):
     """Base class for data types."""
 
@@ -43,48 +43,108 @@ class DataType(ABC):
             )
         )
 
+    def is_[T: DataType](self, other: T) -> TypeIs[T]:
+        """Check if this DataType is the same as another DataType.
 
-@dataclass(slots=True, init=False)
+        This is a stricter check than `self == other`, as it enforces an exact
+        match of all dtype attributes for nested and/or uninitialised dtypes.
+
+        Parameters
+        ----------
+        other
+            the other Polars dtype to compare with.
+
+        Examples:
+        --------
+        >>> pl.List == pl.List(pl.Int32)
+        True
+        >>> pl.List.is_(pl.List(pl.Int32))
+        False
+        """
+        return self == other and hash(self) == hash(other)
+
+    @classmethod
+    def is_numeric(cls) -> bool:
+        """Check whether the data type is a numeric type."""
+        return issubclass(cls, NumericType)
+
+    @classmethod
+    def is_decimal(cls) -> bool:
+        """Check whether the data type is a decimal type."""
+        return issubclass(cls, Decimal)
+
+    @classmethod
+    def is_integer(cls) -> bool:
+        """Check whether the data type is an integer type."""
+        return issubclass(cls, IntegerType)
+
+    @classmethod
+    def is_signed_integer(cls) -> bool:
+        """Check whether the data type is a signed integer type."""
+        return issubclass(cls, SignedIntegerType)
+
+    @classmethod
+    def is_unsigned_integer(cls) -> bool:
+        """Check whether the data type is an unsigned integer type."""
+        return issubclass(cls, UnsignedIntegerType)
+
+    @classmethod
+    def is_float(cls) -> bool:
+        """Check whether the data type is a floating point type."""
+        return issubclass(cls, FloatType)
+
+    @classmethod
+    def is_temporal(cls) -> bool:
+        """Check whether the data type is a temporal type."""
+        return issubclass(cls, TemporalType)
+
+    @classmethod
+    def is_nested(cls) -> bool:
+        """Check whether the data type is a nested type."""
+        return issubclass(cls, NestedType)
+
+
+@dataclass(slots=True, init=False, unsafe_hash=True)
 class StringType(DataType):
     """Base class for string data types."""
 
 
-@dataclass(slots=True, init=False)
+@dataclass(slots=True, init=False, unsafe_hash=True)
 class NumericType(DataType):
     """Base class for numeric data types."""
 
 
-@dataclass(slots=True, init=False)
+@dataclass(slots=True, init=False, unsafe_hash=True)
 class FloatType(NumericType):
     """Base class for floating-point data types."""
 
 
-@dataclass(slots=True, init=False)
+@dataclass(slots=True, init=False, unsafe_hash=True)
 class IntegerType(NumericType):
     """Base class for integer data types."""
 
 
-@dataclass(slots=True, init=False)
+@dataclass(slots=True, init=False, unsafe_hash=True)
 class SignedIntegerType(IntegerType):
     """Base class for signed integer data types."""
 
 
-@dataclass(slots=True, init=False)
+@dataclass(slots=True, init=False, unsafe_hash=True)
 class UnsignedIntegerType(IntegerType):
     """Base class for unsigned integer data types."""
 
 
-@dataclass(slots=True, init=False)
+@dataclass(slots=True, init=False, unsafe_hash=True)
 class TemporalType(DataType):
     """Base class for temporal data types."""
 
 
-@dataclass(slots=True, init=False)
+@dataclass(slots=True, init=False, unsafe_hash=True)
 class NestedType(DataType):
     """Base class for nested data types."""
 
 
-@dataclass(slots=True, init=False)
+@dataclass(slots=True, init=False, unsafe_hash=True)
 class ComplexDataType[T: sql.SqlType](DataType):
     """Base class for complex data types."""
 
@@ -112,37 +172,37 @@ class ComplexDataType[T: sql.SqlType](DataType):
 
 
 @final
-@dataclass(slots=True)
+@dataclass(slots=True, unsafe_hash=True)
 class Time(TemporalType):
     raw: DType = field(init=False, default=sql.ScalarType.TIME)
 
 
 @final
-@dataclass(slots=True)
+@dataclass(slots=True, unsafe_hash=True)
 class TimeTZ(TemporalType):
     raw: DType = field(init=False, default=sql.ScalarType.TIME_TZ)
 
 
 @final
-@dataclass(slots=True)
+@dataclass(slots=True, unsafe_hash=True)
 class Duration(TemporalType):
     raw: DType = field(init=False, default=sql.ScalarType.INTERVAL)
 
 
 @final
-@dataclass(slots=True)
+@dataclass(slots=True, unsafe_hash=True)
 class Date(TemporalType):
     raw: DType = field(init=False, default=sql.ScalarType.DATE)
 
 
 @final
-@dataclass(slots=True)
+@dataclass(slots=True, unsafe_hash=True)
 class DatetimeTZ(TemporalType):
     raw: DType = sql.ScalarType.TIMESTAMP_TZ
 
 
 @final
-@dataclass(slots=True)
+@dataclass(slots=True, unsafe_hash=True)
 class Datetime(TemporalType):
     raw: sql.DType
     time_unit: EpochTimeUnit
@@ -155,37 +215,37 @@ class Datetime(TemporalType):
 
 
 @final
-@dataclass(slots=True)
+@dataclass(slots=True, unsafe_hash=True)
 class Boolean(DataType):
     raw: DType = field(init=False, default=sql.ScalarType.BOOLEAN)
 
 
 @final
-@dataclass(slots=True)
+@dataclass(slots=True, unsafe_hash=True)
 class Number(NumericType):
     raw: DType = field(init=False, default=sql.ScalarType.BIGNUM)
 
 
 @final
-@dataclass(slots=True)
+@dataclass(slots=True, unsafe_hash=True)
 class UUID(NumericType):
     raw: DType = field(init=False, default=sql.ScalarType.UUID)
 
 
 @final
-@dataclass(slots=True)
+@dataclass(slots=True, unsafe_hash=True)
 class Float32(FloatType):
     raw: DType = field(init=False, default=sql.ScalarType.FLOAT)
 
 
 @final
-@dataclass(slots=True)
+@dataclass(slots=True, unsafe_hash=True)
 class Float64(FloatType):
     raw: DType = field(init=False, default=sql.ScalarType.DOUBLE)
 
 
 @final
-@dataclass(slots=True, init=False)
+@dataclass(slots=True, init=False, unsafe_hash=True)
 class Decimal(NumericType, ComplexDataType[sql.DecimalType]):
     def __init__(self, precision: int = 18, scale: int = 0) -> None:
         self.raw = sql.DecimalType.new(precision, scale)
@@ -200,91 +260,91 @@ class Decimal(NumericType, ComplexDataType[sql.DecimalType]):
 
 
 @final
-@dataclass(slots=True)
+@dataclass(slots=True, unsafe_hash=True)
 class Int8(SignedIntegerType):
     raw: DType = field(init=False, default=sql.ScalarType.TINYINT)
 
 
 @final
-@dataclass(slots=True)
+@dataclass(slots=True, unsafe_hash=True)
 class Int16(SignedIntegerType):
     raw: DType = field(init=False, default=sql.ScalarType.SMALLINT)
 
 
 @final
-@dataclass(slots=True)
+@dataclass(slots=True, unsafe_hash=True)
 class Int32(SignedIntegerType):
     raw: DType = field(init=False, default=sql.ScalarType.INTEGER)
 
 
 @final
-@dataclass(slots=True)
+@dataclass(slots=True, unsafe_hash=True)
 class Int64(SignedIntegerType):
     raw: DType = field(init=False, default=sql.ScalarType.BIGINT)
 
 
 @final
-@dataclass(slots=True)
+@dataclass(slots=True, unsafe_hash=True)
 class Int128(SignedIntegerType):
     raw: DType = field(init=False, default=sql.ScalarType.HUGEINT)
 
 
 @final
-@dataclass(slots=True)
+@dataclass(slots=True, unsafe_hash=True)
 class UInt8(UnsignedIntegerType):
     raw: DType = field(init=False, default=sql.ScalarType.UTINYINT)
 
 
 @final
-@dataclass(slots=True)
+@dataclass(slots=True, unsafe_hash=True)
 class UInt16(UnsignedIntegerType):
     raw: DType = field(init=False, default=sql.ScalarType.USMALLINT)
 
 
 @final
-@dataclass(slots=True)
+@dataclass(slots=True, unsafe_hash=True)
 class UInt32(UnsignedIntegerType):
     raw: DType = field(init=False, default=sql.ScalarType.UINTEGER)
 
 
 @final
-@dataclass(slots=True)
+@dataclass(slots=True, unsafe_hash=True)
 class UInt64(UnsignedIntegerType):
     raw: DType = field(init=False, default=sql.ScalarType.UBIGINT)
 
 
 @final
-@dataclass(slots=True)
+@dataclass(slots=True, unsafe_hash=True)
 class UInt128(UnsignedIntegerType):
     raw: DType = field(init=False, default=sql.ScalarType.UHUGEINT)
 
 
 @final
-@dataclass(slots=True)
+@dataclass(slots=True, unsafe_hash=True)
 class Binary(DataType):
     raw: DType = field(init=False, default=sql.ScalarType.BLOB)
 
 
 @final
-@dataclass(slots=True)
+@dataclass(slots=True, unsafe_hash=True)
 class String(StringType):
     raw: DType = field(init=False, default=sql.ScalarType.VARCHAR)
 
 
 @final
-@dataclass(slots=True)
+@dataclass(slots=True, unsafe_hash=True)
 class Json(StringType):
     raw: DType = field(init=False, default=sql.ScalarType.JSON)
 
 
 @final
-@dataclass(slots=True)
+@dataclass(slots=True, unsafe_hash=True)
 class BitString(StringType):
     raw: DType = field(init=False, default=sql.ScalarType.BIT)
 
 
 @final
-@dataclass(slots=True, init=False)
+@dataclass(slots=True, init=False, unsafe_hash=True)
 class Enum(StringType, ComplexDataType[sql.EnumType]):
     def __init__(self, categories: Iterable[str] | type[PyEnum]) -> None:
         self.raw = sql.EnumType.new(categories)
@@ -295,7 +355,7 @@ class Enum(StringType, ComplexDataType[sql.EnumType]):
 
 
 @final
-@dataclass(slots=True, init=False)
+@dataclass(slots=True, init=False, unsafe_hash=True)
 class Union(NestedType, ComplexDataType[sql.UnionType]):
     _fields: pc.Option[pc.Seq[DataType]] = field(default_factory=lambda: pc.NONE)
 
@@ -316,7 +376,7 @@ class Union(NestedType, ComplexDataType[sql.UnionType]):
 
 
 @final
-@dataclass(slots=True, init=False)
+@dataclass(slots=True, init=False, unsafe_hash=True)
 class Map(NestedType, ComplexDataType[sql.MapType]):
     _key: pc.Option[DataType] = field(default_factory=lambda: pc.NONE)
     _value: pc.Option[DataType] = field(default_factory=lambda: pc.NONE)
@@ -338,7 +398,7 @@ class Map(NestedType, ComplexDataType[sql.MapType]):
 
 
 @final
-@dataclass(slots=True, init=False)
+@dataclass(slots=True, init=False, unsafe_hash=True)
 class Struct(NestedType, ComplexDataType[sql.StructType]):
     _fields: pc.Option[pc.Dict[str, DataType]] = field(default_factory=lambda: pc.NONE)
 
@@ -363,7 +423,7 @@ class Struct(NestedType, ComplexDataType[sql.StructType]):
 
 
 @final
-@dataclass(slots=True, init=False)
+@dataclass(slots=True, init=False, unsafe_hash=True)
 class Array(NestedType, ComplexDataType[sql.ArrayType]):
     _inner: pc.Option[DataType] = field(default_factory=lambda: pc.NONE)
 
@@ -386,7 +446,7 @@ class Array(NestedType, ComplexDataType[sql.ArrayType]):
 
 
 @final
-@dataclass(slots=True, init=False)
+@dataclass(slots=True, init=False, unsafe_hash=True)
 class List(NestedType, ComplexDataType[sql.ListType]):
     _inner: pc.Option[DataType] = field(default_factory=lambda: pc.NONE)
 

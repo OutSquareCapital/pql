@@ -20,7 +20,7 @@ Each summary cell is `global (Narwhals, Polars)`.
 | ExprDtNameSpace     | 51.5% (60.9%, 46.7%)  | 68 (23, 45)   | 35 (14, 21)  | 25 (7, 18)    | 8 (2, 6)    | 13 (12, 1)  |
 | ModuleFunctions     | 22.9% (41.2%, 15.5%)  | 236 (68, 168) | 54 (28, 26)  | 141 (22, 119) | 41 (18, 23) | 27 (15, 12) |
 | selectors           | 57.1% (71.4%, 54.3%)  | 42 (7, 35)    | 24 (5, 19)   | 13 (1, 12)    | 5 (1, 4)    | 17 (17, 0)  |
-| DataType            | 12.5% (100.0%, 6.7%)  | 16 (1, 15)    | 2 (1, 1)     | 14 (0, 14)    | 0 (0, 0)    | 0 (0, 0)    |
+| DataType            | 62.5% (100.0%, 60.0%) | 16 (1, 15)    | 10 (1, 9)    | 5 (0, 5)      | 1 (0, 1)    | 9 (9, 0)    |
 | Schema              | 33.3% (30.0%, 37.5%)  | 36 (20, 16)   | 12 (6, 6)    | 22 (13, 9)    | 2 (1, 1)    | 68 (34, 34) |
 
 ## LazyFrame
@@ -1148,36 +1148,24 @@ Each summary cell is `global (Narwhals, Polars)`.
 
 ## DataType
 
-### [x] Missing Methods (14)
+### [x] Missing Methods (5)
 
 - `base_type`
   - **Polars**: () -> DataTypeClass
 - `from_python`
   - **Polars**: (py_type: PythonDataType) -> PolarsDataType
-- `is_`
-  - **Polars**: (other: PolarsDataType) -> bool
-- `is_decimal`
-  - **Polars**: () -> bool
-- `is_float`
-  - **Polars**: () -> bool
-- `is_integer`
-  - **Polars**: () -> bool
-- `is_nested`
-  - **Polars**: () -> bool
-- `is_numeric`
-  - **Polars**: () -> bool
 - `is_object`
-  - **Polars**: () -> bool
-- `is_signed_integer`
-  - **Polars**: () -> bool
-- `is_temporal`
-  - **Polars**: () -> bool
-- `is_unsigned_integer`
   - **Polars**: () -> bool
 - `to_dtype_expr`
   - **Polars**: () -> DataTypeExpr
 - `to_python`
   - **Polars**: () -> PythonDataType
+
+### [!] Signature Mismatches (1)
+
+- `is_` (pl)
+  - **Polars***: (`other: PolarsDataType`) -> bool
+  - **pql**: (`other: T`) -> TypeIs[T]
 
 ## Schema
 
