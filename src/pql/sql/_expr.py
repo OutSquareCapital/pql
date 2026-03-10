@@ -21,7 +21,8 @@ from ._code_gen import (
     StructFns,
 )
 from ._core import func
-from ._window import over_expr
+from ._window import Kword, OverBuilder, get_order_by, get_partition_by
+from .utils import try_iter
 
 if TYPE_CHECKING:
     from .typing import FrameMode, IntoExpr, IntoExprColumn, RoundMode, WindowExclude
@@ -180,33 +181,42 @@ class SqlExpr(Expression, Fns):
         frame_mode: FrameMode = "ROWS",
         exclude: WindowExclude | None = None,
         filter_cond: IntoExprColumn | None = None,
-        arg_order_by: TryIter[IntoExprColumn] | None = None,
+        fn_order_by: TryIter[IntoExprColumn] | None = None,
         *,
         descending: TryIter[bool] = False,
         nulls_last: TryIter[bool] = False,
         ignore_nulls: bool = False,
         distinct: bool = False,
-        arg_descending: TryIter[bool] = False,
-        arg_nulls_last: TryIter[bool] = False,
+        fn_descending: TryIter[bool] = False,
+        fn_nulls_last: TryIter[bool] = False,
     ) -> Self:
-        return self._new(
-            over_expr(
-                self,
-                pc.Option(partition_by),
-                pc.Option(order_by),
-                pc.Option(frame_start),
-                pc.Option(frame_end),
-                frame_mode=frame_mode,
-                exclude=pc.Option(exclude),
-                filter_cond=pc.Option(filter_cond),
-                arg_order_by=pc.Option(arg_order_by),
-                descending=descending,
-                nulls_last=nulls_last,
-                ignore_nulls=ignore_nulls,
-                distinct=distinct,
-                arg_descending=arg_descending,
-                arg_nulls_last=arg_nulls_last,
+        ordr = pc.Option(order_by)
+        return self.__class__(
+            OverBuilder(str(self))
+            .handle_nulls(ignore_nulls=ignore_nulls)
+            .handle_distinct(distinct=distinct)
+            .handle_fn_order_by(
+                pc.Option(fn_order_by),
+                fn_descending=fn_descending,
+                fn_nulls_last=fn_nulls_last,
             )
+            .handle_filter(filter_cond=pc.Option(filter_cond))
+            .join_clauses(
+                pc.Option(partition_by)
+                .map(lambda x: try_iter(x).collect())
+                .into(get_partition_by),
+                ordr.map(lambda x: try_iter(x).collect()).into(
+                    get_order_by, descending=descending, nulls_last=nulls_last
+                ),
+                Kword.frame_clause(
+                    frame_mode,
+                    pc.Option(frame_start),
+                    pc.Option(frame_end),
+                    has_order_by=ordr.is_some(),
+                ),
+                pc.Option(exclude).map(Kword.exclude_clause).unwrap_or(""),  # pyright: ignore[reportArgumentType]
+            )
+            .build()
         )
 
     def set_order(self, *, desc: bool, nulls_last: bool) -> Self:
@@ -221,7 +231,14 @@ class SqlExpr(Expression, Fns):
             case (False, False):
                 return self.asc()
 
-    def cume_dist(self) -> Self:
+    def cume_dist(
+        self,
+        *,
+        order_by: TryIter[IntoExprColumn] | None = None,
+        ignore_nulls: bool = False,
+        descending: TryIter[bool] = False,
+        nulls_last: TryIter[bool] = False,
+    ) -> Self:
         """The cumulative distribution: (number of partition rows preceding or peer with current row) / total partition rows.
 
         If an `ORDER BY` clause is specified, the distribution is computed within the frame using the provided ordering instead of the frame ordering.
@@ -229,7 +246,14 @@ class SqlExpr(Expression, Fns):
         Returns:
             Self
         """
-        return self._new(func("cume_dist"))
+        return self._new(
+            OverBuilder(str(func("cume_dist"))).build_fn(
+                order_by=pc.Option(order_by),
+                ignore_nulls=ignore_nulls,
+                fn_descending=descending,
+                fn_nulls_last=nulls_last,
+            )
+        )
 
     def dense_rank(self) -> Self:
         """The rank of the current row without gaps; this function counts peer groups.
@@ -239,7 +263,14 @@ class SqlExpr(Expression, Fns):
         """
         return self._new(func("dense_rank"))
 
-    def fill(self) -> Self:
+    def fill(
+        self,
+        *,
+        order_by: TryIter[IntoExprColumn] | None = None,
+        ignore_nulls: bool = False,
+        descending: TryIter[bool] = False,
+        nulls_last: TryIter[bool] = False,
+    ) -> Self:
         """Replaces NULL values of expr with a linear interpolation based on the closest non-NULL values and the sort values.
 
         Both values must support arithmetic and there must be only one ordering key.
@@ -251,9 +282,23 @@ class SqlExpr(Expression, Fns):
         Returns:
             Self
         """
-        return self._new(func("fill", self.inner()))
+        return self._new(
+            OverBuilder(str(func("fill", self.inner()))).build_fn(
+                order_by=pc.Option(order_by),
+                ignore_nulls=ignore_nulls,
+                fn_descending=descending,
+                fn_nulls_last=nulls_last,
+            )
+        )
 
-    def first_value(self) -> Self:
+    def first_value(
+        self,
+        *,
+        order_by: TryIter[IntoExprColumn] | None = None,
+        ignore_nulls: bool = False,
+        descending: TryIter[bool] = False,
+        nulls_last: TryIter[bool] = False,
+    ) -> Self:
         """Returns expr evaluated at the row that is the first row (with a non-null value of expr if IGNORE NULLS is set) of the window frame.
 
         If an `ORDER BY` clause is specified, the first row number is computed within the frame using the provided ordering instead of the frame ordering.
@@ -261,10 +306,24 @@ class SqlExpr(Expression, Fns):
         Returns:
             Self
         """
-        return self._new(func("first_value", self.inner()))
+        return self._new(
+            OverBuilder(str(func("first_value", self.inner()))).build_fn(
+                order_by=pc.Option(order_by),
+                ignore_nulls=ignore_nulls,
+                fn_descending=descending,
+                fn_nulls_last=nulls_last,
+            )
+        )
 
-    def lag(
-        self, offset: IntoExprColumn | int = 1, default: IntoExpr | None = None
+    def lag(  # noqa: PLR0913
+        self,
+        offset: IntoExprColumn | int = 1,
+        default: IntoExpr | None = None,
+        *,
+        order_by: TryIter[IntoExprColumn] | None = None,
+        ignore_nulls: bool = False,
+        descending: TryIter[bool] = False,
+        nulls_last: TryIter[bool] = False,
     ) -> Self:
         """Returns expr evaluated at the row that is offset rows (among rows with a non-null value of expr if IGNORE NULLS is set) before the current row within the window frame.
 
@@ -279,25 +338,56 @@ class SqlExpr(Expression, Fns):
         Args:
             offset (IntoExprColumn | int): Number of rows to look back (default: 1)
             default (IntoExpr | None): Default value if no such row exists (default: NULL)
+            order_by (TryIter[IntoExprColumn] | None): Secondary ordering within the function call
+            ignore_nulls (bool): Skip NULL values when looking back
+            descending (TryIter[bool]): Descending order for `order_by`
+            nulls_last (TryIter[bool]): Nulls-last for `order_by`
 
         Returns:
             Self
         """
-        return self._new(func("lag", self.inner(), offset, default))
+        return self._new(
+            OverBuilder(str(func("lag", self.inner(), offset, default))).build_fn(
+                order_by=pc.Option(order_by),
+                ignore_nulls=ignore_nulls,
+                fn_descending=descending,
+                fn_nulls_last=nulls_last,
+            )
+        )
 
-    def last_value(self) -> Self:
+    def last_value(
+        self,
+        *,
+        order_by: TryIter[IntoExprColumn] | None = None,
+        ignore_nulls: bool = False,
+        descending: TryIter[bool] = False,
+        nulls_last: TryIter[bool] = False,
+    ) -> Self:
         """Returns expr evaluated at the row that is the last row (among rows with a non-null value of expr if IGNORE NULLS is set) of the window frame.
 
         If an `ORDER BY` clause is specified, the last row is determined within the frame using the provided ordering instead of the frame ordering.
 
-
         Returns:
             Self
         """
-        return self._new(func("last_value", self.inner()))
+        return self._new(
+            OverBuilder(str(func("last_value", self.inner()))).build_fn(
+                order_by=pc.Option(order_by),
+                ignore_nulls=ignore_nulls,
+                fn_descending=descending,
+                fn_nulls_last=nulls_last,
+            )
+        )
 
-    def lead(
-        self, offset: IntoExprColumn | int = 1, default: IntoExpr | None = None
+    def lead(  # noqa: PLR0913
+        self,
+        offset: IntoExprColumn | int = 1,
+        default: IntoExpr | None = None,
+        *,
+        order_by: TryIter[IntoExprColumn] | None = None,
+        ignore_nulls: bool = False,
+        descending: TryIter[bool] = False,
+        nulls_last: TryIter[bool] = False,
     ) -> Self:
         """Returns expr evaluated at the row that is offset rows after the current row (among rows with a non-null value of expr if IGNORE NULLS is set) within the window frame.
 
@@ -310,13 +400,32 @@ class SqlExpr(Expression, Fns):
         Args:
             offset (IntoExprColumn | int): Number of rows to look ahead (default: 1)
             default (IntoExpr | None): Default value if no such row exists (default: NULL)
+            order_by (TryIter[IntoExprColumn] | None): Secondary ordering within the function call
+            ignore_nulls (bool): Skip NULL values when looking ahead
+            descending (TryIter[bool]): Descending order for `order_by`
+            nulls_last (TryIter[bool]): Nulls-last for `order_by`
 
         Returns:
             Self
         """
-        return self._new(func("lead", self.inner(), offset, default))
+        return self._new(
+            OverBuilder(str(func("lead", self.inner(), offset, default))).build_fn(
+                order_by=pc.Option(order_by),
+                ignore_nulls=ignore_nulls,
+                fn_descending=descending,
+                fn_nulls_last=nulls_last,
+            )
+        )
 
-    def nth_value(self, nth: IntoExprColumn | int) -> Self:
+    def nth_value(
+        self,
+        nth: IntoExprColumn | int,
+        *,
+        order_by: TryIter[IntoExprColumn] | None = None,
+        ignore_nulls: bool = False,
+        descending: TryIter[bool] = False,
+        nulls_last: TryIter[bool] = False,
+    ) -> Self:
         """Returns expr evaluated at the nth row (among rows with a non-null value of expr if IGNORE NULLS is set) of the window frame (counting from 1).
 
         Return `NULL` if no such row.
@@ -325,26 +434,63 @@ class SqlExpr(Expression, Fns):
 
         Args:
             nth (IntoExprColumn | int): The row number to retrieve (1-based)
+            order_by (TryIter[IntoExprColumn] | None): Secondary ordering within the function call
+            ignore_nulls (bool): Skip NULL values when counting
+            descending (TryIter[bool]): Descending order for `order_by`
+            nulls_last (TryIter[bool]): Nulls-last for `order_by`
 
         Returns:
             Self
         """
-        return self._new(func("nth_value", self.inner(), nth))
+        return self._new(
+            OverBuilder(str(func("nth_value", self.inner(), nth))).build_fn(
+                order_by=pc.Option(order_by),
+                ignore_nulls=ignore_nulls,
+                fn_descending=descending,
+                fn_nulls_last=nulls_last,
+            )
+        )
 
-    def ntile(self) -> Self:
+    def ntile(
+        self,
+        num_buckets: IntoExprColumn | int,
+        *,
+        order_by: TryIter[IntoExprColumn] | None = None,
+        ignore_nulls: bool = False,
+        descending: TryIter[bool] = False,
+        nulls_last: TryIter[bool] = False,
+    ) -> Self:
         """An integer ranging from 1 to num_buckets, dividing the partition as equally as possible.
 
         If an `ORDER BY` clause is specified, the ntile is computed within the frame using the provided ordering instead of the frame ordering.
 
         Args:
-            num_buckets (SqlExpr | int): Number of buckets to divide into
+            num_buckets (IntoExprColumn | int): Number of buckets to divide into
+            order_by (TryIter[IntoExprColumn] | None): Secondary ordering within the function call
+            ignore_nulls (bool): Ignored (ntile does not support IGNORE NULLS)
+            descending (TryIter[bool]): Descending order for `order_by`
+            nulls_last (TryIter[bool]): Nulls-last for `order_by`
 
         Returns:
             Self
         """
-        return self._new(func("ntile", self.inner()))
+        return self._new(
+            OverBuilder(str(func("ntile", num_buckets))).build_fn(
+                order_by=pc.Option(order_by),
+                ignore_nulls=ignore_nulls,
+                fn_descending=descending,
+                fn_nulls_last=nulls_last,
+            )
+        )
 
-    def percent_rank(self) -> Self:
+    def percent_rank(
+        self,
+        *,
+        order_by: TryIter[IntoExprColumn] | None = None,
+        ignore_nulls: bool = False,
+        descending: TryIter[bool] = False,
+        nulls_last: TryIter[bool] = False,
+    ) -> Self:
         """The relative rank of the current row: (rank() - 1) / (total partition rows - 1).
 
         If an `ORDER BY` clause is specified, the relative rank is computed within the frame using the provided ordering instead of the frame ordering.
@@ -352,9 +498,23 @@ class SqlExpr(Expression, Fns):
         Returns:
             Self
         """
-        return self._new(func("percent_rank"))
+        return self._new(
+            OverBuilder(str(func("percent_rank"))).build_fn(
+                order_by=pc.Option(order_by),
+                ignore_nulls=ignore_nulls,
+                fn_descending=descending,
+                fn_nulls_last=nulls_last,
+            )
+        )
 
-    def rank(self) -> Self:
+    def rank(
+        self,
+        *,
+        order_by: TryIter[IntoExprColumn] | None = None,
+        ignore_nulls: bool = False,
+        descending: TryIter[bool] = False,
+        nulls_last: TryIter[bool] = False,
+    ) -> Self:
         """The rank of the current row with gaps; same as row_number of its first peer.
 
         If an `ORDER BY` clause is specified, the rank is computed within the frame using the provided ordering instead of the frame ordering.
@@ -362,9 +522,23 @@ class SqlExpr(Expression, Fns):
         Returns:
             Self
         """
-        return self._new(func("rank"))
+        return self._new(
+            OverBuilder(str(func("rank"))).build_fn(
+                order_by=pc.Option(order_by),
+                ignore_nulls=ignore_nulls,
+                fn_descending=descending,
+                fn_nulls_last=nulls_last,
+            )
+        )
 
-    def row_number(self) -> Self:
+    def row_number(
+        self,
+        *,
+        order_by: TryIter[IntoExprColumn] | None = None,
+        ignore_nulls: bool = False,
+        descending: TryIter[bool] = False,
+        nulls_last: TryIter[bool] = False,
+    ) -> Self:
         """The number of the current row within the partition, counting from 1.
 
         If an `ORDER BY` clause is specified, the row number is computed within the frame using the provided ordering instead of the frame ordering.
@@ -372,7 +546,14 @@ class SqlExpr(Expression, Fns):
         Returns:
             Self
         """
-        return self._new(func("row_number"))
+        return self._new(
+            OverBuilder(str(func("row_number"))).build_fn(
+                order_by=pc.Option(order_by),
+                ignore_nulls=ignore_nulls,
+                fn_descending=descending,
+                fn_nulls_last=nulls_last,
+            )
+        )
 
 
 @dataclass(slots=True)

@@ -12,12 +12,12 @@ from .utils import TryIter, try_iter
 if TYPE_CHECKING:
     from duckdb import Expression
 
-    from ._expr import SqlExpr
     from .typing import FrameMode, IntoExprColumn, WindowExclude
 
 type FrameBound = int | str
 type NullOrder = Literal["NULLS FIRST", "NULLS LAST"]
 type SortOrder = Literal["ASC", "DESC"]
+type OptExpr = pc.Option[IntoExprColumn | Iterable[IntoExprColumn]]
 _EXCLUDE_CLAUSE: pc.Dict[WindowExclude, str] = pc.Dict.from_ref(
     {
         "current_row": "EXCLUDE CURRENT ROW",
@@ -104,47 +104,6 @@ def _bound(value: FrameBound, direction: str) -> str:
             return f"{raw} {direction}"
 
 
-def over_expr(  # noqa: PLR0913
-    expr: SqlExpr,
-    partition_by: pc.Option[IntoExprColumn | Iterable[IntoExprColumn]],
-    order_by: pc.Option[IntoExprColumn | Iterable[IntoExprColumn]],
-    frame_start: pc.Option[FrameBound],
-    frame_end: pc.Option[FrameBound],
-    frame_mode: FrameMode = "ROWS",
-    exclude: pc.Option[WindowExclude] = pc.NONE,
-    filter_cond: pc.Option[IntoExprColumn] = pc.NONE,
-    arg_order_by: pc.Option[IntoExprColumn | Iterable[IntoExprColumn]] = pc.NONE,
-    *,
-    descending: TryIter[bool] = False,
-    nulls_last: TryIter[bool] = False,
-    ignore_nulls: bool = False,
-    distinct: bool = False,
-    arg_descending: TryIter[bool] = False,
-    arg_nulls_last: TryIter[bool] = False,
-) -> duckdb.Expression:
-
-    return (
-        OverBuilder(str(expr))
-        .handle_nulls(ignore_nulls=ignore_nulls)
-        .handle_distinct(distinct=distinct)
-        .handle_arg_order_by(
-            arg_order_by, arg_descending=arg_descending, arg_nulls_last=arg_nulls_last
-        )
-        .handle_filter(filter_cond=filter_cond)
-        .join_clauses(
-            partition_by.map(lambda x: try_iter(x).collect()).into(get_partition_by),
-            order_by.map(lambda x: try_iter(x).collect()).into(
-                get_order_by, descending=descending, nulls_last=nulls_last
-            ),
-            Kword.frame_clause(
-                frame_mode, frame_start, frame_end, has_order_by=order_by.is_some()
-            ),
-            exclude.map(Kword.exclude_clause).unwrap_or(""),
-        )
-        .build()
-    )
-
-
 @dataclass(slots=True)
 class OverBuilder:
     expr: str
@@ -163,12 +122,12 @@ class OverBuilder:
             case False:
                 return self
 
-    def handle_arg_order_by(
+    def handle_fn_order_by(
         self,
-        arg_order_by: pc.Option[IntoExprColumn | Iterable[IntoExprColumn]],
+        fn_order_by: OptExpr,
         *,
-        arg_descending: TryIter[bool],
-        arg_nulls_last: TryIter[bool],
+        fn_descending: TryIter[bool],
+        fn_nulls_last: TryIter[bool],
     ) -> Self:
         def _build(cols: pc.Seq[IntoExprColumn]) -> str:
             n = cols.length()
@@ -182,7 +141,7 @@ class OverBuilder:
 
             items = (
                 cols.iter()
-                .zip(_expand(clauses=arg_descending), _expand(clauses=arg_nulls_last))
+                .zip(_expand(clauses=fn_descending), _expand(clauses=fn_nulls_last))
                 .map_star(
                     lambda item, desc, nl: Kword.sort_strat(
                         item, desc=desc, nulls_last=nl
@@ -193,7 +152,7 @@ class OverBuilder:
             return f"{self.expr.removesuffix(')')} ORDER BY {items})"
 
         return (
-            arg_order_by.map(lambda x: try_iter(x).collect().into(_build))
+            fn_order_by.map(lambda x: try_iter(x).collect().into(_build))
             .map(self.__class__)
             .unwrap_or(self)
         )
@@ -215,6 +174,22 @@ class OverBuilder:
 
     def build(self) -> Expression:
         return duckdb.SQLExpression(self.expr)
+
+    def build_fn(
+        self,
+        *,
+        order_by: OptExpr,
+        ignore_nulls: bool = False,
+        fn_descending: TryIter[bool] = False,
+        fn_nulls_last: TryIter[bool] = False,
+    ) -> Expression:
+        return (
+            self.handle_fn_order_by(
+                order_by, fn_descending=fn_descending, fn_nulls_last=fn_nulls_last
+            )
+            .handle_nulls(ignore_nulls=ignore_nulls)
+            .build()
+        )
 
 
 def get_partition_by(partition_by: pc.Option[pc.Seq[IntoExprColumn]]) -> str:
