@@ -1,19 +1,23 @@
 from __future__ import annotations
 
 from collections.abc import Iterable
-from typing import TYPE_CHECKING
+from dataclasses import dataclass
+from typing import TYPE_CHECKING, Literal, Self
 
 import duckdb
 import pyochain as pc
 
-from .utils import try_iter
+from .utils import TryIter, try_iter
 
 if TYPE_CHECKING:
+    from duckdb import Expression
+
     from ._expr import SqlExpr
     from .typing import FrameMode, IntoExprColumn, WindowExclude
 
 type FrameBound = int | str
-
+type NullOrder = Literal["NULLS FIRST", "NULLS LAST"]
+type SortOrder = Literal["ASC", "DESC"]
 _EXCLUDE_CLAUSE: pc.Dict[WindowExclude, str] = pc.Dict.from_ref(
     {
         "current_row": "EXCLUDE CURRENT ROW",
@@ -53,7 +57,7 @@ class Kword:
         return _EXCLUDE_CLAUSE.get_item(exclude).expect("invalid exclude option")
 
     @classmethod
-    def null_order(cls, *, last: bool) -> str:
+    def null_order(cls, *, last: bool) -> NullOrder:
         match last:
             case True:
                 return "NULLS LAST"
@@ -61,7 +65,7 @@ class Kword:
                 return "NULLS FIRST"
 
     @classmethod
-    def sort_order(cls, *, desc: bool) -> str:
+    def sort_order(cls, *, desc: bool) -> SortOrder:
         match desc:
             case True:
                 return "DESC"
@@ -109,41 +113,111 @@ def over_expr(  # noqa: PLR0913
     frame_mode: FrameMode = "ROWS",
     exclude: pc.Option[WindowExclude] = pc.NONE,
     filter_cond: pc.Option[IntoExprColumn] = pc.NONE,
+    arg_order_by: pc.Option[IntoExprColumn | Iterable[IntoExprColumn]] = pc.NONE,
     *,
-    descending: Iterable[bool] | bool = False,
-    nulls_last: Iterable[bool] | bool = False,
+    descending: TryIter[bool] = False,
+    nulls_last: TryIter[bool] = False,
     ignore_nulls: bool = False,
+    distinct: bool = False,
+    arg_descending: TryIter[bool] = False,
+    arg_nulls_last: TryIter[bool] = False,
 ) -> duckdb.Expression:
-    return duckdb.SQLExpression(
-        _build_over(
-            _handle_filter(
-                handle_nulls(expr, ignore_nulls=ignore_nulls),
-                filter_cond,
-            ),
+
+    return (
+        OverBuilder(str(expr))
+        .handle_nulls(ignore_nulls=ignore_nulls)
+        .handle_distinct(distinct=distinct)
+        .handle_arg_order_by(
+            arg_order_by, arg_descending=arg_descending, arg_nulls_last=arg_nulls_last
+        )
+        .handle_filter(filter_cond=filter_cond)
+        .join_clauses(
             partition_by.map(lambda x: try_iter(x).collect()).into(get_partition_by),
             order_by.map(lambda x: try_iter(x).collect()).into(
                 get_order_by, descending=descending, nulls_last=nulls_last
             ),
             Kword.frame_clause(
-                frame_mode,
-                frame_start,
-                frame_end,
-                has_order_by=order_by.is_some(),
+                frame_mode, frame_start, frame_end, has_order_by=order_by.is_some()
             ),
             exclude.map(Kword.exclude_clause).unwrap_or(""),
         )
+        .build()
     )
 
 
-def _build_over(
-    expr: str, partition_by: str, order_by: str, frame: str, exclude: str
-) -> str:
-    clauses = pc.Iter((partition_by, order_by, frame, exclude)).filter(bool).join(" ")
-    return f"{expr} OVER ({clauses})"
+@dataclass(slots=True)
+class OverBuilder:
+    expr: str
 
+    def handle_nulls(self, *, ignore_nulls: bool) -> Self:
+        match ignore_nulls:
+            case True:
+                return self.__class__(f"{self.expr.removesuffix(')')} IGNORE NULLS)")
+            case False:
+                return self
 
-def _handle_filter(expr: str, filter_cond: pc.Option[IntoExprColumn]) -> str:
-    return filter_cond.map(lambda c: f"{expr} FILTER (WHERE {c})").unwrap_or(expr)
+    def handle_distinct(self, *, distinct: bool) -> Self:
+        match distinct:
+            case True:
+                idx = self.expr.index("(")
+                return self.__class__(
+                    f"{self.expr[: idx + 1]}DISTINCT {self.expr[idx + 1 :]}"
+                )
+            case False:
+                return self
+
+    def handle_arg_order_by(
+        self,
+        arg_order_by: pc.Option[IntoExprColumn | Iterable[IntoExprColumn]],
+        *,
+        arg_descending: TryIter[bool],
+        arg_nulls_last: TryIter[bool],
+    ) -> Self:
+        def _build(cols: pc.Seq[IntoExprColumn]) -> str:
+            n = cols.length()
+
+            def _expand(*, clauses: TryIter[bool]) -> pc.Seq[bool]:
+                match clauses:
+                    case bool() as val:
+                        return pc.Iter.once(val).cycle().take(n).collect()
+                    case Iterable() as seq:
+                        return pc.Seq(seq)
+
+            items = (
+                cols.iter()
+                .zip(_expand(clauses=arg_descending), _expand(clauses=arg_nulls_last))
+                .map_star(
+                    lambda item, desc, nl: Kword.sort_strat(
+                        item, desc=desc, nulls_last=nl
+                    )
+                )
+                .join(", ")
+            )
+            return f"{self.expr.removesuffix(')')} ORDER BY {items})"
+
+        return (
+            arg_order_by.map(lambda x: try_iter(x).collect().into(_build))
+            .map(self.__class__)
+            .unwrap_or(self)
+        )
+
+    def handle_filter(self, filter_cond: pc.Option[IntoExprColumn]) -> Self:
+        return (
+            filter_cond.map(lambda c: f"{self.expr} FILTER (WHERE {c})")
+            .map(self.__class__)
+            .unwrap_or(self)
+        )
+
+    def join_clauses(
+        self, partition_by: str, order_by: str, frame: str, exclude: str
+    ) -> Self:
+        clauses = (
+            pc.Iter((partition_by, order_by, frame, exclude)).filter(bool).join(" ")
+        )
+        return self.__class__(f"{self.expr} OVER ({clauses})")
+
+    def build(self) -> Expression:
+        return duckdb.SQLExpression(self.expr)
 
 
 def get_partition_by(partition_by: pc.Option[pc.Seq[IntoExprColumn]]) -> str:
@@ -154,22 +228,14 @@ def get_partition_by(partition_by: pc.Option[pc.Seq[IntoExprColumn]]) -> str:
     )
 
 
-def handle_nulls(expr: SqlExpr, *, ignore_nulls: bool) -> str:
-    match ignore_nulls:
-        case True:
-            return f"{str(expr).removesuffix(')')} IGNORE NULLS)"
-        case False:
-            return str(expr)
-
-
 def get_order_by(
     order_by: pc.Option[pc.Seq[IntoExprColumn]],
     *,
-    descending: Iterable[bool] | bool,
-    nulls_last: Iterable[bool] | bool,
+    descending: TryIter[bool],
+    nulls_last: TryIter[bool],
 ) -> str:
 
-    def _get_clauses(*, clauses: Iterable[bool] | bool) -> pc.Seq[bool]:
+    def _get_clauses(*, clauses: TryIter[bool]) -> pc.Seq[bool]:
         match clauses:
             case bool() as val:
                 return (

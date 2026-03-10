@@ -25,6 +25,7 @@ from ._window import over_expr
 
 if TYPE_CHECKING:
     from .typing import FrameMode, IntoExpr, IntoExprColumn, RoundMode, WindowExclude
+    from .utils import TryIter
 
 
 class SqlExpr(Expression, Fns):
@@ -172,17 +173,21 @@ class SqlExpr(Expression, Fns):
 
     def over(  # noqa: PLR0913
         self,
-        partition_by: Iterable[IntoExprColumn] | IntoExprColumn | None = None,
-        order_by: Iterable[IntoExprColumn] | IntoExprColumn | None = None,
+        partition_by: TryIter[IntoExprColumn] | None = None,
+        order_by: TryIter[IntoExprColumn] | None = None,
         frame_start: int | str | None = None,
         frame_end: int | str | None = None,
         frame_mode: FrameMode = "ROWS",
         exclude: WindowExclude | None = None,
         filter_cond: IntoExprColumn | None = None,
+        arg_order_by: TryIter[IntoExprColumn] | None = None,
         *,
-        descending: Iterable[bool] | bool = False,
-        nulls_last: Iterable[bool] | bool = False,
+        descending: TryIter[bool] = False,
+        nulls_last: TryIter[bool] = False,
         ignore_nulls: bool = False,
+        distinct: bool = False,
+        arg_descending: TryIter[bool] = False,
+        arg_nulls_last: TryIter[bool] = False,
     ) -> Self:
         return self._new(
             over_expr(
@@ -194,9 +199,13 @@ class SqlExpr(Expression, Fns):
                 frame_mode=frame_mode,
                 exclude=pc.Option(exclude),
                 filter_cond=pc.Option(filter_cond),
+                arg_order_by=pc.Option(arg_order_by),
                 descending=descending,
                 nulls_last=nulls_last,
                 ignore_nulls=ignore_nulls,
+                distinct=distinct,
+                arg_descending=arg_descending,
+                arg_nulls_last=arg_nulls_last,
             )
         )
 
