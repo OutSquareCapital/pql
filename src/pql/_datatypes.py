@@ -3,10 +3,10 @@
 from __future__ import annotations
 
 from abc import ABC
-from collections.abc import Iterable
+from collections.abc import Callable, Iterable
 from dataclasses import MISSING, Field, dataclass, field, fields
 from enum import Enum as PyEnum
-from typing import TYPE_CHECKING, Any, Self, TypeIs, final
+from typing import TYPE_CHECKING, Any, Concatenate, Self, TypeIs, final, overload
 
 import pyochain as pc
 
@@ -17,6 +17,22 @@ if TYPE_CHECKING:
 
     from ._typing import EpochTimeUnit
     from .sql.typing import DTypeIds, IntoDict, StrIntoDType
+
+
+@dataclass(slots=True)
+class ClassInstMethod[**P, R]:
+    """Decorator that allows a method to be called from the class OR instance."""
+
+    func: Callable[Concatenate[Any, P], R]  # pyright: ignore[reportExplicitAny]
+
+    @overload
+    def __get__(self, instance: None, type_: type) -> Callable[P, R]: ...
+    @overload
+    def __get__(self, instance: object, type_: type) -> Callable[P, R]: ...
+    def __get__(self, instance: object | None, type_: type) -> Callable[..., R]:
+        if instance is not None:
+            return self.func.__get__(instance, type_)
+        return self.func.__get__(type_, type_)
 
 
 @dataclass(slots=True, init=False, unsafe_hash=True)
@@ -43,6 +59,7 @@ class DataType(ABC):
             )
         )
 
+    @ClassInstMethod
     def is_[T: DataType](self, other: T) -> TypeIs[T]:
         """Check if this DataType is the same as another DataType.
 
