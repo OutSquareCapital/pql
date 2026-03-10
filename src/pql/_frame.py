@@ -2,7 +2,8 @@
 
 from __future__ import annotations
 
-from collections.abc import Callable, Iterable, Mapping
+from collections.abc import Callable, Iterable, Mapping, Sequence
+from dataclasses import dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING, Literal, NamedTuple, Self
 
@@ -10,7 +11,8 @@ import narwhals as nw
 import pyochain as pc
 
 from . import sql
-from ._expr import Expr, ExprPlan
+from ._expr import Expr
+from ._meta import ExprPlan
 from ._parser import format_sql
 from ._schema import Schema
 from .sql.utils import TryIter, TrySeq, check_by_arg, try_chain, try_iter
@@ -26,6 +28,7 @@ if TYPE_CHECKING:
         FillNullStrategy,
         JoinKeysRes,
         JoinStrategy,
+        PivotAgg,
         UniqueKeepStrategy,
     )
     from .sql.typing import (
@@ -34,6 +37,7 @@ if TYPE_CHECKING:
         IntoRel,
         Orientation,
         ParquetCompression,
+        PythonLiteral,
     )
 
 TEMP_NAME = "__pql_temp__"
@@ -111,19 +115,20 @@ class JoinKeys[T: pc.Seq[str] | str](NamedTuple):
                 return pc.Err(ValueError(msg))
 
 
+@dataclass(slots=True, init=False, repr=False)
 class LazyFrame(sql.CoreHandler[sql.SqlFrame]):
     """LazyFrame providing Polars-like API over DuckDB relations."""
 
+    _inner: sql.SqlFrame
     _cached_schema: pc.Option[Schema]
-    __slots__ = ("_cached_schema",)
 
     def __init__(self, data: IntoRel, orient: Orientation = "col") -> None:
+        self._cached_schema = pc.NONE
         match data:
             case sql.SqlFrame():
                 self._inner = data
             case _:
                 self._inner = sql.SqlFrame(data, orient)
-        self._cached_schema = pc.NONE
 
     def _select(self, exprs: Iterable[IntoExprColumn], groups: str = "") -> Self:
         return self.inner().select(*exprs, groups=groups).pipe(self._new)
@@ -432,7 +437,7 @@ class LazyFrame(sql.CoreHandler[sql.SqlFrame]):
         return format_sql(self.inner().sql_query())
 
     def explain(self, kind: Literal["standard", "analyze"] = "standard") -> str:
-        return self.inner().explain(kind)  # pyright: ignore[reportArgumentType]
+        return self.inner().explain(kind)
 
     def unnest(
         self, columns: TryIter[IntoExprColumn], *more_columns: IntoExprColumn
@@ -765,47 +770,140 @@ class LazyFrame(sql.CoreHandler[sql.SqlFrame]):
         order_by: TrySeq[str] | None = None,
     ) -> Self:
         """Drop duplicate rows from this LazyFrame."""
-        order_by_opt = pc.Option(order_by).map(lambda value: try_iter(value).collect())
-        (
-            pc.Err(
-                ValueError(
-                    "`order_by` must be specified when `keep` is 'first' or 'last' "
-                    "because LazyFrame makes no assumptions about row order."
-                )
-            )
-            if keep in {"first", "last"} and order_by_opt is pc.NONE
-            else pc.Ok(None)
-        ).unwrap()
 
-        def _marker(subset_cols: Iterable[IntoExprColumn]) -> sql.SqlExpr:
-            match keep:
-                case "none":
-                    return sql.all().count().over(partition_by=subset_cols)
-                case "first":
-                    return sql.row_number().over(
-                        partition_by=subset_cols,
-                        order_by=order_by_opt.unwrap(),
+        def _marker(
+            subset_cols: Iterable[IntoExprColumn],
+        ) -> pc.Result[sql.SqlExpr, ValueError]:
+            match (
+                keep,
+                pc.Option(order_by).map(lambda value: try_iter(value).collect()),
+            ):
+                case ("none", _):
+                    return pc.Ok(sql.all().count().over(partition_by=subset_cols))
+                case ("first", pc.Some(order_by_cols)):
+                    return pc.Ok(
+                        sql.row_number().over(
+                            partition_by=subset_cols,
+                            order_by=order_by_cols,
+                        )
                     )
-                case "last":
-                    return sql.row_number().over(
-                        partition_by=subset_cols,
-                        order_by=order_by_opt.unwrap(),
-                        descending=True,
-                        nulls_last=True,
+                case ("last", pc.Some(order_by_cols)):
+                    return pc.Ok(
+                        sql.row_number().over(
+                            partition_by=subset_cols,
+                            order_by=order_by_cols,
+                            descending=True,
+                            nulls_last=True,
+                        )
                     )
+                case ("first" | "last", pc.NONE):
+                    msg = """`order_by` must be specified when `keep` is 'first' or 'last'
+                    because LazyFrame makes no assumptions about row order."""
+
+                    return pc.Err(ValueError(msg))
                 case _:
-                    return sql.row_number().over(partition_by=subset_cols)
+                    return pc.Ok(sql.row_number().over(partition_by=subset_cols))
 
         return (
             pc.Option(subset)
             .map(try_iter)
             .unwrap_or_else(self.columns.iter)
             .into(_marker)
-            .alias(TEMP_NAME)
-            .pipe(self.with_columns)
-            .filter(TEMP_COL.eq(1))
-            .drop(TEMP_NAME)
+            .map(
+                lambda expr: (
+                    expr.alias(TEMP_NAME)
+                    .pipe(self.with_columns)
+                    .filter(TEMP_COL.eq(1))
+                    .drop(TEMP_NAME)
+                )
+            )
+            .unwrap()
         )
+
+    def pivot(  # noqa: PLR0913
+        self,
+        on: TryIter[str],
+        on_columns: Sequence[PythonLiteral],
+        index: TryIter[str] | None = None,
+        values: TryIter[str] | None = None,
+        aggregate_function: PivotAgg = "first",
+        *,
+        maintain_order: bool = False,
+        separator: str = "_",
+    ) -> Self:
+        """Create a spreadsheet-style pivot table."""
+
+        def _get_idx_and_vals(
+            on_cols: pc.Seq[str],
+        ) -> pc.Result[tuple[pc.Seq[str], pc.Seq[str]], ValueError]:
+            match (
+                pc.Option(index).map(lambda v: try_iter(v).collect()),
+                pc.Option(values).map(lambda v: try_iter(v).collect()),
+            ):
+                case (pc.Some(idx), pc.Some(vals)):
+                    return pc.Ok((idx, vals))
+                case (pc.Some(idx), _):
+                    return pc.Ok(
+                        (
+                            idx,
+                            (
+                                self.columns.iter()
+                                .filter(lambda c: c not in on_cols and c not in idx)
+                                .collect()
+                            ),
+                        )
+                    )
+                case (_, pc.Some(vals)):
+                    return pc.Ok(
+                        (
+                            self.columns.iter()
+                            .filter(lambda c: c not in on_cols and c not in vals)
+                            .collect(),
+                            vals,
+                        )
+                    )
+                case _:
+                    msg = "`pivot` needs either `index` or `values` to be specified"
+                    return pc.Err(ValueError(msg))
+
+        on_cols = try_iter(on).collect()
+        idx_cols, val_cols = on_cols.into(_get_idx_and_vals).unwrap()
+
+        multi = val_cols.length() > 1
+        pivoted = self.__class__(
+            self.inner().pivot(
+                on=on_cols,
+                using=val_cols.iter().map(
+                    lambda c: (
+                        f"{aggregate_function}({c}) AS {c}"
+                        if multi
+                        else f"{aggregate_function}({c})"
+                    )
+                ),
+                group_by=idx_cols,
+                in_values=on_columns,
+                order_by=idx_cols if maintain_order else None,
+            )
+        )
+
+        match multi:
+            case True:
+                on_values = pc.Iter(on_columns).map(str).collect()
+                return pivoted.select(
+                    idx_cols.iter()
+                    .map(sql.col)
+                    .chain(
+                        val_cols.iter().flat_map(
+                            lambda vc: on_values.iter().map(
+                                lambda ov: sql.col(f"{ov}_{vc}").alias(
+                                    f"{vc}{separator}{ov}"
+                                )
+                            )
+                        )
+                    )
+                )
+            case False:
+                return pivoted
 
     def unpivot(
         self,

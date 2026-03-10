@@ -9,7 +9,7 @@ Each summary cell is `global (Narwhals, Polars)`.
 
 | Class               | Coverage              | Implemented   | Matched      | Missing       | Mismatched  | Extra       |
 | ------------------- | --------------------- | ------------- | ------------ | ------------- | ----------- | ----------- |
-| LazyFrame           | 41.5% (60.0%, 35.8%)  | 106 (25, 81)  | 44 (15, 29)  | 30 (0, 30)    | 32 (10, 22) | 30 (28, 2)  |
+| LazyFrame           | 41.5% (60.0%, 35.8%)  | 106 (25, 81)  | 44 (15, 29)  | 29 (0, 29)    | 33 (10, 23) | 31 (29, 2)  |
 | Expr                | 49.8% (71.4%, 42.7%)  | 283 (70, 213) | 141 (50, 91) | 100 (7, 93)   | 42 (13, 29) | 59 (58, 1)  |
 | LazyGroupBy         | 52.9% (0.0%, 56.2%)   | 17 (1, 16)    | 9 (0, 9)     | 4 (0, 4)      | 4 (1, 3)    | 11 (11, 0)  |
 | ExprStrNameSpace    | 31.8% (42.1%, 27.7%)  | 66 (19, 47)   | 21 (8, 13)   | 10 (0, 10)    | 35 (11, 24) | 20 (19, 1)  |
@@ -25,7 +25,7 @@ Each summary cell is `global (Narwhals, Polars)`.
 
 ## LazyFrame
 
-### [x] Missing Methods (30)
+### [x] Missing Methods (29)
 
 - `collect_async`
   - **Polars**: (gevent: bool, engine: EngineType, optimizations: QueryOptFlags) -> Awaitable[DataFrame] | _GeventDataFrameResult[DataFrame]
@@ -53,8 +53,6 @@ Each summary cell is `global (Narwhals, Polars)`.
   - **Polars**: (other: LazyFrame, key: str) -> LazyFrame
 - `pipe_with_schema`
   - **Polars**: (function: Callable[[LazyFrame, Schema], LazyFrame]) -> LazyFrame
-- `pivot`
-  - **Polars**: (on: ColumnNameOrSelector | Sequence[ColumnNameOrSelector], on_columns: Sequence[Any] | pl.Series | pl.DataFrame, index: ColumnNameOrSelector | Sequence[ColumnNameOrSelector] | None, values: ColumnNameOrSelector | Sequence[ColumnNameOrSelector] | None, aggregate_function: PivotAgg | Expr | None, maintain_order: bool, separator: str) -> LazyFrame
 - `profile`
   - **Polars**: (type_coercion: bool, predicate_pushdown: bool, projection_pushdown: bool, simplify_expression: bool, no_optimization: bool, slice_pushdown: bool, comm_subplan_elim: bool, comm_subexpr_elim: bool, cluster_with_columns: bool, collapse_joins: bool, show_plot: bool, truncate_nodes: int, figsize: tuple[int, int], engine: EngineType, optimizations: QueryOptFlags, **_kwargs: Any) -> tuple[DataFrame, DataFrame]
 - `remote`
@@ -88,7 +86,7 @@ Each summary cell is `global (Narwhals, Polars)`.
 - `with_columns_seq`
   - **Polars**: (*exprs: IntoExpr | Iterable[IntoExpr], **named_exprs: IntoExpr) -> LazyFrame
 
-### [!] Signature Mismatches (17)
+### [!] Signature Mismatches (18)
 
 - `cast` (pl)
   - **Polars***: (`dtypes: Mapping[ColumnNameOrSelector | PolarsDataType, PolarsDataType | PythonDataType] | PolarsDataType | pl.DataTypeExpr | Schema`, `strict: bool`) -> LazyFrame
@@ -126,6 +124,9 @@ Each summary cell is `global (Narwhals, Polars)`.
   - **Narwhals**: (other: Self, left_on: str | None, right_on: str | None, on: str | None, `by_left: str | list[str] | None`, `by_right: str | list[str] | None`, `by: str | list[str] | None`, strategy: AsofJoinStrategy, suffix: str) -> Self
   - **Polars**: (other: LazyFrame, `left_on: str | None | Expr`, `right_on: str | None | Expr`, `on: str | None | Expr`, `by_left: str | Sequence[str] | None`, `by_right: str | Sequence[str] | None`, `by: str | Sequence[str] | None`, strategy: AsofJoinStrategy, suffix: str, `tolerance: str | int | float | timedelta | None`, allow_parallel: bool, force_parallel: bool, `coalesce: bool`, `allow_exact_matches: bool`, `check_sortedness: bool`) -> LazyFrame
   - **pql**: (other: Self, left_on: str | None, right_on: str | None, on: str | None, `by_left: TryIter[str] | None`, `by_right: TryIter[str] | None`, `by: TryIter[str] | None`, strategy: AsofJoinStrategy, suffix: str) -> Self
+- `pivot` (pl)
+  - **Polars***: (`on: ColumnNameOrSelector | Sequence[ColumnNameOrSelector]`, `on_columns: Sequence[Any] | pl.Series | pl.DataFrame`, `index: ColumnNameOrSelector | Sequence[ColumnNameOrSelector] | None`, `values: ColumnNameOrSelector | Sequence[ColumnNameOrSelector] | None`, `aggregate_function: PivotAgg | Expr | None`, maintain_order: bool, separator: str) -> LazyFrame
+  - **pql**: (`on: TryIter[str]`, `on_columns: Sequence[PythonLiteral]`, `index: TryIter[str] | None`, `values: TryIter[str] | None`, `aggregate_function: PivotAgg`, maintain_order: bool, separator: str) -> Self
 - `quantile` (pl)
   - **Polars***: (`quantile: float | Expr`, interpolation: QuantileMethod) -> LazyFrame
   - **pql**: (`quantile: float`) -> Self

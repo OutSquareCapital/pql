@@ -15,5 +15,5 @@ type RankMethod = Literal["average", "min", "max", "dense", "ordinal"]
 type FillNullStrategy = Literal[
     "forward", "backward", "min", "max", "mean", "zero", "one"
 ]
-type PivotAgg = Literal["min", "max", "first", "last", "sum", "mean", "median", "len"]
+type PivotAgg = Literal["min", "max", "first", "last", "sum", "mean", "median", "count"]
 type JoinKeysRes[T: pc.Seq[str] | str] = pc.Result[JoinKeys[T], ValueError]

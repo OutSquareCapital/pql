@@ -453,7 +453,7 @@ def test_fill_null_with_strategy_limit(strategy: pql._typing.FillNullStrategy) -
 def test_fill_null_with_value_limit_error() -> None:
     df = pl.DataFrame({"a": [1.0, None, None, 4.0]})
     with pytest.raises(ValueError, match="can only specify `limit`"):
-        pql.LazyFrame(df).fill_null(0, limit=1)
+        _ = pql.LazyFrame(df).fill_null(0, limit=1)
 
 
 @pytest.mark.parametrize("strategy", ["min", "max", "mean", "zero", "one"])
@@ -462,7 +462,7 @@ def test_fill_null_with_non_directional_strategy_limit_error(
 ) -> None:
     df = pl.DataFrame({"a": [1.0, None, None, 4.0]})
     with pytest.raises(ValueError, match="can only specify `limit`"):
-        pql.LazyFrame(df).fill_null(strategy=strategy, limit=1)
+        _ = pql.LazyFrame(df).fill_null(strategy=strategy, limit=1)
 
 
 def test_fill_null_with_negative_limit_error() -> None:
@@ -470,9 +470,9 @@ def test_fill_null_with_negative_limit_error() -> None:
     with pytest.raises(
         pc.ResultUnwrapError, match="Can't process negative `limit` value for fill_null"
     ):
-        pql.LazyFrame(df).fill_null(strategy="forward", limit=-1)
+        _ = pql.LazyFrame(df).fill_null(strategy="forward", limit=-1)
     with pytest.raises(OverflowError, match="can't convert negative int to unsigned"):
-        df.lazy().fill_null(strategy="forward", limit=-1)
+        _ = df.lazy().fill_null(strategy="forward", limit=-1)
 
 
 def test_shift() -> None:
@@ -676,7 +676,7 @@ def test_join_cross_with_keys_error() -> None:
     left = pl.DataFrame({"id": [1, 2], "a": [10, 20]})
     right = pl.DataFrame({"id": [2, 3], "b": [200, 300]})
     with pytest.raises(ValueError, match="Can not pass"):
-        pql.LazyFrame(left).join(pql.LazyFrame(right), on="id", how="cross")
+        _ = pql.LazyFrame(left).join(pql.LazyFrame(right), on="id", how="cross")
 
 
 def test_join_left_on_right_on() -> None:
@@ -775,7 +775,7 @@ def test_join_asof_error_on_and_left_on() -> None:
     left = pl.DataFrame({"t": [1, 4, 9], "a": [1, 2, 3]})
     right = pl.DataFrame({"u": [0, 3, 8], "b": [100, 200, 300]})
     with pytest.raises(ValueError, match="If `on` is specified"):
-        pql.LazyFrame(left).join_asof(
+        _ = pql.LazyFrame(left).join_asof(
             pql.LazyFrame(right), on="t", left_on="t", right_on="u"
         )
 
@@ -784,21 +784,21 @@ def test_join_asof_error_no_keys() -> None:
     left = pl.DataFrame({"t": [1, 4, 9], "a": [1, 2, 3]})
     right = pl.DataFrame({"u": [0, 3, 8], "b": [100, 200, 300]})
     with pytest.raises(ValueError, match="Either"):
-        pql.LazyFrame(left).join_asof(pql.LazyFrame(right))
+        _ = pql.LazyFrame(left).join_asof(pql.LazyFrame(right))
 
 
 def test_join_asof_error_left_on_without_right_on() -> None:
     left = pl.DataFrame({"t": [1, 4, 9], "a": [1, 2, 3]})
     right = pl.DataFrame({"u": [0, 3, 8], "b": [100, 200, 300]})
     with pytest.raises(ValueError, match="Either"):
-        pql.LazyFrame(left).join_asof(pql.LazyFrame(right), left_on="t")
+        _ = pql.LazyFrame(left).join_asof(pql.LazyFrame(right), left_on="t")
 
 
 def test_join_asof_error_by_and_by_left() -> None:
     left = pl.DataFrame({"t": [1, 4, 9], "g": ["x", "x", "y"], "a": [1, 2, 3]})
     right = pl.DataFrame({"u": [0, 3, 8], "g2": ["x", "x", "y"], "b": [100, 200, 300]})
     with pytest.raises(ValueError, match="If `by` is specified"):
-        pql.LazyFrame(left).join_asof(
+        _ = pql.LazyFrame(left).join_asof(
             pql.LazyFrame(right),
             left_on="t",
             right_on="u",
@@ -811,7 +811,7 @@ def test_join_asof_error_by_left_without_by_right() -> None:
     left = pl.DataFrame({"t": [1, 4, 9], "g": ["x", "x", "y"], "a": [1, 2, 3]})
     right = pl.DataFrame({"u": [0, 3, 8], "g2": ["x", "x", "y"], "b": [100, 200, 300]})
     with pytest.raises(ValueError, match="Can not specify only"):
-        pql.LazyFrame(left).join_asof(
+        _ = pql.LazyFrame(left).join_asof(
             pql.LazyFrame(right),
             left_on="t",
             right_on="u",
@@ -823,7 +823,7 @@ def test_join_asof_error_unequal_by_lengths() -> None:
     left = pl.DataFrame({"t": [1, 4, 9], "g": ["x", "x", "y"], "a": [1, 2, 3]})
     right = pl.DataFrame({"u": [0, 3, 8], "g2": ["x", "x", "y"], "b": [100, 200, 300]})
     with pytest.raises(ValueError, match="must have the same length"):
-        pql.LazyFrame(left).join_asof(
+        _ = pql.LazyFrame(left).join_asof(
             pql.LazyFrame(right),
             left_on="t",
             right_on="u",
@@ -870,13 +870,13 @@ def test_unique_none(sample_df: pl.DataFrame) -> None:
 def test_unique_first_without_order_by_error() -> None:
     df = pl.DataFrame({"a": [1, 1, 2], "b": [1, 2, 3]})
     with pytest.raises(ValueError, match="`order_by` must be specified"):
-        pql.LazyFrame(df).unique(keep="first")
+        _ = pql.LazyFrame(df).unique(keep="first")
 
 
 def test_unique_last_without_order_by_error() -> None:
     df = pl.DataFrame({"a": [1, 1, 2], "b": [1, 2, 3]})
     with pytest.raises(ValueError, match="`order_by` must be specified"):
-        pql.LazyFrame(df).unique(keep="last")
+        _ = pql.LazyFrame(df).unique(keep="last")
 
 
 def test_unique_with_multiple_order_by() -> None:
@@ -904,7 +904,7 @@ def test_join_left_on_right_on_length_mismatch() -> None:
     left = pl.DataFrame({"id1": [1, 2], "id2": ["a", "b"], "a": [10, 20]})
     right = pl.DataFrame({"id1": [1, 2], "b": [100, 200]})
     with pytest.raises(ValueError, match="same length"):
-        pql.LazyFrame(left).join(
+        _ = pql.LazyFrame(left).join(
             pql.LazyFrame(right), left_on=["id1", "id2"], right_on="id1", how="inner"
         )
 
@@ -940,21 +940,19 @@ def test_join_without_keys_error() -> None:
     left = pl.DataFrame({"id": [1, 2], "a": [10, 20]})
     right = pl.DataFrame({"id": [1, 2], "b": [100, 200]})
     with pytest.raises(ValueError, match="Either"):
-        pql.LazyFrame(left).join(pql.LazyFrame(right), how="inner")
+        _ = pql.LazyFrame(left).join(pql.LazyFrame(right), how="inner")
 
 
 def test_join_on_and_left_right_on_error() -> None:
     left = pl.DataFrame({"id": [1, 2], "a": [10, 20]})
     right = pl.DataFrame({"id": [1, 2], "b": [100, 200]})
     with pytest.raises(ValueError, match="If `on` is specified"):
-        (
-            pql.LazyFrame(left).join(
-                pql.LazyFrame(right),
-                on="id",
-                left_on="id",
-                right_on="id",
-                how="inner",
-            )
+        _ = pql.LazyFrame(left).join(
+            pql.LazyFrame(right),
+            on="id",
+            left_on="id",
+            right_on="id",
+            how="inner",
         )
 
 
@@ -997,3 +995,151 @@ def test_join_asof_overlap_column_suffix() -> None:
         ),
         left.lazy().join_asof(right.lazy(), on="t", strategy="backward"),
     )
+
+
+def test_pivot_single_value_column() -> None:
+    df = pl.DataFrame(
+        {
+            "name": ["Cady", "Cady", "Karen", "Karen"],
+            "subject": ["maths", "physics", "maths", "physics"],
+            "score": [98, 99, 61, 58],
+        }
+    )
+    assert_lf_eq_pl(
+        pql.LazyFrame(df).pivot(
+            "subject", on_columns=["maths", "physics"], index="name", values="score"
+        ),
+        df.lazy().pivot(
+            "subject", on_columns=["maths", "physics"], index="name", values="score"
+        ),
+    )
+
+
+def test_pivot_multiple_value_columns() -> None:
+    df = pl.DataFrame(
+        {
+            "name": ["Cady", "Cady", "Karen", "Karen"],
+            "subject": ["maths", "physics", "maths", "physics"],
+            "test_1": [98, 99, 61, 58],
+            "test_2": [100, 100, 60, 60],
+        }
+    )
+    assert_lf_eq_pl(
+        pql.LazyFrame(df).pivot(
+            "subject", on_columns=["maths", "physics"], index="name"
+        ),
+        df.lazy().pivot("subject", on_columns=["maths", "physics"], index="name"),
+    )
+
+
+def test_pivot_aggregate_sum() -> None:
+    df = pl.DataFrame(
+        {
+            "ix": [1, 1, 2, 2, 1, 2],
+            "col": ["a", "a", "a", "a", "b", "b"],
+            "foo": [0, 1, 2, 2, 7, 1],
+            "bar": [0, 2, 0, 0, 9, 4],
+        }
+    )
+    assert_lf_eq_pl(
+        pql.LazyFrame(df).pivot(
+            "col", on_columns=["a", "b"], index="ix", aggregate_function="sum"
+        ),
+        df.lazy().pivot(
+            "col", on_columns=["a", "b"], index="ix", aggregate_function="sum"
+        ),
+    )
+
+
+def test_pivot_aggregate_len() -> None:
+    df = pl.DataFrame(
+        {
+            "cat": ["a", "a", "b", "b", "a"],
+            "val": ["x", "x", "x", "y", "y"],
+            "num": [1, 2, 3, 4, 5],
+        }
+    )
+    assert_lf_eq_pl(
+        pql.LazyFrame(df).pivot(
+            "val",
+            on_columns=["x", "y"],
+            index="cat",
+            values="num",
+            aggregate_function="count",
+        ),
+        df.lazy().pivot(
+            "val",
+            on_columns=["x", "y"],
+            index="cat",
+            values="num",
+            aggregate_function="len",
+        ),
+    )
+
+
+def test_pivot_custom_separator() -> None:
+    df = pl.DataFrame(
+        {
+            "name": ["Cady", "Cady", "Karen", "Karen"],
+            "subject": ["maths", "physics", "maths", "physics"],
+            "test_1": [98, 99, 61, 58],
+            "test_2": [100, 100, 60, 60],
+        }
+    )
+    assert_lf_eq_pl(
+        pql.LazyFrame(df).pivot(
+            "subject", on_columns=["maths", "physics"], index="name", separator="__"
+        ),
+        df.lazy().pivot(
+            "subject", on_columns=["maths", "physics"], index="name", separator="__"
+        ),
+    )
+
+
+def test_pivot_auto_detect_index() -> None:
+    df = pl.DataFrame(
+        {
+            "name": ["Cady", "Cady", "Karen", "Karen"],
+            "subject": ["maths", "physics", "maths", "physics"],
+            "test_1": [98, 99, 61, 58],
+            "test_2": [100, 100, 60, 60],
+        }
+    )
+    assert_lf_eq_pl(
+        pql.LazyFrame(df).pivot(
+            "subject", on_columns=["maths", "physics"], values="test_1"
+        ),
+        df.lazy().pivot("subject", on_columns=["maths", "physics"], values="test_1"),
+    )
+
+
+def test_pivot_integer_on_columns() -> None:
+    df = pl.DataFrame(
+        {
+            "country": ["NL", "NL", "US", "US"],
+            "year": [2000, 2010, 2000, 2010],
+            "population": [1005, 1065, 564, 608],
+        }
+    )
+    assert_lf_eq_pl(
+        pql.LazyFrame(df).pivot(
+            "year",
+            on_columns=[2000, 2010],
+            index="country",
+            values="population",
+            aggregate_function="sum",
+        ),
+        df.lazy().pivot(
+            "year",
+            on_columns=[2000, 2010],
+            index="country",
+            values="population",
+            aggregate_function="sum",
+        ),
+    )
+
+
+def test_pivot_no_index_no_values_error() -> None:
+    df = pl.DataFrame({"a": [1], "b": ["x"], "c": [10]})
+    with pytest.raises(ValueError, match=r"index.*or.*values"):
+        _ = pql.LazyFrame(df).pivot("b", on_columns=["x"])
