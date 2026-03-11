@@ -40,9 +40,6 @@ class SqlFrame(Relation):
         order_by: TryIter[str] | None,
     ) -> Self:
 
-        def _to_clause(vals: TryIter[str]) -> str:
-            return try_iter(vals).join(", ")
-
         def _in_clause(vals: Sequence[PythonLiteral]) -> str:
             cols = (
                 pc.Iter(vals)
@@ -55,7 +52,7 @@ class SqlFrame(Relation):
 
         qry = f"""--sql
         PIVOT _rel
-        ON {_to_clause(on)}{in_clause}
+        ON {try_iter(on).join(", ")}{in_clause}
         {_clause(on=using, kword="USING")}
         {_clause(on=group_by, kword="GROUP BY")}
         {_clause(on=order_by, kword="ORDER BY")}
