@@ -66,6 +66,22 @@ class RollingBounds(NamedTuple):
             case False:
                 return cls(-(window_size - 1), 0)
 
+    def into_expr(
+        self,
+        expr: sql.SqlExpr,
+        agg: Callable[[sql.SqlExpr], sql.SqlExpr],
+        min_samples: pc.Option[int],
+    ) -> sql.SqlExpr:
+        return (
+            sql.when(
+                expr.count()
+                .over(frame_start=self.start, frame_end=self.end)
+                .ge(min_samples.unwrap_or(self.start))
+            )
+            .then(expr.pipe(agg).over(frame_start=self.start, frame_end=self.end))
+            .otherwise(_NONE)
+        )
+
 
 @dataclass(slots=True, init=False)
 class Expr(sql.CoreHandler[sql.SqlExpr]):
@@ -116,18 +132,10 @@ class Expr(sql.CoreHandler[sql.SqlExpr]):
         *,
         center: bool,
     ) -> Self:
-        bounds = RollingBounds.new(window_size, center=center)
-        return self._as_window(
-            sql.when(
-                self.inner()
-                .count()
-                .over(frame_start=bounds.start, frame_end=bounds.end)
-                .ge(pc.Option(min_samples).unwrap_or(window_size))
-            )
-            .then(
-                agg(self.inner()).over(frame_start=bounds.start, frame_end=bounds.end)
-            )
-            .otherwise(_NONE)
+        return (
+            RollingBounds.new(window_size, center=center)
+            .into_expr(self.inner(), agg, pc.Option(min_samples))
+            .pipe(self._as_window)
         )
 
     @property
