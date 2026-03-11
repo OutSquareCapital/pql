@@ -4,25 +4,20 @@ from __future__ import annotations
 
 import re
 from collections.abc import Callable
-from dataclasses import replace
 from functools import partial
 from typing import TYPE_CHECKING, Self, overload, override
 
-import duckdb
 import pyochain as pc
 
 from pql._schema import ColumnResolver
 
-from . import _datatypes as dt, sql  # pyright: ignore[reportPrivateUsage]
+from . import _datatypes as dt  # pyright: ignore[reportPrivateUsage]
 from ._expr import Expr
-from ._meta import ExprMeta, MultiExpansion
+from ._meta import SENTINEL_COL, ExprMeta, MultiExpansion, replay_transform
 
 if TYPE_CHECKING:
     from ._schema import ColumnResolver, Schema
     from .sql.typing import IntoExpr
-
-_SENTINEL = "__pql_selector__"
-_SENTINEL_COL = sql.col(_SENTINEL)
 
 
 def all_columns_resolver(schema: Schema) -> pc.traits.PyoKeysView[str]:
@@ -57,17 +52,6 @@ def _name_resolver(predicate: Callable[[str], bool]) -> ColumnResolver:
     return lambda schema: schema.keys().iter().filter(predicate).collect()
 
 
-def _replay_transform(
-    template_sql: sql.SqlExpr, column_name: sql.SqlExpr
-) -> sql.SqlExpr:
-    """Replay a selector transform by substituting the sentinel with a real column name."""
-    return sql.SqlExpr(
-        duckdb.SQLExpression(
-            template_sql.pipe(str).replace(_SENTINEL, str(column_name))
-        )
-    )
-
-
 class Selector(Expr):
     """Column selector based on dtype predicates."""
 
@@ -78,21 +62,12 @@ class Selector(Expr):
     @classmethod
     def __from_resolver__(cls, resolver: ColumnResolver) -> Self:
         meta = ExprMeta(
-            _SENTINEL,
+            "__selector__",
             expansion=pc.Some(
-                MultiExpansion(resolver, partial(_replay_transform, _SENTINEL_COL))
+                MultiExpansion(resolver, partial(replay_transform, SENTINEL_COL))
             ),
         )
-        return cls(_SENTINEL_COL, pc.Some(meta))
-
-    @override
-    def _new(self, value: sql.SqlExpr, meta: pc.Option[ExprMeta] = pc.NONE) -> Self:
-        """Preserve expansion resolver and build a transform from the sentinel-based SQL."""
-        new_expansion = self.meta.expansion.map(
-            lambda exp: MultiExpansion(exp.resolver, partial(_replay_transform, value))
-        )
-        new_meta = replace(meta.unwrap_or(self.meta), expansion=new_expansion)
-        return self.__class__(value, pc.Some(new_meta))
+        return cls(SENTINEL_COL, pc.Some(meta))
 
     @overload
     def union(self, other: Selector) -> Selector: ...

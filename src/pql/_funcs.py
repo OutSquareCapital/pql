@@ -1,10 +1,17 @@
 from collections.abc import Callable, Iterable
+from functools import partial
 
 import pyochain as pc
 
 from . import sql
 from ._expr import Expr
-from ._meta import ExprKind, ExprMeta, MultiExpansion
+from ._meta import (
+    SENTINEL_COL,
+    ExprKind,
+    ExprMeta,
+    MultiExpansion,
+    replay_transform,
+)
 from .selectors import all_columns_resolver, exclude_resolver, fixed_resolver
 from .sql.typing import IntoExpr, IntoExprColumn, PythonLiteral
 from .sql.utils import TryIter, try_iter
@@ -36,13 +43,16 @@ def _agg_expr(
 ) -> Expr:
     cols = pc.Seq(columns)
     resolver = cols.then(fixed_resolver).unwrap_or(all_columns_resolver)
+    inner = agg(SENTINEL_COL)
     return Expr(
-        cols.then(lambda c: sql.col(c.first())).unwrap_or_else(lambda: sql.lit(0)),
+        inner,
         pc.Some(
             ExprMeta(
                 cols.then(lambda c: c.first()).unwrap_or("all"),
                 kind=ExprKind.SCALAR,
-                expansion=pc.Some(MultiExpansion(resolver, agg)),
+                expansion=pc.Some(
+                    MultiExpansion(resolver, partial(replay_transform, inner))
+                ),
             )
         ),
     )
@@ -78,7 +88,6 @@ def coalesce(exprs: TryIter[IntoExpr], *more_exprs: IntoExpr) -> Expr:
 
 def all(exclude: Iterable[IntoExprColumn] | None = None) -> Expr:
     """Create an expression representing all columns (equivalent to pl.all())."""
-    inner = sql.all(exclude)
     resolver = (
         pc.Option(exclude)
         .map(
@@ -92,11 +101,13 @@ def all(exclude: Iterable[IntoExprColumn] | None = None) -> Expr:
         .unwrap_or(all_columns_resolver)
     )
     return Expr(
-        inner,
+        SENTINEL_COL,
         pc.Some(
             ExprMeta(
-                inner.get_name(),
-                expansion=pc.Some(MultiExpansion(resolver, lambda col: col)),
+                "all",
+                expansion=pc.Some(
+                    MultiExpansion(resolver, partial(replay_transform, SENTINEL_COL))
+                ),
             )
         ),
     )

@@ -5,6 +5,7 @@ from dataclasses import dataclass, field, replace
 from enum import IntEnum, auto
 from typing import TYPE_CHECKING, Any, NamedTuple, Self, overload, override
 
+import duckdb
 import pyochain as pc
 from pyochain.traits import PyoCollection, PyoSequence
 
@@ -13,6 +14,18 @@ from . import sql
 if TYPE_CHECKING:
     from ._schema import ColumnResolver, Schema
     from .sql.typing import IntoExpr
+
+SENTINEL = "__pql_selector__"
+SENTINEL_COL = sql.col(SENTINEL)
+
+
+def replay_transform(
+    template_sql: sql.SqlExpr, column_name: sql.SqlExpr
+) -> sql.SqlExpr:
+    """Replay a multi-column transform by substituting the sentinel with a real column name."""
+    return sql.SqlExpr(
+        duckdb.SQLExpression(template_sql.pipe(str).replace(SENTINEL, str(column_name)))
+    )
 
 
 class ExprKind(IntEnum):

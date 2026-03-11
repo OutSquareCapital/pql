@@ -4,11 +4,27 @@ import pytest
 
 import pql
 
-from ._utils import assert_eq, assert_eq_pl
+from ._utils import assert_eq, assert_eq_pl, assert_lf_eq_pl
 
 
 def test_all_fn() -> None:
     assert_eq(pql.all(), nw.all())
+
+
+def test_all_add() -> None:
+    data = {"a": [1, 2], "b": [3, 4]}
+    assert_lf_eq_pl(
+        pql.LazyFrame(data).select(pql.all().add(1)),
+        pl.LazyFrame(data).select(pl.all().add(1)),
+    )
+
+
+def test_all_chained() -> None:
+    data = {"a": [1, 2], "b": [3, 4]}
+    assert_lf_eq_pl(
+        pql.LazyFrame(data).select(pql.all().mul(2).add(1)),
+        pl.LazyFrame(data).select(pl.all().mul(2).add(1)),
+    )
 
 
 def test_len_fn() -> None:
