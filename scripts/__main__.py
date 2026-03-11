@@ -3,28 +3,25 @@
 Run with: `uv run -m scripts`
 """
 
-import subprocess
 from collections.abc import Iterable
 from functools import partial
 from pathlib import Path
 from typing import Annotated
 
+import pyochain as pc
 import typer
 from rich.console import Console
 from rich.text import Text
 
-from . import core_generator
-from ._func_table_analysis import analyze
-from .fn_generator import get_data, run_pipeline
-
-CODE_GEN = Path("src", "pql", "sql", "_code_gen")
+PQL = Path("src", "pql")
+CODE_GEN = PQL.joinpath("sql", "_code_gen")
 
 FNS_OUTPUT = CODE_GEN.joinpath("_fns.py")
 REL_OUTPUT = CODE_GEN.joinpath("_core.py")
 
 DATA_PATH = Path("scripts", "fn_generator", "functions.parquet")
 STUB_PATH = Path(".venv", "Lib", "site-packages", "_duckdb-stubs", "__init__.pyi")
-
+TYPING_PATH = PQL.joinpath("_typing.py")
 
 InputPath = Annotated[Path, typer.Option("--input-path", "-ip")]
 OutputPath = Annotated[Path, typer.Option("--output-path", "-op")]
@@ -44,11 +41,13 @@ def gen_core(
     check_only: CheckArg = False,
 ) -> None:
     """Generate typed DuckDB wrappers from the database."""
+    from . import core_generator
+
     content = core_generator.generate(stub_path)
     output_path.parent.mkdir(parents=True, exist_ok=True)
     res = output_path.write_text(content, encoding="utf-8")
     console.print(Text("Generated ").append(output_path.as_posix(), style="cyan"))
-    _run_ruff(check_only=check_only, output=output_path)
+    _run_ruff(check_only=check_only, dest=output_path)
     console.print(f"Done with exit code {res}!", style="bold green")
 
 
@@ -63,22 +62,56 @@ def gen_fns(
     ] = False,
 ) -> None:
     """Generate typed DuckDB function wrappers from the database."""
+    from .fn_generator import run_pipeline
+
     console.print("Fetching functions from DuckDB...")
     content = run_pipeline(data_path, profile=profile)
 
     output.parent.mkdir(parents=True, exist_ok=True)
     res = output.write_text(content, encoding="utf-8")
     console.print(Text("Generated file at ").append(output.as_posix(), style="cyan"))
-    _run_ruff(check_only=check_only, output=output)
+    _run_ruff(check_only=check_only, dest=output)
+    console.print(f"Done with exit code {res}!", style="bold green")
+
+
+@app.command()
+def gen_themes(path: InputPath = TYPING_PATH) -> None:
+    """Generate a `Literal` of all available styles for pretty-printing of the `LazyFrame.sql_query` method."""
+    from pygments.styles._mapping import (  # pyright: ignore[reportMissingTypeStubs]
+        STYLES,
+    )
+
+    styles = (
+        pc.Iter(STYLES.values()).map_star(lambda _, style, __: f'"{style}"').join(" ,")
+    )
+    file_content = path.read_text(encoding="utf-8")
+    start_marker = "### theme marker START"
+    end_marker = "### theme marker END"
+    lit = f"type Themes = Literal[{styles}]"
+    doc = (
+        '"""Themes available for SQL syntax highlighting in the `sql_query` method."""'
+    )
+
+    start_idx = file_content.find(start_marker)
+    end_idx = file_content.find(end_marker)
+    content = f"{file_content[: start_idx + len(start_marker)]}\n{lit}\n{doc}\n{file_content[end_idx:]}"
+
+    res = path.write_text(content, encoding="utf-8")
+    _run_ruff(check_only=False, dest=path)
+    console.print(
+        Text("Generated themes Literal in ").append(path.as_posix(), style="cyan")
+    )
     console.print(f"Done with exit code {res}!", style="bold green")
 
 
 @app.command()
 def fns_to_parquet(path: InputPath = DATA_PATH) -> None:
     """Fetch function metadata from DuckDB and store as parquet at `scripts/generator/functions.parquet`."""
+    from .fn_generator import get_data
+
     get_data(path)
 
-    typer.echo(f"Fetched function metadata and stored at {path}")
+    console.print(f"Fetched function metadata and stored at {path}")
 
 
 @app.command()
@@ -92,6 +125,8 @@ def compare() -> int:
 @app.command()
 def analyze_funcs(path: InputPath = DATA_PATH) -> None:
     """Run analysis of the functions metadata and print results in console."""
+    from ._func_table_analysis import analyze
+
     analyze(path)
 
 
@@ -102,13 +137,16 @@ def _check_args(*, check_only: bool) -> Iterable[str]:
     return ("check", "--fix", "--unsafe-fixes")
 
 
-def _run_ruff(*, check_only: bool, output: Path) -> None:
-    typer.echo("Running Ruff checks and format...")
+def _run_ruff(*, check_only: bool, dest: Path) -> None:
+
+    import subprocess
+
+    console.print("Running Ruff checks and format...")
     uv_args = ("uv", "run", "ruff")
     run_ruff = partial(subprocess.run, check=False)
 
-    _ = run_ruff((*uv_args, "format", str(output)))
-    _ = run_ruff((*uv_args, *_check_args(check_only=check_only), str(output)))
+    _ = run_ruff((*uv_args, "format", str(dest)))
+    _ = run_ruff((*uv_args, *_check_args(check_only=check_only), str(dest)))
 
 
 if __name__ == "__main__":

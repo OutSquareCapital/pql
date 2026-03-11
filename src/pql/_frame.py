@@ -5,7 +5,7 @@ from __future__ import annotations
 from collections.abc import Callable, Iterable, Mapping, Sequence
 from dataclasses import dataclass
 from pathlib import Path
-from typing import TYPE_CHECKING, Literal, NamedTuple, Self
+from typing import TYPE_CHECKING, Literal, NamedTuple, Self, overload
 
 import narwhals as nw
 import pyochain as pc
@@ -13,7 +13,7 @@ import pyochain as pc
 from . import sql
 from ._expr import Expr
 from ._meta import ExprPlan
-from ._parser import format_sql
+from ._parser import format_sql, show_sql
 from ._schema import Schema
 from .sql.utils import TryIter, TrySeq, check_by_arg, try_chain, try_iter
 
@@ -30,6 +30,7 @@ if TYPE_CHECKING:
         JoinKeysRes,
         JoinStrategy,
         PivotAgg,
+        Themes,
         UniqueKeepStrategy,
     )
     from .sql.typing import (
@@ -464,12 +465,29 @@ class LazyFrame(sql.CoreHandler[sql.SqlFrame]):
             lambda c: sql.col(c).alias(rename_map.get_item(c).unwrap_or(c))
         )
 
-    def sql_query(self) -> str:
-        """Generate SQL string.
+    @overload
+    def sql_query(
+        self, *, show: Literal[False] = False, theme: Themes = ...
+    ) -> str: ...
+    @overload
+    def sql_query(self, *, show: Literal[True], theme: Themes = ...) -> None: ...
+
+    def sql_query(self, *, show: bool = False, theme: Themes = "monokai") -> str | None:
+        """Generate or print SQL string.
 
         If `sqlparse` is installed, the SQL output will be formatted for better readability.
+
+        Args:
+            show (bool): print the query rather than returning it as a string.
+            theme (Themes): If `rich` is installed and `show=True`, the SQL output will be syntax-highlighted in the terminal using the specified `theme`.
+
+        Returns:
+            str | None
         """
-        return format_sql(self.inner().sql_query())
+        qry = format_sql(self.inner().sql_query())
+        if show:
+            return show_sql(qry, theme)
+        return qry
 
     def explain(self, kind: Literal["standard", "analyze"] = "standard") -> str:
         return self.inner().explain(kind)
