@@ -134,10 +134,10 @@ class OverBuilder:
 
             def _expand(*, clauses: TryIter[bool]) -> pc.Seq[bool]:
                 match clauses:
-                    case bool() as val:
-                        return pc.Iter.once(val).cycle().take(n).collect()
                     case Iterable() as seq:
                         return pc.Seq(seq)
+                    case _ as val:
+                        return try_iter(val).cycle().take(n).collect()
 
             items = (
                 cols.iter()
@@ -209,15 +209,15 @@ def get_order_by(
 
     def _get_clauses(*, clauses: TryIter[bool]) -> pc.Seq[bool]:
         match clauses:
-            case bool() as val:
+            case Iterable() as seq:
+                return pc.Seq(seq)
+            case _ as val:
                 return (
-                    pc.Iter.once(val)
+                    try_iter(val)
                     .cycle()
                     .take(order_by.map(lambda x: x.length()).unwrap_or(0))
                     .collect()
                 )
-            case Iterable() as seq:
-                return pc.Seq(seq)
 
     return (
         order_by.map(

@@ -19,6 +19,10 @@ from .sql.utils import TryIter, TrySeq, check_by_arg, try_chain, try_iter
 
 if TYPE_CHECKING:
     import polars as pl
+    from _duckdb import ExplainType
+    from _duckdb._enums import (  # pyright: ignore[reportMissingModuleSource]
+        ExplainTypeLiteral,
+    )
     from narwhals.typing import IntoFrameT
 
     from ._datatypes import DataType
@@ -234,7 +238,7 @@ class LazyFrame(sql.CoreHandler[sql.SqlFrame]):
 
     def group_by(
         self,
-        keys: TryIter[IntoExpr] = (),
+        keys: TryIter[IntoExpr] = None,
         *more_keys: IntoExpr,
         drop_null_keys: bool = False,
         strategy: GroupByClause | None = None,
@@ -268,7 +272,7 @@ class LazyFrame(sql.CoreHandler[sql.SqlFrame]):
 
     def group_by_all(
         self,
-        exprs: TryIter[IntoExpr] = (),
+        exprs: TryIter[IntoExpr] = None,
         *more_exprs: IntoExpr,
         **named_exprs: IntoExpr,
     ) -> Self:
@@ -489,7 +493,7 @@ class LazyFrame(sql.CoreHandler[sql.SqlFrame]):
             return show_sql(qry, theme)
         return qry
 
-    def explain(self, kind: Literal["standard", "analyze"] = "standard") -> str:
+    def explain(self, kind: ExplainType | ExplainTypeLiteral = "standard") -> str:
         return self.inner().explain(kind)
 
     def unnest(
@@ -986,7 +990,7 @@ class LazyFrame(sql.CoreHandler[sql.SqlFrame]):
                 case bool():
                     return not reverse
                 case _:
-                    return pc.Iter(reverse).map(lambda x: not x).collect()
+                    return try_iter(reverse).map(lambda x: not x).collect()
 
         return self.sort(by, descending=_descending()).head(k)
 

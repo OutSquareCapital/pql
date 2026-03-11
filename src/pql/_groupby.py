@@ -85,7 +85,10 @@ class LazyGroupBy:
         )
 
     def agg(
-        self, aggs: TryIter[IntoExpr] = (), *more_aggs: IntoExpr, **named_aggs: IntoExpr
+        self,
+        aggs: TryIter[IntoExpr] = None,
+        *more_aggs: IntoExpr,
+        **named_aggs: IntoExpr,
     ) -> LazyFrame:
         plan = (
             self._agg_schema.into(

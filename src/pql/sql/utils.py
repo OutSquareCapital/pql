@@ -7,9 +7,9 @@ import pyochain as pc
 
 from .typing import NonNestedLiteral
 
-type TryIter[T] = Iterable[T] | T
+type TryIter[T] = Iterable[T] | T | None
 """Represent a value that may or may not be an `Iterable`."""
-type TrySeq[T] = Sequence[T] | T
+type TrySeq[T] = Sequence[T] | T | None
 """Represent a value that may or may not be a `Sequence`."""
 
 
@@ -23,6 +23,8 @@ def try_iter[T](val: TryIter[T]) -> pc.Iter[T]:
         pc.Iter[T]: An iterator over the value if it is iterable, otherwise an iterator over a single element.
     """
     match val:
+        case None:
+            return pc.Iter[T].new()
         case str() | bytes() | bytearray():
             return pc.Iter[T].once(val)
         case Iterable():
@@ -54,7 +56,7 @@ def check_by_arg[T: NonNestedLiteral](
                     return pc.Err(ValueError(msg))
 
         case _:
-            return pc.Ok(pc.Iter.once(arg).cycle().take(length))
+            return pc.Ok(try_iter(arg).cycle().take(length))
 
 
 def try_chain[T](vals: TryIter[T], other_vals: Iterable[T]) -> pc.Iter[T]:
