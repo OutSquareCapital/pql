@@ -1,12 +1,12 @@
 from __future__ import annotations
 
-from collections.abc import Callable, Iterator
+from collections.abc import Callable, Iterator, Sequence
 from dataclasses import dataclass, field, replace
 from enum import IntEnum, auto
-from typing import TYPE_CHECKING, NamedTuple, Self, override
+from typing import TYPE_CHECKING, Any, NamedTuple, Self, overload, override
 
 import pyochain as pc
-from pyochain.traits import PyoCollection, PyoIterable
+from pyochain.traits import PyoCollection, PyoSequence
 
 from . import sql
 
@@ -42,10 +42,6 @@ class ExprMeta:
     @property
     def is_multi(self) -> bool:
         return self.expansion.is_some()
-
-    @property
-    def is_scalar_select(self) -> bool:
-        return self.kind == ExprKind.SCALAR
 
     def resolve_output_names(
         self, base_names: pc.traits.PyoCollection[str], forced_name: pc.Option[str]
@@ -103,7 +99,7 @@ class ResolvedExpr(NamedTuple):
 
 
 @dataclass(slots=True)
-class ExprPlan(PyoIterable[ResolvedExpr]):
+class ExprPlan(PyoSequence[ResolvedExpr]):
     projections: pc.Seq[ResolvedExpr]
 
     @classmethod
@@ -138,30 +134,23 @@ class ExprPlan(PyoIterable[ResolvedExpr]):
     def __iter__(self) -> Iterator[ResolvedExpr]:
         return iter(self.projections)
 
+    @override
+    def __len__(self) -> int:
+        return len(self.projections)
+
+    @overload
+    def __getitem__(self, index: int) -> ResolvedExpr: ...
+    @overload
+    def __getitem__(self, index: slice) -> Sequence[ResolvedExpr]: ...
+    @override
+    def __getitem__(
+        self,
+        index: int | slice[Any, Any, Any],  # pyright: ignore[reportExplicitAny]
+    ) -> ResolvedExpr | Sequence[ResolvedExpr]:
+        return self.projections[index]
+
     def aliased_sql(self) -> pc.Iter[sql.SqlExpr]:
         return self.iter().map(ResolvedExpr.as_aliased)
-
-    def as_unique(self) -> pc.Iter[str]:
-        return self.iter().map(ResolvedExpr.as_unique)
-
-    def to_updates(self) -> pc.Dict[str, sql.SqlExpr]:
-        return self.iter().map(lambda r: (r.name, r.expr)).collect(pc.Dict)
-
-    def is_scalar_select(self) -> bool:
-        return self.all(lambda r: r.kind == ExprKind.SCALAR)
-
-    def has_scalar(self) -> bool:
-        return self.any(lambda r: r.kind == ExprKind.SCALAR)
-
-    def can_use_unique(self) -> bool:
-        return self.all(lambda r: r.kind == ExprKind.UNIQUE)
-
-    def as_result(self) -> pc.Option[Self]:
-        """Return `Some(self)` if non-empty, `NONE` otherwise.
-
-        This way, we can avoid runtime crash in case of empty selections/aggregations (e.g on an empty selector result).
-        """
-        return self.projections.then(lambda _: self)
 
     def resolve(self, col_keys: PyoCollection[str]) -> pc.Iter[sql.SqlExpr]:
 
@@ -190,7 +179,9 @@ class ExprPlan(PyoIterable[ResolvedExpr]):
                         )
                     )
 
-        return self.to_updates().into(_resolved)
+        return (
+            self.iter().map(lambda r: (r.name, r.expr)).collect(pc.Dict).into(_resolved)
+        )
 
 
 def _resolve_projection(

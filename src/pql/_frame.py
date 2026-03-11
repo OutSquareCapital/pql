@@ -12,7 +12,7 @@ import pyochain as pc
 
 from . import sql
 from ._expr import Expr
-from ._meta import ExprPlan
+from ._meta import ExprKind, ExprPlan
 from ._parser import format_sql, show_sql
 from ._schema import Schema
 from .sql.utils import TryIter, TrySeq, check_by_arg, try_chain, try_iter
@@ -178,17 +178,17 @@ class LazyFrame(sql.CoreHandler[sql.SqlFrame]):
         """Select columns or expressions."""
         match self.schema.into(
             ExprPlan.from_inputs, try_chain(exprs, more_exprs), named_exprs
-        ).as_result():
+        ).then_some():
             case pc.Some(plan):
-                match plan.can_use_unique():
+                match plan.all(lambda r: r.kind == ExprKind.UNIQUE):
                     case True:
                         return (
                             self.inner()
-                            .unique(plan.as_unique().join(", "))
+                            .unique(plan.iter().map(lambda r: r.as_unique()).join(", "))
                             .pipe(self._new)
                         )
                     case False:
-                        match plan.is_scalar_select():
+                        match plan.all(lambda r: r.kind == ExprKind.SCALAR):
                             case True:
                                 return plan.aliased_sql().into(self._agg)
                             case False:
@@ -204,7 +204,7 @@ class LazyFrame(sql.CoreHandler[sql.SqlFrame]):
         col_keys = schema.keys()
         plan = ExprPlan.from_inputs(schema, try_chain(exprs, more_exprs), named_exprs)
 
-        match plan.has_scalar():
+        match plan.any(lambda r: r.kind == ExprKind.SCALAR):
             case True:
                 return plan.resolve(col_keys).into(self._agg)
             case False:
@@ -485,7 +485,7 @@ class LazyFrame(sql.CoreHandler[sql.SqlFrame]):
             str | None
         """
         qry = format_sql(self.inner().sql_query())
-        if show:
+        if show:  # pragma: no cover
             return show_sql(qry, theme)
         return qry
 

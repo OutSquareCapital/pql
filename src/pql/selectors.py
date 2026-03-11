@@ -5,10 +5,13 @@ from __future__ import annotations
 import re
 from collections.abc import Callable
 from dataclasses import replace
+from functools import partial
 from typing import TYPE_CHECKING, Self, overload, override
 
 import duckdb
 import pyochain as pc
+
+from pql._schema import ColumnResolver
 
 from . import _datatypes as dt, sql  # pyright: ignore[reportPrivateUsage]
 from ._expr import Expr
@@ -54,59 +57,30 @@ def _name_resolver(predicate: Callable[[str], bool]) -> ColumnResolver:
     return lambda schema: schema.keys().iter().filter(predicate).collect()
 
 
-def _union_resolver(left: ColumnResolver, right: ColumnResolver) -> ColumnResolver:
-    def _resolve(schema: Schema) -> pc.Seq[str]:
-        selected = left(schema).iter().chain(right(schema)).collect(pc.Set)
-        return schema.keys().iter().filter(lambda n: n in selected).collect()
-
-    return _resolve
-
-
-def _intersection_resolver(
-    left: ColumnResolver, right: ColumnResolver
-) -> ColumnResolver:
-    def _resolve(schema: Schema) -> pc.Seq[str]:
-        right_set = right(schema)
-        return left(schema).iter().filter(lambda n: n in right_set).collect()
-
-    return _resolve
-
-
-def _difference_resolver(left: ColumnResolver, right: ColumnResolver) -> ColumnResolver:
-    def _resolve(schema: Schema) -> pc.Seq[str]:
-        right_set = right(schema)
-        return left(schema).iter().filter(lambda n: n not in right_set).collect()
-
-    return _resolve
-
-
-def _complement_resolver(inner: ColumnResolver) -> ColumnResolver:
-    def _resolve(schema: Schema) -> pc.Seq[str]:
-        excluded = inner(schema)
-        return schema.keys().iter().filter(lambda n: n not in excluded).collect()
-
-    return _resolve
-
-
-def _replay_transform(template_sql: str, column_name: str) -> sql.SqlExpr:
+def _replay_transform(
+    template_sql: sql.SqlExpr, column_name: sql.SqlExpr
+) -> sql.SqlExpr:
     """Replay a selector transform by substituting the sentinel with a real column name."""
     return sql.SqlExpr(
-        duckdb.SQLExpression(template_sql.replace(_SENTINEL, column_name))
+        duckdb.SQLExpression(
+            template_sql.pipe(str).replace(_SENTINEL, str(column_name))
+        )
     )
 
 
 class Selector(Expr):
     """Column selector based on dtype predicates."""
 
+    @property
+    def _resolver(self) -> ColumnResolver:
+        return self.meta.expansion.unwrap().resolver
+
     @classmethod
     def __from_resolver__(cls, resolver: ColumnResolver) -> Self:
         meta = ExprMeta(
             _SENTINEL,
             expansion=pc.Some(
-                MultiExpansion(
-                    resolver,
-                    lambda col: _replay_transform(str(_SENTINEL_COL), str(col)),
-                )
+                MultiExpansion(resolver, partial(_replay_transform, _SENTINEL_COL))
             ),
         )
         return cls(_SENTINEL_COL, pc.Some(meta))
@@ -115,10 +89,7 @@ class Selector(Expr):
     def _new(self, value: sql.SqlExpr, meta: pc.Option[ExprMeta] = pc.NONE) -> Self:
         """Preserve expansion resolver and build a transform from the sentinel-based SQL."""
         new_expansion = self.meta.expansion.map(
-            lambda exp: MultiExpansion(
-                exp.resolver,
-                lambda col: _replay_transform(str(value), str(col)),
-            )
+            lambda exp: MultiExpansion(exp.resolver, partial(_replay_transform, value))
         )
         new_meta = replace(meta.unwrap_or(self.meta), expansion=new_expansion)
         return self.__class__(value, pc.Some(new_meta))
@@ -130,12 +101,19 @@ class Selector(Expr):
     def union(self, other: IntoExpr) -> Selector | Expr:
         match other:
             case Selector() if self.meta.is_multi and other.meta.is_multi:
-                return Selector.__from_resolver__(
-                    _union_resolver(
-                        self.meta.expansion.unwrap().resolver,
-                        other.meta.expansion.unwrap().resolver,
+
+                def _resolve(schema: Schema) -> pc.Seq[str]:
+                    selected = (
+                        self._resolver(schema)
+                        .iter()
+                        .chain(other._resolver(schema))
+                        .collect(pc.Set)
                     )
-                )
+                    return (
+                        schema.keys().iter().filter(lambda n: n in selected).collect()
+                    )
+
+                return Selector.__from_resolver__(_resolve)
             case _:
                 return Expr.__or__(self, other)
 
@@ -154,12 +132,17 @@ class Selector(Expr):
     def intersection(self, other: IntoExpr) -> Selector | Expr:
         match other:
             case Selector() if self.meta.is_multi and other.meta.is_multi:
-                return Selector.__from_resolver__(
-                    _intersection_resolver(
-                        self.meta.expansion.unwrap().resolver,
-                        other.meta.expansion.unwrap().resolver,
+
+                def _resolve(schema: Schema) -> pc.Seq[str]:
+                    right_set = other._resolver(schema)
+                    return (
+                        self._resolver(schema)
+                        .iter()
+                        .filter(lambda n: n in right_set)
+                        .collect()
                     )
-                )
+
+                return Selector.__from_resolver__(_resolve)
             case _:
                 return Expr.__and__(self, other)
 
@@ -178,12 +161,17 @@ class Selector(Expr):
     def difference(self, other: IntoExpr) -> Selector | Expr:
         match other:
             case Selector() if self.meta.is_multi and other.meta.is_multi:
-                return Selector.__from_resolver__(
-                    _difference_resolver(
-                        self.meta.expansion.unwrap().resolver,
-                        other.meta.expansion.unwrap().resolver,
+
+                def _resolve(schema: Schema) -> pc.Seq[str]:
+                    right_set = other._resolver(schema)
+                    return (
+                        self._resolver(schema)
+                        .iter()
+                        .filter(lambda n: n not in right_set)
+                        .collect()
                     )
-                )
+
+                return Selector.__from_resolver__(_resolve)
             case _:
                 return Expr.__sub__(self, other)
 
@@ -196,9 +184,12 @@ class Selector(Expr):
         return self.difference(other)
 
     def complement(self) -> Selector:
-        return Selector.__from_resolver__(
-            _complement_resolver(self.meta.expansion.unwrap().resolver)
-        )
+
+        def _resolve(schema: Schema) -> pc.Seq[str]:
+            excluded = self._resolver(schema)
+            return schema.keys().iter().filter(lambda n: n not in excluded).collect()
+
+        return Selector.__from_resolver__(_resolve)
 
     @override
     def __invert__(self) -> Selector:
