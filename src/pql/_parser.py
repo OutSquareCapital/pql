@@ -11,15 +11,15 @@ if TYPE_CHECKING:
 
 
 def _get_kwords() -> dict[str, object]:
-    from sqlparse import tokens
+    from sqlparse.tokens import Keyword  # pyright: ignore[reportUnknownVariableType]
 
     return {
-        "PIVOT": tokens.Keyword,
-        "UNPIVOT": tokens.Keyword,
-        "QUALIFY": tokens.Keyword,
-        "EXCLUDE": tokens.Keyword,
-        "REPLACE": tokens.Keyword,
-        "LAMBDA": tokens.Keyword,
+        "PIVOT": Keyword,
+        "UNPIVOT": Keyword,
+        "QUALIFY": Keyword,
+        "EXCLUDE": Keyword,
+        "REPLACE": Keyword,
+        "LAMBDA": Keyword,
     }
 
 
