@@ -11,7 +11,7 @@ if TYPE_CHECKING:
 
 
 def _get_kwords() -> dict[str, object]:
-    from sqlparse.tokens import Keyword  # pyright: ignore[reportUnknownVariableType]
+    from sqlparse.tokens import Keyword
 
     return {
         "PIVOT": Keyword,
