@@ -4,7 +4,7 @@ import pyochain as pc
 
 from . import sql
 from ._expr import Expr
-from ._meta import ExprMeta
+from ._meta import ExprKind, ExprMeta
 from .selectors import all_columns_resolver, exclude_resolver, fixed_resolver
 from .sql.typing import IntoExpr, IntoExprColumn, PythonLiteral
 from .sql.utils import TryIter, try_iter
@@ -41,7 +41,7 @@ def _agg_expr(
         pc.Some(
             ExprMeta(
                 cols.then(lambda c: c.first()).unwrap_or("all"),
-                is_scalar_like=True,
+                kind=ExprKind.SCALAR,
                 column_resolver=pc.Some(resolver),
                 multi_agg=pc.Some(agg),
             )

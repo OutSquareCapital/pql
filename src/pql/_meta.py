@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from collections.abc import Callable, Iterator
 from dataclasses import dataclass, field, replace
+from enum import IntEnum, auto
 from typing import TYPE_CHECKING, Self, override
 
 import pyochain as pc
@@ -14,15 +15,20 @@ if TYPE_CHECKING:
     from .sql.typing import IntoExpr
 
 
+class ExprKind(IntEnum):
+    ROW = auto()
+    SCALAR = auto()
+    WINDOW = auto()
+    UNIQUE = auto()
+
+
 @dataclass(slots=True)
 class ExprMeta:
     """Metadata for expressions, used for tracking properties that affect query generation."""
 
     root_name: str
     alias_name: pc.Option[Callable[[str], str]] = field(default_factory=lambda: pc.NONE)
-    is_scalar_like: bool = False
-    has_window: bool = False
-    is_unique_projection: bool = False
+    kind: ExprKind = ExprKind.ROW
     column_resolver: pc.Option[ColumnResolver] = field(default_factory=lambda: pc.NONE)
     multi_agg: pc.Option[Callable[[sql.SqlExpr], sql.SqlExpr]] = field(
         default_factory=lambda: pc.NONE
@@ -34,7 +40,7 @@ class ExprMeta:
 
     @property
     def is_scalar_select(self) -> bool:
-        return self.is_scalar_like and not self.has_window
+        return self.kind == ExprKind.SCALAR
 
     def from_projection(self, output_name: str) -> Self:
         return replace(
@@ -151,7 +157,7 @@ class ExprPlan(PyoIterable[ExprProjection]):
         return self.any(lambda p: p.meta.is_scalar_select)
 
     def can_use_unique(self) -> bool:
-        return self.all(lambda p: p.meta.is_unique_projection)
+        return self.all(lambda p: p.meta.kind == ExprKind.UNIQUE)
 
     def as_result(self) -> pc.Option[Self]:
         """Return `Some(self)` if non-empty, `NONE` otherwise.

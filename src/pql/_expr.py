@@ -14,7 +14,7 @@ import pyochain as pc
 
 from . import _datatypes as dt, sql  # pyright: ignore[reportPrivateUsage]
 from ._computations import fill_nulls
-from ._meta import ExprMeta, ExprPlan
+from ._meta import ExprKind, ExprMeta, ExprPlan
 from ._schema import Schema
 from .sql.utils import TryIter, try_chain, try_iter
 
@@ -90,23 +90,15 @@ class Expr(sql.CoreHandler[sql.SqlExpr]):
     def _with_meta(
         self,
         value: sql.SqlExpr,
-        **changes: str | bool | pc.Option[Callable[[str], str]],
+        **changes: str | bool | ExprKind | pc.Option[Callable[[str], str]],
     ) -> Self:
         return self._new(value, pc.Some(replace(self.meta, **changes)))
 
-    def _as_window(
-        self, expr: sql.SqlExpr, *, is_scalar_like: bool | None = None
-    ) -> Self:
-        return self._with_meta(
-            expr,
-            has_window=True,
-            is_scalar_like=pc.Option(is_scalar_like).unwrap_or(
-                self.meta.is_scalar_like
-            ),
-        )
+    def _as_window(self, expr: sql.SqlExpr) -> Self:
+        return self._with_meta(expr, kind=ExprKind.WINDOW)
 
     def _as_scalar(self, expr: sql.SqlExpr) -> Self:
-        return self._with_meta(expr, is_scalar_like=True)
+        return self._with_meta(expr, kind=ExprKind.SCALAR)
 
     def _reversed(self, expr: sql.SqlExpr, *, reverse: bool = False) -> Self:
         match reverse:
@@ -448,7 +440,7 @@ class Expr(sql.CoreHandler[sql.SqlExpr]):
 
     def unique(self) -> Self:
         """Get unique values."""
-        return self._with_meta(self.inner(), is_unique_projection=True)
+        return self._with_meta(self.inner(), kind=ExprKind.UNIQUE)
 
     def is_close(
         self,
