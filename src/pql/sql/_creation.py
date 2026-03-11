@@ -64,14 +64,9 @@ def from_query(query: str, **relations: IntoRel) -> duckdb.DuckDBPyRelation:
         return cast(duckdb.DuckDBPyRelation, namespace["relation"])
 
     return (
-        pc.Dict(relations)
-        .then(
-            lambda d: (
-                d.items().iter().map_star(lambda k, v: (k, frame_init_into_duckdb(v)))
-            )
-        )
-        .map(_as_namespace)
-        .expect(_QRY_ERR)
+        pc.Iter(relations.items())
+        .map_star(lambda k, v: (k, frame_init_into_duckdb(v)))
+        .into(_as_namespace)
     )
 
 
