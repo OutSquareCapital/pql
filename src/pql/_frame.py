@@ -222,13 +222,8 @@ class LazyFrame(sql.CoreHandler[sql.SqlFrame]):
             .chain(
                 pc.Option(constraints)
                 .map(
-                    lambda mapping: (
-                        pc.Dict.from_ref(mapping)
-                        .items()
-                        .iter()
-                        .map_star(
-                            lambda name, value: sql.col(name).eq(sql.into_expr(value))
-                        )
+                    lambda mapping: pc.Iter(mapping.items()).map_star(
+                        lambda name, value: sql.col(name).eq(sql.into_expr(value))
                     )
                 )
                 .unwrap_or_else(pc.Iter[sql.SqlExpr].new)
@@ -287,12 +282,7 @@ class LazyFrame(sql.CoreHandler[sql.SqlFrame]):
                 case _:
                     return sql.into_expr(value, as_col=True)
 
-        named = (
-            pc.Dict.from_ref(named_exprs)
-            .items()
-            .iter()
-            .map_star(lambda k, v: _resolve(v).alias(k))
-        )
+        named = pc.Iter(named_exprs.items()).map_star(lambda k, v: _resolve(v).alias(k))
         return (
             try_chain(exprs, more_exprs)
             .map(_resolve)

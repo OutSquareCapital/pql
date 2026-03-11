@@ -114,9 +114,7 @@ class ExprPlan(PyoIterable[ExprProjection]):
             pc.Option(named_exprs)
             .map(
                 lambda mapping: (
-                    pc.Dict.from_ref(mapping)
-                    .items()
-                    .iter()
+                    pc.Iter(mapping.items())
                     .map_star(
                         lambda k, v: _resolve_projection(
                             schema, v, alias_override=pc.Some(k)
