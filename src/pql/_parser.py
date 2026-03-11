@@ -46,7 +46,7 @@ def _try_import[T](importer: Callable[[], T]) -> pc.Option[T]:  # pragma: no cov
 
 
 @cache
-def _colorizer() -> Callable[[str, Themes], None]:
+def _colorizer() -> Callable[[str, Themes], None]:  # pragma: no cover
     from rich.console import Console
     from rich.syntax import Syntax
 
@@ -62,7 +62,7 @@ def format_sql(qry: str) -> str:
     return _try_import(_formatter).map(lambda sp: sp(qry)).unwrap_or(qry)
 
 
-def show_sql(qry: str, theme: Themes) -> None:
+def show_sql(qry: str, theme: Themes) -> None:  # pragma: no cover
     return (
         _try_import(_colorizer)
         .map(lambda printer: printer(qry, theme))
