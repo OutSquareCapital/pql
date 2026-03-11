@@ -3,7 +3,7 @@ from __future__ import annotations
 from collections.abc import Callable, Iterator
 from dataclasses import dataclass, field, replace
 from enum import IntEnum, auto
-from typing import TYPE_CHECKING, Self, override
+from typing import TYPE_CHECKING, NamedTuple, Self, override
 
 import pyochain as pc
 from pyochain.traits import PyoCollection, PyoIterable
@@ -47,11 +47,6 @@ class ExprMeta:
     def is_scalar_select(self) -> bool:
         return self.kind == ExprKind.SCALAR
 
-    def from_projection(self, output_name: str) -> Self:
-        return replace(
-            self, root_name=output_name, alias_name=pc.NONE, expansion=pc.NONE
-        )
-
     def resolve_output_names(
         self, base_names: pc.traits.PyoCollection[str], forced_name: pc.Option[str]
     ) -> pc.traits.PyoCollection[str]:
@@ -85,34 +80,31 @@ class ExprMeta:
         return replace(self, alias_name=pc.NONE)
 
 
-@dataclass(slots=True)
-class ExprProjection:
+class ResolvedExpr(NamedTuple):
+    """A fully resolved expression ready for SQL emission."""
+
     expr: sql.SqlExpr
-    meta: ExprMeta
+    name: str
+    kind: ExprKind
 
     def implode_or_scalar(self) -> sql.SqlExpr:
-        name = self.meta.root_name
         return (
-            self.expr.alias(name)
-            if self.meta.is_scalar_select
-            else self.expr.implode().alias(name)
+            self.expr.alias(self.name)
+            if self.kind == ExprKind.SCALAR
+            else self.expr.implode().alias(self.name)
         )
 
     def as_aliased(self) -> sql.SqlExpr:
-        return self.expr.alias(self.meta.root_name)
+        return self.expr.alias(self.name)
 
     def as_unique(self) -> str:
         base_sql = str(self.expr)
-        return (
-            base_sql
-            if self.meta.root_name == base_sql
-            else f"{base_sql} AS {self.meta.root_name}"
-        )
+        return base_sql if self.name == base_sql else f"{base_sql} AS {self.name}"
 
 
 @dataclass(slots=True)
-class ExprPlan(PyoIterable[ExprProjection]):
-    projections: pc.Seq[ExprProjection]
+class ExprPlan(PyoIterable[ResolvedExpr]):
+    projections: pc.Seq[ResolvedExpr]
 
     @classmethod
     def from_inputs(
@@ -134,7 +126,7 @@ class ExprPlan(PyoIterable[ExprProjection]):
                     .flatten()
                 )
             )
-            .unwrap_or_else(pc.Iter[ExprProjection].new)
+            .unwrap_or_else(pc.Iter[ResolvedExpr].new)
         )
         return cls(
             exprs.flat_map(lambda value: _resolve_projection(schema, value))
@@ -143,26 +135,26 @@ class ExprPlan(PyoIterable[ExprProjection]):
         )
 
     @override
-    def __iter__(self) -> Iterator[ExprProjection]:
+    def __iter__(self) -> Iterator[ResolvedExpr]:
         return iter(self.projections)
 
     def aliased_sql(self) -> pc.Iter[sql.SqlExpr]:
-        return self.iter().map(lambda p: p.as_aliased())
+        return self.iter().map(ResolvedExpr.as_aliased)
 
     def as_unique(self) -> pc.Iter[str]:
-        return self.iter().map(lambda p: p.as_unique())
+        return self.iter().map(ResolvedExpr.as_unique)
 
     def to_updates(self) -> pc.Dict[str, sql.SqlExpr]:
-        return self.iter().map(lambda p: (p.meta.root_name, p.expr)).collect(pc.Dict)
+        return self.iter().map(lambda r: (r.name, r.expr)).collect(pc.Dict)
 
     def is_scalar_select(self) -> bool:
-        return self.all(lambda p: p.meta.is_scalar_select)
+        return self.all(lambda r: r.kind == ExprKind.SCALAR)
 
     def has_scalar(self) -> bool:
-        return self.any(lambda p: p.meta.is_scalar_select)
+        return self.any(lambda r: r.kind == ExprKind.SCALAR)
 
     def can_use_unique(self) -> bool:
-        return self.all(lambda p: p.meta.kind == ExprKind.UNIQUE)
+        return self.all(lambda r: r.kind == ExprKind.UNIQUE)
 
     def as_result(self) -> pc.Option[Self]:
         """Return `Some(self)` if non-empty, `NONE` otherwise.
@@ -203,16 +195,17 @@ class ExprPlan(PyoIterable[ExprProjection]):
 
 def _resolve_projection(
     schema: Schema, value: IntoExpr, *, alias_override: pc.Option[str] = pc.NONE
-) -> pc.Iter[ExprProjection]:
+) -> pc.Iter[ResolvedExpr]:
     from ._expr import Expr
 
-    into_proj = pc.Iter[ExprProjection].once
+    into_resolved = pc.Iter[ResolvedExpr].once
     match value:
         case Expr() as expr:
             base_names = expr.meta.expansion.map(
                 lambda exp: exp.resolver(schema)
             ).unwrap_or_else(lambda: pc.Seq((expr.meta.root_name,)))
             output_names = expr.meta.resolve_output_names(base_names, alias_override)
+            kind = expr.meta.kind
             match expr.meta.is_multi and alias_override.is_none():
                 case True:
                     transform = expr.meta.expansion.unwrap().transform
@@ -220,27 +213,16 @@ def _resolve_projection(
                         base_names.iter()
                         .zip(output_names)
                         .map_star(
-                            lambda column_name, output_name: ExprProjection(
-                                transform(sql.col(column_name)),
-                                expr.meta.from_projection(output_name),
+                            lambda column_name, output_name: ResolvedExpr(
+                                transform(sql.col(column_name)), output_name, kind
                             )
                         )
                     )
                 case False:
-                    return into_proj(
-                        ExprProjection(
-                            expr.inner(),
-                            expr.meta.from_projection(output_names.first()),
-                        )
+                    return into_resolved(
+                        ResolvedExpr(expr.inner(), output_names.first(), kind)
                     )
         case _:
             resolved = sql.into_expr(value, as_col=True)
-            resolved_meta = ExprMeta(resolved.inner().get_name())
-            return into_proj(
-                ExprProjection(
-                    resolved,
-                    resolved_meta.from_projection(
-                        alias_override.unwrap_or(resolved_meta.root_name)
-                    ),
-                )
-            )
+            output_name = alias_override.unwrap_or(resolved.inner().get_name())
+            return into_resolved(ResolvedExpr(resolved, output_name, kind=ExprKind.ROW))
