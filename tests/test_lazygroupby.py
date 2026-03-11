@@ -176,3 +176,168 @@ def test_agg_all_exclude(sample_df: pl.DataFrame) -> None:
         .sort("department")
         .collect(),
     )
+
+
+def test_agg_multi_key(sample_df: pl.DataFrame) -> None:
+    assert_eq(
+        pql.LazyFrame(sample_df)
+        .group_by("department", "sex")
+        .agg(
+            pql.col("salary").mean().alias("mean_salary"),
+            pql.col("age").max().alias("max_age"),
+        )
+        .sort("department", "sex")
+        .collect(),
+        sample_df.lazy()
+        .group_by("department", "sex")
+        .agg(
+            pl.col("salary").mean().alias("mean_salary"),
+            pl.col("age").max().alias("max_age"),
+        )
+        .sort("department", "sex")
+        .collect(),
+    )
+
+
+def test_agg_multi_exprs(sample_df: pl.DataFrame) -> None:
+    assert_eq(
+        pql.LazyFrame(sample_df)
+        .group_by("department")
+        .agg(
+            pql.col("salary").mean().alias("mean_salary"),
+            pql.col("salary").sum().alias("sum_salary"),
+            pql.col("id").count().alias("n"),
+        )
+        .sort("department")
+        .collect(),
+        sample_df.lazy()
+        .group_by("department")
+        .agg(
+            pl.col("salary").mean().alias("mean_salary"),
+            pl.col("salary").sum().alias("sum_salary"),
+            pl.col("id").count().alias("n"),
+        )
+        .sort("department")
+        .collect(),
+    )
+
+
+def test_agg_named_exprs(sample_df: pl.DataFrame) -> None:
+    assert_eq(
+        pql.LazyFrame(sample_df)
+        .group_by("department")
+        .agg(
+            mean_salary=pql.col("salary").mean(),
+            n=pql.col("id").count(),
+        )
+        .sort("department")
+        .collect(),
+        sample_df.lazy()
+        .group_by("department")
+        .agg(
+            mean_salary=pl.col("salary").mean(),
+            n=pl.col("id").count(),
+        )
+        .sort("department")
+        .collect(),
+    )
+
+
+def test_drop_null_keys(sample_df: pl.DataFrame) -> None:
+    # category has one null row — drop_null_keys must exclude it before grouping
+    assert_eq(
+        pql.LazyFrame(sample_df)
+        .group_by("category", drop_null_keys=True)
+        .agg(pql.col("salary").mean().alias("mean_salary"))
+        .sort("category")
+        .collect(),
+        sample_df.lazy()
+        .filter(pl.col("category").is_not_null())
+        .group_by("category")
+        .agg(pl.col("salary").mean().alias("mean_salary"))
+        .sort("category")
+        .collect(),
+    )
+
+
+def test_agg_count_nulls(sample_df: pl.DataFrame) -> None:
+    # count skips nulls (value has nulls); n_unique on null-free salary agrees across backends
+    assert_eq(
+        pql.LazyFrame(sample_df)
+        .group_by("department")
+        .agg(
+            pql.col("value").count().alias("n_values"),
+            pql.col("salary").n_unique().alias("n_unique_salary"),
+        )
+        .sort("department")
+        .collect(),
+        sample_df.lazy()
+        .group_by("department")
+        .agg(
+            pl.col("value").count().alias("n_values"),
+            pl.col("salary").n_unique().alias("n_unique_salary"),
+        )
+        .sort("department")
+        .collect(),
+    )
+
+
+def test_agg_std_var(sample_df: pl.DataFrame) -> None:
+    assert_eq(
+        pql.LazyFrame(sample_df)
+        .group_by("department")
+        .agg(
+            pql.col("salary").std().alias("std_salary"),
+            pql.col("salary").var().alias("var_salary"),
+        )
+        .sort("department")
+        .collect(),
+        sample_df.lazy()
+        .group_by("department")
+        .agg(
+            pl.col("salary").std().alias("std_salary"),
+            pl.col("salary").var().alias("var_salary"),
+        )
+        .sort("department")
+        .collect(),
+    )
+
+
+def test_group_by_rollup() -> None:
+    df = pl.DataFrame({"dept": ["A", "A", "B"], "val": [10, 20, 30]})
+    result = (
+        pql.LazyFrame(df)
+        .group_by("dept", strategy="ROLLUP")
+        .agg(pql.col("val").sum().alias("total"))
+        .sort("dept", nulls_last=True)
+        .collect()
+    )
+    # ROLLUP(dept): (A, 30), (B, 30), (NULL, 60)
+    assert_eq(
+        result,
+        pl.DataFrame({"dept": ["A", "B", None], "total": [30, 30, 60]}),
+    )
+
+
+def test_group_by_cube() -> None:
+    df = pl.DataFrame(
+        {"dept": ["A", "A", "B"], "cat": ["X", "X", "Y"], "val": [10, 20, 30]}
+    )
+    result = (
+        pql.LazyFrame(df)
+        .group_by("dept", "cat", strategy="CUBE")
+        .agg(pql.col("val").sum().alias("total"))
+        .collect()
+    )
+    # CUBE(dept, cat): (A,X), (A,None), (B,Y), (B,None), (None,X), (None,Y), (None,None)
+    assert result.height == 7
+    assert (
+        result.filter(pl.col("dept").is_null().and_(pl.col("cat").is_null())).height
+        == 1
+    )
+    assert (
+        result.filter(pl.col("dept").is_null().and_(pl.col("cat").is_null()))
+        .get_column("total")
+        .first()
+        == 60
+    )

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import re
 from abc import ABC, abstractmethod
-from collections.abc import Callable, Collection, Iterable
+from collections.abc import Callable
 from dataclasses import dataclass, replace
 from enum import IntEnum
 from functools import partial
@@ -16,7 +16,7 @@ from . import _datatypes as dt, sql  # pyright: ignore[reportPrivateUsage]
 from ._computations import fill_nulls
 from ._meta import ExprMeta, ExprPlan
 from ._schema import Schema
-from .sql.utils import try_chain, try_iter
+from .sql.utils import TryIter, try_chain, try_iter
 
 if TYPE_CHECKING:
     from ._datatypes import DataType
@@ -340,7 +340,7 @@ class Expr(sql.CoreHandler[sql.SqlExpr]):
         """Cast to a different data type."""
         return self._new(self.inner().cast(dtype.raw.to_duckdb()))
 
-    def is_in(self, other: Collection[IntoExpr] | IntoExpr) -> Self:
+    def is_in(self, other: TryIter[IntoExpr]) -> Self:
         """Check if value is in an iterable of values."""
         return self._new(self.inner().is_in(*try_iter(other)))
 
@@ -659,9 +659,9 @@ class Expr(sql.CoreHandler[sql.SqlExpr]):
 
     def over(
         self,
-        partition_by: IntoExpr | Iterable[IntoExpr] | None,
+        partition_by: TryIter[IntoExpr] | None,
         *more_exprs: IntoExpr,
-        order_by: IntoExpr | Iterable[IntoExpr] | None = None,
+        order_by: TryIter[IntoExpr] | None = None,
         descending: bool = False,
         nulls_last: bool = False,
     ) -> Self:
@@ -1363,10 +1363,7 @@ class ExprStructNameSpace(ExprNameSpaceBase):
         return self._new(self.inner().to_json())
 
     def with_fields(
-        self,
-        exprs: IntoExpr | Iterable[IntoExpr],
-        *more_exprs: IntoExpr,
-        **named_exprs: IntoExpr,
+        self, exprs: TryIter[IntoExpr], *more_exprs: IntoExpr, **named_exprs: IntoExpr
     ) -> Expr:
         """Return a new struct with updated or additional fields."""
         return (

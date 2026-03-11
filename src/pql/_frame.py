@@ -26,6 +26,7 @@ if TYPE_CHECKING:
     from ._typing import (
         AsofJoinStrategy,
         FillNullStrategy,
+        GroupByClause,
         JoinKeysRes,
         JoinStrategy,
         PivotAgg,
@@ -237,9 +238,10 @@ class LazyFrame(sql.CoreHandler[sql.SqlFrame]):
 
     def group_by(
         self,
-        keys: TryIter[IntoExpr],
+        keys: TryIter[IntoExpr] = (),
         *more_keys: IntoExpr,
         drop_null_keys: bool = False,
+        strategy: GroupByClause | None = None,
     ) -> LazyGroupBy:
         """Start a group by operation."""
         from ._groupby import LazyGroupBy
@@ -254,7 +256,19 @@ class LazyFrame(sql.CoreHandler[sql.SqlFrame]):
             if drop_null_keys
             else self
         )
-        return LazyGroupBy(grouped_frame, key_exprs)
+
+        def _group_strat(strat: pc.Option[str]) -> pc.Option[str]:
+            match strat:
+                case pc.Some(s):
+                    return pc.Some(f"{s} ({key_exprs.iter().map(str).join(', ')})")
+                case _:
+                    return strat
+
+        return LazyGroupBy(
+            grouped_frame,
+            key_exprs,
+            group_expr=pc.Option(strategy).into(_group_strat),
+        )
 
     def sort(
         self,

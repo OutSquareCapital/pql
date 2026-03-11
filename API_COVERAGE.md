@@ -115,7 +115,7 @@ Each summary cell is `global (Narwhals, Polars)`.
 - `group_by` (nw)
   - **Narwhals**: (*keys: IntoExpr | Iterable[IntoExpr], drop_null_keys: bool) -> LazyGroupBy[Self]
   - **Polars**: (`*by: IntoExpr | Iterable[IntoExpr]`, `maintain_order: bool`, `**named_by: IntoExpr`) -> LazyGroupBy
-  - **pql**: (keys: TryIter[IntoExpr], `*more_keys: IntoExpr`, drop_null_keys: bool) -> LazyGroupBy
+  - **pql**: (keys: TryIter[IntoExpr], `*more_keys: IntoExpr`, drop_null_keys: bool, `strategy: GroupByClause | None`) -> LazyGroupBy
 - `join` (nw)
   - **Narwhals**: (other: Self, `on: str | list[str] | None`, how: JoinStrategy, `left_on: str | list[str] | None`, `right_on: str | list[str] | None`, suffix: str) -> Self
   - **Polars**: (other: LazyFrame, `on: str | Expr | Sequence[str | Expr] | None`, how: JoinStrategy, `left_on: str | Expr | Sequence[str | Expr] | None`, `right_on: str | Expr | Sequence[str | Expr] | None`, suffix: str, `validate: JoinValidation`, `nulls_equal: bool`, `coalesce: bool | None`, `maintain_order: MaintainOrderJoin | None`, allow_parallel: bool, force_parallel: bool) -> LazyFrame
@@ -390,7 +390,7 @@ Each summary cell is `global (Narwhals, Polars)`.
 - `over` (nw)
   - **Narwhals**: (`*partition_by: str | Sequence[str]`, `order_by: str | Sequence[str] | None`) -> Self
   - **Polars**: (partition_by: IntoExpr | Iterable[IntoExpr] | None, *more_exprs: IntoExpr, order_by: IntoExpr | Iterable[IntoExpr] | None, descending: bool, nulls_last: bool, `mapping_strategy: WindowMappingStrategy`) -> Expr
-  - **pql**: (`partition_by: IntoExpr | Iterable[IntoExpr] | None`, `*more_exprs: IntoExpr`, `order_by: IntoExpr | Iterable[IntoExpr] | None`, `descending: bool`, `nulls_last: bool`) -> Self
+  - **pql**: (`partition_by: TryIter[IntoExpr] | None`, `*more_exprs: IntoExpr`, `order_by: TryIter[IntoExpr] | None`, `descending: bool`, `nulls_last: bool`) -> Self
 - `pct_change` (pl)
   - **Polars***: (`n: int | IntoExprColumn`) -> Expr
   - **pql**: (`n: int`) -> Self

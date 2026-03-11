@@ -20,7 +20,9 @@ if TYPE_CHECKING:
 class LazyGroupBy:
     __slots__ = ("_agg_schema", "_frame", "_group_expr", "_keys")
 
-    def __init__(self, frame: LazyFrame, keys: pc.Seq[sql.SqlExpr]) -> None:
+    def __init__(
+        self, frame: LazyFrame, keys: pc.Seq[sql.SqlExpr], group_expr: pc.Option[str]
+    ) -> None:
         self._frame = frame
         self._keys = keys
         keys_names = keys.iter().map(sql.SqlExpr.get_name).collect(pc.Set)
@@ -30,7 +32,9 @@ class LazyGroupBy:
             .filter_star(lambda name, _: name not in keys_names)
             .collect(Schema)
         )
-        self._group_expr = keys.iter().map(str).join(", ")
+        self._group_expr = group_expr.unwrap_or_else(
+            lambda: keys.iter().map(str).join(", ")
+        )
 
     def _agg_columns(self, func: Callable[[Expr], Expr]) -> LazyFrame:
 
@@ -77,7 +81,7 @@ class LazyGroupBy:
         )
 
     def agg(
-        self, aggs: TryIter[IntoExpr], *more_aggs: IntoExpr, **named_aggs: IntoExpr
+        self, aggs: TryIter[IntoExpr] = (), *more_aggs: IntoExpr, **named_aggs: IntoExpr
     ) -> LazyFrame:
         plan = (
             self._agg_schema.into(

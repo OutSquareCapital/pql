@@ -17,3 +17,4 @@ type FillNullStrategy = Literal[
 ]
 type PivotAgg = Literal["min", "max", "first", "last", "sum", "mean", "median", "count"]
 type JoinKeysRes[T: pc.Seq[str] | str] = pc.Result[JoinKeys[T], ValueError]
+type GroupByClause = Literal["ROLLUP", "CUBE"]
