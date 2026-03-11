@@ -270,6 +270,37 @@ class LazyFrame(sql.CoreHandler[sql.SqlFrame]):
             group_expr=pc.Option(strategy).into(_group_strat),
         )
 
+    def group_by_all(
+        self,
+        exprs: TryIter[IntoExpr] = (),
+        *more_exprs: IntoExpr,
+        **named_exprs: IntoExpr,
+    ) -> Self:
+        """Aggregate with GROUP BY ALL — DuckDB auto-detects grouping keys."""
+
+        def _resolve(value: IntoExpr) -> sql.SqlExpr:
+            match value:
+                case Expr() as expr:
+                    return expr.meta.alias_name.map(
+                        lambda fn: expr.inner().alias(fn(expr.meta.root_name))
+                    ).unwrap_or_else(expr.inner)
+                case _:
+                    return sql.into_expr(value, as_col=True)
+
+        named = (
+            pc.Dict.from_ref(named_exprs)
+            .items()
+            .iter()
+            .map_star(lambda k, v: _resolve(v).alias(k))
+        )
+        return (
+            try_chain(exprs, more_exprs)
+            .map(_resolve)
+            .chain(named)
+            .into(self.inner().aggregate, "ALL")
+            .pipe(self._new)
+        )
+
     def sort(
         self,
         by: TryIter[IntoExpr],

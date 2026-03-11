@@ -341,3 +341,77 @@ def test_group_by_cube() -> None:
         .first()
         == 60
     )
+
+
+def test_group_by_all_basic() -> None:
+    df = pl.DataFrame({"dept": ["A", "A", "B"], "val": [10, 20, 30]})
+    assert_eq(
+        pql.LazyFrame(df)
+        .group_by_all("dept", pql.col("val").sum().alias("total"))
+        .sort("dept")
+        .collect(),
+        df.lazy()
+        .group_by("dept")
+        .agg(pl.col("val").sum().alias("total"))
+        .sort("dept")
+        .collect(),
+    )
+
+
+def test_group_by_all_multi_key(sample_df: pl.DataFrame) -> None:
+    assert_eq(
+        pql.LazyFrame(sample_df)
+        .group_by_all(
+            "department",
+            "sex",
+            pql.col("salary").mean().alias("mean_salary"),
+            pql.col("age").max().alias("max_age"),
+        )
+        .sort("department", "sex")
+        .collect(),
+        sample_df.lazy()
+        .group_by("department", "sex")
+        .agg(
+            pl.col("salary").mean().alias("mean_salary"),
+            pl.col("age").max().alias("max_age"),
+        )
+        .sort("department", "sex")
+        .collect(),
+    )
+
+
+def test_group_by_all_multi_agg(sample_df: pl.DataFrame) -> None:
+    assert_eq(
+        pql.LazyFrame(sample_df)
+        .group_by_all(
+            "department",
+            pql.col("salary").mean().alias("avg_salary"),
+            pql.col("salary").sum().alias("sum_salary"),
+            pql.col("id").count().alias("n"),
+        )
+        .sort("department")
+        .collect(),
+        sample_df.lazy()
+        .group_by("department")
+        .agg(
+            pl.col("salary").mean().alias("avg_salary"),
+            pl.col("salary").sum().alias("sum_salary"),
+            pl.col("id").count().alias("n"),
+        )
+        .sort("department")
+        .collect(),
+    )
+
+
+def test_group_by_all_named_exprs(sample_df: pl.DataFrame) -> None:
+    assert_eq(
+        pql.LazyFrame(sample_df)
+        .group_by_all("department", mean_salary=pql.col("salary").mean())
+        .sort("department")
+        .collect(),
+        sample_df.lazy()
+        .group_by("department")
+        .agg(mean_salary=pl.col("salary").mean())
+        .sort("department")
+        .collect(),
+    )
