@@ -23,20 +23,25 @@ class ExprKind(IntEnum):
 
 
 @dataclass(slots=True)
+class MultiExpansion:
+    """How a multi-column expression expands: resolve column names, then transform each."""
+
+    resolver: ColumnResolver
+    transform: Callable[[sql.SqlExpr], sql.SqlExpr]
+
+
+@dataclass(slots=True)
 class ExprMeta:
     """Metadata for expressions, used for tracking properties that affect query generation."""
 
     root_name: str
     alias_name: pc.Option[Callable[[str], str]] = field(default_factory=lambda: pc.NONE)
     kind: ExprKind = ExprKind.ROW
-    column_resolver: pc.Option[ColumnResolver] = field(default_factory=lambda: pc.NONE)
-    multi_agg: pc.Option[Callable[[sql.SqlExpr], sql.SqlExpr]] = field(
-        default_factory=lambda: pc.NONE
-    )
+    expansion: pc.Option[MultiExpansion] = field(default_factory=lambda: pc.NONE)
 
     @property
     def is_multi(self) -> bool:
-        return self.column_resolver.is_some()
+        return self.expansion.is_some()
 
     @property
     def is_scalar_select(self) -> bool:
@@ -44,7 +49,7 @@ class ExprMeta:
 
     def from_projection(self, output_name: str) -> Self:
         return replace(
-            self, root_name=output_name, alias_name=pc.NONE, column_resolver=pc.NONE
+            self, root_name=output_name, alias_name=pc.NONE, expansion=pc.NONE
         )
 
     def resolve_output_names(
@@ -204,20 +209,19 @@ def _resolve_projection(
     into_proj = pc.Iter[ExprProjection].once
     match value:
         case Expr() as expr:
-            base_names = expr.meta.column_resolver.map(
-                lambda resolver: resolver(schema)
+            base_names = expr.meta.expansion.map(
+                lambda exp: exp.resolver(schema)
             ).unwrap_or_else(lambda: pc.Seq((expr.meta.root_name,)))
             output_names = expr.meta.resolve_output_names(base_names, alias_override)
             match expr.meta.is_multi and alias_override.is_none():
                 case True:
+                    transform = expr.meta.expansion.unwrap().transform
                     return (
                         base_names.iter()
                         .zip(output_names)
                         .map_star(
                             lambda column_name, output_name: ExprProjection(
-                                expr.meta.multi_agg.map(
-                                    lambda agg: sql.col(column_name).pipe(agg)
-                                ).unwrap_or(sql.col(column_name)),
+                                transform(sql.col(column_name)),
                                 expr.meta.from_projection(output_name),
                             )
                         )

@@ -4,7 +4,7 @@ import pyochain as pc
 
 from . import sql
 from ._expr import Expr
-from ._meta import ExprKind, ExprMeta
+from ._meta import ExprKind, ExprMeta, MultiExpansion
 from .selectors import all_columns_resolver, exclude_resolver, fixed_resolver
 from .sql.typing import IntoExpr, IntoExprColumn, PythonLiteral
 from .sql.utils import TryIter, try_iter
@@ -42,8 +42,7 @@ def _agg_expr(
             ExprMeta(
                 cols.then(lambda c: c.first()).unwrap_or("all"),
                 kind=ExprKind.SCALAR,
-                column_resolver=pc.Some(resolver),
-                multi_agg=pc.Some(agg),
+                expansion=pc.Some(MultiExpansion(resolver, agg)),
             )
         ),
     )
@@ -93,7 +92,13 @@ def all(exclude: Iterable[IntoExprColumn] | None = None) -> Expr:
         .unwrap_or(all_columns_resolver)
     )
     return Expr(
-        inner, pc.Some(ExprMeta(inner.get_name(), column_resolver=pc.Some(resolver)))
+        inner,
+        pc.Some(
+            ExprMeta(
+                inner.get_name(),
+                expansion=pc.Some(MultiExpansion(resolver, lambda col: col)),
+            )
+        ),
     )
 
 

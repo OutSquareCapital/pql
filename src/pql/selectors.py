@@ -12,7 +12,7 @@ import pyochain as pc
 
 from . import _datatypes as dt, sql  # pyright: ignore[reportPrivateUsage]
 from ._expr import Expr
-from ._meta import ExprMeta
+from ._meta import ExprMeta, MultiExpansion
 
 if TYPE_CHECKING:
     from ._schema import ColumnResolver, Schema
@@ -102,21 +102,25 @@ class Selector(Expr):
     def __from_resolver__(cls, resolver: ColumnResolver) -> Self:
         meta = ExprMeta(
             _SENTINEL,
-            column_resolver=pc.Some(resolver),
-            multi_agg=pc.Some(
-                lambda col: _replay_transform(str(_SENTINEL_COL), str(col))
+            expansion=pc.Some(
+                MultiExpansion(
+                    resolver,
+                    lambda col: _replay_transform(str(_SENTINEL_COL), str(col)),
+                )
             ),
         )
         return cls(_SENTINEL_COL, pc.Some(meta))
 
     @override
     def _new(self, value: sql.SqlExpr, meta: pc.Option[ExprMeta] = pc.NONE) -> Self:
-        """Preserve column_resolver and build a transform from the sentinel-based SQL."""
-        new_meta = replace(
-            meta.unwrap_or(self.meta),
-            column_resolver=self.meta.column_resolver,
-            multi_agg=pc.Some(lambda col: _replay_transform(str(value), str(col))),  # pyright: ignore[reportUnknownArgumentType, reportUnknownLambdaType]
+        """Preserve expansion resolver and build a transform from the sentinel-based SQL."""
+        new_expansion = self.meta.expansion.map(
+            lambda exp: MultiExpansion(
+                exp.resolver,
+                lambda col: _replay_transform(str(value), str(col)),
+            )
         )
+        new_meta = replace(meta.unwrap_or(self.meta), expansion=new_expansion)
         return self.__class__(value, pc.Some(new_meta))
 
     @overload
@@ -128,8 +132,8 @@ class Selector(Expr):
             case Selector() if self.meta.is_multi and other.meta.is_multi:
                 return Selector.__from_resolver__(
                     _union_resolver(
-                        self.meta.column_resolver.unwrap(),
-                        other.meta.column_resolver.unwrap(),
+                        self.meta.expansion.unwrap().resolver,
+                        other.meta.expansion.unwrap().resolver,
                     )
                 )
             case _:
@@ -152,8 +156,8 @@ class Selector(Expr):
             case Selector() if self.meta.is_multi and other.meta.is_multi:
                 return Selector.__from_resolver__(
                     _intersection_resolver(
-                        self.meta.column_resolver.unwrap(),
-                        other.meta.column_resolver.unwrap(),
+                        self.meta.expansion.unwrap().resolver,
+                        other.meta.expansion.unwrap().resolver,
                     )
                 )
             case _:
@@ -176,8 +180,8 @@ class Selector(Expr):
             case Selector() if self.meta.is_multi and other.meta.is_multi:
                 return Selector.__from_resolver__(
                     _difference_resolver(
-                        self.meta.column_resolver.unwrap(),
-                        other.meta.column_resolver.unwrap(),
+                        self.meta.expansion.unwrap().resolver,
+                        other.meta.expansion.unwrap().resolver,
                     )
                 )
             case _:
@@ -193,7 +197,7 @@ class Selector(Expr):
 
     def complement(self) -> Selector:
         return Selector.__from_resolver__(
-            _complement_resolver(self.meta.column_resolver.unwrap())
+            _complement_resolver(self.meta.expansion.unwrap().resolver)
         )
 
     @override

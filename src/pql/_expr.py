@@ -82,9 +82,7 @@ class Expr(sql.CoreHandler[sql.SqlExpr]):
     def _new(self, value: sql.SqlExpr, meta: pc.Option[ExprMeta] = pc.NONE) -> Self:
         return self.__class__(
             value,
-            pc.Some(
-                meta.unwrap_or_else(lambda: replace(self.meta, column_resolver=pc.NONE))
-            ),
+            pc.Some(meta.unwrap_or_else(lambda: replace(self.meta, expansion=pc.NONE))),
         )
 
     def _with_meta(
