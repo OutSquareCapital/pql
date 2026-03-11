@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Callable
+from functools import partial
 from typing import TYPE_CHECKING, final
 
 import pyochain as pc
@@ -18,7 +19,7 @@ if TYPE_CHECKING:
 
 @final
 class LazyGroupBy:
-    __slots__ = ("_agg_schema", "_frame", "_group_expr", "_keys")
+    __slots__ = ("_agg_schema", "_aggregator", "_frame", "_keys")
 
     def __init__(
         self, frame: LazyFrame, keys: pc.Seq[sql.SqlExpr], group_expr: pc.Option[str]
@@ -32,8 +33,11 @@ class LazyGroupBy:
             .filter_star(lambda name, _: name not in keys_names)
             .collect(Schema)
         )
-        self._group_expr = group_expr.unwrap_or_else(
-            lambda: keys.iter().map(str).join(", ")
+        self._aggregator = partial(
+            self._frame.inner().aggregate,
+            group_expr=group_expr.unwrap_or_else(
+                lambda: keys.iter().map(str).join(", ")
+            ),
         )
 
     def _agg_columns(self, func: Callable[[Expr], Expr]) -> LazyFrame:
@@ -94,6 +98,6 @@ class LazyGroupBy:
         return (
             self._keys.iter()
             .chain(plan)
-            .into(self._frame.inner().aggregate, self._group_expr)
+            .into(self._aggregator)
             .pipe(self._frame.__class__)
         )
