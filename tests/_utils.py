@@ -1,127 +1,63 @@
-from collections.abc import Iterable
-from datetime import date, datetime, time
+from collections.abc import Callable, Iterable
+from types import TracebackType
 
-import duckdb
 import narwhals as nw
 import polars as pl
+import pyochain as pc
 from polars.testing import assert_frame_equal
 
 import pql
 
-nan = float("nan")
-
-_DATA = {
-    "a": [True, False, True, None, True, False],
-    "b": [True, True, False, None, True, False],
-    "x": [-10, 2, -3, 5, -10, 20],
-    "uint": [1, 2, 3, None, 1, 2],
-    "enum": ["foo", "bar", "baz", None, "foo", "bar"],
-    "float_vals": [1.3652, 2.7525, 3.7314, None, 1.3685, 2.7785],
-    "decimal_vals": [1.3652, 2.7525, 3.7314, None, 1.3685, 2.7785],
-    "n": [None, 3, 1, None, 2, 3],
-    "s": ["1", "2", "3", None, "1", "2"],
-    "age": [25, 30, 35, None, 25, 30],
-    "salary": [50000.0, 60000.0, 70000.0, None, 50000.0, 60000.0],
-    "nested": [[1, 2], [3, 4], [5], None, [1, 2], [3, 4]],
-    "nan_vals": [1.0, nan, 3.0, nan, 5.0, nan],
-    "arr_str_vals": [
-        ["g", "b", "c"],
-        ["a", "b", "a"],
-        ["c", "c", "c"],
-        ["d", "e", "d"],
-        ["g", "b", "c"],
-        ["a", "b", "a"],
-    ],
-    "arr_booleans": [
-        [True, False, True],
-        [True, True, True],
-        [False, False, False],
-        [True, None, True],
-        [True, False, True],
-        [True, True, True],
-    ],
-    "arr_num": [
-        [1, 2, 7, 3],
-        [3, 4, 5, 5],
-        [2, 5, 8, 1],
-        [1, 2, 3, 4],
-        [1, 2, 7, 3],
-        [3, 4, 5, 5],
-    ],
-    "list_num": [
-        [1, 2, 7, 3],
-        [3, 4, 5, 5],
-        [2, 5],
-        [1],
-        [1, 2],
-        [3, 4, 5],
-    ],
-    "list_booleans": [
-        [True, False, True],
-        [True, True],
-        [False],
-        [True, None],
-        [True, True, True, True, True, True, False],
-        [False, False, False, False, False, False, True],
-    ],
-    "list_str_vals": [["g", "b", "c"], ["a", "b"], ["c"], [], ["hello", "world"], [""]],
-    "structs": [
-        {"a": 1, "b": 2, "c": 3, "d": 4},
-        {"a": 5, "b": 6, "c": 7, "d": 8},
-        {"a": 5, "b": 6, "c": 7, "d": 8},
-        {"a": 5, "b": 6, "c": 7, "d": 8},
-        {"a": 5, "b": 6, "c": 7, "d": 8},
-        {"a": 5, "b": 6, "c": 7, "d": 8},
-    ],
-    "d": [
-        date(2024, 1, 1),
-        date(2024, 1, 2),
-        date(2024, 1, 3),
-        date(2024, 1, 4),
-        date(2024, 1, 1),
-        date(2024, 1, 2),
-    ],
-    "dt": [
-        datetime(2024, 1, 1, 10, 30, 15, 123_456),
-        datetime(2024, 1, 2, 11, 45, 30, 1),
-        datetime(2024, 1, 3, 23, 59, 59, 999_001),
-        datetime(2024, 1, 4, 0, 0, 0, 0),
-        datetime(2024, 1, 1, 10, 30, 15, 123_456),
-        datetime(2024, 1, 2, 11, 45, 30, 1),
-    ],
-    "binary": [b"foo", b"bar", b"baz", None, b"foo", b"bar"],
-    "time": [
-        time(10, 30, 15, 123_456),
-        time(11, 45, 30, 1),
-        time(23, 59, 59, 999_001),
-        time(0, 0, 0, 0),
-        time(10, 30, 15, 123_456),
-        time(11, 45, 30, 1),
-    ],
-}
-_SCHEMA = {
-    "uint": pl.UInt16(),
-    "decimal_vals": pl.Decimal(10, 4),
-    "binary": pl.Binary(),
-    "arr_booleans": pl.Array(pl.Boolean, shape=3),
-    "arr_str_vals": pl.Array(pl.String, shape=3),
-    "arr_num": pl.Array(pl.UInt16, shape=4),
-}
-_DF = nw.from_native(
-    pl.DataFrame(_DATA, schema_overrides=_SCHEMA).pipe(duckdb.from_arrow)
-)
+from ._data import sample_df
 
 
-def sample_df() -> nw.LazyFrame[duckdb.DuckDBPyRelation]:
-    return _DF
+def _capture[T](
+    func: Callable[[], T],
+) -> pc.Result[T, tuple[Exception, pc.Option[TracebackType]]]:
+    try:
+        return pc.Ok(func())
+    except Exception as exc:  # noqa: BLE001
+        return pc.Err((exc, pc.Option(exc.__traceback__)))
+
+
+def _with_tb(error: Exception, traceback: pc.Option[TracebackType]) -> Exception:
+    return traceback.map_or(error, error.with_traceback)
+
+
+def _eval_both[T, U](
+    pql_func: Callable[[], T], polars_func: Callable[[], U]
+) -> tuple[T, U]:
+    pql_res = _capture(pql_func)
+    polars_res = _capture(polars_func)
+
+    match (pql_res, polars_res):
+        case (pc.Err((exc, tb)), pc.Ok(_)):
+            exc.add_note("PQL evaluation failed while the reference side succeeded.")
+            raise _with_tb(exc, tb)
+        case (pc.Ok(_), pc.Err((exc, tb))):
+            exc.add_note("Reference evaluation failed while the PQL side succeeded.")
+            raise _with_tb(exc, tb)
+        case (pc.Err((pql_error, pql_tb)), pc.Err((polars_error, polars_tb))):
+            pql_error.add_note("PQL evaluation failed.")
+            polars_error.add_note("Reference evaluation failed.")
+            msg = "Both PQL and reference evaluation failed."
+            raise ExceptionGroup(
+                msg, (_with_tb(pql_error, pql_tb), _with_tb(polars_error, polars_tb))
+            )
+        case _:
+            return pql_res.unwrap(), polars_res.unwrap()
 
 
 def assert_eq(
     pql_exprs: pql.Expr | Iterable[pql.Expr], polars_exprs: nw.Expr | Iterable[nw.Expr]
 ) -> None:
+    pql_df, polars_df = _eval_both(
+        lambda: pql.LazyFrame(sample_df().to_native()).select(pql_exprs).collect(),
+        lambda: sample_df().lazy().select(polars_exprs).to_native().pl(),
+    )
     assert_frame_equal(
-        pql.LazyFrame(sample_df().to_native()).select(pql_exprs).collect(),
-        sample_df().lazy().select(polars_exprs).to_native().pl(),
+        pql_df,
+        polars_df,
         check_dtypes=False,
         check_row_order=False,
     )
@@ -130,18 +66,21 @@ def assert_eq(
 def assert_eq_pl(
     pql_exprs: pql.Expr | Iterable[pql.Expr], polars_exprs: pl.Expr | Iterable[pl.Expr]
 ) -> None:
+    pql_df, polars_df = _eval_both(
+        lambda: pql.LazyFrame(sample_df().to_native()).select(pql_exprs).collect(),
+        lambda: sample_df().to_native().pl(lazy=True).select(polars_exprs).collect(),
+    )
     assert_frame_equal(
-        pql.LazyFrame(sample_df().to_native()).select(pql_exprs).collect(),
-        sample_df().to_native().pl(lazy=True).select(polars_exprs).collect(),
+        pql_df,
+        polars_df,
         check_dtypes=False,
         check_row_order=False,
     )
 
 
 def assert_lf_eq_pl(pql_lf: pql.LazyFrame, polars_lf: pl.LazyFrame) -> None:
-    assert_frame_equal(
-        pql_lf.collect(), polars_lf.collect(), check_dtypes=False, check_row_order=False
-    )
+    pql_df, polars_df = _eval_both(pql_lf.collect, polars_lf.collect)
+    assert_frame_equal(pql_df, polars_df, check_dtypes=False, check_row_order=False)
 
 
 def on_simple_fn(pql_expr: object, pl_expr: object, fn_name: str) -> None:
