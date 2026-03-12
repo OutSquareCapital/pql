@@ -158,7 +158,7 @@ class ExprPlan(PyoSequence[ResolvedExpr]):
     @override
     def __getitem__(
         self,
-        index: int | slice[Any, Any, Any],  # pyright: ignore[reportExplicitAny]
+        index: int | slice[Any, Any, Any],  # pyright: ignore[reportExplicitAny] #pragma: no cover
     ) -> ResolvedExpr | Sequence[ResolvedExpr]:
         return self.projections[index]
 

@@ -263,10 +263,10 @@ def test_contains_sum_in_agg() -> None:
         pql.LazyFrame(_SAMPLE_DF)
         .filter(pql.col("a").is_not_null())
         .group_by("a")
-        .agg(cs.contains("al").sum())
+        .agg(cs.contains("al").intersection(cs.numeric()).sum())
         .sort("a"),
         _SAMPLE_DF.filter(pl.col("a").is_not_null())
         .group_by("a")
-        .agg(cs_pl.contains("al").sum())
+        .agg(cs_pl.contains("al").__and__(cs_pl.numeric()).sum())
         .sort("a"),
     )
