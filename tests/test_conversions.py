@@ -93,7 +93,7 @@ def test_from_numpy_1d() -> None:
     data = [1, 2, 3, 4]
 
     arr1d = np.array(data)
-    assert_eq(pql.LazyFrame(arr1d).collect(), pl.DataFrame(arr1d, orient="col"))  # pyright: ignore[reportArgumentType]
+    assert_eq(pql.LazyFrame(arr1d).collect(), pl.DataFrame(arr1d, orient="col"))
     assert_eq(
         pql.from_numpy(arr1d, "col").collect(), pl.from_numpy(arr1d, orient="col")
     )
@@ -106,7 +106,7 @@ def test_from_numpy_2d(orient: pql.sql.typing.Orientation) -> None:
     arr2d = np.array([data, data, data, data, data, data, data, data])
     assert_eq(
         pql.LazyFrame(arr2d, orient=orient).collect(),
-        pl.DataFrame(arr2d, orient=orient),  # pyright: ignore[reportArgumentType]
+        pl.DataFrame(arr2d, orient=orient),
     )
     assert_eq(
         pql.from_numpy(arr2d, orient).collect(), pl.from_numpy(arr2d, orient=orient)
