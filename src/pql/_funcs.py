@@ -1,5 +1,6 @@
 from collections.abc import Callable, Iterable
 from functools import partial
+from typing import final
 
 import pyochain as pc
 
@@ -17,7 +18,10 @@ from .sql.typing import IntoExpr, IntoExprColumn, PythonLiteral
 from .sql.utils import TryIter, try_iter
 
 
+@final
 class Col:
+    __slots__ = ()
+
     def __call__(self, name: str) -> Expr:
         return Expr(sql.col(name), pc.Some(ExprMeta(name)))
 

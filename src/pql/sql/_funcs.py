@@ -1,5 +1,6 @@
 from collections.abc import Callable, Iterable
 from functools import partial
+from typing import final
 
 import duckdb
 import pyochain as pc
@@ -84,7 +85,10 @@ def all(exclude: Iterable[IntoExprColumn] | None = None) -> SqlExpr:
     )
 
 
+@final
 class Col:
+    __slots__ = ()
+
     def __call__(self, name: str) -> SqlExpr:
         return SqlExpr(duckdb.ColumnExpression(name))
 
