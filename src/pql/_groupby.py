@@ -8,6 +8,7 @@ import pyochain as pc
 
 from . import sql
 from ._expr import Expr
+from ._funcs import col, lit
 from ._meta import ExprPlan
 from ._schema import Schema
 from .sql.utils import TryIter, try_chain
@@ -41,16 +42,15 @@ class LazyGroupBy:
         )
 
     def _agg_columns(self, func: Callable[[Expr], Expr]) -> LazyFrame:
-
         return (
             self._agg_schema.keys()
             .iter()
-            .map(lambda name: sql.col(name).pipe(Expr).pipe(func).alias(name))
+            .map(lambda name: col(name).pipe(func).alias(name))
             .into(self.agg)
         )
 
     def len(self, name: str = "len") -> LazyFrame:
-        return self.agg(Expr(sql.lit(1)).count().alias(name))
+        return self.agg(lit(1).count().alias(name))
 
     def all(self) -> LazyFrame:
         return self._agg_columns(Expr.implode)

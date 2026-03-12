@@ -3,13 +3,11 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
-import pyochain as pc
-
 from . import sql
 from ._expr import Expr
+from ._meta import ExprMeta
 
 if TYPE_CHECKING:
-    from ._meta import ExprMeta
     from .sql.typing import IntoExpr
     from .sql.utils import TryIter
 
@@ -23,7 +21,7 @@ class When:
     _when: sql.When
 
     def then(self, value: IntoExpr) -> Then:
-        return Then(self._when.then(value))
+        return Then(self._when.then(value), ExprMeta("literal"))
 
 
 @dataclass(slots=True, init=False)
@@ -36,7 +34,7 @@ class Then(Expr):
         return ChainedWhen(self._inner.when(predicates, *more_predicates), self.meta)
 
     def otherwise(self, statement: IntoExpr) -> Expr:
-        return Expr(self._inner.otherwise(statement), pc.Some(self.meta))
+        return Expr(self._inner.otherwise(statement), self.meta)
 
 
 @dataclass(slots=True)
@@ -45,7 +43,7 @@ class ChainedWhen:
     _meta: ExprMeta
 
     def then(self, statement: IntoExpr) -> ChainedThen:
-        return ChainedThen(self._chained_when.then(statement), pc.Some(self._meta))
+        return ChainedThen(self._chained_when.then(statement), self._meta)
 
 
 @dataclass(slots=True, init=False)
@@ -58,4 +56,4 @@ class ChainedThen(Expr):
         return ChainedWhen(self._inner.when(predicates, *more_predicates), self.meta)
 
     def otherwise(self, statement: IntoExpr) -> Expr:
-        return Expr(self._inner.otherwise(statement), pc.Some(self.meta))
+        return Expr(self._inner.otherwise(statement), self.meta)

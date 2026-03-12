@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import re
 from collections.abc import Callable
-from functools import partial
 from typing import TYPE_CHECKING, Self, overload, override
 
 import pyochain as pc
@@ -13,14 +12,16 @@ from pql._schema import ColumnResolver
 
 from . import _datatypes as dt  # pyright: ignore[reportPrivateUsage]
 from ._expr import Expr
-from ._meta import SENTINEL_COL, ExprMeta, MultiExpansion, replay_transform
+from ._meta import SENTINEL_COL, ExprMeta
 
 if TYPE_CHECKING:
+    from pyochain.traits import PyoKeysView
+
     from ._schema import ColumnResolver, Schema
     from .sql.typing import IntoExpr
 
 
-def all_columns_resolver(schema: Schema) -> pc.traits.PyoKeysView[str]:
+def all_columns_resolver(schema: Schema) -> PyoKeysView[str]:
     return schema.keys()
 
 
@@ -61,13 +62,7 @@ class Selector(Expr):
 
     @classmethod
     def __from_resolver__(cls, resolver: ColumnResolver) -> Self:
-        meta = ExprMeta(
-            "__selector__",
-            expansion=pc.Some(
-                MultiExpansion(resolver, partial(replay_transform, SENTINEL_COL))
-            ),
-        )
-        return cls(SENTINEL_COL, pc.Some(meta))
+        return cls(SENTINEL_COL, ExprMeta.from_selector(resolver))
 
     @overload
     def union(self, other: Selector) -> Selector: ...

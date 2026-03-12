@@ -3,6 +3,7 @@ from __future__ import annotations
 from collections.abc import Callable, Iterator, Sequence
 from dataclasses import dataclass, field, replace
 from enum import IntEnum, auto
+from functools import partial
 from typing import TYPE_CHECKING, Any, NamedTuple, Self, overload, override
 
 import duckdb
@@ -10,6 +11,7 @@ import pyochain as pc
 from pyochain.traits import PyoCollection, PyoSequence
 
 from . import sql
+from .sql.utils import TryIter, try_iter
 
 if TYPE_CHECKING:
     from ._schema import ColumnResolver, Schema
@@ -51,6 +53,46 @@ class ExprMeta:
     alias_name: pc.Option[Callable[[str], str]] = field(default_factory=lambda: pc.NONE)
     kind: ExprKind = ExprKind.ROW
     expansion: pc.Option[MultiExpansion] = field(default_factory=lambda: pc.NONE)
+
+    @classmethod
+    def from_selector(cls, resolver: ColumnResolver) -> Self:
+        return cls(
+            "__selector__",
+            expansion=pc.Some(
+                MultiExpansion(resolver, partial(replay_transform, SENTINEL_COL))
+            ),
+        )
+
+    @classmethod
+    def from_horizontal(cls, exprs: TryIter[IntoExpr]) -> Self:
+        return (
+            try_iter(exprs)
+            .next()
+            .map(lambda v: sql.into_expr(v, as_col=True).get_name())
+            .map(cls)
+            .unwrap()
+        )
+
+    @classmethod
+    def from_agg_expr(
+        cls, cols: pc.Option[pc.Seq[str]], resolver: ColumnResolver, inner: sql.SqlExpr
+    ) -> Self:
+        return cls(
+            cols.map(lambda c: c.first()).unwrap_or("all"),
+            kind=ExprKind.SCALAR,
+            expansion=pc.Some(
+                MultiExpansion(resolver, partial(replay_transform, inner))
+            ),
+        )
+
+    @classmethod
+    def from_all(cls, resolver: ColumnResolver) -> Self:
+        return cls(
+            "all",
+            expansion=pc.Some(
+                MultiExpansion(resolver, partial(replay_transform, SENTINEL_COL))
+            ),
+        )
 
     @property
     def is_multi(self) -> bool:

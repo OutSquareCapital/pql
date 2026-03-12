@@ -90,9 +90,9 @@ class Expr(sql.CoreHandler[sql.SqlExpr]):
     _inner: sql.SqlExpr
     meta: ExprMeta
 
-    def __init__(self, inner: sql.SqlExpr, meta: pc.Option[ExprMeta] = pc.NONE) -> None:
+    def __init__(self, inner: sql.SqlExpr, meta: ExprMeta) -> None:
         self._inner = inner
-        self.meta = meta.map(replace).unwrap_or_else(lambda: ExprMeta("literal"))
+        self.meta = replace(meta)
 
     @override
     def _new(self, value: sql.SqlExpr, meta: pc.Option[ExprMeta] = pc.NONE) -> Self:
@@ -101,7 +101,7 @@ class Expr(sql.CoreHandler[sql.SqlExpr]):
         )
 
         return self.__class__(
-            value, pc.Some(replace(meta.unwrap_or(self.meta), expansion=new_expansion))
+            value, replace(meta.unwrap_or(self.meta), expansion=new_expansion)
         )
 
     def _with_meta(

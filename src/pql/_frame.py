@@ -12,6 +12,7 @@ import pyochain as pc
 
 from . import sql
 from ._expr import Expr
+from ._funcs import col
 from ._meta import ExprKind, ExprPlan
 from ._parser import format_sql, show_sql
 from ._schema import Schema
@@ -579,7 +580,7 @@ class LazyFrame(sql.CoreHandler[sql.SqlFrame]):
         """Fill null values."""
         return self._iter_slct(
             lambda c: (
-                Expr(sql.col(c))
+                col(c)
                 .fill_null(value=value, strategy=strategy, limit=limit)
                 .inner()
                 .alias(c)
