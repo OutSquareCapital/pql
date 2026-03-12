@@ -37,9 +37,9 @@ def _inspect(lf: pl.LazyFrame) -> pl.LazyFrame:
     return lf
 
 
-def run_pipeline(path: Path, *, profile: bool = False) -> str:
+def run_pipeline(caller: Path, source: Path, *, profile: bool = False) -> str:
     return (
-        pl.scan_parquet(path)
+        pl.scan_parquet(source)
         .pipe(run_qry)
         .pipe(_inspect if profile else lambda lf: lf)
         .collect()
@@ -49,5 +49,5 @@ def run_pipeline(path: Path, *, profile: bool = False) -> str:
         .inspect(
             lambda x: print(Text(f"Generated {x.length()} functions", style="yellow"))
         )
-        .into(build_file)
+        .into(build_file, caller)
     )

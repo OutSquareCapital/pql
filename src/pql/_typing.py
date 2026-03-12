@@ -71,5 +71,9 @@ type Themes = Literal[
     "xcode",
     "zenburn",
 ]
-"""Themes available for SQL syntax highlighting in the `sql_query` method."""
+"""Themes available for SQL syntax highlighting in the `sql_query` method.
+
+Dynamically generated from the available styles in the `pygments` library by `scripts/__main__.py`.
+
+Do NOT edit manually."""
 ### theme marker END

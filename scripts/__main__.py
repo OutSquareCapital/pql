@@ -8,11 +8,11 @@ from functools import partial
 from pathlib import Path
 from typing import Annotated
 
-import pyochain as pc
 import typer
 from rich.console import Console
 from rich.text import Text
 
+SELF_PATH = Path(__file__).relative_to(Path().cwd())
 PQL = Path("src", "pql")
 CODE_GEN = PQL.joinpath("sql", "_code_gen")
 
@@ -43,7 +43,7 @@ def gen_core(
     """Generate typed DuckDB wrappers from the database."""
     from . import core_generator
 
-    content = core_generator.generate(stub_path)
+    content = core_generator.generate(SELF_PATH, stub_path)
     output_path.parent.mkdir(parents=True, exist_ok=True)
     res = output_path.write_text(content, encoding="utf-8")
     console.print(Text("Generated ").append(output_path.as_posix(), style="cyan"))
@@ -65,7 +65,7 @@ def gen_fns(
     from .fn_generator import run_pipeline
 
     console.print("Fetching functions from DuckDB...")
-    content = run_pipeline(data_path, profile=profile)
+    content = run_pipeline(SELF_PATH, data_path, profile=profile)
 
     output.parent.mkdir(parents=True, exist_ok=True)
     res = output.write_text(content, encoding="utf-8")
@@ -77,26 +77,9 @@ def gen_fns(
 @app.command()
 def gen_themes(path: InputPath = TYPING_PATH) -> None:
     """Generate a `Literal` of all available styles for pretty-printing of the `LazyFrame.sql_query` method."""
-    from pygments.styles._mapping import (  # pyright: ignore[reportMissingTypeStubs]
-        STYLES,
-    )
+    from ._theme_generator import generate_themes
 
-    styles = (
-        pc.Iter(STYLES.values()).map_star(lambda _, style, __: f'"{style}"').join(" ,")
-    )
-    file_content = path.read_text(encoding="utf-8")
-    start_marker = "### theme marker START"
-    end_marker = "### theme marker END"
-    lit = f"type Themes = Literal[{styles}]"
-    doc = (
-        '"""Themes available for SQL syntax highlighting in the `sql_query` method."""'
-    )
-
-    start_idx = file_content.find(start_marker)
-    end_idx = file_content.find(end_marker)
-    content = f"{file_content[: start_idx + len(start_marker)]}\n{lit}\n{doc}\n{file_content[end_idx:]}"
-
-    res = path.write_text(content, encoding="utf-8")
+    res = generate_themes(SELF_PATH, path)
     _run_ruff(check_only=False, dest=path)
     console.print(
         Text("Generated themes Literal in ").append(path.as_posix(), style="cyan")

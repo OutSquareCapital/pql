@@ -64,10 +64,10 @@ def _generate_target(stub_path: Path, target: TargetSpec) -> str:
     )
 
 
-def generate(stub_path: Path) -> str:
+def generate(caller: Path, stub_path: Path) -> str:
     """Generate the full ``_core.py`` file content."""
     return (
         Targets.into_iter()
         .map(lambda name: _generate_target(stub_path, name))
-        .into(lambda classes: f"{header()}{classes.join(chr(10) * 2)}\n")
+        .into(lambda classes: f"{header(caller)}{classes.join(chr(10) * 2)}\n")
     )

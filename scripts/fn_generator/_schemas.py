@@ -16,11 +16,7 @@ def schema(cls: type[object]) -> pl.Schema:
         )
 
     return (
-        pc.Dict.from_object(cls)
-        .items()
-        .iter()
-        .filter_star(_is_polars_dtype)
-        .collect(pl.Schema)
+        pc.Iter(cls.__dict__.items()).filter_star(_is_polars_dtype).collect(pl.Schema)
     )
 
 
