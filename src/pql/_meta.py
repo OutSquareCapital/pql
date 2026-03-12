@@ -3,11 +3,10 @@ from __future__ import annotations
 from collections.abc import Callable, Iterator, Sequence
 from dataclasses import dataclass, field, replace
 from enum import IntEnum, auto
-from functools import partial
 from typing import TYPE_CHECKING, Any, NamedTuple, Self, overload, override
 
-import duckdb
 import pyochain as pc
+from duckdb import SQLExpression
 from pyochain.traits import PyoCollection, PyoSequence
 
 from . import sql
@@ -21,28 +20,11 @@ SENTINEL = "__pql_selector__"
 SENTINEL_COL = sql.col(SENTINEL)
 
 
-def replay_transform(
-    template_sql: sql.SqlExpr, column_name: sql.SqlExpr
-) -> sql.SqlExpr:
-    """Replay a multi-column transform by substituting the sentinel with a real column name."""
-    return sql.SqlExpr(
-        duckdb.SQLExpression(template_sql.pipe(str).replace(SENTINEL, str(column_name)))
-    )
-
-
 class ExprKind(IntEnum):
     ROW = auto()
     SCALAR = auto()
     WINDOW = auto()
     UNIQUE = auto()
-
-
-@dataclass(slots=True)
-class MultiExpansion:
-    """How a multi-column expression expands: resolve column names, then transform each."""
-
-    resolver: ColumnResolver
-    transform: Callable[[sql.SqlExpr], sql.SqlExpr]
 
 
 @dataclass(slots=True)
@@ -52,16 +34,11 @@ class ExprMeta:
     root_name: str
     alias_name: pc.Option[Callable[[str], str]] = field(default_factory=lambda: pc.NONE)
     kind: ExprKind = ExprKind.ROW
-    expansion: pc.Option[MultiExpansion] = field(default_factory=lambda: pc.NONE)
+    resolver: pc.Option[ColumnResolver] = field(default_factory=lambda: pc.NONE)
 
     @classmethod
     def from_selector(cls, resolver: ColumnResolver) -> Self:
-        return cls(
-            "__selector__",
-            expansion=pc.Some(
-                MultiExpansion(resolver, partial(replay_transform, SENTINEL_COL))
-            ),
-        )
+        return cls("__selector__", resolver=pc.Some(resolver))
 
     @classmethod
     def from_horizontal(cls, exprs: TryIter[IntoExpr]) -> Self:
@@ -75,28 +52,21 @@ class ExprMeta:
 
     @classmethod
     def from_agg_expr(
-        cls, cols: pc.Option[pc.Seq[str]], resolver: ColumnResolver, inner: sql.SqlExpr
+        cls, cols: pc.Option[pc.Seq[str]], resolver: ColumnResolver
     ) -> Self:
         return cls(
             cols.map(lambda c: c.first()).unwrap_or("all"),
             kind=ExprKind.SCALAR,
-            expansion=pc.Some(
-                MultiExpansion(resolver, partial(replay_transform, inner))
-            ),
+            resolver=pc.Some(resolver),
         )
 
     @classmethod
     def from_all(cls, resolver: ColumnResolver) -> Self:
-        return cls(
-            "all",
-            expansion=pc.Some(
-                MultiExpansion(resolver, partial(replay_transform, SENTINEL_COL))
-            ),
-        )
+        return cls("all", resolver=pc.Some(resolver))
 
     @property
     def is_multi(self) -> bool:
-        return self.expansion.is_some()
+        return self.resolver.is_some()
 
     def resolve_output_names(
         self, base_names: pc.traits.PyoCollection[str], forced_name: pc.Option[str]
@@ -169,11 +139,7 @@ class ExprPlan(PyoSequence[ResolvedExpr]):
             .map(
                 lambda mapping: (
                     pc.Iter(mapping.items())
-                    .map_star(
-                        lambda k, v: _resolve_projection(
-                            schema, v, alias_override=pc.Some(k)
-                        )
-                    )
+                    .map_star(lambda k, v: _resolve_projection(schema, v, pc.Some(k)))
                     .flatten()
                 )
             )
@@ -240,27 +206,27 @@ class ExprPlan(PyoSequence[ResolvedExpr]):
 
 
 def _resolve_projection(
-    schema: Schema, value: IntoExpr, *, alias_override: pc.Option[str] = pc.NONE
+    schema: Schema, value: IntoExpr, alias_override: pc.Option[str] = pc.NONE
 ) -> pc.Iter[ResolvedExpr]:
     from ._expr import Expr
 
     into_resolved = pc.Iter[ResolvedExpr].once
     match value:
         case Expr() as expr:
-            base_names = expr.meta.expansion.map(
-                lambda exp: exp.resolver(schema)
-            ).unwrap_or_else(lambda: pc.Seq((expr.meta.root_name,)))
+            base_names = expr.meta.resolver.map(lambda r: r(schema)).unwrap_or_else(
+                lambda: pc.Seq((expr.meta.root_name,))
+            )
             output_names = expr.meta.resolve_output_names(base_names, alias_override)
             kind = expr.meta.kind
             match expr.meta.is_multi and alias_override.is_none():
                 case True:
-                    transform = expr.meta.expansion.unwrap().transform
+                    template = expr.inner()
                     return (
                         base_names.iter()
                         .zip(output_names)
                         .map_star(
                             lambda column_name, output_name: ResolvedExpr(
-                                transform(sql.col(column_name)), output_name, kind
+                                _replace_col(template, column_name), output_name, kind
                             )
                         )
                     )
@@ -272,3 +238,7 @@ def _resolve_projection(
             resolved = sql.into_expr(value, as_col=True)
             output_name = alias_override.unwrap_or(resolved.inner().get_name())
             return into_resolved(ResolvedExpr(resolved, output_name, kind=ExprKind.ROW))
+
+
+def _replace_col(template: sql.SqlExpr, column_name: str) -> sql.SqlExpr:
+    return sql.SqlExpr(SQLExpression(template.pipe(str).replace(SENTINEL, column_name)))

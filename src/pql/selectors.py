@@ -58,7 +58,7 @@ class Selector(Expr):
 
     @property
     def _resolver(self) -> ColumnResolver:
-        return self.meta.expansion.unwrap().resolver
+        return self.meta.resolver.unwrap()
 
     @classmethod
     def __from_resolver__(cls, resolver: ColumnResolver) -> Self:

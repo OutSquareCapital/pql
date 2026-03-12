@@ -38,17 +38,16 @@ def len() -> Expr:
 def _agg_expr(
     agg: Callable[[sql.SqlExpr], sql.SqlExpr], columns: Iterable[str]
 ) -> Expr:
-    inner = agg(SENTINEL_COL)
     meta = (
         pc.Seq(columns)
         .then_some()
         .into(
             lambda cols: ExprMeta.from_agg_expr(
-                cols, cols.map(fixed_resolver).unwrap_or(all_columns_resolver), inner
+                cols, cols.map(fixed_resolver).unwrap_or(all_columns_resolver)
             )
         )
     )
-    return Expr(inner, meta)
+    return Expr(agg(SENTINEL_COL), meta)
 
 
 def sum(*columns: str) -> Expr:

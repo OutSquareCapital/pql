@@ -11,7 +11,6 @@ import narwhals as nw
 import pyochain as pc
 
 from . import sql
-from ._expr import Expr
 from ._funcs import col
 from ._meta import ExprKind, ExprPlan
 from ._parser import format_sql, show_sql
@@ -27,6 +26,7 @@ if TYPE_CHECKING:
     from narwhals.typing import IntoFrameT
 
     from ._datatypes import DataType
+    from ._expr import Expr
     from ._groupby import LazyGroupBy
     from ._typing import (
         AsofJoinStrategy,
@@ -278,21 +278,11 @@ class LazyFrame(sql.CoreHandler[sql.SqlFrame]):
         **named_exprs: IntoExpr,
     ) -> Self:
         """Aggregate with GROUP BY ALL — DuckDB auto-detects grouping keys."""
-
-        def _resolve(value: IntoExpr) -> sql.SqlExpr:
-            match value:
-                case Expr() as expr:
-                    return expr.meta.alias_name.map(
-                        lambda fn: expr.inner().alias(fn(expr.meta.root_name))
-                    ).unwrap_or_else(expr.inner)
-                case _:
-                    return sql.into_expr(value, as_col=True)
-
-        named = pc.Iter(named_exprs.items()).map_star(lambda k, v: _resolve(v).alias(k))
         return (
-            try_chain(exprs, more_exprs)
-            .map(_resolve)
-            .chain(named)
+            self.schema.into(
+                ExprPlan.from_inputs, try_chain(exprs, more_exprs), named_exprs
+            )
+            .aliased_sql()
             .into(self.inner().aggregate, "ALL")
             .pipe(self._new)
         )

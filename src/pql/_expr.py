@@ -14,7 +14,7 @@ import pyochain as pc
 
 from . import _datatypes as dt, sql  # pyright: ignore[reportPrivateUsage]
 from ._computations import fill_nulls
-from ._meta import ExprKind, ExprMeta, ExprPlan, MultiExpansion, replay_transform
+from ._meta import ExprKind, ExprMeta, ExprPlan
 from ._schema import Schema
 from .sql.utils import TryIter, try_chain, try_iter
 
@@ -96,13 +96,7 @@ class Expr(sql.CoreHandler[sql.SqlExpr]):
 
     @override
     def _new(self, value: sql.SqlExpr, meta: pc.Option[ExprMeta] = pc.NONE) -> Self:
-        new_expansion = self.meta.expansion.map(
-            lambda exp: MultiExpansion(exp.resolver, partial(replay_transform, value))
-        )
-
-        return self.__class__(
-            value, replace(meta.unwrap_or(self.meta), expansion=new_expansion)
-        )
+        return self.__class__(value, meta.unwrap_or(self.meta))
 
     def _with_meta(
         self,
