@@ -338,6 +338,15 @@ wheels = [
 ]
 
 [[package]]
+name = "ibis"
+version = "3.3.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/29/51/2706c69d679c9101a0e7333f4e5d3b3a7bc5eb0b52ed13685eaf88bd10d7/ibis-3.3.0.tar.gz", hash = "sha256:bb6d74a46c101aaeee0a98ee4da2bac78d6d5abd96a9a2954fb25c1ce6762ec2", size = 14477, upload-time = "2023-11-11T17:50:56.062Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/aa/92/81563612f829f24389b6aa7895a4841a77c57bf304bd9e4dc866039a7f23/ibis-3.3.0-py3-none-any.whl", hash = "sha256:9e93aa77c28dc797b03805c794964be341eab859552a016ae8a5deafb5160d75", size = 16028, upload-time = "2023-11-11T17:50:53.801Z" },
+]
+
+[[package]]
 name = "iniconfig"
 version = "2.3.0"
 source = { registry = "https://pypi.org/simple" }
@@ -729,6 +738,7 @@ dependencies = [
 [package.dev-dependencies]
 dev = [
     { name = "basedpyright" },
+    { name = "ibis" },
     { name = "matplotlib" },
     { name = "narwhals" },
     { name = "numpy" },
@@ -755,6 +765,7 @@ requires-dist = [
 [package.metadata.requires-dev]
 dev = [
     { name = "basedpyright", specifier = ">=1.38.2" },
+    { name = "ibis", specifier = ">=3.3.0" },
     { name = "matplotlib", specifier = ">=3.10.8" },
     { name = "narwhals", specifier = ">=2.15.0" },
     { name = "numpy", specifier = ">=2.4.2" },

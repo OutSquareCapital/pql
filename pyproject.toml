@@ -9,6 +9,7 @@
 [dependency-groups]
     dev = [
         "basedpyright>=1.38.2",
+        "ibis>=3.3.0",
         "matplotlib>=3.10.8",
         "narwhals>=2.15.0",
         "numpy>=2.4.2",
