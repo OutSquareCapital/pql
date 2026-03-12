@@ -9,14 +9,16 @@ import pytest
 import pql
 import pql.selectors as cs
 
-from ._utils import assert_eq_pl, assert_lf_eq_pl, sample_df
+from ._data import sample_df
+from ._utils import assert_eq_pl, assert_lf_eq_pl
 
 _SAMPLE_DF = sample_df().to_native().pl(lazy=True)
+_PQL_LF = pql.LazyFrame(_SAMPLE_DF)
 
 
 def test_numeric_with_columns() -> None:
     assert_lf_eq_pl(
-        pql.LazyFrame(_SAMPLE_DF).select("s").with_columns(cs.numeric()),
+        _PQL_LF.select("s").with_columns(cs.numeric()),
         _SAMPLE_DF.select("s").with_columns(cs_pl.numeric()),
     )
 
@@ -41,7 +43,7 @@ def test_union() -> None:
     )
 
     assert_lf_eq_pl(
-        pql.LazyFrame(_SAMPLE_DF).select(cs.boolean().__or__(pql.lit(value=True))),
+        _PQL_LF.select(cs.boolean().__or__(pql.lit(value=True))),
         _SAMPLE_DF.select(cs_pl.boolean().__or__(pl.lit(value=True))),
     )
 
@@ -58,7 +60,7 @@ def test_intersection() -> None:
     )
 
     assert_lf_eq_pl(
-        pql.LazyFrame(_SAMPLE_DF).select(cs.boolean().__and__(pql.lit(value=True))),
+        _PQL_LF.select(cs.boolean().__and__(pql.lit(value=True))),
         _SAMPLE_DF.select(cs_pl.boolean().__and__(pl.lit(value=True))),
     )
 
@@ -74,7 +76,7 @@ def test_difference() -> None:
     )
 
     assert_lf_eq_pl(
-        pql.LazyFrame(_SAMPLE_DF).select(cs.numeric().__sub__(pql.lit(1))),
+        _PQL_LF.select(cs.numeric().__sub__(pql.lit(1))),
         _SAMPLE_DF.select(cs_pl.numeric().__sub__(pl.lit(1))),
     )
 
@@ -112,7 +114,7 @@ def test_selector_in_group_by_agg() -> None:
 
 def test_empty_selector() -> None:
     assert_lf_eq_pl(
-        pql.LazyFrame(_SAMPLE_DF).select(pql.col("a")).select(cs.boolean()),
+        _PQL_LF.select(pql.col("a")).select(cs.boolean()),
         _SAMPLE_DF.select(pl.col("a")).select(cs_pl.boolean()),
     )
 
