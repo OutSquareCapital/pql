@@ -24,6 +24,47 @@ _DATA = {
     "salary": [50000.0, 60000.0, 70000.0, None, 50000.0, 60000.0],
     "nested": [[1, 2], [3, 4], [5], None, [1, 2], [3, 4]],
     "nan_vals": [1.0, nan, 3.0, nan, 5.0, nan],
+    "arr_str_vals": [
+        ["g", "b", "c"],
+        ["a", "b", "a"],
+        ["c", "c", "c"],
+        ["d", "e", "d"],
+        ["g", "b", "c"],
+        ["a", "b", "a"],
+    ],
+    "arr_booleans": [
+        [True, False, True],
+        [True, True, True],
+        [False, False, False],
+        [True, None, True],
+        [True, False, True],
+        [True, True, True],
+    ],
+    "arr_num": [
+        [1, 2, 7, 3],
+        [3, 4, 5, 5],
+        [2, 5, 8, 1],
+        [1, 2, 3, 4],
+        [1, 2, 7, 3],
+        [3, 4, 5, 5],
+    ],
+    "list_num": [
+        [1, 2, 7, 3],
+        [3, 4, 5, 5],
+        [2, 5],
+        [1],
+        [1, 2],
+        [3, 4, 5],
+    ],
+    "list_booleans": [
+        [True, False, True],
+        [True, True],
+        [False],
+        [True, None],
+        [True, True, True, True, True, True, False],
+        [False, False, False, False, False, False, True],
+    ],
+    "list_str_vals": [["g", "b", "c"], ["a", "b"], ["c"], [], ["hello", "world"], [""]],
     "structs": [
         {"a": 1, "b": 2, "c": 3, "d": 4},
         {"a": 5, "b": 6, "c": 7, "d": 8},
@@ -62,6 +103,9 @@ _SCHEMA = {
     "uint": pl.UInt16(),
     "decimal_vals": pl.Decimal(10, 4),
     "binary": pl.Binary(),
+    "arr_booleans": pl.Array(pl.Boolean, shape=3),
+    "arr_str_vals": pl.Array(pl.String, shape=3),
+    "arr_num": pl.Array(pl.UInt16, shape=4),
 }
 _DF = nw.from_native(
     pl.DataFrame(_DATA, schema_overrides=_SCHEMA).pipe(duckdb.from_arrow)
