@@ -364,9 +364,7 @@ class Expr(sql.CoreHandler[sql.SqlExpr]):
             case "none":
                 return self.gt(lower_bound).and_(self.lt(upper_bound))
 
-    def clip(
-        self, lower_bound: IntoExpr | None = None, upper_bound: IntoExpr | None = None
-    ) -> Self:
+    def clip(self, lower_bound: IntoExpr = None, upper_bound: IntoExpr = None) -> Self:
         match (lower_bound, upper_bound):
             case (None, None):
                 return self
@@ -654,9 +652,9 @@ class Expr(sql.CoreHandler[sql.SqlExpr]):
 
     def over(
         self,
-        partition_by: TryIter[IntoExpr] | None,
+        partition_by: TryIter[IntoExpr],
         *more_exprs: IntoExpr,
-        order_by: TryIter[IntoExpr] | None = None,
+        order_by: TryIter[IntoExpr] = None,
         descending: bool = False,
         nulls_last: bool = False,
     ) -> Self:
@@ -819,7 +817,7 @@ class Expr(sql.CoreHandler[sql.SqlExpr]):
 
     def fill_null(
         self,
-        value: IntoExpr | None = None,
+        value: IntoExpr = None,
         strategy: FillNullStrategy | None = None,
         limit: int | None = None,
     ) -> Self:

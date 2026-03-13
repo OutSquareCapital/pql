@@ -9,7 +9,7 @@ from .sql.typing import IntoExpr
 
 def fill_nulls(  # noqa: PLR0911
     expr: sql.SqlExpr,
-    value: IntoExpr | None = None,
+    value: IntoExpr = None,
     strategy: FillNullStrategy | None = None,
     limit: int | None = None,
 ) -> pc.Result[sql.SqlExpr, ValueError]:

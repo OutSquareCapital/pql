@@ -376,7 +376,7 @@ class LazyFrame(sql.CoreHandler[sql.SqlFrame]):
         """Drop columns from the frame."""
         return self._select((sql.all(exclude=columns),))
 
-    def drop_nulls(self, subset: TryIter[str] | None = None) -> Self:
+    def drop_nulls(self, subset: TryIter[str] = None) -> Self:
         """Drop rows that contain null values."""
         return (
             pc.Option(subset)
@@ -561,7 +561,7 @@ class LazyFrame(sql.CoreHandler[sql.SqlFrame]):
 
     def fill_null(
         self,
-        value: IntoExpr | None = None,
+        value: IntoExpr = None,
         strategy: FillNullStrategy | None = None,
         limit: int | None = None,
     ) -> Self:
@@ -575,7 +575,7 @@ class LazyFrame(sql.CoreHandler[sql.SqlFrame]):
             )
         )
 
-    def shift(self, n: int = 1, *, fill_value: IntoExpr | None = None) -> Self:
+    def shift(self, n: int = 1, *, fill_value: IntoExpr = None) -> Self:
         """Shift values by n positions."""
         return self._iter_slct(
             lambda c: sql.coalesce(sql.col(c).shift(n), fill_value).alias(c)
@@ -620,11 +620,11 @@ class LazyFrame(sql.CoreHandler[sql.SqlFrame]):
     def join(  # noqa: PLR0913
         self,
         other: Self,
-        on: TryIter[str] | None = None,
+        on: TryIter[str] = None,
         how: JoinStrategy = "inner",
         *,
-        left_on: TryIter[str] | None = None,
-        right_on: TryIter[str] | None = None,
+        left_on: TryIter[str] = None,
+        right_on: TryIter[str] = None,
         suffix: str = "_right",
     ) -> Self:
         """Join with another LazyFrame."""
@@ -707,9 +707,9 @@ class LazyFrame(sql.CoreHandler[sql.SqlFrame]):
         left_on: str | None = None,
         right_on: str | None = None,
         on: str | None = None,
-        by_left: TryIter[str] | None = None,
-        by_right: TryIter[str] | None = None,
-        by: TryIter[str] | None = None,
+        by_left: TryIter[str] = None,
+        by_right: TryIter[str] = None,
+        by: TryIter[str] = None,
         strategy: AsofJoinStrategy = "backward",
         suffix: str = "_right",
     ) -> Self:
@@ -813,7 +813,7 @@ class LazyFrame(sql.CoreHandler[sql.SqlFrame]):
         subset: str | list[str] | None = None,
         *,
         keep: UniqueKeepStrategy = "any",
-        order_by: TrySeq[str] | None = None,
+        order_by: TrySeq[str] = None,
     ) -> Self:
         """Drop duplicate rows from this LazyFrame."""
 
@@ -870,8 +870,8 @@ class LazyFrame(sql.CoreHandler[sql.SqlFrame]):
         self,
         on: TryIter[str],
         on_columns: Sequence[PythonLiteral],
-        index: TryIter[str] | None = None,
-        values: TryIter[str] | None = None,
+        index: TryIter[str] = None,
+        values: TryIter[str] = None,
         aggregate_function: PivotAgg = "first",
         *,
         maintain_order: bool = False,
@@ -953,8 +953,8 @@ class LazyFrame(sql.CoreHandler[sql.SqlFrame]):
 
     def unpivot(
         self,
-        on: TryIter[str] | None = None,
-        index: TryIter[str] | None = None,
+        on: TryIter[str] = None,
+        index: TryIter[str] = None,
         variable_name: str = "variable",
         value_name: str = "value",
     ) -> Self:

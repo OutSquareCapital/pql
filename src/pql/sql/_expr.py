@@ -174,14 +174,14 @@ class SqlExpr(Expression, Fns):
 
     def over(  # noqa: PLR0913
         self,
-        partition_by: TryIter[IntoExprColumn] | None = None,
-        order_by: TryIter[IntoExprColumn] | None = None,
+        partition_by: TryIter[IntoExprColumn] = None,
+        order_by: TryIter[IntoExprColumn] = None,
         frame_start: int | str | None = None,
         frame_end: int | str | None = None,
         frame_mode: FrameMode = "ROWS",
         exclude: WindowExclude | None = None,
         filter_cond: IntoExprColumn | None = None,
-        fn_order_by: TryIter[IntoExprColumn] | None = None,
+        fn_order_by: TryIter[IntoExprColumn] = None,
         *,
         descending: TryIter[bool] = False,
         nulls_last: TryIter[bool] = False,
@@ -234,7 +234,7 @@ class SqlExpr(Expression, Fns):
     def cume_dist(
         self,
         *,
-        order_by: TryIter[IntoExprColumn] | None = None,
+        order_by: TryIter[IntoExprColumn] = None,
         ignore_nulls: bool = False,
         descending: TryIter[bool] = False,
         nulls_last: TryIter[bool] = False,
@@ -266,7 +266,7 @@ class SqlExpr(Expression, Fns):
     def fill(
         self,
         *,
-        order_by: TryIter[IntoExprColumn] | None = None,
+        order_by: TryIter[IntoExprColumn] = None,
         ignore_nulls: bool = False,
         descending: TryIter[bool] = False,
         nulls_last: TryIter[bool] = False,
@@ -294,7 +294,7 @@ class SqlExpr(Expression, Fns):
     def first_value(
         self,
         *,
-        order_by: TryIter[IntoExprColumn] | None = None,
+        order_by: TryIter[IntoExprColumn] = None,
         ignore_nulls: bool = False,
         descending: TryIter[bool] = False,
         nulls_last: TryIter[bool] = False,
@@ -318,9 +318,9 @@ class SqlExpr(Expression, Fns):
     def lag(  # noqa: PLR0913
         self,
         offset: IntoExprColumn | int = 1,
-        default: IntoExpr | None = None,
+        default: IntoExpr = None,
         *,
-        order_by: TryIter[IntoExprColumn] | None = None,
+        order_by: TryIter[IntoExprColumn] = None,
         ignore_nulls: bool = False,
         descending: TryIter[bool] = False,
         nulls_last: TryIter[bool] = False,
@@ -337,8 +337,8 @@ class SqlExpr(Expression, Fns):
 
         Args:
             offset (IntoExprColumn | int): Number of rows to look back (default: 1)
-            default (IntoExpr | None): Default value if no such row exists (default: NULL)
-            order_by (TryIter[IntoExprColumn] | None): Secondary ordering within the function call
+            default (IntoExpr): Default value if no such row exists (default: NULL)
+            order_by (TryIter[IntoExprColumn]): Secondary ordering within the function call
             ignore_nulls (bool): Skip NULL values when looking back
             descending (TryIter[bool]): Descending order for `order_by`
             nulls_last (TryIter[bool]): Nulls-last for `order_by`
@@ -358,7 +358,7 @@ class SqlExpr(Expression, Fns):
     def last_value(
         self,
         *,
-        order_by: TryIter[IntoExprColumn] | None = None,
+        order_by: TryIter[IntoExprColumn] = None,
         ignore_nulls: bool = False,
         descending: TryIter[bool] = False,
         nulls_last: TryIter[bool] = False,
@@ -382,9 +382,9 @@ class SqlExpr(Expression, Fns):
     def lead(  # noqa: PLR0913
         self,
         offset: IntoExprColumn | int = 1,
-        default: IntoExpr | None = None,
+        default: IntoExpr = None,
         *,
-        order_by: TryIter[IntoExprColumn] | None = None,
+        order_by: TryIter[IntoExprColumn] = None,
         ignore_nulls: bool = False,
         descending: TryIter[bool] = False,
         nulls_last: TryIter[bool] = False,
@@ -399,8 +399,8 @@ class SqlExpr(Expression, Fns):
 
         Args:
             offset (IntoExprColumn | int): Number of rows to look ahead (default: 1)
-            default (IntoExpr | None): Default value if no such row exists (default: NULL)
-            order_by (TryIter[IntoExprColumn] | None): Secondary ordering within the function call
+            default (IntoExpr): Default value if no such row exists (default: NULL)
+            order_by (TryIter[IntoExprColumn]): Secondary ordering within the function call
             ignore_nulls (bool): Skip NULL values when looking ahead
             descending (TryIter[bool]): Descending order for `order_by`
             nulls_last (TryIter[bool]): Nulls-last for `order_by`
@@ -421,7 +421,7 @@ class SqlExpr(Expression, Fns):
         self,
         nth: IntoExprColumn | int,
         *,
-        order_by: TryIter[IntoExprColumn] | None = None,
+        order_by: TryIter[IntoExprColumn] = None,
         ignore_nulls: bool = False,
         descending: TryIter[bool] = False,
         nulls_last: TryIter[bool] = False,
@@ -434,7 +434,7 @@ class SqlExpr(Expression, Fns):
 
         Args:
             nth (IntoExprColumn | int): The row number to retrieve (1-based)
-            order_by (TryIter[IntoExprColumn] | None): Secondary ordering within the function call
+            order_by (TryIter[IntoExprColumn]): Secondary ordering within the function call
             ignore_nulls (bool): Skip NULL values when counting
             descending (TryIter[bool]): Descending order for `order_by`
             nulls_last (TryIter[bool]): Nulls-last for `order_by`
@@ -455,7 +455,7 @@ class SqlExpr(Expression, Fns):
         self,
         num_buckets: IntoExprColumn | int,
         *,
-        order_by: TryIter[IntoExprColumn] | None = None,
+        order_by: TryIter[IntoExprColumn] = None,
         ignore_nulls: bool = False,
         descending: TryIter[bool] = False,
         nulls_last: TryIter[bool] = False,
@@ -466,7 +466,7 @@ class SqlExpr(Expression, Fns):
 
         Args:
             num_buckets (IntoExprColumn | int): Number of buckets to divide into
-            order_by (TryIter[IntoExprColumn] | None): Secondary ordering within the function call
+            order_by (TryIter[IntoExprColumn]): Secondary ordering within the function call
             ignore_nulls (bool): Ignored (ntile does not support IGNORE NULLS)
             descending (TryIter[bool]): Descending order for `order_by`
             nulls_last (TryIter[bool]): Nulls-last for `order_by`
@@ -486,7 +486,7 @@ class SqlExpr(Expression, Fns):
     def percent_rank(
         self,
         *,
-        order_by: TryIter[IntoExprColumn] | None = None,
+        order_by: TryIter[IntoExprColumn] = None,
         ignore_nulls: bool = False,
         descending: TryIter[bool] = False,
         nulls_last: TryIter[bool] = False,
@@ -510,7 +510,7 @@ class SqlExpr(Expression, Fns):
     def rank(
         self,
         *,
-        order_by: TryIter[IntoExprColumn] | None = None,
+        order_by: TryIter[IntoExprColumn] = None,
         ignore_nulls: bool = False,
         descending: TryIter[bool] = False,
         nulls_last: TryIter[bool] = False,
@@ -534,7 +534,7 @@ class SqlExpr(Expression, Fns):
     def row_number(
         self,
         *,
-        order_by: TryIter[IntoExprColumn] | None = None,
+        order_by: TryIter[IntoExprColumn] = None,
         ignore_nulls: bool = False,
         descending: TryIter[bool] = False,
         nulls_last: TryIter[bool] = False,

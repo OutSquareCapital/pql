@@ -15,7 +15,7 @@ if TYPE_CHECKING:
     from .typing import IntoRel, Orientation, PythonLiteral
 
 
-def _clause(on: TryIter[str] | None, kword: str) -> str:
+def _clause(on: TryIter[str], kword: str) -> str:
     return (
         pc.Option(on)
         .map(lambda o: try_iter(o).join(", "))
@@ -34,10 +34,10 @@ class SqlFrame(Relation):
     def pivot(
         self,
         on: TryIter[str],
-        using: TryIter[str] | None,
-        group_by: TryIter[str] | None,
+        using: TryIter[str],
+        group_by: TryIter[str],
         in_values: Sequence[PythonLiteral] | None,
-        order_by: TryIter[str] | None,
+        order_by: TryIter[str],
     ) -> Self:
 
         def _in_clause(vals: Sequence[PythonLiteral]) -> str:
@@ -62,11 +62,11 @@ class SqlFrame(Relation):
 
     def unpivot(
         self,
-        on: TryIter[str] | None,
-        index: TryIter[str] | None,
+        on: TryIter[str],
+        index: TryIter[str],
         variable_name: str,
         value_name: str,
-        order_by: TryIter[str] | None = None,
+        order_by: TryIter[str] = None,
     ) -> Self:
         """Unpivot from wide to long format."""
         index_cols = (
