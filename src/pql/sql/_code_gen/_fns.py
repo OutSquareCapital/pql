@@ -25,7 +25,9 @@ class Fns(DuckHandler):
         **SQL name**: *abs*
 
         Examples:
+            ```sql
             abs(-17.4)
+            ```
 
         Returns:
             Self
@@ -38,7 +40,9 @@ class Fns(DuckHandler):
         **SQL name**: *acos*
 
         Examples:
+            ```sql
             acos(0.5)
+            ```
 
         Returns:
             Self
@@ -51,7 +55,9 @@ class Fns(DuckHandler):
         **SQL name**: *acosh*
 
         Examples:
+            ```sql
             acosh(2.3)
+            ```
 
         Returns:
             Self
@@ -67,7 +73,9 @@ class Fns(DuckHandler):
             timestamp (IntoExprColumn | datetime | None): `TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
 
         Examples:
+            ```sql
             age(TIMESTAMP '2001-04-10', TIMESTAMP '1992-09-20')
+            ```
 
         Returns:
             Self
@@ -90,7 +98,9 @@ class Fns(DuckHandler):
         **SQL name**: *bool_and*
 
         Examples:
+            ```sql
             bool_and(A)
+            ```
 
         Returns:
             Self
@@ -103,7 +113,9 @@ class Fns(DuckHandler):
         **SQL name**: *bool_or*
 
         Examples:
+            ```sql
             bool_or(A)
+            ```
 
         Returns:
             Self
@@ -128,7 +140,9 @@ class Fns(DuckHandler):
         **SQL name**: *approx_count_distinct*
 
         Examples:
+            ```sql
             approx_count_distinct(A)
+            ```
 
         Returns:
             Self
@@ -144,7 +158,9 @@ class Fns(DuckHandler):
             pos (IntoExprColumn | SeqLiteral[float] | float): `FLOAT | FLOAT[]` expression
 
         Examples:
+            ```sql
             approx_quantile(x, 0.5)
+            ```
 
         Returns:
             Self
@@ -160,7 +176,9 @@ class Fns(DuckHandler):
             k (IntoExprColumn | int): `BIGINT` expression
 
         Examples:
+            ```sql
             approx_top_k(x, 5)
+            ```
 
         Returns:
             Self
@@ -182,7 +200,9 @@ class Fns(DuckHandler):
             col2 (IntoExprColumn | int | None): `BIGINT` expression
 
         Examples:
+            ```sql
             arg_max(A, B)
+            ```
 
         Returns:
             Self
@@ -200,7 +220,9 @@ class Fns(DuckHandler):
             val (IntoExpr): `ANY | BIGINT | BLOB | DATE | DOUBLE | HUGEINT | INTEGER | TIMESTAMP | TIMESTAMP WITH TIME ZONE | VARCHAR` expression
 
         Examples:
+            ```sql
             arg_max_null(A, B)
+            ```
 
         Returns:
             Self
@@ -221,7 +243,9 @@ class Fns(DuckHandler):
             n (IntoExprColumn | int | None): `BIGINT` expression
 
         Examples:
+            ```sql
             arg_min_null_val(A, B, N)
+            ```
 
         Returns:
             Self
@@ -243,7 +267,9 @@ class Fns(DuckHandler):
             col2 (IntoExprColumn | int | None): `BIGINT` expression
 
         Examples:
+            ```sql
             arg_min(A, B)
+            ```
 
         Returns:
             Self
@@ -261,7 +287,9 @@ class Fns(DuckHandler):
             val (IntoExpr): `ANY | BIGINT | BLOB | DATE | DOUBLE | HUGEINT | INTEGER | TIMESTAMP | TIMESTAMP WITH TIME ZONE | VARCHAR` expression
 
         Examples:
+            ```sql
             arg_min_null(A, B)
+            ```
 
         Returns:
             Self
@@ -282,7 +310,9 @@ class Fns(DuckHandler):
             n (IntoExprColumn | int | None): `BIGINT` expression
 
         Examples:
+            ```sql
             arg_min_null_val(A, B, N)
+            ```
 
         Returns:
             Self
@@ -304,7 +334,9 @@ class Fns(DuckHandler):
             col2 (IntoExprColumn | int | None): `BIGINT` expression
 
         Examples:
+            ```sql
             argmax(A, B)
+            ```
 
         Returns:
             Self
@@ -326,7 +358,9 @@ class Fns(DuckHandler):
             col2 (IntoExprColumn | int | None): `BIGINT` expression
 
         Examples:
+            ```sql
             argmin(A, B)
+            ```
 
         Returns:
             Self
@@ -339,7 +373,9 @@ class Fns(DuckHandler):
         **SQL name**: *asin*
 
         Examples:
+            ```sql
             asin(0.5)
+            ```
 
         Returns:
             Self
@@ -352,7 +388,9 @@ class Fns(DuckHandler):
         **SQL name**: *asinh*
 
         Examples:
+            ```sql
             asinh(0.5)
+            ```
 
         Returns:
             Self
@@ -365,7 +403,9 @@ class Fns(DuckHandler):
         **SQL name**: *atan*
 
         Examples:
+            ```sql
             atan(0.5)
+            ```
 
         Returns:
             Self
@@ -381,7 +421,9 @@ class Fns(DuckHandler):
             x (IntoExprColumn | float): `DOUBLE` expression
 
         Examples:
+            ```sql
             atan2(1.0, 0.0)
+            ```
 
         Returns:
             Self
@@ -394,7 +436,9 @@ class Fns(DuckHandler):
         **SQL name**: *atanh*
 
         Examples:
+            ```sql
             atanh(0.5)
+            ```
 
         Returns:
             Self
@@ -410,7 +454,9 @@ class Fns(DuckHandler):
             to_binary
 
         Examples:
+            ```sql
             bin(42)
+            ```
 
         Returns:
             Self
@@ -423,7 +469,9 @@ class Fns(DuckHandler):
         **SQL name**: *bit_and*
 
         Examples:
+            ```sql
             bit_and(A)
+            ```
 
         Returns:
             Self
@@ -436,7 +484,9 @@ class Fns(DuckHandler):
         **SQL name**: *bit_count*
 
         Examples:
+            ```sql
             bit_count(31)
+            ```
 
         Returns:
             Self
@@ -449,7 +499,9 @@ class Fns(DuckHandler):
         **SQL name**: *bit_length*
 
         Examples:
+            ```sql
             bit_length(42::TINYINT::BIT)
+            ```
 
         Returns:
             Self
@@ -462,7 +514,9 @@ class Fns(DuckHandler):
         **SQL name**: *bit_or*
 
         Examples:
+            ```sql
             bit_or(A)
+            ```
 
         Returns:
             Self
@@ -482,7 +536,9 @@ class Fns(DuckHandler):
             bitstring (IntoExprColumn | bytes | bytearray | memoryview): `BIT` expression
 
         Examples:
+            ```sql
             bit_position('010'::BIT, '1110101'::BIT)
+            ```
 
         Returns:
             Self
@@ -495,7 +551,9 @@ class Fns(DuckHandler):
         **SQL name**: *bit_xor*
 
         Examples:
+            ```sql
             bit_xor(A)
+            ```
 
         Returns:
             Self
@@ -511,7 +569,9 @@ class Fns(DuckHandler):
             length (IntoExprColumn | int): `INTEGER` expression
 
         Examples:
+            ```sql
             bitstring('1010'::BIT, 7)
+            ```
 
         Returns:
             Self
@@ -532,7 +592,9 @@ class Fns(DuckHandler):
             col2 (IntoExprColumn | int | None): `BIGINT | HUGEINT | INTEGER | SMALLINT | TINYINT | UBIGINT | UHUGEINT | UINTEGER | USMALLINT | UTINYINT` expression
 
         Examples:
+            ```sql
             bitstring_agg(A)
+            ```
 
         Returns:
             Self
@@ -548,7 +610,9 @@ class Fns(DuckHandler):
             target_type (IntoExpr): `ANY` expression
 
         Examples:
+            ```sql
             can_cast_implicitly(NULL::INTEGER, NULL::BIGINT)
+            ```
 
         Returns:
             Self
@@ -564,7 +628,9 @@ class Fns(DuckHandler):
             *args (IntoExpr): `ANY` expression
 
         Examples:
+            ```sql
             cardinality( map([4, 2], ['a', 'b']) );
+            ```
 
         Returns:
             Self
@@ -580,7 +646,9 @@ class Fns(DuckHandler):
             type_arg (IntoExpr): `ANY` expression
 
         Examples:
+            ```sql
             cast_to_type('42', NULL::INTEGER)
+            ```
 
         Returns:
             Self
@@ -593,7 +661,9 @@ class Fns(DuckHandler):
         **SQL name**: *cbrt*
 
         Examples:
+            ```sql
             cbrt(8)
+            ```
 
         Returns:
             Self
@@ -609,7 +679,9 @@ class Fns(DuckHandler):
             ceiling
 
         Examples:
+            ```sql
             ceil(17.4)
+            ```
 
         Returns:
             Self
@@ -625,7 +697,9 @@ class Fns(DuckHandler):
             ceil
 
         Examples:
+            ```sql
             ceiling(17.4)
+            ```
 
         Returns:
             Self
@@ -641,7 +715,9 @@ class Fns(DuckHandler):
             character_length, len, length
 
         Examples:
+            ```sql
             char_length(42::TINYINT::BIT)
+            ```
 
         Returns:
             Self
@@ -657,7 +733,9 @@ class Fns(DuckHandler):
             char_length, len, length
 
         Examples:
+            ```sql
             character_length(42::TINYINT::BIT)
+            ```
 
         Returns:
             Self
@@ -702,7 +780,9 @@ class Fns(DuckHandler):
             *args (IntoExpr): `ANY` expression
 
         Examples:
+            ```sql
             constant_or_null(42, NULL)
+            ```
 
         Returns:
             Self
@@ -731,7 +811,9 @@ class Fns(DuckHandler):
             x (IntoExprColumn | float): `DOUBLE` expression
 
         Examples:
+            ```sql
             COVAR_POP(y, x) / (STDDEV_POP(x) * STDDEV_POP(y))
+            ```
 
         Returns:
             Self
@@ -744,7 +826,9 @@ class Fns(DuckHandler):
         **SQL name**: *cos*
 
         Examples:
+            ```sql
             cos(90)
+            ```
 
         Returns:
             Self
@@ -757,7 +841,9 @@ class Fns(DuckHandler):
         **SQL name**: *cosh*
 
         Examples:
+            ```sql
             cosh(1)
+            ```
 
         Returns:
             Self
@@ -770,7 +856,9 @@ class Fns(DuckHandler):
         **SQL name**: *cot*
 
         Examples:
+            ```sql
             cot(0.5)
+            ```
 
         Returns:
             Self
@@ -783,7 +871,9 @@ class Fns(DuckHandler):
         **SQL name**: *count*
 
         Examples:
+            ```sql
             count(A)
+            ```
 
         Returns:
             Self
@@ -796,7 +886,9 @@ class Fns(DuckHandler):
         **SQL name**: *count_if*
 
         Examples:
+            ```sql
             count_if(A)
+            ```
 
         Returns:
             Self
@@ -812,7 +904,9 @@ class Fns(DuckHandler):
             x (IntoExprColumn | float): `DOUBLE` expression
 
         Examples:
+            ```sql
             (SUM(x*y) - SUM(x) * SUM(y) / COUNT(*)) / COUNT(*)
+            ```
 
         Returns:
             Self
@@ -828,7 +922,9 @@ class Fns(DuckHandler):
             x (IntoExprColumn | float): `DOUBLE` expression
 
         Examples:
+            ```sql
             (SUM(x*y) - SUM(x) * SUM(y) / COUNT(*)) / (COUNT(*) - 1)
+            ```
 
         Returns:
             Self
@@ -844,7 +940,9 @@ class Fns(DuckHandler):
             *args (IntoExpr): `ANY` expression
 
         Examples:
+            ```sql
             create_sort_key('A', 'DESC')
+            ```
 
         Returns:
             Self
@@ -859,7 +957,9 @@ class Fns(DuckHandler):
         **SQL name**: *currval*
 
         Examples:
+            ```sql
             currval('my_sequence_name')
+            ```
 
         Returns:
             Self
@@ -879,9 +979,11 @@ class Fns(DuckHandler):
             varchar (IntoExprColumn | None): `VARCHAR` expression
 
         Examples:
+            ```sql
             decode('\xc3\xbc'::BLOB)
             decode('\xa0'::BLOB, 'replace')
             decode('\xa0'::BLOB, 'ignore')
+            ```
 
         Returns:
             Self
@@ -894,7 +996,9 @@ class Fns(DuckHandler):
         **SQL name**: *degrees*
 
         Examples:
+            ```sql
             degrees(pi())
+            ```
 
         Returns:
             Self
@@ -915,7 +1019,9 @@ class Fns(DuckHandler):
             key (IntoExprColumn): `K` expression
 
         Examples:
+            ```sql
             element_at(map(['key'], ['val']), 'key')
+            ```
 
         Returns:
             Self
@@ -930,7 +1036,9 @@ class Fns(DuckHandler):
         **SQL name**: *encode*
 
         Examples:
+            ```sql
             encode('my_string_with_ü')
+            ```
 
         Returns:
             Self
@@ -965,7 +1073,9 @@ class Fns(DuckHandler):
             nice_rounding (IntoExprColumn | bool): `BOOLEAN` expression
 
         Examples:
+            ```sql
             equi_width_bins(0, 10, 2, true)
+            ```
 
         Returns:
             Self
@@ -980,7 +1090,9 @@ class Fns(DuckHandler):
         **SQL name**: *error*
 
         Examples:
+            ```sql
             error('access_mode')
+            ```
 
         Returns:
             Self
@@ -993,7 +1105,9 @@ class Fns(DuckHandler):
         **SQL name**: *even*
 
         Examples:
+            ```sql
             even(2.9)
+            ```
 
         Returns:
             Self
@@ -1006,7 +1120,9 @@ class Fns(DuckHandler):
         **SQL name**: *exp*
 
         Examples:
+            ```sql
             exp(1)
+            ```
 
         Returns:
             Self
@@ -1021,7 +1137,9 @@ class Fns(DuckHandler):
         **SQL name**: *factorial*
 
         Examples:
+            ```sql
             4!
+            ```
 
         Returns:
             Self
@@ -1034,7 +1152,9 @@ class Fns(DuckHandler):
         **SQL name**: *favg*
 
         Examples:
+            ```sql
             favg(A)
+            ```
 
         Returns:
             Self
@@ -1082,7 +1202,9 @@ class Fns(DuckHandler):
         **SQL name**: *first*
 
         Examples:
+            ```sql
             first(A)
+            ```
 
         Returns:
             Self
@@ -1105,7 +1227,9 @@ class Fns(DuckHandler):
         **SQL name**: *floor*
 
         Examples:
+            ```sql
             floor(17.4)
+            ```
 
         Returns:
             Self
@@ -1186,7 +1310,9 @@ class Fns(DuckHandler):
             kahan_sum, sumkahan
 
         Examples:
+            ```sql
             fsum(A)
+            ```
 
         Returns:
             Self
@@ -1199,7 +1325,9 @@ class Fns(DuckHandler):
         **SQL name**: *gamma*
 
         Examples:
+            ```sql
             gamma(5.5)
+            ```
 
         Returns:
             Self
@@ -1218,7 +1346,9 @@ class Fns(DuckHandler):
             y (IntoExprColumn | int): `BIGINT | HUGEINT` expression
 
         Examples:
+            ```sql
             gcd(42, 57)
+            ```
 
         Returns:
             Self
@@ -1267,7 +1397,9 @@ class Fns(DuckHandler):
             index (IntoExprColumn | int): `INTEGER` expression
 
         Examples:
+            ```sql
             get_bit('0110010'::BIT, 2)
+            ```
 
         Returns:
             Self
@@ -1290,7 +1422,9 @@ class Fns(DuckHandler):
         **SQL name**: *get_type*
 
         Examples:
+            ```sql
             get_type('abc')
+            ```
 
         Returns:
             Self
@@ -1319,7 +1453,9 @@ class Fns(DuckHandler):
             y (IntoExprColumn | int): `BIGINT | HUGEINT` expression
 
         Examples:
+            ```sql
             greatest_common_divisor(42, 57)
+            ```
 
         Returns:
             Self
@@ -1338,7 +1474,9 @@ class Fns(DuckHandler):
             arg (IntoExprColumn | None): `VARCHAR` expression
 
         Examples:
+            ```sql
             group_concat(A, '-')
+            ```
 
         Returns:
             Self
@@ -1354,7 +1492,9 @@ class Fns(DuckHandler):
             to_hex
 
         Examples:
+            ```sql
             hex(42)
+            ```
 
         Returns:
             Self
@@ -1370,7 +1510,9 @@ class Fns(DuckHandler):
             col1 (IntoExpr | None): `ANY[]` expression
 
         Examples:
+            ```sql
             histogram(A)
+            ```
 
         Returns:
             Self
@@ -1386,7 +1528,9 @@ class Fns(DuckHandler):
             bins (IntoExpr): `ANY[]` expression
 
         Examples:
+            ```sql
             histogram_exact(A, [0, 1, 2])
+            ```
 
         Returns:
             Self
@@ -1402,7 +1546,9 @@ class Fns(DuckHandler):
             array_agg
 
         Examples:
+            ```sql
             list(A)
+            ```
 
         Returns:
             Self
@@ -1418,7 +1564,9 @@ class Fns(DuckHandler):
             schema_name (IntoExprColumn): `VARCHAR` expression
 
         Examples:
+            ```sql
             in_search_path('memory', 'main')
+            ```
 
         Returns:
             Self
@@ -1431,7 +1579,9 @@ class Fns(DuckHandler):
         **SQL name**: *isfinite*
 
         Examples:
+            ```sql
             isfinite(5.5)
+            ```
 
         Returns:
             Self
@@ -1439,12 +1589,14 @@ class Fns(DuckHandler):
         return self._new(func("isfinite", self.inner()))
 
     def is_histogram_other_bin(self) -> Self:
-        """Whether or not the provided value is the histogram "other" bin (used for values not belonging to any provided bin).
+        """Whether or not the provided value is the histogram other bin (used for values not belonging to any provided bin).
 
         **SQL name**: *is_histogram_other_bin*
 
         Examples:
+            ```sql
             is_histogram_other_bin(v)
+            ```
 
         Returns:
             Self
@@ -1457,7 +1609,9 @@ class Fns(DuckHandler):
         **SQL name**: *isinf*
 
         Examples:
+            ```sql
             isinf('Infinity'::float)
+            ```
 
         Returns:
             Self
@@ -1470,7 +1624,9 @@ class Fns(DuckHandler):
         **SQL name**: *isnan*
 
         Examples:
+            ```sql
             isnan('NaN'::FLOAT)
+            ```
 
         Returns:
             Self
@@ -1486,7 +1642,9 @@ class Fns(DuckHandler):
             fsum, sumkahan
 
         Examples:
+            ```sql
             kahan_sum(A)
+            ```
 
         Returns:
             Self
@@ -1535,7 +1693,9 @@ class Fns(DuckHandler):
         **SQL name**: *last*
 
         Examples:
+            ```sql
             last(A)
+            ```
 
         Returns:
             Self
@@ -1564,7 +1724,9 @@ class Fns(DuckHandler):
             y (IntoExprColumn | int): `BIGINT | HUGEINT` expression
 
         Examples:
+            ```sql
             lcm(42, 57)
+            ```
 
         Returns:
             Self
@@ -1597,7 +1759,9 @@ class Fns(DuckHandler):
             y (IntoExprColumn | int): `BIGINT | HUGEINT` expression
 
         Examples:
+            ```sql
             least_common_multiple(42, 57)
+            ```
 
         Returns:
             Self
@@ -1613,7 +1777,9 @@ class Fns(DuckHandler):
             char_length, character_length, length
 
         Examples:
+            ```sql
             length(42::TINYINT::BIT)
+            ```
 
         Returns:
             Self
@@ -1629,7 +1795,9 @@ class Fns(DuckHandler):
             char_length, character_length, len
 
         Examples:
+            ```sql
             length(42::TINYINT::BIT)
+            ```
 
         Returns:
             Self
@@ -1642,7 +1810,9 @@ class Fns(DuckHandler):
         **SQL name**: *lgamma*
 
         Examples:
+            ```sql
             lgamma(2)
+            ```
 
         Returns:
             Self
@@ -1661,7 +1831,9 @@ class Fns(DuckHandler):
             arg (IntoExprColumn | None): `VARCHAR` expression
 
         Examples:
+            ```sql
             listagg(A, '-')
+            ```
 
         Returns:
             Self
@@ -1674,7 +1846,9 @@ class Fns(DuckHandler):
         **SQL name**: *ln*
 
         Examples:
+            ```sql
             ln(2)
+            ```
 
         Returns:
             Self
@@ -1687,7 +1861,9 @@ class Fns(DuckHandler):
         **SQL name**: *log10*
 
         Examples:
+            ```sql
             log10(1000)
+            ```
 
         Returns:
             Self
@@ -1700,7 +1876,9 @@ class Fns(DuckHandler):
         **SQL name**: *log2*
 
         Examples:
+            ```sql
             log2(8)
+            ```
 
         Returns:
             Self
@@ -1717,7 +1895,9 @@ class Fns(DuckHandler):
         **SQL name**: *mad*
 
         Examples:
+            ```sql
             mad(x)
+            ```
 
         Returns:
             Self
@@ -1733,7 +1913,9 @@ class Fns(DuckHandler):
             *args (IntoExpr): `ANY` expression
 
         Examples:
+            ```sql
             make_type('DECIMAL', 10, 2)
+            ```
 
         Returns:
             Self
@@ -1749,7 +1931,9 @@ class Fns(DuckHandler):
             col1 (IntoExprColumn | int | None): `BIGINT` expression
 
         Examples:
+            ```sql
             max(A)
+            ```
 
         Returns:
             Self
@@ -1771,7 +1955,9 @@ class Fns(DuckHandler):
             col2 (IntoExprColumn | int | None): `BIGINT` expression
 
         Examples:
+            ```sql
             max_by(A, B)
+            ```
 
         Returns:
             Self
@@ -1784,7 +1970,9 @@ class Fns(DuckHandler):
         **SQL name**: *md5*
 
         Examples:
+            ```sql
             md5('\xaa\xbb'::BLOB)
+            ```
 
         Returns:
             Self
@@ -1797,7 +1985,9 @@ class Fns(DuckHandler):
         **SQL name**: *md5_number*
 
         Examples:
+            ```sql
             md5_number('\xaa\xbb'::BLOB)
+            ```
 
         Returns:
             Self
@@ -1830,7 +2020,9 @@ class Fns(DuckHandler):
         **SQL name**: *mean*
 
         Examples:
+            ```sql
             SUM(x) / COUNT(*)
+            ```
 
         Returns:
             Self
@@ -1849,7 +2041,9 @@ class Fns(DuckHandler):
         **SQL name**: *median*
 
         Examples:
+            ```sql
             median(x)
+            ```
 
         Returns:
             Self
@@ -1865,7 +2059,9 @@ class Fns(DuckHandler):
             col1 (IntoExprColumn | int | None): `BIGINT` expression
 
         Examples:
+            ```sql
             min(A)
+            ```
 
         Returns:
             Self
@@ -1887,7 +2083,9 @@ class Fns(DuckHandler):
             col2 (IntoExprColumn | int | None): `BIGINT` expression
 
         Examples:
+            ```sql
             min_by(A, B)
+            ```
 
         Returns:
             Self
@@ -1915,7 +2113,9 @@ class Fns(DuckHandler):
             y (IntoExprColumn | float): `DOUBLE | FLOAT` expression
 
         Examples:
+            ```sql
             nextafter(1::float, 2::float)
+            ```
 
         Returns:
             Self
@@ -1928,7 +2128,9 @@ class Fns(DuckHandler):
         **SQL name**: *nextval*
 
         Examples:
+            ```sql
             nextval('my_sequence_name')
+            ```
 
         Returns:
             Self
@@ -1990,7 +2192,9 @@ class Fns(DuckHandler):
         **SQL name**: *octet_length*
 
         Examples:
+            ```sql
             octet_length('\xaa\xbb'::BLOB)
+            ```
 
         Returns:
             Self
@@ -2006,7 +2210,9 @@ class Fns(DuckHandler):
             message (IntoExprColumn): `VARCHAR` expression
 
         Examples:
+            ```sql
             parse_duckdb_log_message('FileSystem', log_message)
+            ```
 
         Returns:
             Self
@@ -2019,7 +2225,9 @@ class Fns(DuckHandler):
         **SQL name**: *product*
 
         Examples:
+            ```sql
             product(A)
+            ```
 
         Returns:
             Self
@@ -2037,7 +2245,9 @@ class Fns(DuckHandler):
             pos (IntoExprColumn | SeqLiteral[float] | float): `DOUBLE | DOUBLE[]` expression
 
         Examples:
+            ```sql
             quantile_cont(x, 0.5)
+            ```
 
         Returns:
             Self
@@ -2057,7 +2267,9 @@ class Fns(DuckHandler):
             pos (IntoExprColumn | SeqLiteral[float] | float | None): `DOUBLE | DOUBLE[]` expression
 
         Examples:
+            ```sql
             quantile_disc(x, 0.5)
+            ```
 
         Returns:
             Self
@@ -2070,7 +2282,9 @@ class Fns(DuckHandler):
         **SQL name**: *radians*
 
         Examples:
+            ```sql
             radians(90)
+            ```
 
         Returns:
             Self
@@ -2112,7 +2326,9 @@ class Fns(DuckHandler):
             x (IntoExprColumn | float): `DOUBLE` expression
 
         Examples:
+            ```sql
             (SUM(x*y) - SUM(x) * SUM(y) / COUNT(*)) / COUNT(*)
+            ```
 
         Returns:
             Self
@@ -2128,7 +2344,9 @@ class Fns(DuckHandler):
             x (IntoExprColumn | float): `DOUBLE` expression
 
         Examples:
+            ```sql
             AVG(y)-REGR_SLOPE(y, x)*AVG(x)
+            ```
 
         Returns:
             Self
@@ -2157,7 +2375,9 @@ class Fns(DuckHandler):
             x (IntoExprColumn | float): `DOUBLE` expression
 
         Examples:
+            ```sql
             COVAR_POP(x, y) / VAR_POP(x)
+            ```
 
         Returns:
             Self
@@ -2173,7 +2393,9 @@ class Fns(DuckHandler):
             x (IntoExprColumn | float): `DOUBLE` expression
 
         Examples:
+            ```sql
             REGR_COUNT(y, x) * VAR_POP(x)
+            ```
 
         Returns:
             Self
@@ -2189,7 +2411,9 @@ class Fns(DuckHandler):
             x (IntoExprColumn | float): `DOUBLE` expression
 
         Examples:
+            ```sql
             REGR_COUNT(y, x) * COVAR_POP(y, x)
+            ```
 
         Returns:
             Self
@@ -2205,7 +2429,9 @@ class Fns(DuckHandler):
             x (IntoExprColumn | float): `DOUBLE` expression
 
         Examples:
+            ```sql
             REGR_COUNT(y, x) * VAR_POP(y)
+            ```
 
         Returns:
             Self
@@ -2225,7 +2451,9 @@ class Fns(DuckHandler):
             defaults (IntoExpr): `ANY` expression
 
         Examples:
+            ```sql
             remap_struct({'i': 1, 'j': 2}, NULL::ROW(v1 INT, v2 INT, v3 INT), {'v1': 'j', 'v3': 'i'}, {'v2': NULL::INTEGER})
+            ```
 
         Returns:
             Self
@@ -2243,7 +2471,9 @@ class Fns(DuckHandler):
             count (IntoExprColumn | int): `BIGINT` expression
 
         Examples:
+            ```sql
             repeat('\xaa\xbb'::BLOB, 5)
+            ```
 
         Returns:
             Self
@@ -2260,7 +2490,9 @@ class Fns(DuckHandler):
             type2 (IntoExpr): `ANY` expression
 
         Examples:
+            ```sql
             replace_type({duck: 3.141592653589793::DOUBLE}, NULL::DOUBLE, NULL::DECIMAL(15,2))
+            ```
 
         Returns:
             Self
@@ -2281,7 +2513,9 @@ class Fns(DuckHandler):
             sample_size (IntoExprColumn | int | None): `INTEGER` expression
 
         Examples:
+            ```sql
             reservoir_quantile(A, 0.5, 1024)
+            ```
 
         Returns:
             Self
@@ -2312,7 +2546,9 @@ class Fns(DuckHandler):
             precision (IntoExprColumn | int | None): `INTEGER` expression
 
         Examples:
+            ```sql
             round(42.4332, 2)
+            ```
 
         Returns:
             Self
@@ -2341,7 +2577,9 @@ class Fns(DuckHandler):
             *args (IntoExpr): `ANY` expression
 
         Examples:
+            ```sql
             row(i, i % 4, i / 4)
+            ```
 
         Returns:
             Self
@@ -2385,7 +2623,9 @@ class Fns(DuckHandler):
             new_value (IntoExprColumn | int): `INTEGER` expression
 
         Examples:
+            ```sql
             set_bit('0110010'::BIT, 2, 0)
+            ```
 
         Returns:
             Self
@@ -2398,7 +2638,9 @@ class Fns(DuckHandler):
         **SQL name**: *setseed*
 
         Examples:
+            ```sql
             setseed(0.42)
+            ```
 
         Returns:
             Self
@@ -2411,7 +2653,9 @@ class Fns(DuckHandler):
         **SQL name**: *sha1*
 
         Examples:
+            ```sql
             sha1('\xaa\xbb'::BLOB)
+            ```
 
         Returns:
             Self
@@ -2424,7 +2668,9 @@ class Fns(DuckHandler):
         **SQL name**: *sha256*
 
         Examples:
+            ```sql
             sha256('\xaa\xbb'::BLOB)
+            ```
 
         Returns:
             Self
@@ -2450,7 +2696,9 @@ class Fns(DuckHandler):
         **SQL name**: *sign*
 
         Examples:
+            ```sql
             sign(-349)
+            ```
 
         Returns:
             Self
@@ -2463,7 +2711,9 @@ class Fns(DuckHandler):
         **SQL name**: *signbit*
 
         Examples:
+            ```sql
             signbit(-0.0)
+            ```
 
         Returns:
             Self
@@ -2476,7 +2726,9 @@ class Fns(DuckHandler):
         **SQL name**: *sin*
 
         Examples:
+            ```sql
             sin(90)
+            ```
 
         Returns:
             Self
@@ -2489,7 +2741,9 @@ class Fns(DuckHandler):
         **SQL name**: *sinh*
 
         Examples:
+            ```sql
             sinh(1)
+            ```
 
         Returns:
             Self
@@ -2502,7 +2756,9 @@ class Fns(DuckHandler):
         **SQL name**: *skewness*
 
         Examples:
+            ```sql
             skewness(A)
+            ```
 
         Returns:
             Self
@@ -2515,7 +2771,9 @@ class Fns(DuckHandler):
         **SQL name**: *sleep_ms*
 
         Examples:
+            ```sql
             sleep_ms(100)
+            ```
 
         Returns:
             Self
@@ -2542,7 +2800,9 @@ class Fns(DuckHandler):
         **SQL name**: *sqrt*
 
         Examples:
+            ```sql
             sqrt(4)
+            ```
 
         Returns:
             Self
@@ -2557,7 +2817,9 @@ class Fns(DuckHandler):
         **SQL name**: *stats*
 
         Examples:
+            ```sql
             stats(5)
+            ```
 
         Returns:
             Self
@@ -2570,7 +2832,9 @@ class Fns(DuckHandler):
         **SQL name**: *stddev_pop*
 
         Examples:
+            ```sql
             sqrt(var_pop(x))
+            ```
 
         Returns:
             Self
@@ -2583,7 +2847,9 @@ class Fns(DuckHandler):
         **SQL name**: *stddev_samp*
 
         Examples:
+            ```sql
             sqrt(var_samp(x))
+            ```
 
         Returns:
             Self
@@ -2596,7 +2862,9 @@ class Fns(DuckHandler):
         **SQL name**: *sum*
 
         Examples:
+            ```sql
             sum(A)
+            ```
 
         Returns:
             Self
@@ -2611,7 +2879,9 @@ class Fns(DuckHandler):
         **SQL name**: *sum_no_overflow*
 
         Examples:
+            ```sql
             sum_no_overflow(A)
+            ```
 
         Returns:
             Self
@@ -2627,7 +2897,9 @@ class Fns(DuckHandler):
             fsum, kahan_sum
 
         Examples:
+            ```sql
             sumkahan(A)
+            ```
 
         Returns:
             Self
@@ -2646,7 +2918,9 @@ class Fns(DuckHandler):
             value (IntoExprColumn | None): `V` expression
 
         Examples:
+            ```sql
             switch(x, map({1 : 1}, default)
+            ```
 
         Returns:
             Self
@@ -2659,7 +2933,9 @@ class Fns(DuckHandler):
         **SQL name**: *tan*
 
         Examples:
+            ```sql
             tan(90)
+            ```
 
         Returns:
             Self
@@ -2672,7 +2948,9 @@ class Fns(DuckHandler):
         **SQL name**: *tanh*
 
         Examples:
+            ```sql
             tanh(1)
+            ```
 
         Returns:
             Self
@@ -2688,7 +2966,9 @@ class Fns(DuckHandler):
             bin
 
         Examples:
+            ```sql
             to_binary(42)
+            ```
 
         Returns:
             Self
@@ -2704,7 +2984,9 @@ class Fns(DuckHandler):
             hex
 
         Examples:
+            ```sql
             to_hex(42)
+            ```
 
         Returns:
             Self
@@ -2733,7 +3015,9 @@ class Fns(DuckHandler):
             values (IntoExprColumn): `V[]` expression
 
         Examples:
+            ```sql
             map(['key1', 'key2'], ['val1', 'val2'])
+            ```
 
         Returns:
             Self
@@ -2749,7 +3033,9 @@ class Fns(DuckHandler):
             col1 (IntoExprColumn | int | None): `INTEGER` expression
 
         Examples:
+            ```sql
             trunc(17.4)
+            ```
 
         Returns:
             Self
@@ -2767,7 +3053,9 @@ class Fns(DuckHandler):
             format_arg (IntoExprColumn | SeqLiteral[str]): `VARCHAR | VARCHAR[]` expression
 
         Examples:
+            ```sql
             try_strptime('Wed, 1 January 1992 - 08:38:40 PM', '%a, %-d %B %Y - %I:%M:%S %p')
+            ```
 
         Returns:
             Self
@@ -2780,7 +3068,9 @@ class Fns(DuckHandler):
         **SQL name**: *typeof*
 
         Examples:
+            ```sql
             typeof('abc')
+            ```
 
         Returns:
             Self
@@ -2798,7 +3088,9 @@ class Fns(DuckHandler):
             tag (IntoExprColumn): `VARCHAR` expression
 
         Examples:
+            ```sql
             union_extract(s, 'k')
+            ```
 
         Returns:
             Self
@@ -2811,7 +3103,9 @@ class Fns(DuckHandler):
         **SQL name**: *union_tag*
 
         Examples:
+            ```sql
             union_tag(union_value(k := 'foo'))
+            ```
 
         Returns:
             Self
@@ -2829,7 +3123,9 @@ class Fns(DuckHandler):
             *args (IntoExpr): `ANY` expression
 
         Examples:
+            ```sql
             union_value(k := 'hello')
+            ```
 
         Returns:
             Self
@@ -2842,7 +3138,9 @@ class Fns(DuckHandler):
         **SQL name**: *uuid_extract_timestamp*
 
         Examples:
+            ```sql
             uuid_extract_timestamp('019482e4-1441-7aad-8127-eec99573b0a0')
+            ```
 
         Returns:
             Self
@@ -2855,7 +3153,9 @@ class Fns(DuckHandler):
         **SQL name**: *uuid_extract_version*
 
         Examples:
+            ```sql
             uuid_extract_version('019482e4-1441-7aad-8127-eec99573b0a0')
+            ```
 
         Returns:
             Self
@@ -2878,7 +3178,9 @@ class Fns(DuckHandler):
         **SQL name**: *var_samp*
 
         Examples:
+            ```sql
             (SUM(x^2) - SUM(x)^2 / COUNT(x)) / (COUNT(x) - 1)
+            ```
 
         Returns:
             Self
@@ -2904,7 +3206,9 @@ class Fns(DuckHandler):
         **SQL name**: *variant_normalize*
 
         Examples:
+            ```sql
             variant_normalize({'b': [1,2,3], 'a': 42})::VARIANT)
+            ```
 
         Returns:
             Self
@@ -2927,7 +3231,9 @@ class Fns(DuckHandler):
         **SQL name**: *variant_typeof*
 
         Examples:
+            ```sql
             variant_typeof({'a': 42, 'b': [1,2,3]})::VARIANT)
+            ```
 
         Returns:
             Self
@@ -2940,7 +3246,9 @@ class Fns(DuckHandler):
         **SQL name**: *vector_type*
 
         Examples:
+            ```sql
             vector_type(col)
+            ```
 
         Returns:
             Self
@@ -2982,7 +3290,9 @@ class Fns(DuckHandler):
             *args (IntoExpr): `ANY` expression
 
         Examples:
+            ```sql
             write_log('Hello')
+            ```
 
         Returns:
             Self
@@ -2998,7 +3308,9 @@ class Fns(DuckHandler):
             right (IntoExprColumn | bytes | bytearray | memoryview | int): `BIGINT | BIT | HUGEINT | INTEGER | SMALLINT | TINYINT | UBIGINT | UHUGEINT | UINTEGER | USMALLINT | UTINYINT` expression
 
         Examples:
+            ```sql
             xor(17, 5)
+            ```
 
         Returns:
             Self
@@ -3022,7 +3334,9 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
             *args (IntoExpr): `ANY` expression
 
         Examples:
+            ```sql
             list_aggregate([1, 2, NULL], 'min')
+            ```
 
         Returns:
             T
@@ -3042,7 +3356,9 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
             *args (IntoExpr): `ANY` expression
 
         Examples:
+            ```sql
             aggregate([1, 2, NULL], 'min')
+            ```
 
         Returns:
             T
@@ -3086,7 +3402,9 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
             lambda_arg (IntoExprColumn): `LAMBDA` expression
 
         Examples:
+            ```sql
             apply([1, 2, 3], lambda x : x + 1)
+            ```
 
         Returns:
             T
@@ -3179,7 +3497,9 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
             *args (IntoExpr): `ANY[]` expression
 
         Examples:
+            ```sql
             list_cat([2, 3], [4, 5, 6], [7])
+            ```
 
         Returns:
             T
@@ -3195,7 +3515,9 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
             character_length, len, length
 
         Examples:
+            ```sql
             char_length([1,2,3])
+            ```
 
         Returns:
             T
@@ -3211,7 +3533,9 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
             char_length, len, length
 
         Examples:
+            ```sql
             character_length([1,2,3])
+            ```
 
         Returns:
             T
@@ -3234,7 +3558,9 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
             *args (IntoExpr): `ANY[]` expression
 
         Examples:
+            ```sql
             list_concat([2, 3], [4, 5, 6], [7])
+            ```
 
         Returns:
             T
@@ -3253,7 +3579,9 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
             element (IntoExpr): `T` expression
 
         Examples:
+            ```sql
             list_contains([1, 2, NULL], 1)
+            ```
 
         Returns:
             T
@@ -3269,7 +3597,9 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
             list2 (IntoExprColumn | SeqLiteral[float]): `DOUBLE[] | FLOAT[]` expression
 
         Examples:
+            ```sql
             list_cosine_distance([1, 2, 3], [1, 2, 3])
+            ```
 
         Returns:
             T
@@ -3285,7 +3615,9 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
             list2 (IntoExprColumn | SeqLiteral[float]): `DOUBLE[] | FLOAT[]` expression
 
         Examples:
+            ```sql
             list_cosine_similarity([1, 2, 3], [1, 2, 3])
+            ```
 
         Returns:
             T
@@ -3311,7 +3643,9 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
             list2 (IntoExprColumn | SeqLiteral[float]): `DOUBLE[] | FLOAT[]` expression
 
         Examples:
+            ```sql
             list_distance([1, 2, 3], [1, 2, 5])
+            ```
 
         Returns:
             T
@@ -3329,7 +3663,9 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
             array_distinct
 
         Examples:
+            ```sql
             list_distinct([1, 1, NULL, -3, 1, 5])
+            ```
 
         Returns:
             T
@@ -3348,7 +3684,9 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
             list2 (IntoExprColumn | SeqLiteral[float]): `DOUBLE[] | FLOAT[]` expression
 
         Examples:
+            ```sql
             list_dot_product([1, 2, 3], [1, 2, 3])
+            ```
 
         Returns:
             T
@@ -3367,7 +3705,9 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
             index (IntoExprColumn | int): `BIGINT` expression
 
         Examples:
+            ```sql
             list_element([4, 5, 6], 3)
+            ```
 
         Returns:
             T
@@ -3396,7 +3736,9 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
             index (IntoExprColumn | int): `BIGINT` expression
 
         Examples:
+            ```sql
             list_extract([4, 5, 6], 3)
+            ```
 
         Returns:
             T
@@ -3419,7 +3761,9 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         **SQL name**: *flatten*
 
         Examples:
+            ```sql
             flatten([[1, 2, 3], [4, 5]])
+            ```
 
         Returns:
             T
@@ -3440,7 +3784,9 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
             step (IntoExprColumn | int | timedelta | None): `BIGINT | INTERVAL` expression
 
         Examples:
+            ```sql
             generate_series(2, 5, 3)
+            ```
 
         Returns:
             T
@@ -3462,7 +3808,9 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
             col2 (IntoExprColumn | None): `VARCHAR` expression
 
         Examples:
+            ```sql
             grade_up([3, 6, 1, 2])
+            ```
 
         Returns:
             T
@@ -3481,7 +3829,9 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
             element (IntoExpr): `T` expression
 
         Examples:
+            ```sql
             list_has([1, 2, NULL], 1)
+            ```
 
         Returns:
             T
@@ -3502,7 +3852,9 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
             list2 (IntoExpr): `T[]` expression
 
         Examples:
+            ```sql
             list_has_all([1, 2, 3], [2, 3])
+            ```
 
         Returns:
             T
@@ -3523,7 +3875,9 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
             list2 (IntoExpr): `T[]` expression
 
         Examples:
+            ```sql
             list_has_any([1, 2, 3], [2, 3, 4])
+            ```
 
         Returns:
             T
@@ -3554,7 +3908,9 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
             element (IntoExpr): `T` expression
 
         Examples:
+            ```sql
             list_indexof([1, 2, NULL], 2)
+            ```
 
         Returns:
             T
@@ -3573,7 +3929,9 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
             list2 (IntoExprColumn | SeqLiteral[float]): `DOUBLE[] | FLOAT[]` expression
 
         Examples:
+            ```sql
             list_inner_product([1, 2, 3], [1, 2, 3])
+            ```
 
         Returns:
             T
@@ -3592,7 +3950,9 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
             list2 (IntoExpr): `T[]` expression
 
         Examples:
+            ```sql
             list_intersect([1, 2, 3], [2, 3, 4])
+            ```
 
         Returns:
             T
@@ -3638,7 +3998,9 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
             char_length, character_length, length
 
         Examples:
+            ```sql
             length([1,2,3])
+            ```
 
         Returns:
             T
@@ -3654,7 +4016,9 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
             char_length, character_length, len
 
         Examples:
+            ```sql
             length([1,2,3])
+            ```
 
         Returns:
             T
@@ -3723,7 +4087,9 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
             list2 (IntoExprColumn | SeqLiteral[float]): `DOUBLE[] | FLOAT[]` expression
 
         Examples:
+            ```sql
             list_negative_dot_product([1, 2, 3], [1, 2, 3])
+            ```
 
         Returns:
             T
@@ -3742,7 +4108,9 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
             list2 (IntoExprColumn | SeqLiteral[float]): `DOUBLE[] | FLOAT[]` expression
 
         Examples:
+            ```sql
             list_negative_inner_product([1, 2, 3], [1, 2, 3])
+            ```
 
         Returns:
             T
@@ -3761,7 +4129,9 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
             *args (IntoExpr): `T` expression
 
         Examples:
+            ```sql
             list_pack(4, 5, 6)
+            ```
 
         Returns:
             T
@@ -3782,7 +4152,9 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
             element (IntoExpr): `T` expression
 
         Examples:
+            ```sql
             list_position([1, 2, NULL], 2)
+            ```
 
         Returns:
             T
@@ -3826,7 +4198,9 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
             step (IntoExprColumn | int | timedelta | None): `BIGINT | INTERVAL` expression
 
         Examples:
+            ```sql
             range(2, 5, 3)
+            ```
 
         Returns:
             T
@@ -3850,7 +4224,9 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
             initial_value (IntoExpr | None): `ANY` expression
 
         Examples:
+            ```sql
             list_reduce([1, 2, 3], lambda x, y : x + y)
+            ```
 
         Returns:
             T
@@ -3872,7 +4248,9 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
             value (IntoExpr | None): `ANY` expression
 
         Examples:
+            ```sql
             list_resize([1, 2, 3], 5, 0)
+            ```
 
         Returns:
             T
@@ -3901,7 +4279,9 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
             col1 (IntoExprColumn | None): `VARCHAR` expression
 
         Examples:
+            ```sql
             list_reverse_sort([3, 6, 1, 2])
+            ```
 
         Returns:
             T
@@ -3920,7 +4300,9 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
             index_list (IntoExprColumn | SeqLiteral[int]): `BIGINT[]` expression
 
         Examples:
+            ```sql
             list_select([10, 20, 30, 40], [1, 4])
+            ```
 
         Returns:
             T
@@ -3965,7 +4347,9 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
             step (IntoExprColumn | int | None): `BIGINT` expression
 
         Examples:
+            ```sql
             list_slice([4, 5, 6], 2, 3)
+            ```
 
         Returns:
             T
@@ -3987,7 +4371,9 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
             col2 (IntoExprColumn | None): `VARCHAR` expression
 
         Examples:
+            ```sql
             list_sort([3, 6, 1, 2])
+            ```
 
         Returns:
             T
@@ -4048,7 +4434,9 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
             lambda_arg (IntoExprColumn): `LAMBDA` expression
 
         Examples:
+            ```sql
             list_transform([1, 2, 3], lambda x : x + 1)
+            ```
 
         Returns:
             T
@@ -4064,7 +4452,9 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
             array_unique
 
         Examples:
+            ```sql
             list_unique([1, 1, NULL, -3, 1, 5])
+            ```
 
         Returns:
             T
@@ -4080,7 +4470,9 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
             *args (IntoExpr): `ANY` expression
 
         Examples:
+            ```sql
             unpivot_list(4, 5, 6)
+            ```
 
         Returns:
             T
@@ -4099,7 +4491,9 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
             *args (IntoExpr): `T` expression
 
         Examples:
+            ```sql
             list_value(4, 5, 6)
+            ```
 
         Returns:
             T
@@ -4138,7 +4532,9 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
             mask_list (IntoExprColumn | SeqLiteral[bool]): `BOOLEAN[]` expression
 
         Examples:
+            ```sql
             list_where([10, 20, 30, 40], [true, false, false, true])
+            ```
 
         Returns:
             T
@@ -4161,9 +4557,11 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
             *args (IntoExpr): `ANY` expression
 
         Examples:
+            ```sql
             list_zip([1, 2], [3, 4], [5, 6])
             list_zip([1, 2], [3, 4], [5, 6, 7])
             list_zip([1, 2], [3, 4], [5, 6, 7], true)
+            ```
 
         Returns:
             T
@@ -4183,7 +4581,9 @@ class StructFns[T: Fns](NameSpaceHandler[T]):
             *args (IntoExpr): `ANY` expression
 
         Examples:
+            ```sql
             struct_concat(struct_pack(i := 4), struct_pack(s := 'string'))
+            ```
 
         Returns:
             T
@@ -4202,7 +4602,9 @@ class StructFns[T: Fns](NameSpaceHandler[T]):
             entry (IntoExpr): `ANY` expression
 
         Examples:
+            ```sql
             struct_contains(ROW(3, 3, 0), 3)
+            ```
 
         Returns:
             T
@@ -4218,7 +4620,9 @@ class StructFns[T: Fns](NameSpaceHandler[T]):
             entry (IntoExprColumn | int): `BIGINT | VARCHAR` expression
 
         Examples:
+            ```sql
             struct_extract({'i': 3, 'v2': 3, 'v3': 0}, 'i')
+            ```
 
         Returns:
             T
@@ -4234,7 +4638,9 @@ class StructFns[T: Fns](NameSpaceHandler[T]):
             entry (IntoExprColumn | int): `BIGINT` expression
 
         Examples:
+            ```sql
             struct_extract_at({'i': 3, 'v2': 3, 'v3': 0}, 2)
+            ```
 
         Returns:
             T
@@ -4253,7 +4659,9 @@ class StructFns[T: Fns](NameSpaceHandler[T]):
             entry (IntoExpr): `ANY` expression
 
         Examples:
+            ```sql
             struct_has(ROW(3, 3, 0), 3)
+            ```
 
         Returns:
             T
@@ -4272,7 +4680,9 @@ class StructFns[T: Fns](NameSpaceHandler[T]):
             entry (IntoExpr): `ANY` expression
 
         Examples:
+            ```sql
             struct_indexof(ROW(3, 3, 0), 3)
+            ```
 
         Returns:
             T
@@ -4290,7 +4700,9 @@ class StructFns[T: Fns](NameSpaceHandler[T]):
             *args (IntoExpr): `ANY` expression
 
         Examples:
+            ```sql
             struct_insert({'a': 1}, b := 2)
+            ```
 
         Returns:
             T
@@ -4303,7 +4715,9 @@ class StructFns[T: Fns](NameSpaceHandler[T]):
         **SQL name**: *struct_keys*
 
         Examples:
+            ```sql
             struct_keys({'a': 1, 'b': 2})
+            ```
 
         Returns:
             T
@@ -4321,7 +4735,9 @@ class StructFns[T: Fns](NameSpaceHandler[T]):
             *args (IntoExpr): `ANY` expression
 
         Examples:
+            ```sql
             struct_pack(i := 4, s := 'string')
+            ```
 
         Returns:
             T
@@ -4340,7 +4756,9 @@ class StructFns[T: Fns](NameSpaceHandler[T]):
             entry (IntoExpr): `ANY` expression
 
         Examples:
+            ```sql
             struct_position(ROW(3, 3, 0), 3)
+            ```
 
         Returns:
             T
@@ -4358,7 +4776,9 @@ class StructFns[T: Fns](NameSpaceHandler[T]):
             *args (IntoExpr): `ANY` expression
 
         Examples:
+            ```sql
             struct_update({'a': 1}, a := 2)
+            ```
 
         Returns:
             T
@@ -4371,7 +4791,9 @@ class StructFns[T: Fns](NameSpaceHandler[T]):
         **SQL name**: *struct_values*
 
         Examples:
+            ```sql
             struct_values({'a': 1, 'b': 'world'})
+            ```
 
         Returns:
             T
@@ -4388,7 +4810,9 @@ class RegexFns[T: Fns](NameSpaceHandler[T]):
         **SQL name**: *regexp_escape*
 
         Examples:
+            ```sql
             regexp_escape('https://duckdb.org')
+            ```
 
         Returns:
             T
@@ -4417,7 +4841,9 @@ class RegexFns[T: Fns](NameSpaceHandler[T]):
             options (IntoExprColumn | None): `VARCHAR` expression
 
         Examples:
+            ```sql
             regexp_extract('abcde', '[a-z]{3}')
+            ```
 
         Returns:
             T
@@ -4442,7 +4868,9 @@ class RegexFns[T: Fns](NameSpaceHandler[T]):
             options (IntoExprColumn | None): `VARCHAR` expression
 
         Examples:
+            ```sql
             regexp_extract_all('Peter: 33, Paul:14', '(\w+):\s*(\d+)', 2)
+            ```
 
         Returns:
             T
@@ -4469,7 +4897,9 @@ class RegexFns[T: Fns](NameSpaceHandler[T]):
             options (IntoExprColumn | None): `VARCHAR` expression
 
         Examples:
+            ```sql
             regexp_extract('2023-04-15', '(\d+)-(\d+)-(\d+)', ['y', 'm', 'd'])
+            ```
 
         Returns:
             T
@@ -4492,7 +4922,9 @@ class RegexFns[T: Fns](NameSpaceHandler[T]):
             col2 (IntoExprColumn | None): `VARCHAR` expression
 
         Examples:
+            ```sql
             regexp_full_match('anabanana', '(an)*')
+            ```
 
         Returns:
             T
@@ -4513,7 +4945,9 @@ class RegexFns[T: Fns](NameSpaceHandler[T]):
             options (IntoExprColumn | None): `VARCHAR` expression
 
         Examples:
+            ```sql
             regexp_matches('anabanana', '(an)*')
+            ```
 
         Returns:
             T
@@ -4538,7 +4972,9 @@ class RegexFns[T: Fns](NameSpaceHandler[T]):
             options (IntoExprColumn | None): `VARCHAR` expression
 
         Examples:
+            ```sql
             regexp_replace('hello', '[lo]', '-')
+            ```
 
         Returns:
             T
@@ -4564,7 +5000,9 @@ class RegexFns[T: Fns](NameSpaceHandler[T]):
             options (IntoExprColumn | None): `VARCHAR` expression
 
         Examples:
+            ```sql
             regexp_split_to_array('hello world; 42', ';? ')
+            ```
 
         Returns:
             T
@@ -4600,7 +5038,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
             arg (IntoExprColumn | None): `VARCHAR` expression
 
         Examples:
+            ```sql
             string_agg(A, '-')
+            ```
 
         Returns:
             T
@@ -4613,7 +5053,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         **SQL name**: *ascii*
 
         Examples:
+            ```sql
             ascii('Ω')
+            ```
 
         Returns:
             T
@@ -4638,7 +5080,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
             width (IntoExprColumn | float | None): `DOUBLE` expression
 
         Examples:
+            ```sql
             bar(5, 0, 20, 10)
+            ```
 
         Returns:
             T
@@ -4654,7 +5098,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
             to_base64
 
         Examples:
+            ```sql
             base64('A'::BLOB)
+            ```
 
         Returns:
             T
@@ -4670,7 +5116,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
             to_binary
 
         Examples:
+            ```sql
             bin('Aa')
+            ```
 
         Returns:
             T
@@ -4683,7 +5131,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         **SQL name**: *bit_length*
 
         Examples:
+            ```sql
             bit_length('abc')
+            ```
 
         Returns:
             T
@@ -4699,7 +5149,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
             character_length, len, length
 
         Examples:
+            ```sql
             char_length('Hello🦆')
+            ```
 
         Returns:
             T
@@ -4715,7 +5167,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
             char_length, len, length
 
         Examples:
+            ```sql
             character_length('Hello🦆')
+            ```
 
         Returns:
             T
@@ -4728,7 +5182,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         **SQL name**: *chr*
 
         Examples:
+            ```sql
             chr(65)
+            ```
 
         Returns:
             T
@@ -4747,7 +5203,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
             *args (IntoExpr): `ANY` expression
 
         Examples:
+            ```sql
             concat_ws(', ', 'Banana', 'Apple', 'Melon')
+            ```
 
         Returns:
             T
@@ -4763,7 +5221,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
             search_string (IntoExprColumn): `VARCHAR` expression
 
         Examples:
+            ```sql
             contains('abc', 'a')
+            ```
 
         Returns:
             T
@@ -4783,7 +5243,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
             s2 (IntoExprColumn): `VARCHAR` expression
 
         Examples:
+            ```sql
             damerau_levenshtein('duckdb', 'udckbd')
+            ```
 
         Returns:
             T
@@ -4804,7 +5266,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
             s2 (IntoExprColumn): `VARCHAR` expression
 
         Examples:
+            ```sql
             editdist3('duck', 'db')
+            ```
 
         Returns:
             T
@@ -4823,7 +5287,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
             search_string (IntoExprColumn): `VARCHAR` expression
 
         Examples:
+            ```sql
             ends_with('abc', 'bc')
+            ```
 
         Returns:
             T
@@ -4839,7 +5305,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
             *args (IntoExpr): `ANY` expression
 
         Examples:
+            ```sql
             format('Benchmark "{}" took {} seconds', 'CSV', 42)
+            ```
 
         Returns:
             T
@@ -4855,7 +5323,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
             formatReadableSize
 
         Examples:
+            ```sql
             format_bytes(16_000)
+            ```
 
         Returns:
             T
@@ -4868,7 +5338,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         **SQL name**: *formatReadableDecimalSize*
 
         Examples:
+            ```sql
             formatReadableDecimalSize(16_000)
+            ```
 
         Returns:
             T
@@ -4884,7 +5356,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
             format_bytes
 
         Examples:
+            ```sql
             formatReadableSize(16_000)
+            ```
 
         Returns:
             T
@@ -4897,7 +5371,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         **SQL name**: *from_base64*
 
         Examples:
+            ```sql
             from_base64('QQ==')
+            ```
 
         Returns:
             T
@@ -4913,7 +5389,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
             unbin
 
         Examples:
+            ```sql
             from_binary('0110')
+            ```
 
         Returns:
             T
@@ -4929,7 +5407,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
             unhex
 
         Examples:
+            ```sql
             from_hex('2A')
+            ```
 
         Returns:
             T
@@ -4952,7 +5432,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
             s2 (IntoExprColumn): `VARCHAR` expression
 
         Examples:
+            ```sql
             hamming('duck', 'luck')
+            ```
 
         Returns:
             T
@@ -4970,7 +5452,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
             *args (IntoExpr): `ANY` expression
 
         Examples:
+            ```sql
             hash('🦆')
+            ```
 
         Returns:
             T
@@ -4986,7 +5470,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
             to_hex
 
         Examples:
+            ```sql
             hex('Hello')
+            ```
 
         Returns:
             T
@@ -5007,7 +5493,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
             escape_character (IntoExprColumn): `VARCHAR` expression
 
         Examples:
+            ```sql
             ilike_escape('A%c', 'a$%C', '$')
+            ```
 
         Returns:
             T
@@ -5030,7 +5518,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
             search_string (IntoExprColumn): `VARCHAR` expression
 
         Examples:
+            ```sql
             instr('test test', 'es')
+            ```
 
         Returns:
             T
@@ -5050,7 +5540,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
             s2 (IntoExprColumn): `VARCHAR` expression
 
         Examples:
+            ```sql
             jaccard('duck', 'luck')
+            ```
 
         Returns:
             T
@@ -5077,7 +5569,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
             score_cutoff (IntoExprColumn | float | None): `DOUBLE` expression
 
         Examples:
+            ```sql
             jaro_similarity('duck', 'duckdb')
+            ```
 
         Returns:
             T
@@ -5104,7 +5598,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
             score_cutoff (IntoExprColumn | float | None): `DOUBLE` expression
 
         Examples:
+            ```sql
             jaro_winkler_similarity('duck', 'duckdb')
+            ```
 
         Returns:
             T
@@ -5122,7 +5618,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
             lower
 
         Examples:
+            ```sql
             lcase('Hello')
+            ```
 
         Returns:
             T
@@ -5138,7 +5636,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
             count (IntoExprColumn | int): `BIGINT` expression
 
         Examples:
+            ```sql
             left('Hello🦆', 2)
+            ```
 
         Returns:
             T
@@ -5154,7 +5654,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
             count (IntoExprColumn | int): `BIGINT` expression
 
         Examples:
+            ```sql
             left_grapheme('🤦🏼‍♂️🤦🏽‍♀️', 1)
+            ```
 
         Returns:
             T
@@ -5170,7 +5672,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
             char_length, character_length, length
 
         Examples:
+            ```sql
             length('Hello🦆')
+            ```
 
         Returns:
             T
@@ -5186,7 +5690,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
             char_length, character_length, len
 
         Examples:
+            ```sql
             length('Hello🦆')
+            ```
 
         Returns:
             T
@@ -5199,7 +5705,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         **SQL name**: *length_grapheme*
 
         Examples:
+            ```sql
             length_grapheme('🤦🏼‍♂️🤦🏽‍♀️')
+            ```
 
         Returns:
             T
@@ -5220,7 +5728,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
             s2 (IntoExprColumn): `VARCHAR` expression
 
         Examples:
+            ```sql
             levenshtein('duck', 'db')
+            ```
 
         Returns:
             T
@@ -5241,7 +5751,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
             escape_character (IntoExprColumn): `VARCHAR` expression
 
         Examples:
+            ```sql
             like_escape('a%c', 'a$%c', '$')
+            ```
 
         Returns:
             T
@@ -5259,7 +5771,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
             lcase
 
         Examples:
+            ```sql
             lower('Hello')
+            ```
 
         Returns:
             T
@@ -5278,7 +5792,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
             character (IntoExprColumn): `VARCHAR` expression
 
         Examples:
+            ```sql
             lpad('hello', 8, '>')
+            ```
 
         Returns:
             T
@@ -5296,8 +5812,10 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
             characters (IntoExprColumn | None): `VARCHAR` expression
 
         Examples:
+            ```sql
             ltrim('    test  ')
             ltrim('>>>>test<<', '><')
+            ```
 
         Returns:
             T
@@ -5310,7 +5828,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         **SQL name**: *md5*
 
         Examples:
+            ```sql
             md5('abc')
+            ```
 
         Returns:
             T
@@ -5323,7 +5843,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         **SQL name**: *md5_number*
 
         Examples:
+            ```sql
             md5_number('abc')
+            ```
 
         Returns:
             T
@@ -5346,7 +5868,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
             s2 (IntoExprColumn): `VARCHAR` expression
 
         Examples:
+            ```sql
             mismatches('duck', 'luck')
+            ```
 
         Returns:
             T
@@ -5361,7 +5885,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         **SQL name**: *nfc_normalize*
 
         Examples:
+            ```sql
             nfc_normalize('ardèch')
+            ```
 
         Returns:
             T
@@ -5382,7 +5908,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
             escape_character (IntoExprColumn): `VARCHAR` expression
 
         Examples:
+            ```sql
             not_ilike_escape('A%c', 'a$%C', '$')
+            ```
 
         Returns:
             T
@@ -5405,7 +5933,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
             escape_character (IntoExprColumn): `VARCHAR` expression
 
         Examples:
+            ```sql
             not_like_escape('a%c', 'a$%c', '$')
+            ```
 
         Returns:
             T
@@ -5423,7 +5953,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
             unicode
 
         Examples:
+            ```sql
             [unicode('âbcd'), unicode('â'), unicode(''), unicode(NULL)]
+            ```
 
         Returns:
             T
@@ -5441,7 +5973,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
             separator (IntoExprColumn | None): `VARCHAR` expression
 
         Examples:
+            ```sql
             parse_dirname('path/to/file.csv', 'system')
+            ```
 
         Returns:
             T
@@ -5459,7 +5993,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
             separator (IntoExprColumn | None): `VARCHAR` expression
 
         Examples:
+            ```sql
             parse_dirpath('path/to/file.csv', 'forward_slash')
+            ```
 
         Returns:
             T
@@ -5484,7 +6020,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
             separator (IntoExprColumn | None): `VARCHAR` expression
 
         Examples:
+            ```sql
             parse_filename('path/to/file.csv', true, 'forward_slash')
+            ```
 
         Returns:
             T
@@ -5499,7 +6037,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         **SQL name**: *parse_formatted_bytes*
 
         Examples:
+            ```sql
             parse_formatted_bytes('16 KiB')
+            ```
 
         Returns:
             T
@@ -5517,7 +6057,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
             separator (IntoExprColumn | None): `VARCHAR` expression
 
         Examples:
+            ```sql
             parse_path('path/to/file.csv', 'system')
+            ```
 
         Returns:
             T
@@ -5538,7 +6080,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
             search_string (IntoExprColumn): `VARCHAR` expression
 
         Examples:
+            ```sql
             position('b' IN 'abc')
+            ```
 
         Returns:
             T
@@ -5554,7 +6098,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
             search_string (IntoExprColumn): `VARCHAR` expression
 
         Examples:
+            ```sql
             prefix('abc', 'ab')
+            ```
 
         Returns:
             T
@@ -5570,7 +6116,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
             *args (IntoExpr): `ANY` expression
 
         Examples:
+            ```sql
             printf('Benchmark "%s" took %d seconds', 'CSV', 42)
+            ```
 
         Returns:
             T
@@ -5586,7 +6134,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
             count (IntoExprColumn | int): `BIGINT` expression
 
         Examples:
+            ```sql
             repeat('A', 5)
+            ```
 
         Returns:
             T
@@ -5603,7 +6153,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
             target (IntoExprColumn): `VARCHAR` expression
 
         Examples:
+            ```sql
             replace('hello', 'l', '-')
+            ```
 
         Returns:
             T
@@ -5616,7 +6168,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         **SQL name**: *reverse*
 
         Examples:
+            ```sql
             reverse('hello')
+            ```
 
         Returns:
             T
@@ -5632,7 +6186,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
             count (IntoExprColumn | int): `BIGINT` expression
 
         Examples:
+            ```sql
             right('Hello🦆', 3)
+            ```
 
         Returns:
             T
@@ -5648,7 +6204,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
             count (IntoExprColumn | int): `BIGINT` expression
 
         Examples:
+            ```sql
             right_grapheme('🤦🏼‍♂️🤦🏽‍♀️', 1)
+            ```
 
         Returns:
             T
@@ -5667,7 +6225,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
             character (IntoExprColumn): `VARCHAR` expression
 
         Examples:
+            ```sql
             rpad('hello', 10, '<')
+            ```
 
         Returns:
             T
@@ -5685,8 +6245,10 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
             characters (IntoExprColumn | None): `VARCHAR` expression
 
         Examples:
+            ```sql
             rtrim('    test  ')
             rtrim('>>>>test<<', '><')
+            ```
 
         Returns:
             T
@@ -5699,7 +6261,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         **SQL name**: *sha1*
 
         Examples:
+            ```sql
             sha1('🦆')
+            ```
 
         Returns:
             T
@@ -5712,7 +6276,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         **SQL name**: *sha256*
 
         Examples:
+            ```sql
             sha256('🦆')
+            ```
 
         Returns:
             T
@@ -5731,7 +6297,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
             separator (IntoExprColumn): `VARCHAR` expression
 
         Examples:
+            ```sql
             split('hello-world', '-')
+            ```
 
         Returns:
             T
@@ -5755,7 +6323,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
             options (IntoExprColumn | None): `VARCHAR` expression
 
         Examples:
+            ```sql
             string_split_regex('hello world; 42', ';? ')
+            ```
 
         Returns:
             T
@@ -5771,7 +6341,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
             search_string (IntoExprColumn): `VARCHAR` expression
 
         Examples:
+            ```sql
             starts_with('abc', 'a')
+            ```
 
         Returns:
             T
@@ -5784,7 +6356,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         **SQL name**: *strip_accents*
 
         Examples:
+            ```sql
             strip_accents('mühleisen')
+            ```
 
         Returns:
             T
@@ -5797,7 +6371,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         **SQL name**: *strlen*
 
         Examples:
+            ```sql
             strlen('🦆')
+            ```
 
         Returns:
             T
@@ -5818,7 +6394,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
             search_string (IntoExprColumn): `VARCHAR` expression
 
         Examples:
+            ```sql
             strpos('test test', 'es')
+            ```
 
         Returns:
             T
@@ -5844,8 +6422,10 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
             length (IntoExprColumn | int | None): `BIGINT` expression
 
         Examples:
+            ```sql
             substring('Hello', 2)
             substring('Hello', 2, 2)
+            ```
 
         Returns:
             T
@@ -5871,8 +6451,10 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
             length (IntoExprColumn | int | None): `BIGINT` expression
 
         Examples:
+            ```sql
             substring('Hello', 2)
             substring('Hello', 2, 2)
+            ```
 
         Returns:
             T
@@ -5895,8 +6477,10 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
             length (IntoExprColumn | int | None): `BIGINT` expression
 
         Examples:
+            ```sql
             substring_grapheme('🦆🤦🏼‍♂️🤦🏽‍♀️🦆', 3)
             substring_grapheme('🦆🤦🏼‍♂️🤦🏽‍♀️🦆', 3, 2)
+            ```
 
         Returns:
             T
@@ -5915,7 +6499,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
             search_string (IntoExprColumn): `VARCHAR` expression
 
         Examples:
+            ```sql
             suffix('abc', 'bc')
+            ```
 
         Returns:
             T
@@ -5934,7 +6520,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
             separator (IntoExprColumn): `VARCHAR` expression
 
         Examples:
+            ```sql
             string_to_array('hello-world', '-')
+            ```
 
         Returns:
             T
@@ -5955,7 +6543,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
             min_length (IntoExprColumn | int | None): `INTEGER` expression
 
         Examples:
+            ```sql
             to_base(42, 16, 5)
+            ```
 
         Returns:
             T
@@ -5971,7 +6561,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
             base64
 
         Examples:
+            ```sql
             to_base64('A'::BLOB)
+            ```
 
         Returns:
             T
@@ -5987,7 +6579,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
             bin
 
         Examples:
+            ```sql
             to_binary('Aa')
+            ```
 
         Returns:
             T
@@ -6003,7 +6597,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
             hex
 
         Examples:
+            ```sql
             to_hex('Hello')
+            ```
 
         Returns:
             T
@@ -6022,7 +6618,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
             to (IntoExprColumn): `VARCHAR` expression
 
         Examples:
+            ```sql
             translate('12345', '143', 'ax')
+            ```
 
         Returns:
             T
@@ -6040,8 +6638,10 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
             characters (IntoExprColumn | None): `VARCHAR` expression
 
         Examples:
+            ```sql
             trim('    test  ')
             trim('>>>>test<<', '><')
+            ```
 
         Returns:
             T
@@ -6057,7 +6657,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
             upper
 
         Examples:
+            ```sql
             ucase('Hello')
+            ```
 
         Returns:
             T
@@ -6073,7 +6675,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
             from_binary
 
         Examples:
+            ```sql
             unbin('0110')
+            ```
 
         Returns:
             T
@@ -6089,7 +6693,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
             from_hex
 
         Examples:
+            ```sql
             unhex('2A')
+            ```
 
         Returns:
             T
@@ -6105,7 +6711,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
             ord
 
         Examples:
+            ```sql
             [unicode('âbcd'), unicode('â'), unicode(''), unicode(NULL)]
+            ```
 
         Returns:
             T
@@ -6121,7 +6729,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
             ucase
 
         Examples:
+            ```sql
             upper('Hello')
+            ```
 
         Returns:
             T
@@ -6134,7 +6744,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         **SQL name**: *url_decode*
 
         Examples:
+            ```sql
             url_decode('https%3A%2F%2Fduckdb.org%2Fwhy_duckdb%23portable')
+            ```
 
         Returns:
             T
@@ -6147,7 +6759,9 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
         **SQL name**: *url_encode*
 
         Examples:
+            ```sql
             url_encode('this string has/ special+ characters>')
+            ```
 
         Returns:
             T
@@ -6177,7 +6791,9 @@ class DateTimeFns[T: Fns](NameSpaceHandler[T]):
         **SQL name**: *century*
 
         Examples:
+            ```sql
             century(timestamp '2021-08-03 11:59:44.123456')
+            ```
 
         Returns:
             T
@@ -6190,7 +6806,9 @@ class DateTimeFns[T: Fns](NameSpaceHandler[T]):
         **SQL name**: *day*
 
         Examples:
+            ```sql
             day(timestamp '2021-08-03 11:59:44.123456')
+            ```
 
         Returns:
             T
@@ -6203,7 +6821,9 @@ class DateTimeFns[T: Fns](NameSpaceHandler[T]):
         **SQL name**: *dayname*
 
         Examples:
+            ```sql
             dayname(TIMESTAMP '1992-03-22')
+            ```
 
         Returns:
             T
@@ -6216,7 +6836,9 @@ class DateTimeFns[T: Fns](NameSpaceHandler[T]):
         **SQL name**: *dayofmonth*
 
         Examples:
+            ```sql
             dayofmonth(timestamp '2021-08-03 11:59:44.123456')
+            ```
 
         Returns:
             T
@@ -6229,7 +6851,9 @@ class DateTimeFns[T: Fns](NameSpaceHandler[T]):
         **SQL name**: *dayofweek*
 
         Examples:
+            ```sql
             dayofweek(timestamp '2021-08-03 11:59:44.123456')
+            ```
 
         Returns:
             T
@@ -6242,7 +6866,9 @@ class DateTimeFns[T: Fns](NameSpaceHandler[T]):
         **SQL name**: *dayofyear*
 
         Examples:
+            ```sql
             dayofyear(timestamp '2021-08-03 11:59:44.123456')
+            ```
 
         Returns:
             T
@@ -6265,7 +6891,9 @@ class DateTimeFns[T: Fns](NameSpaceHandler[T]):
         **SQL name**: *decade*
 
         Examples:
+            ```sql
             decade(timestamp '2021-08-03 11:59:44.123456')
+            ```
 
         Returns:
             T
@@ -6286,7 +6914,9 @@ class DateTimeFns[T: Fns](NameSpaceHandler[T]):
             enddate (IntoExprColumn | date | datetime | time): `DATE | TIME | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
 
         Examples:
+            ```sql
             datediff('hour', TIMESTAMPTZ '1992-09-30 23:59:59', TIMESTAMPTZ '1992-10-01 01:58:00')
+            ```
 
         Returns:
             T
@@ -6299,7 +6929,9 @@ class DateTimeFns[T: Fns](NameSpaceHandler[T]):
         **SQL name**: *epoch*
 
         Examples:
+            ```sql
             epoch(timestamp '2021-08-03 11:59:44.123456')
+            ```
 
         Returns:
             T
@@ -6312,7 +6944,9 @@ class DateTimeFns[T: Fns](NameSpaceHandler[T]):
         **SQL name**: *epoch_ms*
 
         Examples:
+            ```sql
             epoch_ms(timestamp '2021-08-03 11:59:44.123456')
+            ```
 
         Returns:
             T
@@ -6325,7 +6959,9 @@ class DateTimeFns[T: Fns](NameSpaceHandler[T]):
         **SQL name**: *epoch_ns*
 
         Examples:
+            ```sql
             epoch_ns(timestamp '2021-08-03 11:59:44.123456')
+            ```
 
         Returns:
             T
@@ -6338,7 +6974,9 @@ class DateTimeFns[T: Fns](NameSpaceHandler[T]):
         **SQL name**: *epoch_us*
 
         Examples:
+            ```sql
             epoch_us(timestamp '2021-08-03 11:59:44.123456')
+            ```
 
         Returns:
             T
@@ -6351,7 +6989,9 @@ class DateTimeFns[T: Fns](NameSpaceHandler[T]):
         **SQL name**: *era*
 
         Examples:
+            ```sql
             era(timestamp '2021-08-03 11:59:44.123456')
+            ```
 
         Returns:
             T
@@ -6364,7 +7004,9 @@ class DateTimeFns[T: Fns](NameSpaceHandler[T]):
         **SQL name**: *hour*
 
         Examples:
+            ```sql
             hour(timestamp '2021-08-03 11:59:44.123456')
+            ```
 
         Returns:
             T
@@ -6377,7 +7019,9 @@ class DateTimeFns[T: Fns](NameSpaceHandler[T]):
         **SQL name**: *isodow*
 
         Examples:
+            ```sql
             isodow(timestamp '2021-08-03 11:59:44.123456')
+            ```
 
         Returns:
             T
@@ -6390,7 +7034,9 @@ class DateTimeFns[T: Fns](NameSpaceHandler[T]):
         **SQL name**: *isoyear*
 
         Examples:
+            ```sql
             isoyear(timestamp '2021-08-03 11:59:44.123456')
+            ```
 
         Returns:
             T
@@ -6403,7 +7049,9 @@ class DateTimeFns[T: Fns](NameSpaceHandler[T]):
         **SQL name**: *julian*
 
         Examples:
+            ```sql
             julian(timestamp '2006-01-01 12:00')
+            ```
 
         Returns:
             T
@@ -6416,7 +7064,9 @@ class DateTimeFns[T: Fns](NameSpaceHandler[T]):
         **SQL name**: *last_day*
 
         Examples:
+            ```sql
             last_day(TIMESTAMP '1992-03-22 01:02:03.1234')
+            ```
 
         Returns:
             T
@@ -6447,7 +7097,9 @@ class DateTimeFns[T: Fns](NameSpaceHandler[T]):
             day (IntoExprColumn | int | None): `BIGINT` expression
 
         Examples:
+            ```sql
             make_date(1992, 9, 20)
+            ```
 
         Returns:
             T
@@ -6466,7 +7118,9 @@ class DateTimeFns[T: Fns](NameSpaceHandler[T]):
             seconds (IntoExprColumn | float): `DOUBLE` expression
 
         Examples:
+            ```sql
             make_time(13, 34, 27.123456)
+            ```
 
         Returns:
             T
@@ -6493,7 +7147,9 @@ class DateTimeFns[T: Fns](NameSpaceHandler[T]):
             seconds (IntoExprColumn | float | None): `DOUBLE` expression
 
         Examples:
+            ```sql
             make_timestamp(1992, 9, 20, 13, 34, 27.123456)
+            ```
 
         Returns:
             T
@@ -6508,7 +7164,9 @@ class DateTimeFns[T: Fns](NameSpaceHandler[T]):
         **SQL name**: *make_timestamp_ms*
 
         Examples:
+            ```sql
             make_timestamp_ms(1732117793000000)
+            ```
 
         Returns:
             T
@@ -6521,7 +7179,9 @@ class DateTimeFns[T: Fns](NameSpaceHandler[T]):
         **SQL name**: *make_timestamp_ns*
 
         Examples:
+            ```sql
             make_timestamp_ns(1732117793000000000)
+            ```
 
         Returns:
             T
@@ -6562,7 +7222,9 @@ class DateTimeFns[T: Fns](NameSpaceHandler[T]):
         **SQL name**: *microsecond*
 
         Examples:
+            ```sql
             microsecond(timestamp '2021-08-03 11:59:44.123456')
+            ```
 
         Returns:
             T
@@ -6575,7 +7237,9 @@ class DateTimeFns[T: Fns](NameSpaceHandler[T]):
         **SQL name**: *millennium*
 
         Examples:
+            ```sql
             millennium(timestamp '2021-08-03 11:59:44.123456')
+            ```
 
         Returns:
             T
@@ -6588,7 +7252,9 @@ class DateTimeFns[T: Fns](NameSpaceHandler[T]):
         **SQL name**: *millisecond*
 
         Examples:
+            ```sql
             millisecond(timestamp '2021-08-03 11:59:44.123456')
+            ```
 
         Returns:
             T
@@ -6601,7 +7267,9 @@ class DateTimeFns[T: Fns](NameSpaceHandler[T]):
         **SQL name**: *minute*
 
         Examples:
+            ```sql
             minute(timestamp '2021-08-03 11:59:44.123456')
+            ```
 
         Returns:
             T
@@ -6614,7 +7282,9 @@ class DateTimeFns[T: Fns](NameSpaceHandler[T]):
         **SQL name**: *month*
 
         Examples:
+            ```sql
             month(timestamp '2021-08-03 11:59:44.123456')
+            ```
 
         Returns:
             T
@@ -6627,7 +7297,9 @@ class DateTimeFns[T: Fns](NameSpaceHandler[T]):
         **SQL name**: *monthname*
 
         Examples:
+            ```sql
             monthname(TIMESTAMP '1992-09-20')
+            ```
 
         Returns:
             T
@@ -6640,7 +7312,9 @@ class DateTimeFns[T: Fns](NameSpaceHandler[T]):
         **SQL name**: *nanosecond*
 
         Examples:
+            ```sql
             nanosecond(timestamp_ns '2021-08-03 11:59:44.123456789')
+            ```
 
         Returns:
             T
@@ -6653,7 +7327,9 @@ class DateTimeFns[T: Fns](NameSpaceHandler[T]):
         **SQL name**: *normalized_interval*
 
         Examples:
+            ```sql
             normalized_interval(INTERVAL '30 days')
+            ```
 
         Returns:
             T
@@ -6669,7 +7345,9 @@ class DateTimeFns[T: Fns](NameSpaceHandler[T]):
             col1 (IntoExprColumn | date | datetime | time | timedelta): `DATE | INTERVAL | TIME | TIME_NS | TIME WITH TIME ZONE | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
 
         Examples:
+            ```sql
             datepart('minute', TIMESTAMP '1992-09-20 20:38:40')
+            ```
 
         Returns:
             T
@@ -6682,7 +7360,9 @@ class DateTimeFns[T: Fns](NameSpaceHandler[T]):
         **SQL name**: *quarter*
 
         Examples:
+            ```sql
             quarter(timestamp '2021-08-03 11:59:44.123456')
+            ```
 
         Returns:
             T
@@ -6695,7 +7375,9 @@ class DateTimeFns[T: Fns](NameSpaceHandler[T]):
         **SQL name**: *second*
 
         Examples:
+            ```sql
             second(timestamp '2021-08-03 11:59:44.123456')
+            ```
 
         Returns:
             T
@@ -6716,7 +7398,9 @@ class DateTimeFns[T: Fns](NameSpaceHandler[T]):
             enddate (IntoExprColumn | date | datetime | time): `DATE | TIME | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
 
         Examples:
+            ```sql
             datesub('hour', TIMESTAMPTZ '1992-09-30 23:59:59', TIMESTAMPTZ '1992-10-01 01:58:00')
+            ```
 
         Returns:
             T
@@ -6741,7 +7425,9 @@ class DateTimeFns[T: Fns](NameSpaceHandler[T]):
             origin (IntoExprColumn | date | datetime | timedelta | None): `DATE | INTERVAL | TIMESTAMP | TIMESTAMP WITH TIME ZONE | VARCHAR` expression
 
         Examples:
+            ```sql
             time_bucket(INTERVAL '2 weeks', TIMESTAMP '1992-04-20 15:26:00-07', TIMESTAMP '1992-04-01 00:00:00-07')
+            ```
 
         Returns:
             T
@@ -6754,7 +7440,9 @@ class DateTimeFns[T: Fns](NameSpaceHandler[T]):
         **SQL name**: *timetz_byte_comparable*
 
         Examples:
+            ```sql
             timetz_byte_comparable('18:18:16.21-07:00'::TIMETZ)
+            ```
 
         Returns:
             T
@@ -6770,7 +7458,9 @@ class DateTimeFns[T: Fns](NameSpaceHandler[T]):
             col1 (IntoExprColumn | datetime | None): `TIME WITH TIME ZONE | TIMESTAMP | TIMESTAMP WITH TIME ZONE` expression
 
         Examples:
+            ```sql
             timezone(timestamp '2021-08-03 11:59:44.123456')
+            ```
 
         Returns:
             T
@@ -6783,7 +7473,9 @@ class DateTimeFns[T: Fns](NameSpaceHandler[T]):
         **SQL name**: *timezone_hour*
 
         Examples:
+            ```sql
             timezone_hour(timestamp '2021-08-03 11:59:44.123456')
+            ```
 
         Returns:
             T
@@ -6796,7 +7488,9 @@ class DateTimeFns[T: Fns](NameSpaceHandler[T]):
         **SQL name**: *timezone_minute*
 
         Examples:
+            ```sql
             timezone_minute(timestamp '2021-08-03 11:59:44.123456')
+            ```
 
         Returns:
             T
@@ -6809,7 +7503,9 @@ class DateTimeFns[T: Fns](NameSpaceHandler[T]):
         **SQL name**: *to_centuries*
 
         Examples:
+            ```sql
             to_centuries(5)
+            ```
 
         Returns:
             T
@@ -6822,7 +7518,9 @@ class DateTimeFns[T: Fns](NameSpaceHandler[T]):
         **SQL name**: *to_days*
 
         Examples:
+            ```sql
             to_days(5)
+            ```
 
         Returns:
             T
@@ -6835,7 +7533,9 @@ class DateTimeFns[T: Fns](NameSpaceHandler[T]):
         **SQL name**: *to_decades*
 
         Examples:
+            ```sql
             to_decades(5)
+            ```
 
         Returns:
             T
@@ -6848,7 +7548,9 @@ class DateTimeFns[T: Fns](NameSpaceHandler[T]):
         **SQL name**: *to_hours*
 
         Examples:
+            ```sql
             to_hours(5)
+            ```
 
         Returns:
             T
@@ -6861,7 +7563,9 @@ class DateTimeFns[T: Fns](NameSpaceHandler[T]):
         **SQL name**: *to_microseconds*
 
         Examples:
+            ```sql
             to_microseconds(5)
+            ```
 
         Returns:
             T
@@ -6874,7 +7578,9 @@ class DateTimeFns[T: Fns](NameSpaceHandler[T]):
         **SQL name**: *to_millennia*
 
         Examples:
+            ```sql
             to_millennia(1)
+            ```
 
         Returns:
             T
@@ -6887,7 +7593,9 @@ class DateTimeFns[T: Fns](NameSpaceHandler[T]):
         **SQL name**: *to_milliseconds*
 
         Examples:
+            ```sql
             to_milliseconds(5.5)
+            ```
 
         Returns:
             T
@@ -6900,7 +7608,9 @@ class DateTimeFns[T: Fns](NameSpaceHandler[T]):
         **SQL name**: *to_minutes*
 
         Examples:
+            ```sql
             to_minutes(5)
+            ```
 
         Returns:
             T
@@ -6913,7 +7623,9 @@ class DateTimeFns[T: Fns](NameSpaceHandler[T]):
         **SQL name**: *to_months*
 
         Examples:
+            ```sql
             to_months(5)
+            ```
 
         Returns:
             T
@@ -6926,7 +7638,9 @@ class DateTimeFns[T: Fns](NameSpaceHandler[T]):
         **SQL name**: *to_quarters*
 
         Examples:
+            ```sql
             to_quarters(5)
+            ```
 
         Returns:
             T
@@ -6939,7 +7653,9 @@ class DateTimeFns[T: Fns](NameSpaceHandler[T]):
         **SQL name**: *to_seconds*
 
         Examples:
+            ```sql
             to_seconds(5.5)
+            ```
 
         Returns:
             T
@@ -6952,7 +7668,9 @@ class DateTimeFns[T: Fns](NameSpaceHandler[T]):
         **SQL name**: *to_timestamp*
 
         Examples:
+            ```sql
             to_timestamp(1284352323.5)
+            ```
 
         Returns:
             T
@@ -6965,7 +7683,9 @@ class DateTimeFns[T: Fns](NameSpaceHandler[T]):
         **SQL name**: *to_weeks*
 
         Examples:
+            ```sql
             to_weeks(5)
+            ```
 
         Returns:
             T
@@ -6978,7 +7698,9 @@ class DateTimeFns[T: Fns](NameSpaceHandler[T]):
         **SQL name**: *to_years*
 
         Examples:
+            ```sql
             to_years(5)
+            ```
 
         Returns:
             T
@@ -6991,7 +7713,9 @@ class DateTimeFns[T: Fns](NameSpaceHandler[T]):
         **SQL name**: *week*
 
         Examples:
+            ```sql
             week(timestamp '2021-08-03 11:59:44.123456')
+            ```
 
         Returns:
             T
@@ -7004,7 +7728,9 @@ class DateTimeFns[T: Fns](NameSpaceHandler[T]):
         **SQL name**: *weekday*
 
         Examples:
+            ```sql
             weekday(timestamp '2021-08-03 11:59:44.123456')
+            ```
 
         Returns:
             T
@@ -7017,7 +7743,9 @@ class DateTimeFns[T: Fns](NameSpaceHandler[T]):
         **SQL name**: *weekofyear*
 
         Examples:
+            ```sql
             weekofyear(timestamp '2021-08-03 11:59:44.123456')
+            ```
 
         Returns:
             T
@@ -7030,7 +7758,9 @@ class DateTimeFns[T: Fns](NameSpaceHandler[T]):
         **SQL name**: *year*
 
         Examples:
+            ```sql
             year(timestamp '2021-08-03 11:59:44.123456')
+            ```
 
         Returns:
             T
@@ -7043,7 +7773,9 @@ class DateTimeFns[T: Fns](NameSpaceHandler[T]):
         **SQL name**: *yearweek*
 
         Examples:
+            ```sql
             yearweek(timestamp '2021-08-03 11:59:44.123456')
+            ```
 
         Returns:
             T
@@ -7063,7 +7795,9 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
             list
 
         Examples:
+            ```sql
             array_agg(A)
+            ```
 
         Returns:
             T
@@ -7083,7 +7817,9 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
             *args (IntoExpr): `ANY` expression
 
         Examples:
+            ```sql
             array_aggr([1, 2, NULL], 'min')
+            ```
 
         Returns:
             T
@@ -7103,7 +7839,9 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
             *args (IntoExpr): `ANY` expression
 
         Examples:
+            ```sql
             array_aggregate([1, 2, NULL], 'min')
+            ```
 
         Returns:
             T
@@ -7137,7 +7875,9 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
             lambda_arg (IntoExprColumn): `LAMBDA` expression
 
         Examples:
+            ```sql
             array_apply([1, 2, 3], lambda x : x + 1)
+            ```
 
         Returns:
             T
@@ -7160,7 +7900,9 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
             *args (IntoExpr): `ANY[]` expression
 
         Examples:
+            ```sql
             array_cat([2, 3], [4, 5, 6], [7])
+            ```
 
         Returns:
             T
@@ -7183,7 +7925,9 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
             *args (IntoExpr): `ANY[]` expression
 
         Examples:
+            ```sql
             array_concat([2, 3], [4, 5, 6], [7])
+            ```
 
         Returns:
             T
@@ -7202,7 +7946,9 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
             element (IntoExpr): `T` expression
 
         Examples:
+            ```sql
             array_contains([1, 2, NULL], 1)
+            ```
 
         Returns:
             T
@@ -7222,7 +7968,9 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
             array2 (IntoExprColumn | float): `DOUBLE[ANY] | FLOAT[ANY]` expression
 
         Examples:
+            ```sql
             array_cosine_distance(array_value(1.0::FLOAT, 2.0::FLOAT, 3.0::FLOAT), array_value(2.0::FLOAT, 3.0::FLOAT, 4.0::FLOAT))
+            ```
 
         Returns:
             T
@@ -7242,7 +7990,9 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
             array2 (IntoExprColumn | float): `DOUBLE[ANY] | FLOAT[ANY]` expression
 
         Examples:
+            ```sql
             array_cosine_similarity(array_value(1.0::FLOAT, 2.0::FLOAT, 3.0::FLOAT), array_value(2.0::FLOAT, 3.0::FLOAT, 4.0::FLOAT))
+            ```
 
         Returns:
             T
@@ -7260,7 +8010,9 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
             array (IntoExprColumn | float): `DOUBLE[3] | FLOAT[3]` expression
 
         Examples:
+            ```sql
             array_cross_product(array_value(1.0::FLOAT, 2.0::FLOAT, 3.0::FLOAT), array_value(2.0::FLOAT, 3.0::FLOAT, 4.0::FLOAT))
+            ```
 
         Returns:
             T
@@ -7280,7 +8032,9 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
             array2 (IntoExprColumn | float): `DOUBLE[ANY] | FLOAT[ANY]` expression
 
         Examples:
+            ```sql
             array_distance(array_value(1.0::FLOAT, 2.0::FLOAT, 3.0::FLOAT), array_value(2.0::FLOAT, 3.0::FLOAT, 4.0::FLOAT))
+            ```
 
         Returns:
             T
@@ -7298,7 +8052,9 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
             list_distinct
 
         Examples:
+            ```sql
             array_distinct([1, 1, NULL, -3, 1, 5])
+            ```
 
         Returns:
             T
@@ -7321,7 +8077,9 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
             array2 (IntoExprColumn | float): `DOUBLE[ANY] | FLOAT[ANY]` expression
 
         Examples:
+            ```sql
             array_dot_product(array_value(1.0::FLOAT, 2.0::FLOAT, 3.0::FLOAT), array_value(2.0::FLOAT, 3.0::FLOAT, 4.0::FLOAT))
+            ```
 
         Returns:
             T
@@ -7356,7 +8114,9 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
             col2 (IntoExprColumn | None): `VARCHAR` expression
 
         Examples:
+            ```sql
             array_grade_up([3, 6, 1, 2])
+            ```
 
         Returns:
             T
@@ -7375,7 +8135,9 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
             element (IntoExpr): `T` expression
 
         Examples:
+            ```sql
             array_has([1, 2, NULL], 1)
+            ```
 
         Returns:
             T
@@ -7396,7 +8158,9 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
             list2 (IntoExpr): `T[]` expression
 
         Examples:
+            ```sql
             array_has_all([1, 2, 3], [2, 3])
+            ```
 
         Returns:
             T
@@ -7417,7 +8181,9 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
             list2 (IntoExpr): `T[]` expression
 
         Examples:
+            ```sql
             array_has_any([1, 2, 3], [2, 3, 4])
+            ```
 
         Returns:
             T
@@ -7438,7 +8204,9 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
             element (IntoExpr): `T` expression
 
         Examples:
+            ```sql
             array_indexof([1, 2, NULL], 2)
+            ```
 
         Returns:
             T
@@ -7461,7 +8229,9 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
             array2 (IntoExprColumn | float): `DOUBLE[ANY] | FLOAT[ANY]` expression
 
         Examples:
+            ```sql
             array_inner_product(array_value(1.0::FLOAT, 2.0::FLOAT, 3.0::FLOAT), array_value(2.0::FLOAT, 3.0::FLOAT, 4.0::FLOAT))
+            ```
 
         Returns:
             T
@@ -7480,7 +8250,9 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
             list2 (IntoExpr): `T[]` expression
 
         Examples:
+            ```sql
             array_intersect([1, 2, 3], [2, 3, 4])
+            ```
 
         Returns:
             T
@@ -7493,7 +8265,9 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
         **SQL name**: *array_length*
 
         Examples:
+            ```sql
             array_length([1, 2, 3])
+            ```
 
         Returns:
             T
@@ -7509,7 +8283,9 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
             dimension (IntoExprColumn | int | None): `BIGINT` expression
 
         Examples:
+            ```sql
             array_length([1, 2, 3])
+            ```
 
         Returns:
             T
@@ -7532,7 +8308,9 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
             array2 (IntoExprColumn | float): `DOUBLE[ANY] | FLOAT[ANY]` expression
 
         Examples:
+            ```sql
             array_negative_dot_product(array_value(1.0::FLOAT, 2.0::FLOAT, 3.0::FLOAT), array_value(2.0::FLOAT, 3.0::FLOAT, 4.0::FLOAT))
+            ```
 
         Returns:
             T
@@ -7555,7 +8333,9 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
             array2 (IntoExprColumn | float): `DOUBLE[ANY] | FLOAT[ANY]` expression
 
         Examples:
+            ```sql
             array_negative_inner_product(array_value(1.0::FLOAT, 2.0::FLOAT, 3.0::FLOAT), array_value(2.0::FLOAT, 3.0::FLOAT, 4.0::FLOAT))
+            ```
 
         Returns:
             T
@@ -7596,7 +8376,9 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
             element (IntoExpr): `T` expression
 
         Examples:
+            ```sql
             array_position([1, 2, NULL], 2)
+            ```
 
         Returns:
             T
@@ -7659,7 +8441,9 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
             initial_value (IntoExpr | None): `ANY` expression
 
         Examples:
+            ```sql
             array_reduce([1, 2, 3], lambda x, y : x + y)
+            ```
 
         Returns:
             T
@@ -7681,7 +8465,9 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
             value (IntoExpr | None): `ANY` expression
 
         Examples:
+            ```sql
             array_resize([1, 2, 3], 5, 0)
+            ```
 
         Returns:
             T
@@ -7710,7 +8496,9 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
             col1 (IntoExprColumn | None): `VARCHAR` expression
 
         Examples:
+            ```sql
             array_reverse_sort([3, 6, 1, 2])
+            ```
 
         Returns:
             T
@@ -7729,7 +8517,9 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
             index_list (IntoExprColumn | SeqLiteral[int]): `BIGINT[]` expression
 
         Examples:
+            ```sql
             array_select([10, 20, 30, 40], [1, 4])
+            ```
 
         Returns:
             T
@@ -7754,9 +8544,11 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
             step (IntoExprColumn | int | None): `BIGINT` expression
 
         Examples:
+            ```sql
             array_slice('DuckDB', 3, 4)
             array_slice('DuckDB', 3, NULL)
             array_slice('DuckDB', 0, -3)
+            ```
 
         Returns:
             T
@@ -7778,7 +8570,9 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
             col2 (IntoExprColumn | None): `VARCHAR` expression
 
         Examples:
+            ```sql
             array_sort([3, 6, 1, 2])
+            ```
 
         Returns:
             T
@@ -7838,7 +8632,9 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
             lambda_arg (IntoExprColumn): `LAMBDA` expression
 
         Examples:
+            ```sql
             array_transform([1, 2, 3], lambda x : x + 1)
+            ```
 
         Returns:
             T
@@ -7854,7 +8650,9 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
             list_unique
 
         Examples:
+            ```sql
             array_unique([1, 1, NULL, -3, 1, 5])
+            ```
 
         Returns:
             T
@@ -7870,7 +8668,9 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
             *args (IntoExpr): `ANY` expression
 
         Examples:
+            ```sql
             array_value(1.0::FLOAT, 2.0::FLOAT, 3.0::FLOAT)
+            ```
 
         Returns:
             T
@@ -7889,7 +8689,9 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
             mask_list (IntoExprColumn | SeqLiteral[bool]): `BOOLEAN[]` expression
 
         Examples:
+            ```sql
             array_where([10, 20, 30, 40], [true, false, false, true])
+            ```
 
         Returns:
             T
@@ -7912,9 +8714,11 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
             *args (IntoExpr): `ANY` expression
 
         Examples:
+            ```sql
             array_zip([1, 2], [3, 4], [5, 6])
             array_zip([1, 2], [3, 4], [5, 6, 7])
             array_zip([1, 2], [3, 4], [5, 6, 7], true)
+            ```
 
         Returns:
             T
@@ -8278,7 +9082,9 @@ class MapFns[T: Fns](NameSpaceHandler[T]):
             *args (IntoExpr): `ANY` expression
 
         Examples:
+            ```sql
             map_concat(map([1, 2], ['a', 'b']), map([2, 3], ['c', 'd']));
+            ```
 
         Returns:
             T
@@ -8294,7 +9100,9 @@ class MapFns[T: Fns](NameSpaceHandler[T]):
             key (IntoExprColumn): `K` expression
 
         Examples:
+            ```sql
             map_contains(MAP {'key1': 10, 'key2': 20, 'key3': 30}, 'key2')
+            ```
 
         Returns:
             T
@@ -8334,7 +9142,9 @@ class MapFns[T: Fns](NameSpaceHandler[T]):
         **SQL name**: *map_entries*
 
         Examples:
+            ```sql
             map_entries(map(['key'], ['val']))
+            ```
 
         Returns:
             T
@@ -8355,7 +9165,9 @@ class MapFns[T: Fns](NameSpaceHandler[T]):
             key (IntoExprColumn): `K` expression
 
         Examples:
+            ```sql
             map_extract(map(['key'], ['val']), 'key')
+            ```
 
         Returns:
             T
@@ -8373,7 +9185,9 @@ class MapFns[T: Fns](NameSpaceHandler[T]):
             key (IntoExprColumn): `K` expression
 
         Examples:
+            ```sql
             map_extract_value(map(['key'], ['val']), 'key')
+            ```
 
         Returns:
             T
@@ -8386,7 +9200,9 @@ class MapFns[T: Fns](NameSpaceHandler[T]):
         **SQL name**: *map_from_entries*
 
         Examples:
+            ```sql
             map_from_entries([{k: 5, v: 'val1'}, {k: 3, v: 'val2'}]);
+            ```
 
         Returns:
             T
@@ -8399,7 +9215,9 @@ class MapFns[T: Fns](NameSpaceHandler[T]):
         **SQL name**: *map_keys*
 
         Examples:
+            ```sql
             map_keys(map(['key'], ['val']))
+            ```
 
         Returns:
             T
@@ -8422,7 +9240,9 @@ class MapFns[T: Fns](NameSpaceHandler[T]):
         **SQL name**: *map_values*
 
         Examples:
+            ```sql
             map_values(map(['key'], ['val']))
+            ```
 
         Returns:
             T
@@ -8439,7 +9259,9 @@ class EnumFns[T: Fns](NameSpaceHandler[T]):
         **SQL name**: *enum_code*
 
         Examples:
+            ```sql
             enum_code('happy'::mood)
+            ```
 
         Returns:
             T
@@ -8452,7 +9274,9 @@ class EnumFns[T: Fns](NameSpaceHandler[T]):
         **SQL name**: *enum_first*
 
         Examples:
+            ```sql
             enum_first(NULL::mood)
+            ```
 
         Returns:
             T
@@ -8465,7 +9289,9 @@ class EnumFns[T: Fns](NameSpaceHandler[T]):
         **SQL name**: *enum_last*
 
         Examples:
+            ```sql
             enum_last(NULL::mood)
+            ```
 
         Returns:
             T
@@ -8478,7 +9304,9 @@ class EnumFns[T: Fns](NameSpaceHandler[T]):
         **SQL name**: *enum_range*
 
         Examples:
+            ```sql
             enum_range(NULL::mood)
+            ```
 
         Returns:
             T
@@ -8500,7 +9328,9 @@ class EnumFns[T: Fns](NameSpaceHandler[T]):
             end (IntoExpr): `ANY` expression
 
         Examples:
+            ```sql
             enum_range_boundary(NULL, 'happy'::mood)
+            ```
 
         Returns:
             T
@@ -8511,6 +9341,141 @@ class EnumFns[T: Fns](NameSpaceHandler[T]):
 class GeoSpatialFns[T: Fns](NameSpaceHandler[T]):
     """Mixin providing auto-generated DuckDB geospatial functions as methods."""
 
+    def affine(
+        self,
+        a: IntoExprColumn | float,
+        b: IntoExprColumn | float,
+        c: IntoExprColumn | float,
+        d: IntoExprColumn | float,
+        e: IntoExprColumn | float,
+        f: IntoExprColumn | float,
+        g: IntoExprColumn | float | None = None,
+        h: IntoExprColumn | float | None = None,
+        i: IntoExprColumn | float | None = None,
+        xoff: IntoExprColumn | float | None = None,
+        yoff: IntoExprColumn | float | None = None,
+        zoff: IntoExprColumn | float | None = None,
+    ) -> T:
+        """Applies an affine transformation to a geometry.
+
+        For the 2D variant, the transformation matrix is defined as follows.
+
+        ``.
+
+        | a b xoff .
+
+        | d e yoff .
+
+        | 0 0 1    .
+
+        ``.
+
+
+        For the 3D variant, the transformation matrix is defined as follows.
+
+        ``.
+
+        | a b c xoff .
+
+        | d e f yoff .
+
+        | g h i zoff .
+
+        | 0 0 0 1    .
+
+        ``.
+
+
+        The transformation is applied to all vertices of the geometry.
+
+        **SQL name**: *ST_Affine*
+
+        Args:
+            a (IntoExprColumn | float): `DOUBLE` expression
+            b (IntoExprColumn | float): `DOUBLE` expression
+            c (IntoExprColumn | float): `DOUBLE` expression
+            d (IntoExprColumn | float): `DOUBLE` expression
+            e (IntoExprColumn | float): `DOUBLE` expression
+            f (IntoExprColumn | float): `DOUBLE` expression
+            g (IntoExprColumn | float | None): `DOUBLE` expression
+            h (IntoExprColumn | float | None): `DOUBLE` expression
+            i (IntoExprColumn | float | None): `DOUBLE` expression
+            xoff (IntoExprColumn | float | None): `DOUBLE` expression
+            yoff (IntoExprColumn | float | None): `DOUBLE` expression
+            zoff (IntoExprColumn | float | None): `DOUBLE` expression
+
+        Examples:
+            ```sql
+            -- Translate a point by (2, 3)
+            SELECT ST_Affine(ST_Point(1, 1),
+            1, 0,   -- a, b
+            0, 1,   -- d, e
+            2, 3);  -- xoff, yoff
+            ----
+            POINT (3 4)
+
+            -- Scale a geometry by factor 2 in X and Y
+            SELECT ST_Affine(ST_Point(1, 1),
+            2, 0, 0,   -- a, b, c
+            0, 2, 0,   -- d, e, f
+            0, 0, 1,   -- g, h, i
+            0, 0, 0);  -- xoff, yoff, zoff
+            ----
+            POINT (2 2)
+            ```
+
+        Returns:
+            T
+        """
+        return self._new(
+            func("ST_Affine", self.inner(), a, b, c, d, e, f, g, h, i, xoff, yoff, zoff)
+        )
+
+    def area(self) -> T:
+        """Compute the area of a geometry.
+
+        Returns `0.0` for any geometry that is not a `POLYGON`, `MULTIPOLYGON` or `GEOMETRYCOLLECTION` containing polygo.
+
+        geometries.
+
+
+        The area is in the same units as the spatial reference system of the geometry.
+
+
+        The `POINT_2D` and `LINESTRING_2D` overloads of this function always return `0.0` but are included for completeness.
+
+        **SQL name**: *ST_Area*
+
+        Examples:
+            ```sql
+            SELECT ST_Area('POLYGON((0 0, 0 1, 1 1, 1 0, 0 0))'::GEOMETRY);
+            -- 1.0
+            ```
+
+        Returns:
+            T
+        """
+        return self._new(func("ST_Area", self.inner()))
+
+    def area_spheroid(self) -> T:
+        """Returns the area of a geometry in meters, using an ellipsoidal model of the eart.
+
+        The input geometry is assumed to be in the [EPSG:4326](https://en.wikipedia.org/wiki/World_Geodetic_System) coordinate system (WGS84), with [latitude, longitude] axis order and the area is returned in square meters.
+
+        This function uses the [GeographicLib](https://geographiclib.sourceforge.io/) library, calculating the area using an ellipsoidal model of the earth.
+
+        This is a highly accurate method for calculating the area of a polygon taking the curvature of the earth into account, but is also the slowest.
+
+
+        Returns `0.0` for any geometry that is not a `POLYGON`, `MULTIPOLYGON` or `GEOMETRYCOLLECTION` containing polygon geometries.
+
+        **SQL name**: *ST_Area_Spheroid*
+
+        Returns:
+            T
+        """
+        return self._new(func("ST_Area_Spheroid", self.inner()))
+
     def asbinary(self) -> T:
         """Returns the Well-Known Binary (WKB) representation of the geometry.
 
@@ -8520,12 +9485,243 @@ class GeoSpatialFns[T: Fns](NameSpaceHandler[T]):
             st_aswkb
 
         Examples:
+            ```sql
             st_asbinary(ST_GeomFromWKB(X'01010000000000000000000000000000000000000000000000000'))
+            ```
 
         Returns:
             T
         """
         return self._new(func("st_asbinary", self.inner()))
+
+    def asgeojson(self) -> T:
+        """Returns the geometry as a GeoJSON fragmen.
+
+        This does not return a complete GeoJSON document, only the geometry fragment.
+
+        To construct a complete GeoJSON document or feature, look into using the DuckDB JSON extension in conjunction with this function.
+
+        This function supports geometries with Z values, but not M values.
+
+        M values are ignored.
+
+        **SQL name**: *ST_AsGeoJSON*
+
+        Examples:
+            ```sql
+            SELECT ST_AsGeoJSON('POLYGON((0 0, 0 1, 1 1, 1 0, 0 0))'::GEOMETRY);
+            ----
+            {"type":"Polygon","coordinates":[[[0.0, 0.0], [0.0, 1.0], [1.0, 1.0], [1.0, 0.0], [0.0, 0.0]]]}
+
+            -- Convert a geometry into a full GeoJSON feature (requires the JSON extension to be loaded)
+            SELECT CAST({
+            type: 'Feature',
+            geometry: ST_AsGeoJSON(ST_Point(1, 2)),
+            properties: {
+            name: 'my_point'
+            }
+            } AS JSON);
+            ----
+            {"type":"Feature","geometry":{"type":"Point","coordinates":[1.0, 2.0]},"properties":{"name":"my_point"}}
+            ```
+
+        Returns:
+            T
+        """
+        return self._new(func("ST_AsGeoJSON", self.inner()))
+
+    def ashexwkb(self) -> T:
+        """Returns the geometry as a HEXWKB string.
+
+        **SQL name**: *ST_AsHEXWKB*
+
+        Examples:
+            ```sql
+            SELECT ST_AsHexWKB('POLYGON((0 0, 0 1, 1 1, 1 0, 0 0))'::GEOMETRY);
+            ----
+            01030000000100000005000000000000000000000000000...
+            ```
+
+        Returns:
+            T
+        """
+        return self._new(func("ST_AsHEXWKB", self.inner()))
+
+    def asmvt(
+        self,
+        col1: IntoExprColumn | None = None,
+        col2: IntoExprColumn | int | None = None,
+        col3: IntoExprColumn | None = None,
+        col4: IntoExprColumn | None = None,
+    ) -> T:
+        """Make a Mapbox Vector Tile from a set of geometries and propertie.
+
+        The function takes as input a row type (STRUCT) containing a geometry column and any number of property columns.
+
+        It returns a single binary BLOB containing the Mapbox Vector Tile.
+
+
+        The function has the following signature.
+
+
+        `ST_AsMVT(row STRUCT, layer_name VARCHAR DEFAULT 'layer', extent INTEGER DEFAULT 4096, geom_column_name VARCHAR DEFAULT NULL, feature_id_column_name VARCHAR DEFAULT NULL) -> BLOB.
+
+
+        - The first argument is a struct containing the geometry and properties.
+
+        - The second argument is the name of the layer in the vector tile.
+
+        This argument is optional and defaults to 'layer'.
+
+        - The third argument is the extent of the tile.
+
+        This argument is optional and defaults to 4096.
+
+        - The fourth argument is the name of the geometry column in the input row.
+
+        This argument is optional.
+
+        If not provided, the first geometry column in the input row will be used.
+
+        If multiple geometry columns are present, an error will be raised.
+
+        - The fifth argument is the name of the feature id column in the input row.
+
+        This argument is optional.
+
+        If provided, the values in this column will be used as feature ids in the vector tile.
+
+        The column must be of type INTEGER or BIGINT.
+
+        If set to negative or NULL, a feature id will not be assigned to the corresponding feature.
+
+
+        The input struct must contain exactly one geometry column of type GEOMETRY.
+
+        It can contain any number of property columns of types VARCHAR, FLOAT, DOUBLE, INTEGER, BIGINT, or BOOLEAN.
+
+
+        Example.
+
+        ```sq.
+
+        SELECT ST_AsMVT({'geom': geom, 'id': id, 'name': name}, 'cities', 4096, 'geom', 'id') AS til.
+
+        FROM cities.
+
+        ``.
+
+
+        This example creates a vector tile named 'cities' with an extent of 4096 from the 'cities' table, using 'geom' as the geometry column and 'id' as the feature id column.
+
+
+        However, you probably want to use the ST_AsMVTGeom function to first transform and clip your geometries to the tile extent.
+
+        The following example assumes the geometry is in WebMercator (EPSG:3857) coordinates.
+
+        Replace `{z}`, `{x}`, and `{y}` with the appropriate tile coordinates, `{your table}` with your table name, and `{tile_path}` with the path to write the tile to.
+
+
+        ```sq.
+
+        COPY .
+
+        SELECT ST_AsMVT({.
+
+        geometry: ST_AsMVTGeom.
+
+        geometry.
+
+        ST_Extent(ST_TileEnvelope({z}, {x}, {y})).
+
+        4096.
+
+        256.
+
+        fals.
+
+        .
+
+        }}.
+
+        FROM {your table} WHERE ST_Intersects(geometry, ST_TileEnvelope({z}, {x}, {y}).
+
+        ) to {tile_path} (FORMAT 'BLOB').
+
+        ```.
+
+        **SQL name**: *ST_AsMVT*
+
+        Args:
+            col1 (IntoExprColumn | None): `VARCHAR` expression
+            col2 (IntoExprColumn | int | None): `INTEGER` expression
+            col3 (IntoExprColumn | None): `VARCHAR` expression
+            col4 (IntoExprColumn | None): `VARCHAR` expression
+
+        Returns:
+            T
+        """
+        return self._new(func("ST_AsMVT", self.inner(), col1, col2, col3, col4))
+
+    def asmvtgeom(
+        self,
+        bounds: IntoExprColumn,
+        extent: IntoExprColumn | int | None = None,
+        buffer: IntoExprColumn | int | None = None,
+        clip_geom: IntoExprColumn | bool | None = None,
+    ) -> T:
+        """Transform and clip geometry to a tile boundar.
+
+        See ST_AsMVT for more details.
+
+        **SQL name**: *ST_AsMVTGeom*
+
+        Args:
+            bounds (IntoExprColumn): `BOX_2D` expression
+            extent (IntoExprColumn | int | None): `BIGINT` expression
+            buffer (IntoExprColumn | int | None): `BIGINT` expression
+            clip_geom (IntoExprColumn | bool | None): `BOOLEAN` expression
+
+        Returns:
+            T
+        """
+        return self._new(
+            func("ST_AsMVTGeom", self.inner(), bounds, extent, buffer, clip_geom)
+        )
+
+    def assvg(
+        self, relative: IntoExprColumn | bool, precision: IntoExprColumn | int
+    ) -> T:
+        """Convert the geometry into a SVG fragment or pat.
+
+        The SVG fragment is returned as a string.
+
+        The fragment is a path element that can be used in an SVG document.
+
+        The second boolean argument specifies whether the path should be relative or absolute.
+
+        The third argument specifies the maximum number of digits to use for the coordinates.
+
+
+        Points are formatted as cx/cy using absolute coordinates or x/y using relative coordinates.
+
+        **SQL name**: *ST_AsSVG*
+
+        Args:
+            relative (IntoExprColumn | bool): `BOOLEAN` expression
+            precision (IntoExprColumn | int): `INTEGER` expression
+
+        Examples:
+            ```sql
+            SELECT ST_AsSVG('POLYGON((0 0, 0 1, 1 1, 1 0, 0 0))'::GEOMETRY, false, 15);
+            ----
+            M 0 0 L 0 -1 1 -1 1 0 Z
+            ```
+
+        Returns:
+            T
+        """
+        return self._new(func("ST_AsSVG", self.inner(), relative, precision))
 
     def astext(self) -> T:
         """Returns the Well-Known Text (WKT) representation of the geometry.
@@ -8536,7 +9732,9 @@ class GeoSpatialFns[T: Fns](NameSpaceHandler[T]):
             st_aswkt
 
         Examples:
+            ```sql
             ST_AsText(ST_GeomFromWKB(X'01010000000000000000000000000000000000000000000000'))
+            ```
 
         Returns:
             T
@@ -8552,7 +9750,9 @@ class GeoSpatialFns[T: Fns](NameSpaceHandler[T]):
             st_asbinary
 
         Examples:
+            ```sql
             st_aswkb(ST_GeomFromWKB(X'01010000000000000000000000000000000000000000000000000'))
+            ```
 
         Returns:
             T
@@ -8568,12 +9768,450 @@ class GeoSpatialFns[T: Fns](NameSpaceHandler[T]):
             st_astext
 
         Examples:
+            ```sql
             ST_AsText(ST_GeomFromWKB(X'01010000000000000000000000000000000000000000000000'))
+            ```
 
         Returns:
             T
         """
         return self._new(func("st_aswkt", self.inner()))
+
+    def azimuth(self, target: IntoExprColumn) -> T:
+        """Returns the azimuth (a clockwise angle measured from north) of two points in radian.
+
+        **SQL name**: *ST_Azimuth*
+
+        Args:
+            target (IntoExprColumn): `GEOMETRY | POINT_2D` expression
+
+        Examples:
+            ```sql
+            SELECT degrees(ST_Azimuth(ST_Point(0, 0), ST_Point(0, 1)));
+            ----
+            90.0
+            ```
+
+        Returns:
+            T
+        """
+        return self._new(func("ST_Azimuth", self.inner(), target))
+
+    def boundary(self) -> T:
+        """Returns the boundary of a geometry.
+
+        **SQL name**: *ST_Boundary*
+
+        Returns:
+            T
+        """
+        return self._new(func("ST_Boundary", self.inner()))
+
+    def buffer(
+        self,
+        distance: IntoExprColumn | float,
+        num_triangles: IntoExprColumn | int | None = None,
+        cap_style: IntoExprColumn | None = None,
+        join_style: IntoExprColumn | None = None,
+        mitre_limit: IntoExprColumn | float | None = None,
+    ) -> T:
+        """Returns a buffer around the input geometry at the target distanc.
+
+        `geom` is the input geometry.
+
+
+        `distance` is the target distance for the buffer, using the same units as the input geometry.
+
+
+        `num_triangles` represents how many triangles that will be produced to approximate a quarter circle.
+
+        The larger the number, the smoother the resulting geometry.
+
+        The default value is 8.
+
+
+        `cap_style` must be one of CAP_ROUND, CAP_FLAT, CAP_SQUARE.
+
+        This parameter is case-insensitive.
+
+
+        `join_style` must be one of JOIN_ROUND, JOIN_MITRE, JOIN_BEVEL.
+
+        This parameter is case-insensitive.
+
+
+        `mitre_limit` only applies when `join_style` is JOIN_MITRE.
+
+        It is the ratio of the distance from the corner to the mitre point to the corner radius.
+
+        The default value is 1.0.
+
+
+        This is a planar operation and will not take into account the curvature of the earth.
+
+        **SQL name**: *ST_Buffer*
+
+        Args:
+            distance (IntoExprColumn | float): `DOUBLE` expression
+            num_triangles (IntoExprColumn | int | None): `INTEGER` expression
+            cap_style (IntoExprColumn | None): `VARCHAR` expression
+            join_style (IntoExprColumn | None): `VARCHAR` expression
+            mitre_limit (IntoExprColumn | float | None): `DOUBLE` expression
+
+        Returns:
+            T
+        """
+        return self._new(
+            func(
+                "ST_Buffer",
+                self.inner(),
+                distance,
+                num_triangles,
+                cap_style,
+                join_style,
+                mitre_limit,
+            )
+        )
+
+    def buildarea(self) -> T:
+        """Creates a polygonal geometry by attempting to fill in the input geometry.
+
+        Unlike ST_Polygonize, this function does not fill in holes.
+
+        **SQL name**: *ST_BuildArea*
+
+        Returns:
+            T
+        """
+        return self._new(func("ST_BuildArea", self.inner()))
+
+    def centroid(self) -> T:
+        """Returns the centroid of a geometry.
+
+        **SQL name**: *ST_Centroid*
+
+        Returns:
+            T
+        """
+        return self._new(func("ST_Centroid", self.inner()))
+
+    def closestpoint(self, geom2: IntoExprColumn) -> T:
+        """Returns the closest point on the first geometry to the second geometry.
+
+        **SQL name**: *ST_ClosestPoint*
+
+        Args:
+            geom2 (IntoExprColumn): `GEOMETRY` expression
+
+        Returns:
+            T
+        """
+        return self._new(func("ST_ClosestPoint", self.inner(), geom2))
+
+    def collect(self) -> T:
+        """Collects a list of geometries into a collection geometry.
+
+        - If all geometries are `POINT`'s, a `MULTIPOINT` is returned.
+
+        - If all geometries are `LINESTRING`'s, a `MULTILINESTRING` is returned.
+
+        - If all geometries are `POLYGON`'s, a `MULTIPOLYGON` is returned.
+
+        - Otherwise if the input collection contains a mix of geometry types, a `GEOMETRYCOLLECTION` is returned.
+
+
+        Empty and `NULL` geometries are ignored.
+
+        If all geometries are empty or `NULL`, a `GEOMETRYCOLLECTION EMPTY` is returned.
+
+        **SQL name**: *ST_Collect*
+
+        Examples:
+            ```sql
+            -- With all POINT's, a MULTIPOINT is returned
+            SELECT ST_Collect([ST_Point(1, 2), ST_Point(3, 4)]);
+            ----
+            MULTIPOINT (1 2, 3 4)
+
+            -- With mixed geometry types, a GEOMETRYCOLLECTION is returned
+            SELECT ST_Collect([ST_Point(1, 2), ST_GeomFromText('LINESTRING(3 4, 5 6)')]);
+            ----
+            GEOMETRYCOLLECTION (POINT (1 2), LINESTRING (3 4, 5 6))
+
+            -- Note that the empty geometry is ignored, so the result is a MULTIPOINT
+            SELECT ST_Collect([ST_Point(1, 2), NULL, ST_GeomFromText('GEOMETRYCOLLECTION EMPTY')]);
+            ----
+            MULTIPOINT (1 2)
+
+            -- If all geometries are empty or NULL, a GEOMETRYCOLLECTION EMPTY is returned
+            SELECT ST_Collect([NULL, ST_GeomFromText('GEOMETRYCOLLECTION EMPTY')]);
+            ----
+            GEOMETRYCOLLECTION EMPTY
+
+            -- Tip: You can use the `ST_Collect` function together with the `list()` aggregate function to collect multiple rows of geometries into a single geometry collection:
+
+            CREATE TABLE points (geom GEOMETRY);
+
+            INSERT INTO points VALUES (ST_Point(1, 2)), (ST_Point(3, 4));
+
+            SELECT ST_Collect(list(geom)) FROM points;
+            ----
+            MULTIPOINT (1 2, 3 4)
+            ```
+
+        Returns:
+            T
+        """
+        return self._new(func("ST_Collect", self.inner()))
+
+    def collectionextract(self, type_arg: IntoExprColumn | int | None = None) -> T:
+        """Extracts geometries from a GeometryCollection into a typed multi geometry.
+
+        If the input geometry is a GeometryCollection, the function will return a multi geometry, determined by the `type` parameter.
+
+        - if `type` = 1, returns a MultiPoint containing all the Points in the collectio.
+
+        - if `type` = 2, returns a MultiLineString containing all the LineStrings in the collectio.
+
+        - if `type` = 3, returns a MultiPolygon containing all the Polygons in the collectio.
+
+
+        If no `type` parameters is provided, the function will return a multi geometry matching the highest surface dimensio.
+
+        of the contained geometries.
+
+        E.g.
+
+        if the collection contains only Points, a MultiPoint will be returned.
+
+        But if th.
+
+        collection contains both Points and LineStrings, a MultiLineString will be returned.
+
+        Similarly, if the collectio.
+
+        contains Polygons, a MultiPolygon will be returned.
+
+        Contained geometries of a lower surface dimension will be ignored.
+
+
+        If the input geometry contains nested GeometryCollections, their geometries will be extracted recursively and include.
+
+        into the final multi geometry as well.
+
+
+        If the input geometry is not a GeometryCollection, the function will return the input geometry as is.
+
+        **SQL name**: *ST_CollectionExtract*
+
+        Args:
+            type_arg (IntoExprColumn | int | None): `INTEGER` expression
+
+        Examples:
+            ```sql
+            SELECT ST_CollectionExtract('MULTIPOINT(1 2, 3 4)'::GEOMETRY, 1);
+            -- MULTIPOINT (1 2, 3 4)
+            ```
+
+        Returns:
+            T
+        """
+        return self._new(func("ST_CollectionExtract", self.inner(), type_arg))
+
+    def concavehull(
+        self, ratio: IntoExprColumn | float, allowholes: IntoExprColumn | bool
+    ) -> T:
+        """Returns the 'concave' hull of the input geometry, containing all of the source input's points, and which can be used to create polygons from points.
+
+        The ratio parameter dictates the level of concavity; 1.0 returns the convex hull; and 0 indicates to return the most concave hull possible.
+
+        Set allowHoles to a non-zero value to allow output containing holes.
+
+        **SQL name**: *ST_ConcaveHull*
+
+        Args:
+            ratio (IntoExprColumn | float): `DOUBLE` expression
+            allowholes (IntoExprColumn | bool): `BOOLEAN` expression
+
+        Returns:
+            T
+        """
+        return self._new(func("ST_ConcaveHull", self.inner(), ratio, allowholes))
+
+    def contains(self, geom2: IntoExprColumn) -> T:
+        """Returns true if the first geometry contains the second geometr.
+
+        In contrast to `ST_ContainsProperly`, this function will also return true if `geom2` is contained strictly on the boundary of `geom1`.
+
+        A geometry always `ST_Contains` itself, but does not `ST_ContainsProperly` itself.
+
+        **SQL name**: *ST_Contains*
+
+        Args:
+            geom2 (IntoExprColumn): `GEOMETRY | POINT_2D` expression
+
+        Returns:
+            T
+        """
+        return self._new(func("ST_Contains", self.inner(), geom2))
+
+    def containsproperly(self, geom2: IntoExprColumn) -> T:
+        r"""Returns true if the first geometry \properly\ contains the second geometr.
+
+        In contrast to `ST_Contains`, this function does not return true if `geom2` is contained strictly on the boundary of `geom1`.
+
+        A geometry always `ST_Contains` itself, but does not `ST_ContainsProperly` itself.
+
+        **SQL name**: *ST_ContainsProperly*
+
+        Args:
+            geom2 (IntoExprColumn): `GEOMETRY` expression
+
+        Returns:
+            T
+        """
+        return self._new(func("ST_ContainsProperly", self.inner(), geom2))
+
+    def convexhull(self) -> T:
+        """Returns the convex hull enclosing the geometry.
+
+        **SQL name**: *ST_ConvexHull*
+
+        Returns:
+            T
+        """
+        return self._new(func("ST_ConvexHull", self.inner()))
+
+    def coverageinvalidedges(
+        self, tolerance: IntoExprColumn | float | None = None
+    ) -> T:
+        """Returns the invalid edges in a polygonal coverage, which are edges that are not shared by two polygons.
+
+        Returns NULL if the input is not a polygonal coverage, or if the input is valid.
+
+        Tolerance is 0 by default.
+
+        **SQL name**: *ST_CoverageInvalidEdges*
+
+        Args:
+            tolerance (IntoExprColumn | float | None): `DOUBLE` expression
+
+        Returns:
+            T
+        """
+        return self._new(func("ST_CoverageInvalidEdges", self.inner(), tolerance))
+
+    def coverageinvalidedges_agg(self, col1: IntoExprColumn | float | None = None) -> T:
+        """Returns the invalid edges of a coverage geometry.
+
+        **SQL name**: *ST_CoverageInvalidEdges_Agg*
+
+        Args:
+            col1 (IntoExprColumn | float | None): `DOUBLE` expression
+
+        Returns:
+            T
+        """
+        return self._new(func("ST_CoverageInvalidEdges_Agg", self.inner(), col1))
+
+    def coveragesimplify(
+        self,
+        tolerance: IntoExprColumn | float,
+        simplify_boundary: IntoExprColumn | bool | None = None,
+    ) -> T:
+        """Simplify the edges in a polygonal coverage, preserving the coverange by ensuring that the there are no seams between the resulting simplified polygons.
+
+        By default, the boundary of the coverage is also simplified, but this can be controlled with the optional third 'simplify_boundary' parameter.
+
+        **SQL name**: *ST_CoverageSimplify*
+
+        Args:
+            tolerance (IntoExprColumn | float): `DOUBLE` expression
+            simplify_boundary (IntoExprColumn | bool | None): `BOOLEAN` expression
+
+        Returns:
+            T
+        """
+        return self._new(
+            func("ST_CoverageSimplify", self.inner(), tolerance, simplify_boundary)
+        )
+
+    def coveragesimplify_agg(
+        self, col1: IntoExprColumn | float, col2: IntoExprColumn | bool | None = None
+    ) -> T:
+        """Simplifies a set of geometries while maintaining coverage.
+
+        **SQL name**: *ST_CoverageSimplify_Agg*
+
+        Args:
+            col1 (IntoExprColumn | float): `DOUBLE` expression
+            col2 (IntoExprColumn | bool | None): `BOOLEAN` expression
+
+        Returns:
+            T
+        """
+        return self._new(func("ST_CoverageSimplify_Agg", self.inner(), col1, col2))
+
+    def coverageunion(self) -> T:
+        """Union all geometries in a polygonal coverage into a single geometry.
+
+        This may be faster than using `ST_Union`, but may use more memory.
+
+        **SQL name**: *ST_CoverageUnion*
+
+        Returns:
+            T
+        """
+        return self._new(func("ST_CoverageUnion", self.inner()))
+
+    def coverageunion_agg(self) -> T:
+        """Unions a set of geometries while maintaining coverage.
+
+        **SQL name**: *ST_CoverageUnion_Agg*
+
+        Returns:
+            T
+        """
+        return self._new(func("ST_CoverageUnion_Agg", self.inner()))
+
+    def coveredby(self, geom2: IntoExprColumn) -> T:
+        """Returns true if geom1 is covered by geom2.
+
+        **SQL name**: *ST_CoveredBy*
+
+        Args:
+            geom2 (IntoExprColumn): `GEOMETRY` expression
+
+        Returns:
+            T
+        """
+        return self._new(func("ST_CoveredBy", self.inner(), geom2))
+
+    def covers(self, geom2: IntoExprColumn) -> T:
+        """Returns true if the geom1 covers geom2.
+
+        **SQL name**: *ST_Covers*
+
+        Args:
+            geom2 (IntoExprColumn): `GEOMETRY` expression
+
+        Returns:
+            T
+        """
+        return self._new(func("ST_Covers", self.inner(), geom2))
+
+    def crosses(self, geom2: IntoExprColumn) -> T:
+        """Returns true if geom1 crosses geom2.
+
+        **SQL name**: *ST_Crosses*
+
+        Args:
+            geom2 (IntoExprColumn): `GEOMETRY` expression
+
+        Returns:
+            T
+        """
+        return self._new(func("ST_Crosses", self.inner(), geom2))
 
     def crs(self) -> T:
         """Returns the Coordinate Reference System (CRS) identifier of the geometry.
@@ -8585,34 +10223,1704 @@ class GeoSpatialFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("st_crs", self.inner()))
 
+    def difference(self, geom2: IntoExprColumn) -> T:
+        """Returns the difference between two geometries.
+
+        **SQL name**: *ST_Difference*
+
+        Args:
+            geom2 (IntoExprColumn): `GEOMETRY` expression
+
+        Returns:
+            T
+        """
+        return self._new(func("ST_Difference", self.inner(), geom2))
+
+    def dimension(self) -> T:
+        """Returns the topological dimension of a geometry.
+
+        - For POINT and MULTIPOINT geometries, returns `0.
+
+        - For LINESTRING and MULTILINESTRING, returns `1.
+
+        - For POLYGON and MULTIPOLYGON, returns `2.
+
+        - For GEOMETRYCOLLECTION, returns the maximum dimension of the contained geometries, or 0 if the collection is empty.
+
+        **SQL name**: *ST_Dimension*
+
+        Examples:
+            ```sql
+            SELECT ST_Dimension('POLYGON((0 0, 0 1, 1 1, 1 0, 0 0))'::GEOMETRY);
+            ----
+            2
+            ```
+
+        Returns:
+            T
+        """
+        return self._new(func("ST_Dimension", self.inner()))
+
+    def disjoint(self, geom2: IntoExprColumn) -> T:
+        """Returns true if the geometries are disjoint.
+
+        **SQL name**: *ST_Disjoint*
+
+        Args:
+            geom2 (IntoExprColumn): `GEOMETRY` expression
+
+        Returns:
+            T
+        """
+        return self._new(func("ST_Disjoint", self.inner(), geom2))
+
+    def distance(self, point2: IntoExprColumn) -> T:
+        """Returns the planar distance between two geometries.
+
+        **SQL name**: *ST_Distance*
+
+        Args:
+            point2 (IntoExprColumn): `GEOMETRY | LINESTRING_2D | POINT_2D` expression
+
+        Examples:
+            ```sql
+            SELECT ST_Distance('POINT (0 0)'::GEOMETRY, 'POINT (3 4)'::GEOMETRY);
+            ----
+            5.0
+
+            -- Z coordinates are ignored
+            SELECT ST_Distance('POINT Z (0 0 0)'::GEOMETRY, 'POINT Z (3 4 5)'::GEOMETRY);
+            ----
+            5.0
+            ```
+
+        Returns:
+            T
+        """
+        return self._new(func("ST_Distance", self.inner(), point2))
+
+    def distance_geos(self, geom2: IntoExprColumn) -> T:
+        """Returns the planar distance between two geometries.
+
+        **SQL name**: *ST_Distance_GEOS*
+
+        Args:
+            geom2 (IntoExprColumn): `GEOMETRY` expression
+
+        Returns:
+            T
+        """
+        return self._new(func("ST_Distance_GEOS", self.inner(), geom2))
+
+    def distance_sphere(self, geom2: IntoExprColumn) -> T:
+        """Returns the haversine (great circle) distance between two geometries.
+
+        - Only supports POINT geometries.
+
+        - Returns the distance in meters.
+
+        - The input is expected to be in WGS84 (EPSG:4326) coordinates, using a [latitude, longitude] axis order.
+
+        **SQL name**: *ST_Distance_Sphere*
+
+        Args:
+            geom2 (IntoExprColumn): `GEOMETRY | POINT_2D` expression
+
+        Returns:
+            T
+        """
+        return self._new(func("ST_Distance_Sphere", self.inner(), geom2))
+
+    def distance_spheroid(self, p2: IntoExprColumn) -> T:
+        """Returns the distance between two geometries in meters using an ellipsoidal model of the earths surfac.
+
+        The input geometry is assumed to be in the [EPSG:4326](https://en.wikipedia.org/wiki/World_Geodetic_System) coordinate system (WGS84), with [latitude, longitude] axis order and the distance limit is expected to be in meters.
+
+        This function uses the [GeographicLib](https://geographiclib.sourceforge.io/) library to solve the [inverse geodesic problem](https://en.wikipedia.org/wiki/Geodesics_on_an_ellipsoid#Solution_of_the_direct_and_inverse_problems), calculating the distance between two points using an ellipsoidal model of the earth.
+
+        This is a highly accurate method for calculating the distance between two arbitrary points taking the curvature of the earths surface into account, but is also the slowest.
+
+        **SQL name**: *ST_Distance_Spheroid*
+
+        Args:
+            p2 (IntoExprColumn): `POINT_2D` expression
+
+        Examples:
+            ```sql
+            -- Note: the coordinates are in WGS84 and [latitude, longitude] axis order
+            -- Whats the distance between New York and Amsterdam (JFK and AMS airport)?
+            SELECT st_distance_spheroid(
+            st_point(40.6446, -73.7797),
+            st_point(52.3130, 4.7725)
+            );
+            ----
+            5863418.7459356235
+            -- Roughly 5863km!
+            ```
+
+        Returns:
+            T
+        """
+        return self._new(func("ST_Distance_Spheroid", self.inner(), p2))
+
+    def dump(self) -> T:
+        """Dumps a geometry into a list of sub-geometries and their path in the original geometry.
+
+        You can use the `unnest(res, recursive := true)` function to explode the resulting list of structs into multiple rows.
+
+        **SQL name**: *ST_Dump*
+
+        Examples:
+            ```sql
+            SELECT ST_Dump('MULTIPOINT(1 2, 3 4)'::GEOMETRY);
+            ----
+            [{'geom': 'POINT(1 2)', 'path': [0]}, {'geom': 'POINT(3 4)', 'path': [1]}]
+
+            SELECT unnest(ST_Dump('MULTIPOINT(1 2, 3 4)'::GEOMETRY), recursive := true);
+            -- ┌─────────────┬─────────┐
+            -- │    geom     │  path   │
+            -- │  geometry   │ int32[] │
+            -- ├─────────────┼─────────┤
+            -- │ POINT (1 2) │ [1]     │
+            -- │ POINT (3 4) │ [2]     │
+            -- └─────────────┴─────────┘
+            ```
+
+        Returns:
+            T
+        """
+        return self._new(func("ST_Dump", self.inner()))
+
+    def dwithin(self, geom2: IntoExprColumn, distance: IntoExprColumn | float) -> T:
+        """Returns if two geometries are within a target distance of each-other.
+
+        **SQL name**: *ST_DWithin*
+
+        Args:
+            geom2 (IntoExprColumn): `GEOMETRY` expression
+            distance (IntoExprColumn | float): `DOUBLE` expression
+
+        Returns:
+            T
+        """
+        return self._new(func("ST_DWithin", self.inner(), geom2, distance))
+
+    def dwithin_geos(
+        self, geom2: IntoExprColumn, distance: IntoExprColumn | float
+    ) -> T:
+        """Returns true if two geometries are within a target distance of each-other.
+
+        **SQL name**: *ST_DWithin_GEOS*
+
+        Args:
+            geom2 (IntoExprColumn): `GEOMETRY` expression
+            distance (IntoExprColumn | float): `DOUBLE` expression
+
+        Returns:
+            T
+        """
+        return self._new(func("ST_DWithin_GEOS", self.inner(), geom2, distance))
+
+    def dwithin_spheroid(
+        self, p2: IntoExprColumn, distance: IntoExprColumn | float
+    ) -> T:
+        """Returns if two POINT_2D's are within a target distance in meters, using an ellipsoidal model of the earths surfac.
+
+        The input geometry is assumed to be in the [EPSG:4326](https://en.wikipedia.org/wiki/World_Geodetic_System) coordinate system (WGS84), with [latitude, longitude] axis order and the distance is returned in meters.
+
+        This function uses the [GeographicLib](https://geographiclib.sourceforge.io/) library to solve the [inverse geodesic problem](https://en.wikipedia.org/wiki/Geodesics_on_an_ellipsoid#Solution_of_the_direct_and_inverse_problems), calculating the distance between two points using an ellipsoidal model of the earth.
+
+        This is a highly accurate method for calculating the distance between two arbitrary points taking the curvature of the earths surface into account, but is also the slowest.
+
+        **SQL name**: *ST_DWithin_Spheroid*
+
+        Args:
+            p2 (IntoExprColumn): `POINT_2D` expression
+            distance (IntoExprColumn | float): `DOUBLE` expression
+
+        Returns:
+            T
+        """
+        return self._new(func("ST_DWithin_Spheroid", self.inner(), p2, distance))
+
+    def endpoint(self) -> T:
+        """Returns the end point of a LINESTRING.
+
+        **SQL name**: *ST_EndPoint*
+
+        Returns:
+            T
+        """
+        return self._new(func("ST_EndPoint", self.inner()))
+
+    def envelope(self) -> T:
+        """Returns the minimum bounding rectangle of a geometry as a polygon geometry.
+
+        **SQL name**: *ST_Envelope*
+
+        Returns:
+            T
+        """
+        return self._new(func("ST_Envelope", self.inner()))
+
+    def envelope_agg(self) -> T:
+        """Alias for [ST_Extent_Agg](#st_extent_agg).
+
+        Computes the minimal-bounding-box polygon containing the set of input geometries.
+
+        **SQL name**: *ST_Envelope_Agg*
+
+        Examples:
+            ```sql
+            SELECT ST_Extent_Agg(geom) FROM UNNEST([ST_Point(1,1), ST_Point(5,5)]) AS _(geom);
+            -- POLYGON ((1 1, 1 5, 5 5, 5 1, 1 1))
+            ```
+
+        Returns:
+            T
+        """
+        return self._new(func("ST_Envelope_Agg", self.inner()))
+
+    def equals(self, geom2: IntoExprColumn) -> T:
+        """Returns true if the geometries are equal.
+
+        **SQL name**: *ST_Equals*
+
+        Args:
+            geom2 (IntoExprColumn): `GEOMETRY` expression
+
+        Returns:
+            T
+        """
+        return self._new(func("ST_Equals", self.inner(), geom2))
+
+    def expand(self, distance: IntoExprColumn | float) -> T:
+        """Expand the input geometry by the specified distance, returning a polygon.
+
+        `geom` is the input geometry.
+
+
+        `distance` is the target distance for the expansion, using the same units as the input geometry.
+
+
+        This is a planar operation and will not take into account the curvature of the earth.
+
+        **SQL name**: *ST_Expand*
+
+        Args:
+            distance (IntoExprColumn | float): `DOUBLE` expression
+
+        Examples:
+            ```sql
+            SELECT ST_AsText(ST_Expand(ST_GeomFromText('POINT(20 30)'), 0.1));
+            ```
+
+        Returns:
+            T
+        """
+        return self._new(func("ST_Expand", self.inner(), distance))
+
+    def extent(self) -> T:
+        """Returns the minimal bounding box enclosing the input geometry.
+
+        **SQL name**: *ST_Extent*
+
+        Returns:
+            T
+        """
+        return self._new(func("ST_Extent", self.inner()))
+
+    def extent_agg(self) -> T:
+        """Computes the minimal-bounding-box polygon containing the set of input geometries.
+
+        **SQL name**: *ST_Extent_Agg*
+
+        Examples:
+            ```sql
+            SELECT ST_Extent_Agg(geom) FROM UNNEST([ST_Point(1,1), ST_Point(5,5)]) AS _(geom);
+            -- POLYGON ((1 1, 1 5, 5 5, 5 1, 1 1))
+            ```
+
+        Returns:
+            T
+        """
+        return self._new(func("ST_Extent_Agg", self.inner()))
+
+    def extent_approx(self) -> T:
+        """Returns the approximate bounding box of a geometry, if available.
+
+        This function is only really used internally, and returns the cached bounding box of the geometry if it exists.
+
+        This function may be removed or renamed in the future.
+
+        **SQL name**: *ST_Extent_Approx*
+
+        Returns:
+            T
+        """
+        return self._new(func("ST_Extent_Approx", self.inner()))
+
+    def exteriorring(self) -> T:
+        """Returns the exterior ring (shell) of a polygon geometry.
+
+        **SQL name**: *ST_ExteriorRing*
+
+        Returns:
+            T
+        """
+        return self._new(func("ST_ExteriorRing", self.inner()))
+
+    def flipcoordinates(self) -> T:
+        """Returns a new geometry with the coordinates of the input geometry flipped so that x = y and y = x.
+
+        **SQL name**: *ST_FlipCoordinates*
+
+        Returns:
+            T
+        """
+        return self._new(func("ST_FlipCoordinates", self.inner()))
+
+    def force2d(self) -> T:
+        """Forces the vertices of a geometry to have X and Y component.
+
+        This function will drop any Z and M values from the input geometry, if present.
+
+        If the input geometry is already 2D, it will be returned as is.
+
+        **SQL name**: *ST_Force2D*
+
+        Returns:
+            T
+        """
+        return self._new(func("ST_Force2D", self.inner()))
+
+    def force3dm(self, m: IntoExprColumn | float) -> T:
+        """Forces the vertices of a geometry to have X, Y and M component.
+
+        The following cases apply.
+
+        - If the input geometry has a Z component but no M component, the Z component will be replaced with the new M value.
+
+        - If the input geometry has a M component but no Z component, it will be returned as is.
+
+        - If the input geometry has both a Z component and a M component, the Z component will be removed.
+
+        - Otherwise, if the input geometry has neither a Z or M component, the new M value will be added to the vertices of the input geometry.
+
+        **SQL name**: *ST_Force3DM*
+
+        Args:
+            m (IntoExprColumn | float): `DOUBLE` expression
+
+        Returns:
+            T
+        """
+        return self._new(func("ST_Force3DM", self.inner(), m))
+
+    def force3dz(self, z: IntoExprColumn | float) -> T:
+        """Forces the vertices of a geometry to have X, Y and Z component.
+
+        The following cases apply.
+
+        - If the input geometry has a M component but no Z component, the M component will be replaced with the new Z value.
+
+        - If the input geometry has a Z component but no M component, it will be returned as is.
+
+        - If the input geometry has both a Z component and a M component, the M component will be removed.
+
+        - Otherwise, if the input geometry has neither a Z or M component, the new Z value will be added to the vertices of the input geometry.
+
+        **SQL name**: *ST_Force3DZ*
+
+        Args:
+            z (IntoExprColumn | float): `DOUBLE` expression
+
+        Returns:
+            T
+        """
+        return self._new(func("ST_Force3DZ", self.inner(), z))
+
+    def force4d(self, z: IntoExprColumn | float, m: IntoExprColumn | float) -> T:
+        """Forces the vertices of a geometry to have X, Y, Z and M component.
+
+        The following cases apply.
+
+        - If the input geometry has a Z component but no M component, the new M value will be added to the vertices of the input geometry.
+
+        - If the input geometry has a M component but no Z component, the new Z value will be added to the vertices of the input geometry.
+
+        - If the input geometry has both a Z component and a M component, the geometry will be returned as is.
+
+        - Otherwise, if the input geometry has neither a Z or M component, the new Z and M values will be added to the vertices of the input geometry.
+
+        **SQL name**: *ST_Force4D*
+
+        Args:
+            z (IntoExprColumn | float): `DOUBLE` expression
+            m (IntoExprColumn | float): `DOUBLE` expression
+
+        Returns:
+            T
+        """
+        return self._new(func("ST_Force4D", self.inner(), z, m))
+
+    def geometrytype(self) -> T:
+        """Returns a 'GEOMETRY_TYPE' enum identifying the input geometry type.
+
+        Possible enum return types are: `POINT`, `LINESTRING`, `POLYGON`, `MULTIPOINT`, `MULTILINESTRING`, `MULTIPOLYGON`, and `GEOMETRYCOLLECTION`.
+
+        **SQL name**: *ST_GeometryType*
+
+        Examples:
+            ```sql
+            SELECT DISTINCT ST_GeometryType(ST_GeomFromText('POINT(1 1)'));
+            ----
+            POINT
+            ```
+
+        Returns:
+            T
+        """
+        return self._new(func("ST_GeometryType", self.inner()))
+
+    def geomfromgeojson(self) -> T:
+        """Deserializes a GEOMETRY from a GeoJSON fragment.
+
+        **SQL name**: *ST_GeomFromGeoJSON*
+
+        Examples:
+            ```sql
+            SELECT ST_GeomFromGeoJSON('{"type": "Point", "coordinates": [1.0, 2.0]}');
+            ----
+            POINT (1 2)
+            ```
+
+        Returns:
+            T
+        """
+        return self._new(func("ST_GeomFromGeoJSON", self.inner()))
+
+    def geomfromhexewkb(self) -> T:
+        """Deserialize a GEOMETRY from a HEX(E)WKB encoded strin.
+
+        DuckDB spatial doesn't currently differentiate between `WKB` and `EWKB`, so `ST_GeomFromHEXWKB` and `ST_GeomFromHEXEWKB` are just aliases of each other.
+
+        **SQL name**: *ST_GeomFromHEXEWKB*
+
+        Returns:
+            T
+        """
+        return self._new(func("ST_GeomFromHEXEWKB", self.inner()))
+
+    def geomfromhexwkb(self) -> T:
+        """Deserialize a GEOMETRY from a HEX(E)WKB encoded strin.
+
+        DuckDB spatial doesn't currently differentiate between `WKB` and `EWKB`, so `ST_GeomFromHEXWKB` and `ST_GeomFromHEXEWKB` are just aliases of each other.
+
+        **SQL name**: *ST_GeomFromHEXWKB*
+
+        Returns:
+            T
+        """
+        return self._new(func("ST_GeomFromHEXWKB", self.inner()))
+
+    def geomfromtext(self, ignore_invalid: IntoExprColumn | bool | None = None) -> T:
+        """Deserialize a GEOMETRY from a WKT encoded string.
+
+        **SQL name**: *ST_GeomFromText*
+
+        Args:
+            ignore_invalid (IntoExprColumn | bool | None): `BOOLEAN` expression
+
+        Returns:
+            T
+        """
+        return self._new(func("ST_GeomFromText", self.inner(), ignore_invalid))
+
     def geomfromwkb(self) -> T:
         """Creates a geometry from Well-Known Binary (WKB) representation.
 
         **SQL name**: *st_geomfromwkb*
 
         Examples:
+            ```sql
             ST_GeomFromWKB(X'01010000000000000000000000000000000000000000000000')
+            ```
 
         Returns:
             T
         """
         return self._new(func("st_geomfromwkb", self.inner()))
 
+    def hasm(self) -> T:
+        """Check if the input geometry has M values.
+
+        **SQL name**: *ST_HasM*
+
+        Examples:
+            ```sql
+            -- HasM for a 2D geometry
+            SELECT ST_HasM(ST_GeomFromText('POINT(1 1)'));
+            ----
+            false
+
+            -- HasM for a 3DZ geometry
+            SELECT ST_HasM(ST_GeomFromText('POINT Z(1 1 1)'));
+            ----
+            false
+
+            -- HasM for a 3DM geometry
+            SELECT ST_HasM(ST_GeomFromText('POINT M(1 1 1)'));
+            ----
+            true
+
+            -- HasM for a 4D geometry
+            SELECT ST_HasM(ST_GeomFromText('POINT ZM(1 1 1 1)'));
+            ----
+            true
+            ```
+
+        Returns:
+            T
+        """
+        return self._new(func("ST_HasM", self.inner()))
+
+    def hasz(self) -> T:
+        """Check if the input geometry has Z values.
+
+        **SQL name**: *ST_HasZ*
+
+        Examples:
+            ```sql
+            -- HasZ for a 2D geometry
+            SELECT ST_HasZ(ST_GeomFromText('POINT(1 1)'));
+            ----
+            false
+
+            -- HasZ for a 3DZ geometry
+            SELECT ST_HasZ(ST_GeomFromText('POINT Z(1 1 1)'));
+            ----
+            true
+
+            -- HasZ for a 3DM geometry
+            SELECT ST_HasZ(ST_GeomFromText('POINT M(1 1 1)'));
+            ----
+            false
+
+            -- HasZ for a 4D geometry
+            SELECT ST_HasZ(ST_GeomFromText('POINT ZM(1 1 1 1)'));
+            ----
+            true
+            ```
+
+        Returns:
+            T
+        """
+        return self._new(func("ST_HasZ", self.inner()))
+
+    def hilbert(
+        self,
+        y: IntoExprColumn | float | None = None,
+        bounds: IntoExprColumn | None = None,
+    ) -> T:
+        """Encodes the X and Y values as the hilbert curve index for a curve covering the given bounding box.
+
+        If a geometry is provided, the center of the approximate bounding box is used as the point to encode.
+
+        If no bounding box is provided, the hilbert curve index is mapped to the full range of a single-precision float.
+
+        For the BOX_2D and BOX_2DF variants, the center of the box is used as the point to encode.
+
+        **SQL name**: *ST_Hilbert*
+
+        Args:
+            y (IntoExprColumn | float | None): `BOX_2D | BOX_2DF | DOUBLE` expression
+            bounds (IntoExprColumn | None): `BOX_2D` expression
+
+        Returns:
+            T
+        """
+        return self._new(func("ST_Hilbert", self.inner(), y, bounds))
+
+    def interiorringn(self, n: IntoExprColumn | int) -> T:
+        """Returns the N-th interior ring (hole) of a POLYGON as a LINESTRING.
+
+        Indexing is 1-based  (n = 1 returns the first interior ring).
+
+        Returns NULL if the polygon is empty or has fewer than N interior rings.
+
+        **SQL name**: *ST_InteriorRingN*
+
+        Args:
+            n (IntoExprColumn | int): `BIGINT` expression
+
+        Examples:
+            ```sql
+            SELECT ST_AsText(ST_InteriorRingN(ST_GeomFromText('POLYGON((0 0,10 0,10 10,0 10,0 0),(2 2,4 2,4 4,2 4,2 2))'), 1));
+            ```
+
+        Returns:
+            T
+        """
+        return self._new(func("ST_InteriorRingN", self.inner(), n))
+
+    def interpolatepoint(self, point: IntoExprColumn) -> T:
+        """Computes the closest point on a LINESTRING to a given POINT and returns the interpolated M value of that point.
+
+         First argument must be a linestring and must have a M dimension.
+
+         The second argument must be a point.
+
+        .
+
+         Neither argument can be empty.
+
+         **SQL name**: *ST_InterpolatePoint*
+
+        Args:
+             point (IntoExprColumn): `GEOMETRY` expression
+
+        Returns:
+             T
+        """
+        return self._new(func("ST_InterpolatePoint", self.inner(), point))
+
+    def intersection(self, geom2: IntoExprColumn) -> T:
+        """Returns the intersection of two geometries.
+
+        **SQL name**: *ST_Intersection*
+
+        Args:
+            geom2 (IntoExprColumn): `GEOMETRY` expression
+
+        Returns:
+            T
+        """
+        return self._new(func("ST_Intersection", self.inner(), geom2))
+
+    def intersection_agg(self) -> T:
+        """Computes the intersection of a set of geometries.
+
+        **SQL name**: *ST_Intersection_Agg*
+
+        Returns:
+            T
+        """
+        return self._new(func("ST_Intersection_Agg", self.inner()))
+
+    def intersects(self, box2: IntoExprColumn) -> T:
+        """Returns true if the geometries intersect.
+
+        **SQL name**: *ST_Intersects*
+
+        Args:
+            box2 (IntoExprColumn): `GEOMETRY | BOX_2D` expression
+
+        Returns:
+            T
+        """
+        return self._new(func("ST_Intersects", self.inner(), box2))
+
     def intersects_extent(self, geom2: IntoExprColumn) -> T:
-        """Returns true if the geometries bounding boxes intersect.
+        """Returns true if the extent of two geometries intersects.
 
         **SQL name**: *st_intersects_extent*
 
         Args:
             geom2 (IntoExprColumn): `GEOMETRY` expression
 
-        Examples:
-            'POINT(5 5)'::GEOMETRY && 'LINESTRING(0 0, 10 20)'::GEOMETRY;
-
         Returns:
             T
         """
         return self._new(func("st_intersects_extent", self.inner(), geom2))
+
+    def isclosed(self) -> T:
+        """Check if a geometry is 'closed'.
+
+        **SQL name**: *ST_IsClosed*
+
+        Returns:
+            T
+        """
+        return self._new(func("ST_IsClosed", self.inner()))
+
+    def isempty(self) -> T:
+        """Returns true if the geometry is empty.
+
+        **SQL name**: *ST_IsEmpty*
+
+        Returns:
+            T
+        """
+        return self._new(func("ST_IsEmpty", self.inner()))
+
+    def isring(self) -> T:
+        """Returns true if the geometry is a ring (both ST_IsClosed and ST_IsSimple).
+
+        **SQL name**: *ST_IsRing*
+
+        Returns:
+            T
+        """
+        return self._new(func("ST_IsRing", self.inner()))
+
+    def issimple(self) -> T:
+        """Returns true if the geometry is simple.
+
+        **SQL name**: *ST_IsSimple*
+
+        Returns:
+            T
+        """
+        return self._new(func("ST_IsSimple", self.inner()))
+
+    def isvalid(self) -> T:
+        """Returns true if the geometry is valid.
+
+        **SQL name**: *ST_IsValid*
+
+        Returns:
+            T
+        """
+        return self._new(func("ST_IsValid", self.inner()))
+
+    def length(self) -> T:
+        """Returns the length of the input line geometry.
+
+        **SQL name**: *ST_Length*
+
+        Returns:
+            T
+        """
+        return self._new(func("ST_Length", self.inner()))
+
+    def length_spheroid(self) -> T:
+        """Returns the length of the input geometry in meters, using an ellipsoidal model of the eart.
+
+        The input geometry is assumed to be in the [EPSG:4326](https://en.wikipedia.org/wiki/World_Geodetic_System) coordinate system (WGS84), with [latitude, longitude] axis order and the length is returned in meters.
+
+        This function uses the [GeographicLib](https://geographiclib.sourceforge.io/) library, calculating the length using an ellipsoidal model of the earth.
+
+        This is a highly accurate method for calculating the length of a line geometry taking the curvature of the earth into account, but is also the slowest.
+
+
+        Returns `0.0` for any geometry that is not a `LINESTRING`, `MULTILINESTRING` or `GEOMETRYCOLLECTION` containing line geometries.
+
+        **SQL name**: *ST_Length_Spheroid*
+
+        Returns:
+            T
+        """
+        return self._new(func("ST_Length_Spheroid", self.inner()))
+
+    def lineinterpolatepoint(self, fraction: IntoExprColumn | float) -> T:
+        """Returns a point interpolated along a line at a fraction of total 2D length.
+
+        **SQL name**: *ST_LineInterpolatePoint*
+
+        Args:
+            fraction (IntoExprColumn | float): `DOUBLE` expression
+
+        Returns:
+            T
+        """
+        return self._new(func("ST_LineInterpolatePoint", self.inner(), fraction))
+
+    def lineinterpolatepoints(
+        self, fraction: IntoExprColumn | float, repeat: IntoExprColumn | bool
+    ) -> T:
+        """Returns a multi-point interpolated along a line at a fraction of total 2D length.
+
+        if repeat is false, the result is a single point, (and equivalent to ST_LineInterpolatePoint).
+
+        otherwise, the result is a multi-point with points repeated at the fraction interval.
+
+        **SQL name**: *ST_LineInterpolatePoints*
+
+        Args:
+            fraction (IntoExprColumn | float): `DOUBLE` expression
+            repeat (IntoExprColumn | bool): `BOOLEAN` expression
+
+        Returns:
+            T
+        """
+        return self._new(
+            func("ST_LineInterpolatePoints", self.inner(), fraction, repeat)
+        )
+
+    def linelocatepoint(self, point: IntoExprColumn) -> T:
+        """Returns the location on a line closest to a point as a fraction of the total 2D length of the line.
+
+        **SQL name**: *ST_LineLocatePoint*
+
+        Args:
+            point (IntoExprColumn): `GEOMETRY` expression
+
+        Returns:
+            T
+        """
+        return self._new(func("ST_LineLocatePoint", self.inner(), point))
+
+    def linemerge(self, preserve_direction: IntoExprColumn | bool | None = None) -> T:
+        """Merges the input line geometry, optionally taking direction into account.
+
+        **SQL name**: *ST_LineMerge*
+
+        Args:
+            preserve_direction (IntoExprColumn | bool | None): `BOOLEAN` expression
+
+        Returns:
+            T
+        """
+        return self._new(func("ST_LineMerge", self.inner(), preserve_direction))
+
+    def linestring2dfromwkb(self) -> T:
+        """Deserialize a LINESTRING_2D from a WKB encoded blob.
+
+        **SQL name**: *ST_LineString2DFromWKB*
+
+        Returns:
+            T
+        """
+        return self._new(func("ST_LineString2DFromWKB", self.inner()))
+
+    def linesubstring(
+        self,
+        start_fraction: IntoExprColumn | float,
+        end_fraction: IntoExprColumn | float,
+    ) -> T:
+        """Returns a substring of a line between two fractions of total 2D length.
+
+        **SQL name**: *ST_LineSubstring*
+
+        Args:
+            start_fraction (IntoExprColumn | float): `DOUBLE` expression
+            end_fraction (IntoExprColumn | float): `DOUBLE` expression
+
+        Returns:
+            T
+        """
+        return self._new(
+            func("ST_LineSubstring", self.inner(), start_fraction, end_fraction)
+        )
+
+    def locatealong(
+        self,
+        measure: IntoExprColumn | float,
+        offset: IntoExprColumn | float | None = None,
+    ) -> T:
+        """Returns a point or multi-point, containing the point(s) at the geometry with the given measur.
+
+        For a LINESTRING, or MULTILINESTRING, the location is determined by interpolating between M value.
+
+        For a POINT and MULTIPOINT, the point is returned if the measure matches the M value of the vertex, otherwise an empty geometry is returne.
+
+        For a POLYGON, only the exterior ring is considered, and treated as a LINESTRIN.
+
+
+        If offset is provided, the resulting point(s) is offset by the given amount perpendicular to the line direction.
+
+        **SQL name**: *ST_LocateAlong*
+
+        Args:
+            measure (IntoExprColumn | float): `DOUBLE` expression
+            offset (IntoExprColumn | float | None): `DOUBLE` expression
+
+        Returns:
+            T
+        """
+        return self._new(func("ST_LocateAlong", self.inner(), measure, offset))
+
+    def locatebetween(
+        self,
+        start_measure: IntoExprColumn | float,
+        end_measure: IntoExprColumn | float,
+        offset: IntoExprColumn | float | None = None,
+    ) -> T:
+        """Returns a geometry or geometry collection created by filtering and interpolating vertices within a range of M value.
+
+        Creates a geometry or geometry collection, containing the parts formed by vertices that have an M value within the start_measure and end_measure rang.
+
+
+        For LINESTRING or MULTILINESTRING, if a line segment would cross either the upper or lower bound, a vertex is added by interpolating the coordinates at the intersectio.
+
+        For a POINT and MULTIPOINT, the point is added to the collection if its vertex has an M value within the range, otherwise it is skippe.
+
+        For a POLYGON, only the exterior ring is considered, and treated like a LINESTRIN.
+
+
+        If offset is provided, the resulting vertices are offset by the given amount perpendicular to the line direction.
+
+        **SQL name**: *ST_LocateBetween*
+
+        Args:
+            start_measure (IntoExprColumn | float): `DOUBLE` expression
+            end_measure (IntoExprColumn | float): `DOUBLE` expression
+            offset (IntoExprColumn | float | None): `DOUBLE` expression
+
+        Returns:
+            T
+        """
+        return self._new(
+            func("ST_LocateBetween", self.inner(), start_measure, end_measure, offset)
+        )
+
+    def m(self) -> T:
+        """Returns the M coordinate of a point geometry.
+
+        **SQL name**: *ST_M*
+
+        Examples:
+            ```sql
+            SELECT ST_M(ST_Point(1, 2, 3, 4))
+            ```
+
+        Returns:
+            T
+        """
+        return self._new(func("ST_M", self.inner()))
+
+    def makebox2d(self, point2: IntoExprColumn) -> T:
+        """Create a BOX2D from two POINT geometries.
+
+        **SQL name**: *ST_MakeBox2D*
+
+        Args:
+            point2 (IntoExprColumn): `GEOMETRY` expression
+
+        Examples:
+            ```sql
+            SELECT ST_MakeBox2D(ST_Point(0, 0), ST_Point(1, 1));
+            ----
+            BOX(0 0, 1 1)
+            ```
+
+        Returns:
+            T
+        """
+        return self._new(func("ST_MakeBox2D", self.inner(), point2))
+
+    def makeenvelope(
+        self,
+        min_y: IntoExprColumn | float,
+        max_x: IntoExprColumn | float,
+        max_y: IntoExprColumn | float,
+    ) -> T:
+        """Create a rectangular polygon from min/max coordinates.
+
+        **SQL name**: *ST_MakeEnvelope*
+
+        Args:
+            min_y (IntoExprColumn | float): `DOUBLE` expression
+            max_x (IntoExprColumn | float): `DOUBLE` expression
+            max_y (IntoExprColumn | float): `DOUBLE` expression
+
+        Returns:
+            T
+        """
+        return self._new(func("ST_MakeEnvelope", self.inner(), min_y, max_x, max_y))
+
+    def makeline(self) -> T:
+        """Create a LINESTRING from a list of POINT geometries.
+
+        **SQL name**: *ST_MakeLine*
+
+        Examples:
+            ```sql
+            SELECT ST_MakeLine([ST_Point(0, 0), ST_Point(1, 1)]);
+            ----
+            LINESTRING(0 0, 1 1)
+            ```
+
+        Returns:
+            T
+        """
+        return self._new(func("ST_MakeLine", self.inner()))
+
+    def makeline_end(self, end: IntoExprColumn | None = None) -> T:
+        """Create a LINESTRING from two POINT geometries.
+
+        **SQL name**: *ST_MakeLine*
+
+        Args:
+            end (IntoExprColumn | None): `GEOMETRY` expression
+
+        Examples:
+            ```sql
+            SELECT ST_MakeLine(ST_Point(0, 0), ST_Point(1, 1));
+            ----
+            LINESTRING(0 0, 1 1)
+            ```
+
+        Returns:
+            T
+        """
+        return self._new(func("ST_MakeLine", self.inner(), end))
+
+    def makepoint(self, y: IntoExprColumn | float) -> T:
+        """Creates a GEOMETRY point from an pair of floating point numbers.
+
+        For geodetic coordinate systems, x is typically the longitude value and y is the latitude value.
+
+
+        Note that ST_Point is equivalent.
+
+        ST_MakePoint is provided for PostGIS compatibility.
+
+        **SQL name**: *ST_MakePoint*
+
+        Args:
+            y (IntoExprColumn | float): `DOUBLE` expression
+
+        Examples:
+            ```sql
+            SELECT ST_AsText(ST_MakePoint(143.3, -24.2));
+            ----
+            POINT (143.3 -24.2)
+            ```
+
+        Returns:
+            T
+        """
+        return self._new(func("ST_MakePoint", self.inner(), y))
+
+    def makepoint_z(
+        self, y: IntoExprColumn | float, z: IntoExprColumn | float | None = None
+    ) -> T:
+        """Creates a POINT_3D.
+
+        **SQL name**: *ST_MakePoint*
+
+        Args:
+            y (IntoExprColumn | float): `DOUBLE` expression
+            z (IntoExprColumn | float | None): `DOUBLE` expression
+
+        Returns:
+            T
+        """
+        return self._new(func("ST_MakePoint", self.inner(), y, z))
+
+    def makepoint_z_m(
+        self,
+        y: IntoExprColumn | float,
+        z: IntoExprColumn | float | None = None,
+        m: IntoExprColumn | float | None = None,
+    ) -> T:
+        """Creates a POINT_4D.
+
+        **SQL name**: *ST_MakePoint*
+
+        Args:
+            y (IntoExprColumn | float): `DOUBLE` expression
+            z (IntoExprColumn | float | None): `DOUBLE` expression
+            m (IntoExprColumn | float | None): `DOUBLE` expression
+
+        Returns:
+            T
+        """
+        return self._new(func("ST_MakePoint", self.inner(), y, z, m))
+
+    def makepolygon(self) -> T:
+        """Create a POLYGON from a LINESTRING shell.
+
+        **SQL name**: *ST_MakePolygon*
+
+        Examples:
+            ```sql
+            SELECT ST_MakePolygon(ST_LineString([ST_Point(0, 0), ST_Point(1, 0), ST_Point(1, 1), ST_Point(0, 0)]));
+            ```
+
+        Returns:
+            T
+        """
+        return self._new(func("ST_MakePolygon", self.inner()))
+
+    def makepolygon_holes(self, holes: IntoExprColumn | None = None) -> T:
+        """Create a POLYGON from a LINESTRING shell and a list of LINESTRING holes.
+
+        **SQL name**: *ST_MakePolygon*
+
+        Args:
+            holes (IntoExprColumn | None): `GEOMETRY[]` expression
+
+        Examples:
+            ```sql
+            SELECT ST_MakePolygon(ST_LineString([ST_Point(0, 0), ST_Point(1, 0), ST_Point(1, 1), ST_Point(0, 0)]), [ST_LineString([ST_Point(0.25, 0.25), ST_Point(0.75, 0.25), ST_Point(0.75, 0.75), ST_Point(0.25, 0.25)])]);
+            ```
+
+        Returns:
+            T
+        """
+        return self._new(func("ST_MakePolygon", self.inner(), holes))
+
+    def makevalid(self) -> T:
+        """Returns a valid representation of the geometry.
+
+        **SQL name**: *ST_MakeValid*
+
+        Returns:
+            T
+        """
+        return self._new(func("ST_MakeValid", self.inner()))
+
+    def maximuminscribedcircle(
+        self, tolerance: IntoExprColumn | float | None = None
+    ) -> T:
+        """Returns the maximum inscribed circle of the input geometry, optionally with a tolerance.
+
+        By default, the tolerance is computed as `max(width, height) / 1000`.
+
+        The return value is a struct with the center of the circle, the nearest point to the center on the boundary of the geometry, and the radius of the circle.
+
+        **SQL name**: *ST_MaximumInscribedCircle*
+
+        Args:
+            tolerance (IntoExprColumn | float | None): `DOUBLE` expression
+
+        Examples:
+            ```sql
+            -- Find the maximum inscribed circle of a square
+            SELECT ST_MaximumInscribedCircle(
+            ST_GeomFromText('POLYGON((0 0, 10 0, 10 10, 0 10, 0 0))')
+            );
+            ----
+            {'center': POINT (5 5), 'nearest': POINT (5 0), 'radius': 5.0}
+            ```
+
+        Returns:
+            T
+        """
+        return self._new(func("ST_MaximumInscribedCircle", self.inner(), tolerance))
+
+    def memunion_agg(self) -> T:
+        """Computes the union of a set of input geometries.
+
+        Slower, but might be more memory efficient than ST_UnionAgg as each geometry is merged into the union individually rather than all at once.
+
+        **SQL name**: *ST_MemUnion_Agg*
+
+        Returns:
+            T
+        """
+        return self._new(func("ST_MemUnion_Agg", self.inner()))
+
+    def minimumrotatedrectangle(self) -> T:
+        """Returns the minimum rotated rectangle that bounds the input geometry, finding the surrounding box that has the lowest area by using a rotated rectangle, rather than taking the lowest and highest coordinate values as per ST_Envelope().
+
+        **SQL name**: *ST_MinimumRotatedRectangle*
+
+        Returns:
+            T
+        """
+        return self._new(func("ST_MinimumRotatedRectangle", self.inner()))
+
+    def mmax(self) -> T:
+        """Returns the maximum M coordinate of a geometry.
+
+        **SQL name**: *ST_MMax*
+
+        Examples:
+            ```sql
+            SELECT ST_MMax(ST_Point(1, 2, 3, 4))
+            ```
+
+        Returns:
+            T
+        """
+        return self._new(func("ST_MMax", self.inner()))
+
+    def mmin(self) -> T:
+        """Returns the minimum M coordinate of a geometry.
+
+        **SQL name**: *ST_MMin*
+
+        Examples:
+            ```sql
+            SELECT ST_MMin(ST_Point(1, 2, 3, 4))
+            ```
+
+        Returns:
+            T
+        """
+        return self._new(func("ST_MMin", self.inner()))
+
+    def multi(self) -> T:
+        """Turns a single geometry into a multi geometry.
+
+        If the geometry is already a multi geometry, it is returned as is.
+
+        **SQL name**: *ST_Multi*
+
+        Examples:
+            ```sql
+            SELECT ST_Multi(ST_GeomFromText('POINT(1 2)'));
+            ----
+            MULTIPOINT (1 2)
+
+            SELECT ST_Multi(ST_GeomFromText('LINESTRING(1 1, 2 2)'));
+            ----
+            MULTILINESTRING ((1 1, 2 2))
+
+            SELECT ST_Multi(ST_GeomFromText('POLYGON((0 0, 0 1, 1 1, 1 0, 0 0))'));
+            ----
+            MULTIPOLYGON (((0 0, 0 1, 1 1, 1 0, 0 0)))
+            ```
+
+        Returns:
+            T
+        """
+        return self._new(func("ST_Multi", self.inner()))
+
+    def ngeometries(self) -> T:
+        """Returns the number of component geometries in a collection geometry.
+
+        If the input geometry is not a collection, this function returns 0 or 1 depending on if the geometry is empty or not.
+
+        **SQL name**: *ST_NGeometries*
+
+        Returns:
+            T
+        """
+        return self._new(func("ST_NGeometries", self.inner()))
+
+    def ninteriorrings(self) -> T:
+        """Returns the number of interior rings of a polygon.
+
+        **SQL name**: *ST_NInteriorRings*
+
+        Returns:
+            T
+        """
+        return self._new(func("ST_NInteriorRings", self.inner()))
+
+    def node(self) -> T:
+        """Returns a noded MultiLinestring, produced by combining a collection of input linestrings and adding additional vertices where they intersect.
+
+        **SQL name**: *ST_Node*
+
+        Examples:
+            ```sql
+            -- Create a noded multilinestring from two intersecting lines
+            SELECT ST_Node(
+            ST_GeomFromText('MULTILINESTRING((0 0, 2 2), (0 2, 2 0))')
+            );
+            ----
+            MULTILINESTRING ((0 0, 1 1), (1 1, 2 2), (0 2, 1 1), (1 1, 2 0))
+            ```
+
+        Returns:
+            T
+        """
+        return self._new(func("ST_Node", self.inner()))
+
+    def normalize(self) -> T:
+        """Returns the normalized representation of the geometry.
+
+        **SQL name**: *ST_Normalize*
+
+        Returns:
+            T
+        """
+        return self._new(func("ST_Normalize", self.inner()))
+
+    def npoints(self) -> T:
+        """Returns the number of vertices within a geometry.
+
+        **SQL name**: *ST_NPoints*
+
+        Returns:
+            T
+        """
+        return self._new(func("ST_NPoints", self.inner()))
+
+    def numgeometries(self) -> T:
+        """Returns the number of component geometries in a collection geometry.
+
+        If the input geometry is not a collection, this function returns 0 or 1 depending on if the geometry is empty or not.
+
+        **SQL name**: *ST_NumGeometries*
+
+        Returns:
+            T
+        """
+        return self._new(func("ST_NumGeometries", self.inner()))
+
+    def numinteriorrings(self) -> T:
+        """Returns the number of interior rings of a polygon.
+
+        **SQL name**: *ST_NumInteriorRings*
+
+        Returns:
+            T
+        """
+        return self._new(func("ST_NumInteriorRings", self.inner()))
+
+    def numpoints(self) -> T:
+        """Returns the number of vertices within a geometry.
+
+        **SQL name**: *ST_NumPoints*
+
+        Returns:
+            T
+        """
+        return self._new(func("ST_NumPoints", self.inner()))
+
+    def overlaps(self, geom2: IntoExprColumn) -> T:
+        """Returns true if the geometries overlap.
+
+        **SQL name**: *ST_Overlaps*
+
+        Args:
+            geom2 (IntoExprColumn): `GEOMETRY` expression
+
+        Returns:
+            T
+        """
+        return self._new(func("ST_Overlaps", self.inner(), geom2))
+
+    def perimeter(self) -> T:
+        """Returns the length of the perimeter of the geometry.
+
+        **SQL name**: *ST_Perimeter*
+
+        Returns:
+            T
+        """
+        return self._new(func("ST_Perimeter", self.inner()))
+
+    def perimeter_spheroid(self) -> T:
+        """Returns the length of the perimeter in meters using an ellipsoidal model of the earths surfac.
+
+        The input geometry is assumed to be in the [EPSG:4326](https://en.wikipedia.org/wiki/World_Geodetic_System) coordinate system (WGS84), with [latitude, longitude] axis order and the length is returned in meters.
+
+        This function uses the [GeographicLib](https://geographiclib.sourceforge.io/) library, calculating the perimeter using an ellipsoidal model of the earth.
+
+        This is a highly accurate method for calculating the perimeter of a polygon taking the curvature of the earth into account, but is also the slowest.
+
+
+        Returns `0.0` for any geometry that is not a `POLYGON`, `MULTIPOLYGON` or `GEOMETRYCOLLECTION` containing polygon geometries.
+
+        **SQL name**: *ST_Perimeter_Spheroid*
+
+        Returns:
+            T
+        """
+        return self._new(func("ST_Perimeter_Spheroid", self.inner()))
+
+    def point(self, y: IntoExprColumn | float) -> T:
+        """Creates a GEOMETRY point.
+
+        **SQL name**: *ST_Point*
+
+        Args:
+            y (IntoExprColumn | float): `DOUBLE` expression
+
+        Returns:
+            T
+        """
+        return self._new(func("ST_Point", self.inner(), y))
+
+    def point2d(self, y: IntoExprColumn | float) -> T:
+        """Creates a POINT_2D.
+
+        **SQL name**: *ST_Point2D*
+
+        Args:
+            y (IntoExprColumn | float): `DOUBLE` expression
+
+        Returns:
+            T
+        """
+        return self._new(func("ST_Point2D", self.inner(), y))
+
+    def point2dfromwkb(self) -> T:
+        """Deserialize a POINT_2D from a WKB encoded blob.
+
+        **SQL name**: *ST_Point2DFromWKB*
+
+        Returns:
+            T
+        """
+        return self._new(func("ST_Point2DFromWKB", self.inner()))
+
+    def point3d(self, y: IntoExprColumn | float, z: IntoExprColumn | float) -> T:
+        """Creates a POINT_3D.
+
+        **SQL name**: *ST_Point3D*
+
+        Args:
+            y (IntoExprColumn | float): `DOUBLE` expression
+            z (IntoExprColumn | float): `DOUBLE` expression
+
+        Returns:
+            T
+        """
+        return self._new(func("ST_Point3D", self.inner(), y, z))
+
+    def point4d(
+        self,
+        y: IntoExprColumn | float,
+        z: IntoExprColumn | float,
+        m: IntoExprColumn | float,
+    ) -> T:
+        """Creates a POINT_4D.
+
+        **SQL name**: *ST_Point4D*
+
+        Args:
+            y (IntoExprColumn | float): `DOUBLE` expression
+            z (IntoExprColumn | float): `DOUBLE` expression
+            m (IntoExprColumn | float): `DOUBLE` expression
+
+        Returns:
+            T
+        """
+        return self._new(func("ST_Point4D", self.inner(), y, z, m))
+
+    def pointn(self, index: IntoExprColumn | int) -> T:
+        """Returns the n'th vertex from the input geometry as a point geometry.
+
+        **SQL name**: *ST_PointN*
+
+        Args:
+            index (IntoExprColumn | int): `INTEGER` expression
+
+        Returns:
+            T
+        """
+        return self._new(func("ST_PointN", self.inner(), index))
+
+    def pointonsurface(self) -> T:
+        """Returns a point guaranteed to lie on the surface of the geometry.
+
+        **SQL name**: *ST_PointOnSurface*
+
+        Returns:
+            T
+        """
+        return self._new(func("ST_PointOnSurface", self.inner()))
+
+    def points(self) -> T:
+        """Collects all the vertices in the geometry into a MULTIPOINT.
+
+        **SQL name**: *ST_Points*
+
+        Examples:
+            ```sql
+            SELECT ST_Points('LINESTRING(1 1, 2 2)'::GEOMETRY);
+            ----
+            MULTIPOINT (1 1, 2 2)
+
+            SELECT ST_Points('MULTIPOLYGON Z EMPTY'::GEOMETRY);
+            ----
+            MULTIPOINT Z EMPTY
+            ```
+
+        Returns:
+            T
+        """
+        return self._new(func("ST_Points", self.inner()))
+
+    def polygon2dfromwkb(self) -> T:
+        """Deserialize a POLYGON_2D from a WKB encoded blob.
+
+        **SQL name**: *ST_Polygon2DFromWKB*
+
+        Returns:
+            T
+        """
+        return self._new(func("ST_Polygon2DFromWKB", self.inner()))
+
+    def polygonize(self) -> T:
+        """Returns a polygonized representation of the input geometries.
+
+        **SQL name**: *ST_Polygonize*
+
+        Examples:
+            ```sql
+            -- Create a polygon from a closed linestring ring
+            SELECT ST_Polygonize([
+            ST_GeomFromText('LINESTRING(0 0, 0 10, 10 10, 10 0, 0 0)')
+            ]);
+            ---
+            GEOMETRYCOLLECTION (POLYGON ((0 0, 0 10, 10 10, 10 0, 0 0)))
+            ```
+
+        Returns:
+            T
+        """
+        return self._new(func("ST_Polygonize", self.inner()))
+
+    def quadkey(
+        self,
+        latitude: IntoExprColumn | float,
+        level: IntoExprColumn | int | None = None,
+    ) -> T:
+        """Compute the [quadkey](https://learn.microsoft.com/en-us/bingmaps/articles/bing-maps-tile-system) for a given lon/lat point at a given level.
+
+        Note that the parameter order is __longitude__, __latitude__.
+
+
+        `level` has to be between 1 and 23, inclusive.
+
+
+        The input coordinates will be clamped to the lon/lat bounds of the earth (longitude between -180 and 180, latitude between -85.05112878 and 85.05112878).
+
+
+        The geometry overload throws an error if the input geometry is not a `POINT`.
+
+        **SQL name**: *ST_QuadKey*
+
+        Args:
+            latitude (IntoExprColumn | float | int): `DOUBLE | INTEGER` expression
+            level (IntoExprColumn | int | None): `INTEGER` expression
+
+        Examples:
+            ```sql
+            SELECT ST_QuadKey(ST_Point(11.08, 49.45), 10);
+            ----
+            1333203202
+            ```
+
+        Returns:
+            T
+        """
+        return self._new(func("ST_QuadKey", self.inner(), latitude, level))
+
+    def reduceprecision(self, precision: IntoExprColumn | float) -> T:
+        """Returns the geometry with all vertices reduced to the given precision.
+
+        **SQL name**: *ST_ReducePrecision*
+
+        Args:
+            precision (IntoExprColumn | float): `DOUBLE` expression
+
+        Returns:
+            T
+        """
+        return self._new(func("ST_ReducePrecision", self.inner(), precision))
+
+    def removerepeatedpoints(
+        self, tolerance: IntoExprColumn | float | None = None
+    ) -> T:
+        """Remove repeated points from a LINESTRING.
+
+        **SQL name**: *ST_RemoveRepeatedPoints*
+
+        Args:
+            tolerance (IntoExprColumn | float | None): `DOUBLE` expression
+
+        Returns:
+            T
+        """
+        return self._new(func("ST_RemoveRepeatedPoints", self.inner(), tolerance))
+
+    def reverse(self) -> T:
+        """Returns the geometry with the order of its vertices reversed.
+
+        **SQL name**: *ST_Reverse*
+
+        Returns:
+            T
+        """
+        return self._new(func("ST_Reverse", self.inner()))
+
+    def rotate(self, radians: IntoExpr) -> T:
+        """Alias of ST_RotateZ.
+
+        **SQL name**: *ST_Rotate*
+
+        Args:
+            radians (IntoExpr): `ANY` expression
+
+        Returns:
+            T
+        """
+        return self._new(func("ST_Rotate", self.inner(), radians))
+
+    def rotatex(self, radians: IntoExpr) -> T:
+        """Rotates a geometry around the X axis.
+
+        This is a shorthand macro for calling ST_Affine.
+
+        **SQL name**: *ST_RotateX*
+
+        Args:
+            radians (IntoExpr): `ANY` expression
+
+        Examples:
+            ```sql
+            -- Rotate a 3D point 90 degrees (π/2 radians) around the X-axis
+            SELECT ST_RotateX(ST_GeomFromText('POINT Z(0 1 0)'), pi()/2);
+            ----
+            POINT Z (0 0 1)
+            ```
+
+        Returns:
+            T
+        """
+        return self._new(func("ST_RotateX", self.inner(), radians))
+
+    def rotatey(self, radians: IntoExpr) -> T:
+        """Rotates a geometry around the Y axis.
+
+        This is a shorthand macro for calling ST_Affine.
+
+        **SQL name**: *ST_RotateY*
+
+        Args:
+            radians (IntoExpr): `ANY` expression
+
+        Examples:
+            ```sql
+            -- Rotate a 3D point 90 degrees (π/2 radians) around the Y-axis
+            SELECT ST_RotateY(ST_GeomFromText('POINT Z(1 0 0)'), pi()/2);
+            ----
+            POINT Z (0 0 -1)
+            ```
+
+        Returns:
+            T
+        """
+        return self._new(func("ST_RotateY", self.inner(), radians))
+
+    def rotatez(self, radians: IntoExpr) -> T:
+        """Rotates a geometry around the Z axis.
+
+        This is a shorthand macro for calling ST_Affine.
+
+        **SQL name**: *ST_RotateZ*
+
+        Args:
+            radians (IntoExpr): `ANY` expression
+
+        Examples:
+            ```sql
+            -- Rotate a point 90 degrees (π/2 radians) around the Z-axis
+            SELECT ST_RotateZ(ST_Point(1, 0), pi()/2);
+            ----
+            POINT (0 1)
+            ```
+
+        Returns:
+            T
+        """
+        return self._new(func("ST_RotateZ", self.inner(), radians))
+
+    def scale(self, xs: IntoExpr, ys: IntoExpr, zs: IntoExpr | None = None) -> T:
+        """SQL ST_Scale function.
+
+        **SQL name**: *ST_Scale*
+
+        Args:
+            xs (IntoExpr): `ANY` expression
+            ys (IntoExpr): `ANY` expression
+            zs (IntoExpr | None): `ANY` expression
+
+        Returns:
+            T
+        """
+        return self._new(func("ST_Scale", self.inner(), xs, ys, zs))
 
     def setcrs(self, crs: IntoExprColumn) -> T:
         """Sets the Coordinate Reference System (CRS) identifier of the geometry.
@@ -8626,3 +11934,489 @@ class GeoSpatialFns[T: Fns](NameSpaceHandler[T]):
             T
         """
         return self._new(func("st_setcrs", self.inner(), crs))
+
+    def shortestline(self, geom2: IntoExprColumn) -> T:
+        """Returns the shortest line between two geometries.
+
+        **SQL name**: *ST_ShortestLine*
+
+        Args:
+            geom2 (IntoExprColumn): `GEOMETRY` expression
+
+        Returns:
+            T
+        """
+        return self._new(func("ST_ShortestLine", self.inner(), geom2))
+
+    def simplify(self, tolerance: IntoExprColumn | float) -> T:
+        """Returns a simplified version of the geometry.
+
+        **SQL name**: *ST_Simplify*
+
+        Args:
+            tolerance (IntoExprColumn | float): `DOUBLE` expression
+
+        Returns:
+            T
+        """
+        return self._new(func("ST_Simplify", self.inner(), tolerance))
+
+    def simplifypreservetopology(self, tolerance: IntoExprColumn | float) -> T:
+        """Returns a simplified version of the geometry that preserves topology.
+
+        **SQL name**: *ST_SimplifyPreserveTopology*
+
+        Args:
+            tolerance (IntoExprColumn | float): `DOUBLE` expression
+
+        Returns:
+            T
+        """
+        return self._new(func("ST_SimplifyPreserveTopology", self.inner(), tolerance))
+
+    def startpoint(self) -> T:
+        """Returns the start point of a LINESTRING.
+
+        **SQL name**: *ST_StartPoint*
+
+        Returns:
+            T
+        """
+        return self._new(func("ST_StartPoint", self.inner()))
+
+    def tileenvelope(
+        self, tile_x: IntoExprColumn | int, tile_y: IntoExprColumn | int
+    ) -> T:
+        """The `ST_TileEnvelope` scalar function generates tile envelope rectangular polygons from specified zoom level and tile indices.
+
+        This is used in MVT generation to select the features corresponding to the tile extent.
+
+        The envelope is in the Web Mercato.
+
+        coordinate reference system (EPSG:3857).
+
+        The tile pyramid starts at zoom level 0, corresponding to a single tile for th.
+
+        world.
+
+        Each zoom level doubles the number of tiles in each direction, such that zoom level 1 is 2 tiles wide by 2 tiles high.
+
+        zoom level 2 is 4 tiles wide by 4 tiles high, and so on.
+
+        Tile indices start at `[x=0, y=0]` at the top left, and increas.
+
+        down and right.
+
+        For example, at zoom level 2, the top right tile is `[x=3, y=0]`, the bottom left tile is `[x=0, y=3]`, an.
+
+        the bottom right is `[x=3, y=3]`.
+
+
+        ```sq.
+
+        SELECT ST_TileEnvelope(2, 3, 1).
+
+        ```.
+
+        **SQL name**: *ST_TileEnvelope*
+
+        Args:
+            tile_x (IntoExprColumn | int): `INTEGER` expression
+            tile_y (IntoExprColumn | int): `INTEGER` expression
+
+        Examples:
+            ```sql
+            SELECT ST_TileEnvelope(2, 3, 1);
+            ┌───────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+            │                                         st_tileenvelope(2, 3, 1)                                          │
+            │                                                 geometry                                                  │
+            ├───────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+            │ POLYGON ((1.00188E+07 0, 1.00188E+07 1.00188E+07, 2.00375E+07 1.00188E+07, 2.00375E+07 0, 1.00188E+07 0)) │
+            └───────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+            ```
+
+        Returns:
+            T
+        """
+        return self._new(func("ST_TileEnvelope", self.inner(), tile_x, tile_y))
+
+    def touches(self, geom2: IntoExprColumn) -> T:
+        """Returns true if the geometries touch.
+
+        **SQL name**: *ST_Touches*
+
+        Args:
+            geom2 (IntoExprColumn): `GEOMETRY` expression
+
+        Returns:
+            T
+        """
+        return self._new(func("ST_Touches", self.inner(), geom2))
+
+    def transform(
+        self,
+        source_crs: IntoExprColumn,
+        target_crs: IntoExprColumn | bool | None = None,
+        always_xy: IntoExprColumn | bool | None = None,
+    ) -> T:
+        """Transforms a geometry between two coordinate system.
+
+        The source and target coordinate systems can be specified using any format that the [PROJ library](https://proj.org) supports.
+
+
+        The third optional `always_xy` parameter can be used to force the input and output geometries to be interpreted as having a [easting, northing] coordinate axis order regardless of what the source and target coordinate system definition says.
+
+        This is particularly useful when transforming to/from the [WGS84/EPSG:4326](https://en.wikipedia.org/wiki/World_Geodetic_System) coordinate system (what most people think of when they hear longitude/latitude or GPS coordinates), which is defined as having a [latitude, longitude] axis order even though [longitude, latitude] is commonly used in practice (e.g.
+
+        in [GeoJSON](https://tools.ietf.org/html/rfc7946)).
+
+        More details available in the [PROJ documentation](https://proj.org/en/9.3/faq.html#why-is-the-axis-ordering-in-proj-not-consistent).
+
+
+        DuckDB spatial vendors its own static copy of the PROJ database of coordinate systems, so if you have your own installation of PROJ on your system the available coordinate systems may differ to what's available in other GIS software.
+
+        **SQL name**: *ST_Transform*
+
+        Args:
+            source_crs (IntoExprColumn): `VARCHAR` expression
+            target_crs (IntoExprColumn | bool | None): `BOOLEAN | VARCHAR` expression
+            always_xy (IntoExprColumn | bool | None): `BOOLEAN` expression
+
+        Examples:
+            ```sql
+            -- Transform a geometry from EPSG:4326 to EPSG:3857 (WGS84 to WebMercator)
+            -- Note that since WGS84 is defined as having a [latitude, longitude] axis order
+            -- we follow the standard and provide the input geometry using that axis order,
+            -- but the output will be [easting, northing] because that is what's defined by
+            -- WebMercator.
+
+            SELECT
+            ST_Transform(
+            st_point(52.373123, 4.892360),
+            'EPSG:4326',
+            'EPSG:3857'
+            );
+            ----
+            POINT (544615.0239773799 6867874.103539125)
+
+            -- Alternatively, let's say we got our input point from e.g. a GeoJSON file,
+            -- which uses WGS84 but with [longitude, latitude] axis order. We can use the
+            -- `always_xy` parameter to force the input geometry to be interpreted as having
+            -- a [northing, easting] axis order instead, even though the source coordinate
+            -- reference system definition (WGS84) says otherwise.
+
+            SELECT
+            ST_Transform(
+            -- note the axis order is reversed here
+            st_point(4.892360, 52.373123),
+            'EPSG:4326',
+            'EPSG:3857',
+            always_xy := true
+            );
+            ----
+            POINT (544615.0239773799 6867874.103539125)
+
+            -- Transform a geometry from OSG36 British National Grid EPSG:27700 to EPSG:4326 WGS84
+            -- Standard transform is often fine for the first few decimal places before being wrong
+            -- which could result in an error starting at about 10m and possibly much more
+            SELECT ST_Transform(bng, 'EPSG:27700', 'EPSG:4326', xy := true) AS without_grid_file
+            FROM (SELECT ST_GeomFromText('POINT( 170370.718 11572.405 )') AS bng);
+            ----
+            POINT (-5.202992651563592 49.96007490162923)
+
+            -- By using an official NTv2 grid file, we can reduce the error down around the 9th decimal place
+            -- which in theory is below a millimetre, and in practise unlikely that your coordinates are that precise
+            -- British National Grid "NTv2 format files" download available here:
+            -- https://www.ordnancesurvey.co.uk/products/os-net/for-developers
+            SELECT ST_Transform(bng
+            , '+proj=tmerc +lat_0=49 +lon_0=-2 +k=0.9996012717 +x_0=400000 +y_0=-100000 +ellps=airy +units=m +no_defs +nadgrids=/full/path/to/OSTN15-NTv2/OSTN15_NTv2_OSGBtoETRS.gsb +type=crs'
+            , 'EPSG:4326', xy := true) AS with_grid_file
+            FROM (SELECT ST_GeomFromText('POINT( 170370.718 11572.405 )') AS bng) t;
+            ----
+            POINT (-5.203046090608746 49.96006137018598)
+            ```
+
+        Returns:
+            T
+        """
+        return self._new(
+            func("ST_Transform", self.inner(), source_crs, target_crs, always_xy)
+        )
+
+    def translate(self, dx: IntoExpr, dy: IntoExpr, dz: IntoExpr | None = None) -> T:
+        """SQL ST_Translate function.
+
+        **SQL name**: *ST_Translate*
+
+        Args:
+            dx (IntoExpr): `ANY` expression
+            dy (IntoExpr): `ANY` expression
+            dz (IntoExpr | None): `ANY` expression
+
+        Returns:
+            T
+        """
+        return self._new(func("ST_Translate", self.inner(), dx, dy, dz))
+
+    def transscale(self, dx: IntoExpr, dy: IntoExpr, xs: IntoExpr, ys: IntoExpr) -> T:
+        """Translates and then scales a geometry in X and Y direction.
+
+        This is a shorthand macro for calling ST_Affine.
+
+        **SQL name**: *ST_TransScale*
+
+        Args:
+            dx (IntoExpr): `ANY` expression
+            dy (IntoExpr): `ANY` expression
+            xs (IntoExpr): `ANY` expression
+            ys (IntoExpr): `ANY` expression
+
+        Examples:
+            ```sql
+            -- Translate by (1, 2) then scale by (2, 3)
+            SELECT ST_TransScale(ST_Point(1, 1), 1, 2, 2, 3);
+            ----
+            POINT (4 9)
+            ```
+
+        Returns:
+            T
+        """
+        return self._new(func("ST_TransScale", self.inner(), dx, dy, xs, ys))
+
+    def union(self, geom2: IntoExprColumn) -> T:
+        """Returns the union of two geometries.
+
+        **SQL name**: *ST_Union*
+
+        Args:
+            geom2 (IntoExprColumn): `GEOMETRY` expression
+
+        Returns:
+            T
+        """
+        return self._new(func("ST_Union", self.inner(), geom2))
+
+    def union_agg(self) -> T:
+        """Computes the union of a set of input geometries.
+
+        **SQL name**: *ST_Union_Agg*
+
+        Returns:
+            T
+        """
+        return self._new(func("ST_Union_Agg", self.inner()))
+
+    def voronoidiagram(self) -> T:
+        """Returns the Voronoi diagram of the supplied MultiPoint geometry.
+
+        **SQL name**: *ST_VoronoiDiagram*
+
+        Returns:
+            T
+        """
+        return self._new(func("ST_VoronoiDiagram", self.inner()))
+
+    def within(self, geom2: IntoExprColumn) -> T:
+        """Returns true if the first geometry is within the second.
+
+        **SQL name**: *ST_Within*
+
+        Args:
+            geom2 (IntoExprColumn): `GEOMETRY | POLYGON_2D` expression
+
+        Returns:
+            T
+        """
+        return self._new(func("ST_Within", self.inner(), geom2))
+
+    def withinproperly(self, geom2: IntoExprColumn) -> T:
+        r"""Returns true if the first geometry \properly\ is contained by the second geometr.
+
+        This function functions the same as `ST_ContainsProperly`, but the arguments are swapped.
+
+        **SQL name**: *ST_WithinProperly*
+
+        Args:
+            geom2 (IntoExprColumn): `GEOMETRY` expression
+
+        Returns:
+            T
+        """
+        return self._new(func("ST_WithinProperly", self.inner(), geom2))
+
+    def x(self) -> T:
+        """Returns the X coordinate of a point geometry.
+
+        **SQL name**: *ST_X*
+
+        Examples:
+            ```sql
+            SELECT ST_X(ST_Point(1, 2))
+            ```
+
+        Returns:
+            T
+        """
+        return self._new(func("ST_X", self.inner()))
+
+    def xmax(self) -> T:
+        """Returns the maximum X coordinate of a geometry.
+
+        **SQL name**: *ST_XMax*
+
+        Examples:
+            ```sql
+            SELECT ST_XMax(ST_Point(1, 2))
+            ```
+
+        Returns:
+            T
+        """
+        return self._new(func("ST_XMax", self.inner()))
+
+    def xmin(self) -> T:
+        """Returns the minimum X coordinate of a geometry.
+
+        **SQL name**: *ST_XMin*
+
+        Examples:
+            ```sql
+            SELECT ST_XMin(ST_Point(1, 2))
+            ```
+
+        Returns:
+            T
+        """
+        return self._new(func("ST_XMin", self.inner()))
+
+    def y(self) -> T:
+        """Returns the Y coordinate of a point geometry.
+
+        **SQL name**: *ST_Y*
+
+        Examples:
+            ```sql
+            SELECT ST_Y(ST_Point(1, 2))
+            ```
+
+        Returns:
+            T
+        """
+        return self._new(func("ST_Y", self.inner()))
+
+    def ymax(self) -> T:
+        """Returns the maximum Y coordinate of a geometry.
+
+        **SQL name**: *ST_YMax*
+
+        Examples:
+            ```sql
+            SELECT ST_YMax(ST_Point(1, 2))
+            ```
+
+        Returns:
+            T
+        """
+        return self._new(func("ST_YMax", self.inner()))
+
+    def ymin(self) -> T:
+        """Returns the minimum Y coordinate of a geometry.
+
+        **SQL name**: *ST_YMin*
+
+        Examples:
+            ```sql
+            SELECT ST_YMin(ST_Point(1, 2))
+            ```
+
+        Returns:
+            T
+        """
+        return self._new(func("ST_YMin", self.inner()))
+
+    def z(self) -> T:
+        """Returns the Z coordinate of a point geometry.
+
+        **SQL name**: *ST_Z*
+
+        Examples:
+            ```sql
+            SELECT ST_Z(ST_Point(1, 2, 3))
+            ```
+
+        Returns:
+            T
+        """
+        return self._new(func("ST_Z", self.inner()))
+
+    def zmax(self) -> T:
+        """Returns the maximum Z coordinate of a geometry.
+
+        **SQL name**: *ST_ZMax*
+
+        Examples:
+            ```sql
+            SELECT ST_ZMax(ST_Point(1, 2, 3))
+            ```
+
+        Returns:
+            T
+        """
+        return self._new(func("ST_ZMax", self.inner()))
+
+    def zmflag(self) -> T:
+        """Returns a flag indicating the presence of Z and M values in the input geometry.
+
+        0 = No Z or M value.
+
+        1 = M values onl.
+
+        2 = Z values onl.
+
+        3 = Z and M values.
+
+        **SQL name**: *ST_ZMFlag*
+
+        Examples:
+            ```sql
+            -- ZMFlag for a 2D geometry
+            SELECT ST_ZMFlag(ST_GeomFromText('POINT(1 1)'));
+            ----
+            0
+
+            -- ZMFlag for a 3DZ geometry
+            SELECT ST_ZMFlag(ST_GeomFromText('POINT Z(1 1 1)'));
+            ----
+            2
+
+            -- ZMFlag for a 3DM geometry
+            SELECT ST_ZMFlag(ST_GeomFromText('POINT M(1 1 1)'));
+            ----
+            1
+
+            -- ZMFlag for a 4D geometry
+            SELECT ST_ZMFlag(ST_GeomFromText('POINT ZM(1 1 1 1)'));
+            ----
+            3
+            ```
+
+        Returns:
+            T
+        """
+        return self._new(func("ST_ZMFlag", self.inner()))
+
+    def zmin(self) -> T:
+        """Returns the minimum Z coordinate of a geometry.
+
+        **SQL name**: *ST_ZMin*
+
+        Examples:
+            ```sql
+            SELECT ST_ZMin(ST_Point(1, 2, 3))
+            ```
+
+        Returns:
+            T
+        """
+        return self._new(func("ST_ZMin", self.inner()))
