@@ -6,6 +6,7 @@ import pyochain as pc
 
 from .._utils import Pql, Typing
 from ._dtypes import DuckDbTypes, FuncTypes
+from ._format import to_func
 from ._rules import (
     CONVERTER,
     NAMESPACE_SPECS,
@@ -16,8 +17,6 @@ from ._rules import (
 )
 from ._schemas import DuckCols, ParamLens, ParamLists, Params, PyCols
 from ._str_builder import EMPTY_STR, format_kwords
-
-_INDENT = "\n            "
 
 
 def run_qry(lf: pl.LazyFrame) -> pl.LazyFrame:
@@ -83,7 +82,7 @@ def run_qry(lf: pl.LazyFrame) -> pl.LazyFrame:
         .select(
             py.namespace,
             py.name,
-            pl.col("has_params").pipe(_to_func, py, ParamLists(), dk),
+            pl.col("has_params").pipe(to_func, py, ParamLists(), dk),
         )
         .sort(py.namespace, py.name)
     )
@@ -317,93 +316,3 @@ def _py_name_map(lf: pl.LazyFrame, dk: DuckCols, p_lens: ParamLens) -> pl.LazyFr
         .list.join("_")
         .alias("py_suffixes"),
     )
-
-
-def _to_func(
-    has_params: pl.Expr, py: PyCols, p_lists: ParamLists, dk: DuckCols
-) -> pl.Expr:
-
-    return format_kwords(
-        _txt(),
-        func_name=py.name.alias("func_name"),
-        args=pl.when(has_params.gt(1)).then(
-            pl.format(", {}", p_lists.signatures.list.slice(1).list.join(", "))
-        ),
-        varargs=pl.when(dk.varargs.is_not_null()).then(
-            pl.format(", *args: {}", py.varargs_type)
-        ),
-        self_type=py.self_type,
-        description=pl.when(dk.description.is_not_null())
-        .then(
-            dk.description.str.strip_chars()
-            .str.replace_all("\u2019", "'")
-            .str.replace_all('"', EMPTY_STR)
-            .str.replace_all(r"\n[ \t]*", "\n        ")
-            .str.replace_all(r"\. ", ".\n\n        ")
-            .str.replace_all(".\n        ", ".\n\n        ")
-            .str.strip_chars_end(".")
-        )
-        .otherwise(pl.format("SQL {} function", py.sql_name)),
-        see_also_section=pl.when(py.aliases.list.len().gt(0)).then(
-            format_kwords(
-                "\n\n        See Also:\n            {aliases}",
-                aliases=py.aliases.list.sort().list.join(", "),
-                ignore_nulls=True,
-            )
-        ),
-        args_section=pl.when(has_params.gt(1).or_(dk.varargs.is_not_null())).then(
-            format_kwords(
-                "\n\n        Args:\n{posargs}{varargs}",
-                posargs=p_lists.docs.list.slice(1).list.join("\n"),
-                varargs=pl.when(dk.varargs.is_not_null()).then(
-                    format_kwords(
-                        "\n            *args ({pytypes}): `{dk_types}` expression",
-                        pytypes=py.varargs_type,
-                        dk_types=dk.varargs,
-                    )
-                ),
-                ignore_nulls=True,
-            )
-        ),
-        examples_section=_examples(dk),
-        sql_name=py.sql_name,
-        dk_args=pl.when(has_params.gt(1)).then(
-            format_kwords(", {args}", args=p_lists.names.list.slice(1).list.join(", "))
-        ),
-        dk_varargs=pl.when(dk.varargs.is_not_null()).then(pl.lit(", *args")),
-        ignore_nulls=True,
-    )
-
-
-def _examples(dk: DuckCols) -> pl.Expr:
-    non_empty = dk.examples.list.eval(
-        pl.element().filter(pl.element().str.strip_chars().ne(""))
-    )
-    return pl.when(non_empty.list.len().gt(0)).then(
-        format_kwords(
-            """
-
-        Examples:
-            ```sql
-            {examples}
-            ```""",
-            examples=non_empty.list.eval(
-                pl.element().str.replace_all(r"\n[ \t]*", _INDENT)
-            ).list.join(_INDENT),
-            ignore_nulls=True,
-        )
-    )
-
-
-def _txt() -> str:
-    return '''
-    def {func_name}(self{args}{varargs}) -> {self_type}:
-        """{description}.
-
-        **SQL name**: *{sql_name}*{see_also_section}{args_section}{examples_section}
-
-        Returns:
-            {self_type}
-        """
-        return self._new(func("{sql_name}", self.inner(){dk_args}{dk_varargs}))
-        '''
