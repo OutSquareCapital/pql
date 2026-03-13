@@ -12,7 +12,7 @@ import pyochain as pc
 
 from . import sql
 from ._funcs import col
-from ._meta import ExprKind, ExprPlan
+from ._meta import EMPTY_MARKER, ExprPlan
 from ._parser import format_sql, show_sql
 from ._schema import Schema
 from .sql.utils import TryIter, TrySeq, check_by_arg, try_chain, try_iter
@@ -49,7 +49,6 @@ if TYPE_CHECKING:
 
 TEMP_NAME = "__pql_temp__"
 TEMP_COL = sql.col(TEMP_NAME)
-_EMPTY_MARKER = "__pql_empty__"
 MAX_I64 = 9_223_372_036_854_775_807
 type OptSeq = pc.Option[pc.Seq[str]]
 type OptTryIter[T] = pc.Option[TryIter[T]]
@@ -137,9 +136,6 @@ class LazyFrame(sql.CoreHandler[sql.SqlFrame]):
             case _:
                 self._inner = sql.SqlFrame(data, orient)
 
-    def _select(self, exprs: Iterable[IntoExprColumn], groups: str = "") -> Self:
-        return self.inner().select(*exprs, groups=groups).pipe(self._new)
-
     def _filter(
         self, preds: Iterable[IntoExprColumn], *more_preds: IntoExprColumn
     ) -> Self:
@@ -149,23 +145,24 @@ class LazyFrame(sql.CoreHandler[sql.SqlFrame]):
             .pipe(self.inner().filter)
         )
 
-    def _agg(
-        self, exprs: Iterable[IntoExprColumn], group_expr: IntoExprColumn = ""
-    ) -> Self:
-        return self.inner().aggregate(exprs, group_expr).pipe(self._new)
-
     def _iter_slct(self, func: Callable[[str], sql.SqlExpr]) -> Self:
-        return self.columns.iter().map(func).into(self._select)
+        return (
+            self.columns.iter()
+            .map(func)
+            .into(lambda exprs: self.inner().select(*exprs).pipe(self._new))
+        )
 
     def _iter_agg(self, func: Callable[[sql.SqlExpr], sql.SqlExpr]) -> Self:
         return (
-            self.columns.iter().map(lambda c: func(sql.col(c)).alias(c)).into(self._agg)
+            self.columns.iter()
+            .map(lambda c: func(sql.col(c)).alias(c))
+            .into(lambda exprs: self.inner().aggregate(exprs).pipe(self._new))
         )
 
     def _drop_marker(self, result: IntoFrameT) -> IntoFrameT:
-        match _EMPTY_MARKER in self.inner().columns:
+        match EMPTY_MARKER in self.inner().columns:
             case True:
-                return nw.from_native(result).drop(_EMPTY_MARKER).to_native()
+                return nw.from_native(result).drop(EMPTY_MARKER).to_native()
             case False:
                 return result
 
@@ -181,39 +178,22 @@ class LazyFrame(sql.CoreHandler[sql.SqlFrame]):
         self, exprs: TryIter[IntoExpr], *more_exprs: IntoExpr, **named_exprs: IntoExpr
     ) -> Self:
         """Select columns or expressions."""
-        match self.schema.into(
-            ExprPlan, try_chain(exprs, more_exprs), named_exprs
-        ).then_some():
-            case pc.Some(plan):
-                match plan.all(lambda r: r.kind == ExprKind.UNIQUE):
-                    case True:
-                        return (
-                            self.inner()
-                            .unique(plan.iter().map(lambda r: r.as_unique()).join(", "))
-                            .pipe(self._new)
-                        )
-                    case False:
-                        match plan.all(lambda r: r.kind == ExprKind.SCALAR):
-                            case True:
-                                return plan.aliased_sql().into(self._agg)
-                            case False:
-                                return plan.aliased_sql().into(self._select)
-            case _:
-                return self._new(sql.SqlFrame({_EMPTY_MARKER: []}))
+        return (
+            self.schema.into(ExprPlan, try_chain(exprs, more_exprs), named_exprs)
+            .select_context(self.inner())
+            .pipe(self._new)
+        )
 
     def with_columns(
         self, exprs: TryIter[IntoExpr], *more_exprs: IntoExpr, **named_exprs: IntoExpr
     ) -> Self:
         """Add or replace columns."""
         schema = self.schema
-        col_keys = schema.keys()
-        plan = ExprPlan(schema, try_chain(exprs, more_exprs), named_exprs)
-
-        match plan.any(lambda r: r.kind == ExprKind.SCALAR):
-            case True:
-                return plan.resolve(col_keys).into(self._agg)
-            case False:
-                return plan.resolve(col_keys).into(self._select)
+        return (
+            ExprPlan(schema, try_chain(exprs, more_exprs), named_exprs)
+            .with_columns_context(self.inner(), schema.keys())
+            .pipe(self._new)
+        )
 
     def filter(
         self,
@@ -280,8 +260,7 @@ class LazyFrame(sql.CoreHandler[sql.SqlFrame]):
         """Aggregate with GROUP BY ALL — DuckDB auto-detects grouping keys."""
         return (
             self.schema.into(ExprPlan, try_chain(exprs, more_exprs), named_exprs)
-            .aliased_sql()
-            .into(self.inner().aggregate, "ALL")
+            .group_by_all_context(self.inner())
             .pipe(self._new)
         )
 
@@ -374,7 +353,7 @@ class LazyFrame(sql.CoreHandler[sql.SqlFrame]):
 
     def drop(self, *columns: str) -> Self:
         """Drop columns from the frame."""
-        return self._select((sql.all(exclude=columns),))
+        return self.inner().select(sql.all(exclude=columns)).pipe(self._new)
 
     def drop_nulls(self, subset: TryIter[str] = None) -> Self:
         """Drop rows that contain null values."""
@@ -498,7 +477,7 @@ class LazyFrame(sql.CoreHandler[sql.SqlFrame]):
                     .insert(sql.all(exclude=unnest_cols))
                 )
             )
-            .into(self._select)
+            .into(lambda exprs: self.inner().select(*exprs).pipe(self._new))
         )
 
     def first(self) -> Self:
@@ -810,7 +789,7 @@ class LazyFrame(sql.CoreHandler[sql.SqlFrame]):
 
     def unique(
         self,
-        subset: str | list[str] | None = None,
+        subset: TryIter[str] | None = None,
         *,
         keep: UniqueKeepStrategy = "any",
         order_by: TrySeq[str] = None,
@@ -965,8 +944,12 @@ class LazyFrame(sql.CoreHandler[sql.SqlFrame]):
 
     def with_row_index(self, name: str, *, order_by: TrySeq[str]) -> Self:
         """Insert row index based on order_by."""
-        return self._select(
-            (sql.row_number().over(order_by=order_by).sub(1).alias(name), sql.all())
+        return (
+            self.inner()
+            .select(
+                sql.row_number().over(order_by=order_by).sub(1).alias(name), sql.all()
+            )
+            .pipe(self._new)
         )
 
     def top_k(

@@ -5,10 +5,9 @@ import pyochain as pc
 
 from . import sql
 from ._expr import Expr
-from ._meta import SENTINEL_COL, ExprMeta
-from .selectors import all_columns_resolver, exclude_resolver, fixed_resolver
+from ._meta import SENTINEL_COL, ExprMeta, agg_expr_resolver, all_fn_resolver
 from .sql.typing import IntoExpr, IntoExprColumn, PythonLiteral
-from .sql.utils import TryIter, try_iter
+from .sql.utils import TryIter, try_chain, try_iter
 
 
 @final
@@ -36,38 +35,37 @@ def len() -> Expr:
 
 
 def _agg_expr(
-    agg: Callable[[sql.SqlExpr], sql.SqlExpr], columns: Iterable[str]
+    agg: Callable[[sql.SqlExpr], sql.SqlExpr],
+    cols: TryIter[str],
+    more_cols: Iterable[str],
 ) -> Expr:
     meta = (
-        pc.Seq(columns)
+        try_chain(cols, more_cols)
+        .collect()
         .then_some()
-        .into(
-            lambda cols: ExprMeta.from_agg_expr(
-                cols, cols.map(fixed_resolver).unwrap_or(all_columns_resolver)
-            )
-        )
+        .into(lambda cols: ExprMeta.from_agg_expr(cols, agg_expr_resolver(cols)))
     )
     return Expr(agg(SENTINEL_COL), meta)
 
 
-def sum(*columns: str) -> Expr:
-    return _agg_expr(sql.SqlExpr.sum, columns)
+def sum(cols: TryIter[str], *more_cols: str) -> Expr:
+    return _agg_expr(sql.SqlExpr.sum, cols, more_cols)
 
 
-def mean(*columns: str) -> Expr:
-    return _agg_expr(sql.SqlExpr.mean, columns)
+def mean(cols: TryIter[str], *more_cols: str) -> Expr:
+    return _agg_expr(sql.SqlExpr.mean, cols, more_cols)
 
 
-def median(*columns: str) -> Expr:
-    return _agg_expr(sql.SqlExpr.median, columns)
+def median(cols: TryIter[str], *more_cols: str) -> Expr:
+    return _agg_expr(sql.SqlExpr.median, cols, more_cols)
 
 
-def min(*columns: str) -> Expr:
-    return _agg_expr(sql.SqlExpr.min, columns)
+def min(cols: TryIter[str], *more_cols: str) -> Expr:
+    return _agg_expr(sql.SqlExpr.min, cols, more_cols)
 
 
-def max(*columns: str) -> Expr:
-    return _agg_expr(sql.SqlExpr.max, columns)
+def max(cols: TryIter[str], *more_cols: str) -> Expr:
+    return _agg_expr(sql.SqlExpr.max, cols, more_cols)
 
 
 def coalesce(exprs: TryIter[IntoExpr], *more_exprs: IntoExpr) -> Expr:
@@ -80,19 +78,7 @@ def coalesce(exprs: TryIter[IntoExpr], *more_exprs: IntoExpr) -> Expr:
 
 def all(exclude: Iterable[IntoExprColumn] | None = None) -> Expr:
     """Create an expression representing all columns (equivalent to pl.all())."""
-    resolver = (
-        pc.Option(exclude)
-        .map(
-            lambda exc: (
-                pc.Iter(exc)
-                .map(lambda value: sql.into_expr(value, as_col=True).get_name())
-                .collect(pc.Set)
-                .into(exclude_resolver)
-            )
-        )
-        .unwrap_or(all_columns_resolver)
-    )
-    return Expr(SENTINEL_COL, ExprMeta.from_all(resolver))
+    return Expr(SENTINEL_COL, ExprMeta.from_all(all_fn_resolver(pc.Option(exclude))))
 
 
 def sum_horizontal(exprs: TryIter[IntoExpr], *more_exprs: IntoExpr) -> Expr:

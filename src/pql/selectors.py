@@ -3,54 +3,28 @@
 from __future__ import annotations
 
 import re
-from collections.abc import Callable
 from typing import TYPE_CHECKING, Self, overload, override
 
 import pyochain as pc
 
-from pql._schema import ColumnResolver
-
 from . import _datatypes as dt  # pyright: ignore[reportPrivateUsage]
 from ._expr import Expr
-from ._meta import SENTINEL_COL, ExprMeta
+from ._meta import (
+    SENTINEL_COL,
+    ColumnResolver,
+    ExprMeta,
+    all_columns_resolver,
+    complement_resolver,
+    difference_resolver,
+    dtype_resolver,
+    intersection_resolver,
+    name_resolver,
+    ordered_name_resolver,
+    union_resolver,
+)
 
 if TYPE_CHECKING:
-    from pyochain.traits import PyoKeysView
-
-    from ._schema import ColumnResolver, Schema
     from .sql.typing import IntoExpr
-
-
-def all_columns_resolver(schema: Schema) -> PyoKeysView[str]:
-    return schema.keys()
-
-
-def exclude_resolver(excluded: pc.Set[str]) -> ColumnResolver:
-    return lambda schema: (
-        schema.keys().iter().filter(lambda n: n not in excluded).collect()
-    )
-
-
-def fixed_resolver(names: pc.Seq[str]) -> ColumnResolver:
-    return lambda _schema: names
-
-
-def ordered_name_resolver(names: pc.Seq[str]) -> ColumnResolver:
-    return lambda schema: names.iter().filter(lambda name: name in schema).collect()
-
-
-def _dtype_resolver(*on: type[dt.DataType]) -> ColumnResolver:
-    return lambda schema: (
-        schema.items()
-        .iter()
-        .filter_star(lambda _, dtype: isinstance(dtype, on))
-        .map_star(lambda name, _: name)
-        .collect()
-    )
-
-
-def _name_resolver(predicate: Callable[[str], bool]) -> ColumnResolver:
-    return lambda schema: schema.keys().iter().filter(predicate).collect()
 
 
 class Selector(Expr):
@@ -71,19 +45,9 @@ class Selector(Expr):
     def union(self, other: IntoExpr) -> Selector | Expr:
         match other:
             case Selector() if self.meta.is_multi and other.meta.is_multi:
-
-                def _resolve(schema: Schema) -> pc.Seq[str]:
-                    selected = (
-                        self._resolver(schema)
-                        .iter()
-                        .chain(other._resolver(schema))
-                        .collect(pc.Set)
-                    )
-                    return (
-                        schema.keys().iter().filter(lambda n: n in selected).collect()
-                    )
-
-                return Selector.__from_resolver__(_resolve)
+                return Selector.__from_resolver__(
+                    lambda s: union_resolver(s, self._resolver, other._resolver)
+                )
             case _:
                 return Expr.__or__(self, other)
 
@@ -102,17 +66,9 @@ class Selector(Expr):
     def intersection(self, other: IntoExpr) -> Selector | Expr:
         match other:
             case Selector() if self.meta.is_multi and other.meta.is_multi:
-
-                def _resolve(schema: Schema) -> pc.Seq[str]:
-                    right_set = other._resolver(schema)
-                    return (
-                        self._resolver(schema)
-                        .iter()
-                        .filter(lambda n: n in right_set)
-                        .collect()
-                    )
-
-                return Selector.__from_resolver__(_resolve)
+                return Selector.__from_resolver__(
+                    lambda s: intersection_resolver(s, self._resolver, other._resolver)
+                )
             case _:
                 return Expr.__and__(self, other)
 
@@ -131,17 +87,9 @@ class Selector(Expr):
     def difference(self, other: IntoExpr) -> Selector | Expr:
         match other:
             case Selector() if self.meta.is_multi and other.meta.is_multi:
-
-                def _resolve(schema: Schema) -> pc.Seq[str]:
-                    right_set = other._resolver(schema)
-                    return (
-                        self._resolver(schema)
-                        .iter()
-                        .filter(lambda n: n not in right_set)
-                        .collect()
-                    )
-
-                return Selector.__from_resolver__(_resolve)
+                return Selector.__from_resolver__(
+                    lambda s: difference_resolver(s, self._resolver, other._resolver)
+                )
             case _:
                 return Expr.__sub__(self, other)
 
@@ -154,12 +102,9 @@ class Selector(Expr):
         return self.difference(other)
 
     def complement(self) -> Selector:
-
-        def _resolve(schema: Schema) -> pc.Seq[str]:
-            excluded = self._resolver(schema)
-            return schema.keys().iter().filter(lambda n: n not in excluded).collect()
-
-        return Selector.__from_resolver__(_resolve)
+        return Selector.__from_resolver__(
+            lambda s: complement_resolver(s, self._resolver)
+        )
 
     @override
     def __invert__(self) -> Selector:
@@ -168,22 +113,22 @@ class Selector(Expr):
 
 def by_dtype(*dtypes: type[dt.DataType]) -> Selector:
     """Select columns matching any of the given dtype classes."""
-    return Selector.__from_resolver__(_dtype_resolver(*dtypes))
+    return Selector.__from_resolver__(dtype_resolver(*dtypes))
 
 
 def numeric() -> Selector:
     """Select all numeric columns."""
-    return Selector.__from_resolver__(_dtype_resolver(dt.NumericType))
+    return Selector.__from_resolver__(dtype_resolver(dt.NumericType))
 
 
 def string() -> Selector:
     """Select all string columns."""
-    return Selector.__from_resolver__(_dtype_resolver(dt.StringType))
+    return Selector.__from_resolver__(dtype_resolver(dt.StringType))
 
 
 def boolean() -> Selector:
     """Select all boolean columns."""
-    return Selector.__from_resolver__(_dtype_resolver(dt.Boolean))
+    return Selector.__from_resolver__(dtype_resolver(dt.Boolean))
 
 
 def all() -> Selector:
@@ -193,67 +138,67 @@ def all() -> Selector:
 
 def float() -> Selector:
     """Select all float columns."""
-    return Selector.__from_resolver__(_dtype_resolver(dt.FloatType))
+    return Selector.__from_resolver__(dtype_resolver(dt.FloatType))
 
 
 def integer() -> Selector:
     """Select all integer columns."""
-    return Selector.__from_resolver__(_dtype_resolver(dt.IntegerType))
+    return Selector.__from_resolver__(dtype_resolver(dt.IntegerType))
 
 
 def signed_integer() -> Selector:
     """Select all signed integer columns."""
-    return Selector.__from_resolver__(_dtype_resolver(dt.SignedIntegerType))
+    return Selector.__from_resolver__(dtype_resolver(dt.SignedIntegerType))
 
 
 def unsigned_integer() -> Selector:
     """Select all unsigned integer columns."""
-    return Selector.__from_resolver__(_dtype_resolver(dt.UnsignedIntegerType))
+    return Selector.__from_resolver__(dtype_resolver(dt.UnsignedIntegerType))
 
 
 def temporal() -> Selector:
     """Select all temporal columns."""
-    return Selector.__from_resolver__(_dtype_resolver(dt.TemporalType))
+    return Selector.__from_resolver__(dtype_resolver(dt.TemporalType))
 
 
 def date() -> Selector:
     """Select all date columns."""
-    return Selector.__from_resolver__(_dtype_resolver(dt.Date))
+    return Selector.__from_resolver__(dtype_resolver(dt.Date))
 
 
 def time() -> Selector:
     """Select all time columns."""
-    return Selector.__from_resolver__(_dtype_resolver(dt.Time))
+    return Selector.__from_resolver__(dtype_resolver(dt.Time))
 
 
 def duration() -> Selector:
     """Select all duration columns."""
-    return Selector.__from_resolver__(_dtype_resolver(dt.Duration))
+    return Selector.__from_resolver__(dtype_resolver(dt.Duration))
 
 
 def binary() -> Selector:
     """Select all binary columns."""
-    return Selector.__from_resolver__(_dtype_resolver(dt.Binary))
+    return Selector.__from_resolver__(dtype_resolver(dt.Binary))
 
 
 def enum() -> Selector:
     """Select all enum columns."""
-    return Selector.__from_resolver__(_dtype_resolver(dt.Enum))
+    return Selector.__from_resolver__(dtype_resolver(dt.Enum))
 
 
 def decimal() -> Selector:
     """Select all decimal columns."""
-    return Selector.__from_resolver__(_dtype_resolver(dt.Decimal))
+    return Selector.__from_resolver__(dtype_resolver(dt.Decimal))
 
 
 def nested() -> Selector:
     """Select all nested (list, array, struct, map) columns."""
-    return Selector.__from_resolver__(_dtype_resolver(dt.NestedType))
+    return Selector.__from_resolver__(dtype_resolver(dt.NestedType))
 
 
 def struct() -> Selector:
     """Select all struct columns."""
-    return Selector.__from_resolver__(_dtype_resolver(dt.Struct))
+    return Selector.__from_resolver__(dtype_resolver(dt.Struct))
 
 
 # ──── name-based selectors ────
@@ -263,7 +208,7 @@ def matches(pattern: str) -> Selector:
     """Select columns whose names match the given regex pattern."""
     compiled = re.compile(pattern)
     return Selector.__from_resolver__(
-        _name_resolver(lambda name: compiled.search(name) is not None)
+        name_resolver(lambda name: compiled.search(name) is not None)
     )
 
 
@@ -275,22 +220,20 @@ def by_name(*names: str) -> Selector:
 def starts_with(*prefix: str) -> Selector:
     """Select columns whose names start with any of the given prefixes."""
     return Selector.__from_resolver__(
-        _name_resolver(lambda name: name.startswith(prefix))
+        name_resolver(lambda name: name.startswith(prefix))
     )
 
 
 def ends_with(*suffix: str) -> Selector:
     """Select columns whose names end with any of the given suffixes."""
-    return Selector.__from_resolver__(
-        _name_resolver(lambda name: name.endswith(suffix))
-    )
+    return Selector.__from_resolver__(name_resolver(lambda name: name.endswith(suffix)))
 
 
 def contains(*substring: str) -> Selector:
     """Select columns whose names contain any of the given substrings."""
     subs = pc.Seq(substring)
     return Selector.__from_resolver__(
-        _name_resolver(lambda name: subs.iter().any(lambda s: s in name))
+        name_resolver(lambda name: subs.iter().any(lambda s: s in name))
     )
 
 
