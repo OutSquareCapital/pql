@@ -9,8 +9,8 @@ Each summary cell is `global (Narwhals, Polars)`.
 
 | Class               | Coverage              | Implemented   | Matched      | Missing       | Mismatched  | Extra       |
 | ------------------- | --------------------- | ------------- | ------------ | ------------- | ----------- | ----------- |
-| LazyFrame           | 40.6% (56.0%, 35.8%)  | 106 (25, 81)  | 43 (14, 29)  | 29 (0, 29)    | 34 (11, 23) | 33 (30, 3)  |
-| Expr                | 49.8% (71.4%, 42.7%)  | 283 (70, 213) | 141 (50, 91) | 100 (7, 93)   | 42 (13, 29) | 59 (58, 1)  |
+| LazyFrame           | 39.3% (52.0%, 35.4%)  | 107 (25, 82)  | 42 (13, 29)  | 30 (0, 30)    | 35 (12, 23) | 33 (30, 3)  |
+| Expr                | 49.3% (71.4%, 42.1%)  | 284 (70, 214) | 140 (50, 90) | 101 (7, 94)   | 43 (13, 30) | 59 (58, 1)  |
 | LazyGroupBy         | 52.9% (0.0%, 56.2%)   | 17 (1, 16)    | 9 (0, 9)     | 4 (0, 4)      | 4 (1, 3)    | 11 (11, 0)  |
 | ExprStrNameSpace    | 31.8% (42.1%, 27.7%)  | 66 (19, 47)   | 21 (8, 13)   | 10 (0, 10)    | 35 (11, 24) | 20 (19, 1)  |
 | ExprListNameSpace   | 54.7% (90.0%, 46.5%)  | 53 (10, 43)   | 29 (9, 20)   | 20 (0, 20)    | 4 (1, 3)    | 15 (14, 1)  |
@@ -18,14 +18,14 @@ Each summary cell is `global (Narwhals, Polars)`.
 | ExprNameNameSpace   | 81.2% (100.0%, 70.0%) | 16 (6, 10)    | 13 (6, 7)    | 3 (0, 3)      | 0 (0, 0)    | 3 (2, 1)    |
 | ExprArrNameSpace    | 54.8% (100.0%, 54.8%) | 31 (0, 31)    | 17 (0, 17)   | 10 (0, 10)    | 4 (0, 4)    | 27 (24, 3)  |
 | ExprDtNameSpace     | 51.5% (60.9%, 46.7%)  | 68 (23, 45)   | 35 (14, 21)  | 25 (7, 18)    | 8 (2, 6)    | 13 (12, 1)  |
-| ModuleFunctions     | 22.9% (41.2%, 15.5%)  | 236 (68, 168) | 54 (28, 26)  | 141 (22, 119) | 41 (18, 23) | 27 (15, 12) |
+| ModuleFunctions     | 19.9% (33.8%, 14.3%)  | 236 (68, 168) | 47 (23, 24)  | 141 (22, 119) | 48 (23, 25) | 27 (15, 12) |
 | selectors           | 57.1% (71.4%, 54.3%)  | 42 (7, 35)    | 24 (5, 19)   | 13 (1, 12)    | 5 (1, 4)    | 17 (17, 0)  |
 | DataType            | 62.5% (100.0%, 60.0%) | 16 (1, 15)    | 10 (1, 9)    | 5 (0, 5)      | 1 (0, 1)    | 9 (9, 0)    |
-| Schema              | 33.3% (30.0%, 37.5%)  | 36 (20, 16)   | 12 (6, 6)    | 22 (13, 9)    | 2 (1, 1)    | 68 (34, 34) |
+| Schema              | 32.4% (30.0%, 35.3%)  | 37 (20, 17)   | 12 (6, 6)    | 23 (13, 10)   | 2 (1, 1)    | 68 (34, 34) |
 
 ## LazyFrame
 
-### [x] Missing Methods (29)
+### [x] Missing Methods (30)
 
 - `collect_async`
   - **Polars**: (gevent: bool, engine: EngineType, optimizations: QueryOptFlags) -> Awaitable[DataFrame] | _GeventDataFrameResult[DataFrame]
@@ -70,13 +70,15 @@ Each summary cell is `global (Narwhals, Polars)`.
 - `set_sorted`
   - **Polars**: (column: str | list[str], *more_columns: str, descending: bool | list[bool], nulls_last: bool | list[bool]) -> LazyFrame
 - `show`
-  - **Polars**: (limit: int | None, ascii_tables: bool | None, decimal_separator: str | None, thousands_separator: str | bool | None, float_precision: int | None, fmt_float: FloatFmt | None, fmt_str_lengths: int | None, fmt_table_cell_list_len: int | None, tbl_cell_alignment: Literal['LEFT', 'CENTER', 'RIGHT'] | None, tbl_cell_numeric_alignment: Literal['LEFT', 'CENTER', 'RIGHT'] | None, tbl_cols: int | None, tbl_column_data_type_inline: bool | None, tbl_dataframe_shape_below: bool | None, tbl_formatting: TableFormatNames | None, tbl_hide_column_data_types: bool | None, tbl_hide_column_names: bool | None, tbl_hide_dtype_separator: bool | None, tbl_hide_dataframe_shape: bool | None, tbl_width_chars: int | None, trim_decimal_zeros: bool | None) -> None
+  - **Polars**: (limit: int | None, ascii_tables: bool | None, decimal_separator: str | None, thousands_separator: str | bool | None, float_precision: int | None, fmt_float: FloatFmt | None, fmt_str_lengths: int | None, fmt_table_cell_list_len: int | None, tbl_cell_alignment: Alignment | None, tbl_cell_numeric_alignment: Alignment | None, tbl_cols: int | None, tbl_column_data_type_inline: bool | None, tbl_dataframe_shape_below: bool | None, tbl_formatting: TableFormatNames | None, tbl_hide_column_data_types: bool | None, tbl_hide_column_names: bool | None, tbl_hide_dtype_separator: bool | None, tbl_hide_dataframe_shape: bool | None, tbl_width_chars: int | None, trim_decimal_zeros: bool | None) -> None
 - `show_graph`
   - **Polars**: (optimized: bool, show: bool, output_path: str | Path | None, raw_output: bool, figsize: tuple[float, float], type_coercion: bool,_type_check: bool, predicate_pushdown: bool, projection_pushdown: bool, simplify_expression: bool, slice_pushdown: bool, comm_subplan_elim: bool, comm_subexpr_elim: bool, cluster_with_columns: bool, collapse_joins: bool, engine: EngineType, plan_stage: PlanStage,_check_order: bool, optimizations: QueryOptFlags) -> str | None
 - `sink_batches`
   - **Polars**: (function: Callable[[DataFrame], bool | None], chunk_size: int | None, maintain_order: bool, lazy: bool, engine: EngineType, optimizations: QueryOptFlags) -> LazyFrame | None
 - `sink_delta`
   - **Polars**: (target: DeltaTable, mode: Literal['error', 'append', 'overwrite', 'ignore', 'merge'], storage_options: StorageOptionsDict | None, credential_provider: CredentialProviderFunction | Literal['auto'] | None, delta_write_options: dict[str, Any] | None, delta_merge_options: dict[str, Any] | None, optimizations: QueryOptFlags) -> TableMerger | None
+- `sink_iceberg`
+  - **Polars**: (target: Table, mode: Literal['append', 'overwrite'], catalog: IcebergCatalogConfig | None, storage_options: StorageOptionsDict | None) -> DataFrame
 - `sink_ipc`
   - **Polars**: (path: str | Path | IO[bytes] | PartitionBy, compression: IpcCompression | None, compat_level: CompatLevel | None, record_batch_size: int | None, maintain_order: bool, storage_options: StorageOptionsDict | None, credential_provider: CredentialProviderFunction | Literal['auto'] | None, retries: int | None, sync_on_close: SyncOnCloseMethod | None, mkdir: bool, lazy: bool, engine: EngineType, optimizations: QueryOptFlags, _record_batch_statistics: bool) -> LazyFrame | None
 - `sql`
@@ -86,7 +88,7 @@ Each summary cell is `global (Narwhals, Polars)`.
 - `with_columns_seq`
   - **Polars**: (*exprs: IntoExpr | Iterable[IntoExpr], **named_exprs: IntoExpr) -> LazyFrame
 
-### [!] Signature Mismatches (19)
+### [!] Signature Mismatches (20)
 
 - `cast` (pl)
   - **Polars***: (`dtypes: Mapping[ColumnNameOrSelector | PolarsDataType, PolarsDataType | PythonDataType] | PolarsDataType | pl.DataTypeExpr | Schema`, `strict: bool`) -> LazyFrame
@@ -101,16 +103,16 @@ Each summary cell is `global (Narwhals, Polars)`.
 - `drop_nulls` (nw)
   - **Narwhals**: (`subset: str | list[str] | None`) -> Self
   - **Polars**: (`subset: ColumnNameOrSelector | Collection[ColumnNameOrSelector] | None`) -> LazyFrame
-  - **pql**: (`subset: TryIter[str] | None`) -> Self
+  - **pql**: (`subset: TryIter[str]`) -> Self
 - `explain` (pl)
   - **Polars***: (`format: ExplainFormat`, `optimized: bool`, `type_coercion: bool`, `predicate_pushdown: bool`, `projection_pushdown: bool`, `simplify_expression: bool`, `slice_pushdown: bool`, `comm_subplan_elim: bool`, `comm_subexpr_elim: bool`, `cluster_with_columns: bool`, `collapse_joins: bool`, `streaming: bool`, `engine: EngineType`, `tree_format: bool | None`, `optimizations: QueryOptFlags`) -> str
-  - **pql**: (`kind: Literal['standard', 'analyze']`) -> str
+  - **pql**: (`kind: ExplainType | ExplainTypeLiteral`) -> str
 - `fill_null` (pl)
   - **Polars***: (`value: Any | Expr | None`, strategy: FillNullStrategy | None, limit: int | None, `matches_supertype: bool`) -> LazyFrame
-  - **pql**: (`value: IntoExpr | None`, strategy: FillNullStrategy | None, limit: int | None) -> Self
+  - **pql**: (`value: IntoExpr`, strategy: FillNullStrategy | None, limit: int | None) -> Self
 - `filter` (nw)
   - **Narwhals**: (`*predicates: IntoExpr | Iterable[IntoExpr]`, **constraints: Any) -> Self
-  - **Polars**: (`*predicates: IntoExprColumn | Iterable[IntoExprColumn] | bool | list[bool]`, **constraints: Any) -> LazyFrame
+  - **Polars**: (`*predicates: IntoExprColumn | Iterable[IntoExprColumn] | bool | list[bool] | np.ndarray[Any, Any]`, **constraints: Any) -> LazyFrame
   - **pql**: (`predicates: TryIter[IntoExprColumn]`, *more_predicates: IntoExprColumn, `**constraints: IntoExpr`) -> Self
 - `group_by` (nw)
   - **Narwhals**: (*keys: IntoExpr | Iterable[IntoExpr], drop_null_keys: bool) -> LazyGroupBy[Self]
@@ -119,14 +121,14 @@ Each summary cell is `global (Narwhals, Polars)`.
 - `join` (nw)
   - **Narwhals**: (other: Self, `on: str | list[str] | None`, how: JoinStrategy, `left_on: str | list[str] | None`, `right_on: str | list[str] | None`, suffix: str) -> Self
   - **Polars**: (other: LazyFrame, `on: str | Expr | Sequence[str | Expr] | None`, how: JoinStrategy, `left_on: str | Expr | Sequence[str | Expr] | None`, `right_on: str | Expr | Sequence[str | Expr] | None`, suffix: str, `validate: JoinValidation`, `nulls_equal: bool`, `coalesce: bool | None`, `maintain_order: MaintainOrderJoin | None`, allow_parallel: bool, force_parallel: bool) -> LazyFrame
-  - **pql**: (other: Self, `on: TryIter[str] | None`, how: JoinStrategy, `left_on: TryIter[str] | None`, `right_on: TryIter[str] | None`, suffix: str) -> Self
+  - **pql**: (other: Self, `on: TryIter[str]`, how: JoinStrategy, `left_on: TryIter[str]`, `right_on: TryIter[str]`, suffix: str) -> Self
 - `join_asof` (nw)
   - **Narwhals**: (other: Self, left_on: str | None, right_on: str | None, on: str | None, `by_left: str | list[str] | None`, `by_right: str | list[str] | None`, `by: str | list[str] | None`, strategy: AsofJoinStrategy, suffix: str) -> Self
   - **Polars**: (other: LazyFrame, `left_on: str | None | Expr`, `right_on: str | None | Expr`, `on: str | None | Expr`, `by_left: str | Sequence[str] | None`, `by_right: str | Sequence[str] | None`, `by: str | Sequence[str] | None`, strategy: AsofJoinStrategy, suffix: str, `tolerance: str | int | float | timedelta | None`, allow_parallel: bool, force_parallel: bool, `coalesce: bool`, `allow_exact_matches: bool`, `check_sortedness: bool`) -> LazyFrame
-  - **pql**: (other: Self, left_on: str | None, right_on: str | None, on: str | None, `by_left: TryIter[str] | None`, `by_right: TryIter[str] | None`, `by: TryIter[str] | None`, strategy: AsofJoinStrategy, suffix: str) -> Self
+  - **pql**: (other: Self, left_on: str | None, right_on: str | None, on: str | None, `by_left: TryIter[str]`, `by_right: TryIter[str]`, `by: TryIter[str]`, strategy: AsofJoinStrategy, suffix: str) -> Self
 - `pivot` (pl)
-  - **Polars***: (`on: ColumnNameOrSelector | Sequence[ColumnNameOrSelector]`, `on_columns: Sequence[Any] | pl.Series | pl.DataFrame`, `index: ColumnNameOrSelector | Sequence[ColumnNameOrSelector] | None`, `values: ColumnNameOrSelector | Sequence[ColumnNameOrSelector] | None`, `aggregate_function: PivotAgg | Expr | None`, maintain_order: bool, separator: str) -> LazyFrame
-  - **pql**: (`on: TryIter[str]`, `on_columns: Sequence[PythonLiteral]`, `index: TryIter[str] | None`, `values: TryIter[str] | None`, `aggregate_function: PivotAgg`, maintain_order: bool, separator: str) -> Self
+  - **Polars***: (`on: ColumnNameOrSelector | Sequence[ColumnNameOrSelector]`, `on_columns: Sequence[Any] | pl.Series | pl.DataFrame`, `index: ColumnNameOrSelector | Sequence[ColumnNameOrSelector] | None`, `values: ColumnNameOrSelector | Sequence[ColumnNameOrSelector] | None`, `aggregate_function: PivotAgg | Expr | None`, maintain_order: bool, separator: str, `column_naming: Literal['auto', 'combine']`) -> LazyFrame
+  - **pql**: (`on: TryIter[str]`, `on_columns: Sequence[PythonLiteral]`, `index: TryIter[str]`, `values: TryIter[str]`, `aggregate_function: PivotAgg`, maintain_order: bool, separator: str) -> Self
 - `quantile` (pl)
   - **Polars***: (`quantile: float | Expr`, interpolation: QuantileMethod) -> LazyFrame
   - **pql**: (`quantile: float`) -> Self
@@ -135,8 +137,8 @@ Each summary cell is `global (Narwhals, Polars)`.
   - **Polars**: (`mapping: Mapping[str, str] | Callable[[str], str]`, `strict: bool`) -> LazyFrame
   - **pql**: (`mapping: Mapping[str, str]`) -> Self
 - `shift` (pl)
-  - **Polars***: (`n: int | IntoExprColumn`, fill_value: IntoExpr | None) -> LazyFrame
-  - **pql**: (`n: int`, fill_value: IntoExpr | None) -> Self
+  - **Polars***: (`n: int | IntoExprColumn`, `fill_value: IntoExpr | None`) -> LazyFrame
+  - **pql**: (`n: int`, `fill_value: IntoExpr`) -> Self
 - `sink_csv` (pl)
   - **Polars***: (`path: str | Path | IO[bytes] | IO[str] | PartitionBy`, `include_bom: bool`, `compression: Literal['uncompressed', 'gzip', 'zstd']`, `compression_level: int | None`, `check_extension: bool`, include_header: bool, separator: str, `line_terminator: str`, `quote_char: str`, `batch_size: int`, `datetime_format: str | None`, `date_format: str | None`, `time_format: str | None`, `float_scientific: bool | None`, `float_precision: int | None`, `decimal_comma: bool`, `null_value: str | None`, `quote_style: CsvQuoteStyle | None`, `maintain_order: bool`, `storage_options: StorageOptionsDict | None`, `credential_provider: CredentialProviderFunction | Literal['auto'] | None`, `retries: int | None`, `sync_on_close: SyncOnCloseMethod | None`, `mkdir: bool`, `lazy: bool`, `engine: EngineType`, `optimizations: QueryOptFlags`) -> LazyFrame | None
   - **pql**: (`path: str | Path`, separator: str, include_header: bool) -> None
@@ -147,13 +149,17 @@ Each summary cell is `global (Narwhals, Polars)`.
   - **Narwhals**: (`file: str | Path | BytesIO`) -> None
   - **Polars**: (`path: str | Path | IO[bytes] | PartitionBy`, `compression: str`, `compression_level: int | None`, `statistics: bool | str | dict[str, bool]`, `row_group_size: int | None`, `data_page_size: int | None`, `maintain_order: bool`, `storage_options: StorageOptionsDict | None`, `credential_provider: CredentialProviderFunction | Literal['auto'] | None`, `retries: int | None`, `sync_on_close: SyncOnCloseMethod | None`, `metadata: ParquetMetadata | None`, `arrow_schema: ArrowSchemaExportable | None`, `mkdir: bool`, `lazy: bool`, `engine: EngineType`, `optimizations: QueryOptFlags`) -> LazyFrame | None
   - **pql**: (`path: str | Path`, `compression: ParquetCompression`) -> None
+- `unique` (nw)
+  - **Narwhals**: (`subset: str | list[str] | None`, keep: UniqueKeepStrategy, `order_by: str | Sequence[str] | None`) -> Self
+  - **Polars**: (`subset: IntoExpr | Collection[IntoExpr] | None`, keep: UniqueKeepStrategy, `maintain_order: bool`) -> LazyFrame
+  - **pql**: (`subset: TryIter[str] | None`, keep: UniqueKeepStrategy, `order_by: TrySeq[str]`) -> Self
 - `unnest` (pl)
   - **Polars***: (`columns: ColumnNameOrSelector | Collection[ColumnNameOrSelector]`, `*more_columns: ColumnNameOrSelector`, `separator: str | None`) -> LazyFrame
   - **pql**: (`columns: TryIter[IntoExprColumn]`, `*more_columns: IntoExprColumn`) -> Self
 - `unpivot` (nw)
   - **Narwhals**: (`on: str | list[str] | None`, `index: str | list[str] | None`, variable_name: str, value_name: str) -> Self
   - **Polars**: (`on: ColumnNameOrSelector | Sequence[ColumnNameOrSelector] | None`, `index: ColumnNameOrSelector | Sequence[ColumnNameOrSelector] | None`, `variable_name: str | None`, `value_name: str | None`, `streamable: bool`) -> LazyFrame
-  - **pql**: (`on: TryIter[str] | None`, `index: TryIter[str] | None`, variable_name: str, value_name: str) -> Self
+  - **pql**: (`on: TryIter[str]`, `index: TryIter[str]`, variable_name: str, value_name: str) -> Self
 
 ### [+] Extra Methods (pql-only) (3)
 
@@ -163,7 +169,7 @@ Each summary cell is `global (Narwhals, Polars)`.
 
 ## Expr
 
-### [x] Missing Methods (94)
+### [x] Missing Methods (95)
 
 - `agg_groups`
   - **Polars**: () -> Expr
@@ -287,7 +293,7 @@ Each summary cell is `global (Narwhals, Polars)`.
 - `rechunk`
   - **Polars**: () -> Expr
 - `reinterpret`
-  - **Polars**: (signed: bool) -> Expr
+  - **Polars**: (signed: bool | None, dtype: PolarsDataType | None) -> Expr
 - `replace_strict`
   - **Narwhals**: (old: Sequence[Any] | Mapping[Any, Any], new: Sequence[Any] | None, default: Any | NoDefault, return_dtype: IntoDType | None) -> Self
   - **Polars**: (old: IntoExpr | Sequence[Any] | Mapping[Any, Any], new: IntoExpr | Sequence[Any] | NoDefault, default: IntoExpr | NoDefault, return_dtype: DataTypeExpr | None) -> Expr
@@ -336,7 +342,7 @@ Each summary cell is `global (Narwhals, Polars)`.
 - `search_sorted`
   - **Polars**: (element: ndarray[Any, Any], side: SearchSortedSide, descending: bool) -> Expr
 - `set_sorted`
-  - **Polars**: (descending: bool) -> Expr
+  - **Polars**: (descending: bool, nulls_last: bool) -> Expr
 - `shuffle`
   - **Polars**: (seed: int | None) -> Expr
 - `slice`
@@ -353,6 +359,8 @@ Each summary cell is `global (Narwhals, Polars)`.
   - **Polars**: (k: int | IntoExprColumn) -> Expr
 - `top_k_by`
   - **Polars**: (by: IntoExpr | Iterable[IntoExpr], k: int | IntoExprColumn, reverse: bool | Sequence[bool]) -> Expr
+- `truncate`
+  - **Polars**: (decimals: int) -> Expr
 - `unique_counts`
   - **Polars**: () -> Expr
 - `upper_bound`
@@ -360,7 +368,7 @@ Each summary cell is `global (Narwhals, Polars)`.
 - `value_counts`
   - **Polars**: (sort: bool, parallel: bool, name: str_ | None, normalize: bool) -> Expr
 
-### [!] Signature Mismatches (15)
+### [!] Signature Mismatches (16)
 
 - `cast` (nw)
   - **Narwhals**: (`dtype: IntoDType`) -> Self
@@ -369,17 +377,20 @@ Each summary cell is `global (Narwhals, Polars)`.
 - `clip` (nw)
   - **Narwhals**: (`lower_bound: IntoExpr | NumericLiteral | TemporalLiteral | None`, `upper_bound: IntoExpr | NumericLiteral | TemporalLiteral | None`) -> Self
   - **Polars**: (`lower_bound: NumericLiteral | TemporalLiteral | IntoExprColumn | None`, `upper_bound: NumericLiteral | TemporalLiteral | IntoExprColumn | None`) -> Expr
-  - **pql**: (`lower_bound: IntoExpr | None`, `upper_bound: IntoExpr | None`) -> Self
+  - **pql**: (`lower_bound: IntoExpr`, `upper_bound: IntoExpr`) -> Self
 - `fill_null` (nw)
   - **Narwhals**: (`value: Expr | NonNestedLiteral`, strategy: FillNullStrategy | None, limit: int | None) -> Self
   - **Polars**: (`value: Any | Expr | None`, strategy: FillNullStrategy | None, limit: int | None) -> Expr
-  - **pql**: (`value: IntoExpr | None`, strategy: FillNullStrategy | None, limit: int | None) -> Self
+  - **pql**: (`value: IntoExpr`, strategy: FillNullStrategy | None, limit: int | None) -> Self
 - `forward_fill` (pl)
   - **Polars***: (`limit: int | None`) -> Expr
   - **pql**: () -> Self
 - `hash` (pl)
   - **Polars***: (seed: int, `seed_1: int | None`, `seed_2: int | None`, `seed_3: int | None`) -> Expr
   - **pql**: (seed: int) -> Self
+- `implode` (pl)
+  - **Polars***: (`maintain_order: bool`) -> Expr
+  - **pql**: () -> Self
 - `last` (nw)
   - **Narwhals**: (`order_by: str | Iterable[str] | None`) -> Self
   - **Polars**: (`ignore_nulls: bool`) -> Expr
@@ -390,8 +401,8 @@ Each summary cell is `global (Narwhals, Polars)`.
   - **pql**: () -> Self
 - `over` (nw)
   - **Narwhals**: (`*partition_by: str | Sequence[str]`, `order_by: str | Sequence[str] | None`) -> Self
-  - **Polars**: (partition_by: IntoExpr | Iterable[IntoExpr] | None, *more_exprs: IntoExpr, order_by: IntoExpr | Iterable[IntoExpr] | None, descending: bool, nulls_last: bool, `mapping_strategy: WindowMappingStrategy`) -> Expr
-  - **pql**: (`partition_by: TryIter[IntoExpr] | None`, `*more_exprs: IntoExpr`, `order_by: TryIter[IntoExpr] | None`, `descending: bool`, `nulls_last: bool`) -> Self
+  - **Polars**: (`partition_by: IntoExpr | Iterable[IntoExpr] | None`, *more_exprs: IntoExpr, `order_by: IntoExpr | Iterable[IntoExpr] | None`, descending: bool, nulls_last: bool, `mapping_strategy: WindowMappingStrategy`) -> Expr
+  - **pql**: (`partition_by: TryIter[IntoExpr]`, `*more_exprs: IntoExpr`, `order_by: TryIter[IntoExpr]`, `descending: bool`, `nulls_last: bool`) -> Self
 - `pct_change` (pl)
   - **Polars***: (`n: int | IntoExprColumn`) -> Expr
   - **pql**: (`n: int`) -> Self
@@ -681,7 +692,7 @@ Each summary cell is `global (Narwhals, Polars)`.
 ### [x] Missing Methods (18)
 
 - `add_business_days`
-  - **Polars**: (n: int | IntoExpr, week_mask: Iterable[bool], holidays: Iterable[dt.date], roll: Roll) -> Expr
+  - **Polars**: (n: int | IntoExpr, week_mask: Iterable[bool], holidays: Iterable[dt.date] | Expr | pl.Series, roll: Roll) -> Expr
 - `base_utc_offset`
   - **Polars**: () -> Expr
 - `cast_time_unit`
@@ -696,7 +707,7 @@ Each summary cell is `global (Narwhals, Polars)`.
 - `dst_offset`
   - **Polars**: () -> Expr
 - `is_business_day`
-  - **Polars**: (week_mask: Iterable[bool], holidays: Iterable[dt.date]) -> Expr
+  - **Polars**: (week_mask: Iterable[bool], holidays: Iterable[dt.date] | Expr | pl.Series) -> Expr
 - `is_leap_year`
   - **Polars**: () -> Expr
 - `replace`
@@ -770,7 +781,7 @@ Each summary cell is `global (Narwhals, Polars)`.
   - **Narwhals**: ()
   - **Polars**: ()
 - `ScanCastOptions`
-  - **Polars**: (integer_cast: Literal['upcast', 'forbid'], float_cast: Literal['forbid'] | FloatCastOption | Collection[FloatCastOption], datetime_cast: Literal['forbid'] | DatetimeCastOption | Collection[DatetimeCastOption], missing_struct_fields: Literal['insert', 'raise'], extra_struct_fields: Literal['ignore', 'raise'], categorical_to_string: Literal['allow', 'forbid'],_internal_call: bool) -> None
+  - **Polars**: (integer_cast: Literal['forbid'] | IntegerCastOption | Collection[IntegerCastOption], float_cast: Literal['forbid'] | FloatCastOption | Collection[FloatCastOption], datetime_cast: Literal['forbid'] | DatetimeCastOption | Collection[DatetimeCastOption], missing_struct_fields: Literal['insert', 'raise'], extra_struct_fields: Literal['ignore', 'raise'], categorical_to_string: Literal['allow', 'forbid'],_internal_call: bool) -> None
 - `Unknown`
   - **Narwhals**: ()
   - **Polars**: ()
@@ -791,7 +802,7 @@ Each summary cell is `global (Narwhals, Polars)`.
 - `build_info`
   - **Polars**: () -> dict[str, Any]
 - `business_day_count`
-  - **Polars**: (start: date | IntoExprColumn, end: date | IntoExprColumn, week_mask: Iterable[bool], holidays: Iterable[date]) -> Expr
+  - **Polars**: (start: date | IntoExprColumn, end: date | IntoExprColumn, week_mask: Iterable[bool], holidays: Iterable[date] | Expr | Series) -> Expr
 - `collect_all`
   - **Polars**: (lazy_frames: Iterable[LazyFrame], type_coercion: bool, predicate_pushdown: bool, projection_pushdown: bool, simplify_expression: bool, no_optimization: bool, slice_pushdown: bool, comm_subplan_elim: bool, comm_subexpr_elim: bool, cluster_with_columns: bool, collapse_joins: bool, optimizations: QueryOptFlags, engine: EngineType, lazy: bool) -> list[DataFrame] | LazyFrame
 - `collect_all_async`
@@ -855,14 +866,14 @@ Each summary cell is `global (Narwhals, Polars)`.
   - **Polars**: (acc: IntoExpr, function: Callable[[Series, Series], Series], exprs: Sequence[Expr | str] | Expr, returns_scalar: bool, return_dtype: DataTypeExpr | PolarsDataType | None) -> Expr
 - `format`
   - **Narwhals**: (f_string: str, *args: IntoExpr) -> Expr
-  - **Polars**: (f_string: str, *args: Expr | str) -> Expr
+  - **Polars**: (f_string: str, *args: IntoExpr) -> Expr
 - `from_arrow`
   - **Narwhals**: (native_frame: IntoArrowTable, backend: IntoBackend[EagerAllowed]) -> DataFrame[Any]
   - **Polars**: (data: RecordBatch | Iterable[pa.RecordBatch | pa.Table] | ArrowArrayExportable | ArrowStreamExportable, schema: SchemaDefinition | None, schema_overrides: SchemaDict | None, rechunk: bool) -> DataFrame | Series
 - `from_dataframe`
   - **Polars**: (df: SupportsInterchange | ArrowArrayExportable | ArrowStreamExportable, allow_copy: bool | None, rechunk: bool) -> DataFrame
 - `from_epoch`
-  - **Polars**: (column: str | Expr | Series | Sequence[int], time_unit: EpochTimeUnit) -> Expr | Series
+  - **Polars**: (column: str | Expr | Series | Sequence[int | float], time_unit: EpochTimeUnit) -> Expr | Series
 - `from_pandas`
   - **Polars**: (data: Series[Any] | pd.Index[Any] | pd.DatetimeIndex, schema_overrides: SchemaDict | None, rechunk: bool, nan_to_null: bool, include_index: bool) -> DataFrame | Series
 - `from_repr`
@@ -876,7 +887,7 @@ Each summary cell is `global (Narwhals, Polars)`.
 - `head`
   - **Polars**: (column: str, n: int) -> Expr
 - `implode`
-  - **Polars**: (*columns: str) -> Expr
+  - **Polars**: (*columns: str, maintain_order: bool) -> Expr
 - `int_range`
   - **Polars**: (start: int | IntoExprColumn, end: int | IntoExprColumn | None, step: int, dtype: PolarsIntegerType | DataTypeExpr, eager: bool) -> Expr | Series
 - `int_ranges`
@@ -966,11 +977,11 @@ Each summary cell is `global (Narwhals, Polars)`.
   - **Polars**: (name: str) -> Expr
 - `scan_csv`
   - **Narwhals**: (source: FileSource, backend: IntoBackend[Backend], separator: str, **kwargs: Any) -> LazyFrame[Any]
-  - **Polars**: (source: str | Path | IO[str] | IO[bytes] | bytes | list[str] | list[Path] | list[IO[str]] | list[IO[bytes]] | list[bytes], has_header: bool, separator: str, comment_prefix: str | None, quote_char: str | None, skip_rows: int, skip_lines: int, schema: SchemaDict | None, schema_overrides: SchemaDict | Sequence[PolarsDataType] | None, null_values: str | Sequence[str] | dict[str, str] | None, missing_utf8_is_empty_string: bool, ignore_errors: bool, cache: bool, with_column_names: Callable[[list[str]], list[str]] | None, infer_schema: bool, infer_schema_length: int | None, n_rows: int | None, encoding: CsvEncoding, low_memory: bool, rechunk: bool, skip_rows_after_header: int, row_index_name: str | None, row_index_offset: int, try_parse_dates: bool, eol_char: str, new_columns: Sequence[str] | None, raise_if_empty: bool, truncate_ragged_lines: bool, decimal_comma: bool, glob: bool, storage_options: StorageOptionsDict | None, credential_provider: CredentialProviderFunction | Literal['auto'] | None, retries: int | None, file_cache_ttl: int | None, include_file_paths: str | None) -> LazyFrame
+  - **Polars**: (source: str | Path | IO[str] | IO[bytes] | bytes | list[str] | list[Path] | list[IO[str]] | list[IO[bytes]] | list[bytes], has_header: bool, separator: str, comment_prefix: str | None, quote_char: str | None, skip_rows: int, skip_lines: int, schema: SchemaDict | None, schema_overrides: SchemaDict | Sequence[PolarsDataType] | None, null_values: str | Sequence[str] | dict[str, str] | None, missing_utf8_is_empty_string: bool, ignore_errors: bool, cache: bool | None, with_column_names: Callable[[list[str]], list[str]] | None, infer_schema: bool, infer_schema_length: int | None, n_rows: int | None, encoding: CsvEncoding, low_memory: bool, rechunk: bool, skip_rows_after_header: int, row_index_name: str | None, row_index_offset: int, try_parse_dates: bool, eol_char: str, new_columns: Sequence[str] | None, raise_if_empty: bool, truncate_ragged_lines: bool, decimal_comma: bool, glob: bool, storage_options: StorageOptionsDict | None, credential_provider: CredentialProviderFunction | Literal['auto'] | None, retries: int | None, file_cache_ttl: int | None, include_file_paths: str | None, missing_columns: Literal['insert', 'raise'] | None) -> LazyFrame
 - `scan_delta`
   - **Polars**: (source: str | Path | DeltaTable, version: int | str | datetime | None, storage_options: StorageOptionsDict | None, credential_provider: CredentialProviderFunction | Literal['auto'] | None, delta_table_options: dict[str, Any] | None, use_pyarrow: bool, pyarrow_options: dict[str, Any] | None, rechunk: bool | None) -> LazyFrame
 - `scan_iceberg`
-  - **Polars**: (source: str | Table, snapshot_id: int | None, storage_options: StorageOptionsDict | None, reader_override: Literal['native', 'pyiceberg'] | None, use_metadata_statistics: bool, fast_deletion_count: bool | None, use_pyiceberg_filter: bool) -> LazyFrame
+  - **Polars**: (source: Table, snapshot_id: int | None, storage_options: StorageOptionsDict | None, catalog: IcebergCatalogConfig | None, reader_override: Literal['native', 'pyiceberg'] | None, use_metadata_statistics: bool, fast_deletion_count: bool | None, use_pyiceberg_filter: bool) -> LazyFrame
 - `scan_ipc`
   - **Polars**: (source: str | Path | IO[bytes] | bytes | list[str] | list[Path] | list[IO[bytes]] | list[bytes], n_rows: int | None, cache: bool, rechunk: bool, row_index_name: str | None, row_index_offset: int, glob: bool, storage_options: StorageOptionsDict | None, credential_provider: CredentialProviderFunction | Literal['auto'] | None, memory_map: bool, retries: int | None, file_cache_ttl: int | None, hive_partitioning: bool | None, hive_schema: SchemaDict | None, try_parse_hive_dates: bool, include_file_paths: str | None,_record_batch_statistics: bool) -> LazyFrame
 - `scan_lines`
@@ -1019,7 +1030,7 @@ Each summary cell is `global (Narwhals, Polars)`.
 - `zeros`
   - **Polars**: (n: int | Expr, dtype: PolarsDataType, eager: bool) -> Expr | Series
 
-### [!] Signature Mismatches (17)
+### [!] Signature Mismatches (22)
 
 - `Array` (nw)
   - **Narwhals**: (`inner: IntoDType`, `shape: int | tuple[int, ...]`) -> None
@@ -1044,7 +1055,7 @@ Each summary cell is `global (Narwhals, Polars)`.
 - `Expr` (nw)
   - **Narwhals**: (`*nodes: ExprNode`) -> None
   - **Polars**: ()
-  - **pql**: (`inner: SqlExpr`, `meta: Option[ExprMeta]`) -> None
+  - **pql**: (`inner: SqlExpr`, `meta: ExprMeta`) -> None
 - `LazyFrame` (nw)
   - **Narwhals**: (`df: Any`, `level: Literal['full', 'lazy', 'interchange']`) -> None
   - **Polars**: (`data: FrameInitTypes | None`, `schema: SchemaDefinition | None`, `schema_overrides: SchemaDict | None`, `strict: bool`, `orient: Orientation | None`, `infer_schema_length: int | None`, `nan_to_null: bool`, `height: int | None`) -> None
@@ -1088,6 +1099,26 @@ Each summary cell is `global (Narwhals, Polars)`.
   - **Narwhals**: (value: PythonLiteral, `dtype: IntoDType | None`) -> Expr
   - **Polars**: (value: Any, `dtype: PolarsDataType | None`, `allow_object: bool`) -> Expr
   - **pql**: (value: PythonLiteral) -> Expr
+- `max` (nw)
+  - **Narwhals**: (`*columns: str`) -> Expr
+  - **Polars**: (`*names: str`) -> Expr
+  - **pql**: (`cols: TryIter[str]`, `*more_cols: str`) -> Expr
+- `mean` (nw)
+  - **Narwhals**: (`*columns: str`) -> Expr
+  - **Polars**: (`*columns: str`) -> Expr
+  - **pql**: (`cols: TryIter[str]`, `*more_cols: str`) -> Expr
+- `median` (nw)
+  - **Narwhals**: (`*columns: str`) -> Expr
+  - **Polars**: (`*columns: str`) -> Expr
+  - **pql**: (`cols: TryIter[str]`, `*more_cols: str`) -> Expr
+- `min` (nw)
+  - **Narwhals**: (`*columns: str`) -> Expr
+  - **Polars**: (`*names: str`) -> Expr
+  - **pql**: (`cols: TryIter[str]`, `*more_cols: str`) -> Expr
+- `sum` (nw)
+  - **Narwhals**: (`*columns: str`) -> Expr
+  - **Polars**: (`*names: str`) -> Expr
+  - **pql**: (`cols: TryIter[str]`, `*more_cols: str`) -> Expr
 
 ### [+] Extra Methods (pql-only) (12)
 
@@ -1152,7 +1183,7 @@ Each summary cell is `global (Narwhals, Polars)`.
 ### [x] Missing Methods (5)
 
 - `base_type`
-  - **Polars**: () -> DataTypeClass
+  - **Polars**: () -> type[Self]
 - `from_python`
   - **Polars**: (py_type: PythonDataType) -> PolarsDataType
 - `is_object`
@@ -1170,8 +1201,10 @@ Each summary cell is `global (Narwhals, Polars)`.
 
 ## Schema
 
-### [x] Missing Methods (15)
+### [x] Missing Methods (16)
 
+- `contains_dtype`
+  - **Polars**: (dtype: DataType, recursive: bool) -> bool
 - `copy`
   - **Narwhals**: ()
   - **Polars**: ()
