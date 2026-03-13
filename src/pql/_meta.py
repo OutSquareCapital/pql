@@ -6,7 +6,7 @@ from enum import IntEnum, auto
 from typing import TYPE_CHECKING, Any, NamedTuple, Self, overload, override
 
 import pyochain as pc
-from duckdb import SQLExpression
+from duckdb import ColumnExpression, SQLExpression
 from pyochain.traits import PyoCollection, PyoSequence
 
 from . import sql
@@ -123,29 +123,20 @@ class ResolvedExpr(NamedTuple):
         return base_sql if self.name == base_sql else f"{base_sql} AS {self.name}"
 
 
-@dataclass(slots=True)
+@dataclass(slots=True, init=False)
 class ExprPlan(PyoSequence[ResolvedExpr]):
     projections: pc.Seq[ResolvedExpr]
 
-    @classmethod
-    def from_inputs(
-        cls,
-        schema: Schema,
-        exprs: pc.Iter[IntoExpr],
-        named_exprs: dict[str, IntoExpr] | None = None,
-    ) -> Self:
+    def __init__(
+        self, schema: Schema, exprs: pc.Iter[IntoExpr], named_exprs: dict[str, IntoExpr]
+    ) -> None:
         expr_map = (
-            pc.Option(named_exprs)
-            .map(
-                lambda mapping: (
-                    pc.Iter(mapping.items())
-                    .map_star(lambda k, v: _resolve_projection(schema, v, pc.Some(k)))
-                    .flatten()
-                )
-            )
-            .unwrap_or_else(pc.Iter[ResolvedExpr].new)
+            pc.Iter(named_exprs.items())
+            .map_star(lambda k, v: _resolve_projection(schema, v, pc.Some(k)))
+            .flatten()
+            .collect()
         )
-        return cls(
+        self.projections = (
             exprs.flat_map(lambda value: _resolve_projection(schema, value))
             .chain(expr_map)
             .collect()
@@ -241,4 +232,5 @@ def _resolve_projection(
 
 
 def _replace_col(template: sql.SqlExpr, column_name: str) -> sql.SqlExpr:
-    return sql.SqlExpr(SQLExpression(template.pipe(str).replace(SENTINEL, column_name)))
+    raw_str = template.pipe(str).replace(SENTINEL, str(ColumnExpression(column_name)))
+    return sql.SqlExpr(SQLExpression(raw_str))

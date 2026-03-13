@@ -91,9 +91,7 @@ class LazyGroupBy:
         **named_aggs: IntoExpr,
     ) -> LazyFrame:
         plan = (
-            self._agg_schema.into(
-                ExprPlan.from_inputs, try_chain(aggs, more_aggs), named_aggs
-            )
+            self._agg_schema.into(ExprPlan, try_chain(aggs, more_aggs), named_aggs)
             .iter()
             .map(lambda p: p.implode_or_scalar())
         )

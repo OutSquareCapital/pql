@@ -55,7 +55,7 @@ def test_drop_nulls() -> None:
 
 def test_get_out_of_bounds() -> None:
 
-    with pytest.raises(pl.exceptions.ComputeError, match="get index is out of bounds"):
+    with pytest.raises(pl.exceptions.ComputeError, match="out of bounds"):
         assert_eq_pl(pql.col("arr_num").arr.get(10), pl.col("arr_num").arr.get(10))
 
 

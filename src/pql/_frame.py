@@ -182,7 +182,7 @@ class LazyFrame(sql.CoreHandler[sql.SqlFrame]):
     ) -> Self:
         """Select columns or expressions."""
         match self.schema.into(
-            ExprPlan.from_inputs, try_chain(exprs, more_exprs), named_exprs
+            ExprPlan, try_chain(exprs, more_exprs), named_exprs
         ).then_some():
             case pc.Some(plan):
                 match plan.all(lambda r: r.kind == ExprKind.UNIQUE):
@@ -207,7 +207,7 @@ class LazyFrame(sql.CoreHandler[sql.SqlFrame]):
         """Add or replace columns."""
         schema = self.schema
         col_keys = schema.keys()
-        plan = ExprPlan.from_inputs(schema, try_chain(exprs, more_exprs), named_exprs)
+        plan = ExprPlan(schema, try_chain(exprs, more_exprs), named_exprs)
 
         match plan.any(lambda r: r.kind == ExprKind.SCALAR):
             case True:
@@ -279,9 +279,7 @@ class LazyFrame(sql.CoreHandler[sql.SqlFrame]):
     ) -> Self:
         """Aggregate with GROUP BY ALL — DuckDB auto-detects grouping keys."""
         return (
-            self.schema.into(
-                ExprPlan.from_inputs, try_chain(exprs, more_exprs), named_exprs
-            )
+            self.schema.into(ExprPlan, try_chain(exprs, more_exprs), named_exprs)
             .aliased_sql()
             .into(self.inner().aggregate, "ALL")
             .pipe(self._new)

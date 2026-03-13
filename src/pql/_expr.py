@@ -1362,7 +1362,7 @@ class ExprStructNameSpace(ExprNameSpaceBase):
     ) -> Expr:
         """Return a new struct with updated or additional fields."""
         return (
-            ExprPlan.from_inputs(Schema({}), try_chain(exprs, more_exprs), named_exprs)
+            ExprPlan(Schema(()), try_chain(exprs, more_exprs), named_exprs)
             .aliased_sql()
             .into(lambda args: self._new(self.inner().struct.insert(*args)))
         )
