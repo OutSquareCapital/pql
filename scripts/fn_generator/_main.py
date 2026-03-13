@@ -19,12 +19,13 @@ def get_data(path: Path) -> None:
 
     import duckdb
 
-    return (
-        duckdb.table_function("duckdb_functions")
-        .pl()
-        .cast(TableSchema)
-        .write_parquet(path)
-    )
+    qry = """--sql
+    LOAD spatial;
+    SELECT *
+    FROM duckdb_functions()
+    """
+
+    return duckdb.connect().sql(qry).pl().cast(TableSchema).write_parquet(path)
 
 
 def _inspect(lf: pl.LazyFrame) -> pl.LazyFrame:

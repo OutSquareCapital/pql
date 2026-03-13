@@ -105,21 +105,23 @@ class DuckDbTypes(StrEnum):
     V_ARRAY = "V[]"
 
     def into_py(self) -> str:
-        def _base_py_for_value(value: str) -> str:
-            return (
-                CONVERSION_MAP.get_item(value)
-                .filter(lambda x: x != Pql.INTO_EXPR_COLUMN.value)
-                .unwrap_or("")
-            )
-
         match self.value:
             case inner if inner.endswith("[]") and self not in GENERIC_CONTAINER:
-                element_type = _base_py_for_value(inner.removesuffix("[]"))
-                return Pql.SEQ_LITERAL.of_type(element_type)
+                return (
+                    _base_type(inner.removesuffix("[]"))
+                    .map(Pql.SEQ_LITERAL.of_type)
+                    .unwrap_or("")
+                )
             case arr if "[" in arr:
-                return _base_py_for_value(arr.partition("[")[0])
-            case _ as value:
-                return _base_py_for_value(value)
+                return _base_type(arr.partition("[")[0]).unwrap_or("")
+            case value:
+                return _base_type(value).unwrap_or("")
+
+
+def _base_type(value: str) -> pc.Option[str]:
+    return CONVERSION_MAP.get_item(value).filter(
+        lambda x: x != Pql.INTO_EXPR_COLUMN.value
+    )
 
 
 GENERIC_CONTAINER = pc.Set(

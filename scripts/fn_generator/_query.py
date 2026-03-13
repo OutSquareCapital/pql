@@ -17,6 +17,8 @@ from ._rules import (
 from ._schemas import DuckCols, ParamLens, ParamLists, Params, PyCols
 from ._str_builder import EMPTY_STR, format_kwords
 
+_INDENT = "\n            "
+
 
 def run_qry(lf: pl.LazyFrame) -> pl.LazyFrame:
     py = PyCols()
@@ -335,7 +337,10 @@ def _to_func(
         .then(
             dk.description.str.strip_chars()
             .str.replace_all("\u2019", "'")
+            .str.replace_all('"', EMPTY_STR)
+            .str.replace_all(r"\n[ \t]*", "\n        ")
             .str.replace_all(r"\. ", ".\n\n        ")
+            .str.replace_all(".\n        ", ".\n\n        ")
             .str.strip_chars_end(".")
         )
         .otherwise(pl.format("SQL {} function", py.sql_name)),
@@ -360,19 +365,33 @@ def _to_func(
                 ignore_nulls=True,
             )
         ),
-        examples_section=pl.when(dk.examples.list.len().gt(0)).then(
-            format_kwords(
-                "\n\n        Examples:\n            {examples}",
-                examples=dk.examples.list.join("\n            "),
-                ignore_nulls=True,
-            )
-        ),
+        examples_section=_examples(dk),
         sql_name=py.sql_name,
         dk_args=pl.when(has_params.gt(1)).then(
             format_kwords(", {args}", args=p_lists.names.list.slice(1).list.join(", "))
         ),
         dk_varargs=pl.when(dk.varargs.is_not_null()).then(pl.lit(", *args")),
         ignore_nulls=True,
+    )
+
+
+def _examples(dk: DuckCols) -> pl.Expr:
+    non_empty = dk.examples.list.eval(
+        pl.element().filter(pl.element().str.strip_chars().ne(""))
+    )
+    return pl.when(non_empty.list.len().gt(0)).then(
+        format_kwords(
+            """
+
+        Examples:
+            ```sql
+            {examples}
+            ```""",
+            examples=non_empty.list.eval(
+                pl.element().str.replace_all(r"\n[ \t]*", _INDENT)
+            ).list.join(_INDENT),
+            ignore_nulls=True,
+        )
     )
 
 
