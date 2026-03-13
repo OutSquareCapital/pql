@@ -231,6 +231,13 @@ NAMESPACE_SPECS = pc.Seq(
             prefixes=pc.Seq(("enum_",)),
             strip_prefixes=pc.Seq(("enum_",)),
         ),
+        NamespaceSpec(
+            name="GeoSpatialFns",
+            doc="Mixin providing auto-generated DuckDB geospatial functions as methods.",
+            categories=pc.Seq((Categories.GEOMETRY,)),
+            prefixes=pc.Seq(("st_", "ST_")),
+            strip_prefixes=pc.Seq(("st_", "ST_")),
+        ),
     )
 )
 """Namespace metadata and function prefixes."""

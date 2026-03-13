@@ -13,6 +13,7 @@ from ._code_gen import (
     EnumFns,
     Expression,
     Fns,
+    GeoSpatialFns,
     JsonFns,
     ListFns,
     MapFns,
@@ -79,6 +80,11 @@ class SqlExpr(Expression, Fns):
         """Access enum functions."""
         return SqlExprEnumNameSpace(self)
 
+    @property
+    def geo(self) -> SqlExprGeoSpatialNameSpace:
+        """Access geospatial functions."""
+        return SqlExprGeoSpatialNameSpace(self)
+
     def var(self, ddof: int) -> Self:
         match ddof:
             case 0:
@@ -105,9 +111,9 @@ class SqlExpr(Expression, Fns):
             case 0:
                 return self
             case n_val if n_val > 0:
-                return self.lag(n_val).over()
+                return self.lag(n_val, None).over()
             case _:
-                return self.lead(-n).over()
+                return self.lead(-n, None).over()
 
     def round(self, decimals: int, mode: RoundMode) -> Self:
         match mode:
@@ -231,6 +237,14 @@ class SqlExpr(Expression, Fns):
             case (False, False):
                 return self.asc()
 
+    def dense_rank(self) -> Self:
+        """The rank of the current row without gaps; this function counts peer groups.
+
+        Returns:
+            Self
+        """
+        return self._new(func("dense_rank"))
+
     def cume_dist(
         self,
         *,
@@ -248,234 +262,6 @@ class SqlExpr(Expression, Fns):
         """
         return self._new(
             OverBuilder(str(func("cume_dist"))).build_fn(
-                order_by=pc.Option(order_by),
-                ignore_nulls=ignore_nulls,
-                fn_descending=descending,
-                fn_nulls_last=nulls_last,
-            )
-        )
-
-    def dense_rank(self) -> Self:
-        """The rank of the current row without gaps; this function counts peer groups.
-
-        Returns:
-            Self
-        """
-        return self._new(func("dense_rank"))
-
-    def fill(
-        self,
-        *,
-        order_by: TryIter[IntoExprColumn] = None,
-        ignore_nulls: bool = False,
-        descending: TryIter[bool] = False,
-        nulls_last: TryIter[bool] = False,
-    ) -> Self:
-        """Replaces NULL values of expr with a linear interpolation based on the closest non-NULL values and the sort values.
-
-        Both values must support arithmetic and there must be only one ordering key.
-
-        For missing values at the ends, linear extrapolation is used.
-
-        Failure to interpolate results in the NULL value being retained.
-
-        Returns:
-            Self
-        """
-        return self._new(
-            OverBuilder(str(func("fill", self.inner()))).build_fn(
-                order_by=pc.Option(order_by),
-                ignore_nulls=ignore_nulls,
-                fn_descending=descending,
-                fn_nulls_last=nulls_last,
-            )
-        )
-
-    def first_value(
-        self,
-        *,
-        order_by: TryIter[IntoExprColumn] = None,
-        ignore_nulls: bool = False,
-        descending: TryIter[bool] = False,
-        nulls_last: TryIter[bool] = False,
-    ) -> Self:
-        """Returns expr evaluated at the row that is the first row (with a non-null value of expr if IGNORE NULLS is set) of the window frame.
-
-        If an `ORDER BY` clause is specified, the first row number is computed within the frame using the provided ordering instead of the frame ordering.
-
-        Returns:
-            Self
-        """
-        return self._new(
-            OverBuilder(str(func("first_value", self.inner()))).build_fn(
-                order_by=pc.Option(order_by),
-                ignore_nulls=ignore_nulls,
-                fn_descending=descending,
-                fn_nulls_last=nulls_last,
-            )
-        )
-
-    def lag(  # noqa: PLR0913
-        self,
-        offset: IntoExprColumn | int = 1,
-        default: IntoExpr = None,
-        *,
-        order_by: TryIter[IntoExprColumn] = None,
-        ignore_nulls: bool = False,
-        descending: TryIter[bool] = False,
-        nulls_last: TryIter[bool] = False,
-    ) -> Self:
-        """Returns expr evaluated at the row that is offset rows (among rows with a non-null value of expr if IGNORE NULLS is set) before the current row within the window frame.
-
-        If there is no such row, instead return default (which must be of the Same type as expr).
-
-        Both offset and default are evaluated with respect to the current row.
-
-        If omitted, offset defaults to 1 and default to NULL.
-
-        If an `ORDER BY` clause is specified, the lagged row number is computed within the frame using the provided ordering instead of the frame ordering.
-
-        Args:
-            offset (IntoExprColumn | int): Number of rows to look back (default: 1)
-            default (IntoExpr): Default value if no such row exists (default: NULL)
-            order_by (TryIter[IntoExprColumn]): Secondary ordering within the function call
-            ignore_nulls (bool): Skip NULL values when looking back
-            descending (TryIter[bool]): Descending order for `order_by`
-            nulls_last (TryIter[bool]): Nulls-last for `order_by`
-
-        Returns:
-            Self
-        """
-        return self._new(
-            OverBuilder(str(func("lag", self.inner(), offset, default))).build_fn(
-                order_by=pc.Option(order_by),
-                ignore_nulls=ignore_nulls,
-                fn_descending=descending,
-                fn_nulls_last=nulls_last,
-            )
-        )
-
-    def last_value(
-        self,
-        *,
-        order_by: TryIter[IntoExprColumn] = None,
-        ignore_nulls: bool = False,
-        descending: TryIter[bool] = False,
-        nulls_last: TryIter[bool] = False,
-    ) -> Self:
-        """Returns expr evaluated at the row that is the last row (among rows with a non-null value of expr if IGNORE NULLS is set) of the window frame.
-
-        If an `ORDER BY` clause is specified, the last row is determined within the frame using the provided ordering instead of the frame ordering.
-
-        Returns:
-            Self
-        """
-        return self._new(
-            OverBuilder(str(func("last_value", self.inner()))).build_fn(
-                order_by=pc.Option(order_by),
-                ignore_nulls=ignore_nulls,
-                fn_descending=descending,
-                fn_nulls_last=nulls_last,
-            )
-        )
-
-    def lead(  # noqa: PLR0913
-        self,
-        offset: IntoExprColumn | int = 1,
-        default: IntoExpr = None,
-        *,
-        order_by: TryIter[IntoExprColumn] = None,
-        ignore_nulls: bool = False,
-        descending: TryIter[bool] = False,
-        nulls_last: TryIter[bool] = False,
-    ) -> Self:
-        """Returns expr evaluated at the row that is offset rows after the current row (among rows with a non-null value of expr if IGNORE NULLS is set) within the window frame.
-
-        If there is no such row, instead return default (which must be of the Same type as expr).
-
-        Both offset and default are evaluated with respect to the current row. If omitted, offset defaults to 1 and default to NULL.
-
-        If an `ORDER BY` clause is specified, the leading row number is computed within the frame using the provided ordering instead of the frame ordering.
-
-        Args:
-            offset (IntoExprColumn | int): Number of rows to look ahead (default: 1)
-            default (IntoExpr): Default value if no such row exists (default: NULL)
-            order_by (TryIter[IntoExprColumn]): Secondary ordering within the function call
-            ignore_nulls (bool): Skip NULL values when looking ahead
-            descending (TryIter[bool]): Descending order for `order_by`
-            nulls_last (TryIter[bool]): Nulls-last for `order_by`
-
-        Returns:
-            Self
-        """
-        return self._new(
-            OverBuilder(str(func("lead", self.inner(), offset, default))).build_fn(
-                order_by=pc.Option(order_by),
-                ignore_nulls=ignore_nulls,
-                fn_descending=descending,
-                fn_nulls_last=nulls_last,
-            )
-        )
-
-    def nth_value(
-        self,
-        nth: IntoExprColumn | int,
-        *,
-        order_by: TryIter[IntoExprColumn] = None,
-        ignore_nulls: bool = False,
-        descending: TryIter[bool] = False,
-        nulls_last: TryIter[bool] = False,
-    ) -> Self:
-        """Returns expr evaluated at the nth row (among rows with a non-null value of expr if IGNORE NULLS is set) of the window frame (counting from 1).
-
-        Return `NULL` if no such row.
-
-        If an `ORDER BY` clause is specified, the nth row number is computed within the frame using the provided ordering instead of the frame ordering.
-
-        Args:
-            nth (IntoExprColumn | int): The row number to retrieve (1-based)
-            order_by (TryIter[IntoExprColumn]): Secondary ordering within the function call
-            ignore_nulls (bool): Skip NULL values when counting
-            descending (TryIter[bool]): Descending order for `order_by`
-            nulls_last (TryIter[bool]): Nulls-last for `order_by`
-
-        Returns:
-            Self
-        """
-        return self._new(
-            OverBuilder(str(func("nth_value", self.inner(), nth))).build_fn(
-                order_by=pc.Option(order_by),
-                ignore_nulls=ignore_nulls,
-                fn_descending=descending,
-                fn_nulls_last=nulls_last,
-            )
-        )
-
-    def ntile(
-        self,
-        num_buckets: IntoExprColumn | int,
-        *,
-        order_by: TryIter[IntoExprColumn] = None,
-        ignore_nulls: bool = False,
-        descending: TryIter[bool] = False,
-        nulls_last: TryIter[bool] = False,
-    ) -> Self:
-        """An integer ranging from 1 to num_buckets, dividing the partition as equally as possible.
-
-        If an `ORDER BY` clause is specified, the ntile is computed within the frame using the provided ordering instead of the frame ordering.
-
-        Args:
-            num_buckets (IntoExprColumn | int): Number of buckets to divide into
-            order_by (TryIter[IntoExprColumn]): Secondary ordering within the function call
-            ignore_nulls (bool): Ignored (ntile does not support IGNORE NULLS)
-            descending (TryIter[bool]): Descending order for `order_by`
-            nulls_last (TryIter[bool]): Nulls-last for `order_by`
-
-        Returns:
-            Self
-        """
-        return self._new(
-            OverBuilder(str(func("ntile", num_buckets))).build_fn(
                 order_by=pc.Option(order_by),
                 ignore_nulls=ignore_nulls,
                 fn_descending=descending,
@@ -734,3 +520,8 @@ class SqlExprMapNameSpace(MapFns[SqlExpr]):
 @dataclass(slots=True)
 class SqlExprEnumNameSpace(EnumFns[SqlExpr]):
     """Enum function namespace for SQL expressions."""
+
+
+@dataclass(slots=True)
+class SqlExprGeoSpatialNameSpace(GeoSpatialFns[SqlExpr]):
+    """Geospatial function namespace for SQL expressions."""

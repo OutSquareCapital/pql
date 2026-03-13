@@ -11,6 +11,18 @@ from .._utils import Builtins, DateTime, Decimal, Pql, Typing
 class DuckDbTypes(StrEnum):
     """DuckDB type names."""
 
+    GEOMETRY = "GEOMETRY"
+    BOX_2D = "BOX_2D"
+    BOX_2DF = "BOX_2DF"
+    LINESTRING_2D = "LINESTRING_2D"
+    POLYGON_2D = "POLYGON_2D"
+    POINT_2D = "POINT_2D"
+    POINT_3D = "POINT_3D"
+    POINT_4D = "POINT_4D"
+    GEOMETRY_STRUCT = "STRUCT(center GEOMETRY, nearest GEOMETRY, radius DOUBLE)"
+    GEOMETRY_STRUCT_ARRAY = "STRUCT(geom GEOMETRY, path INTEGER[])[]"
+    TYPE = "TYPE"
+    GEOMETRY_ARRAY = "GEOMETRY[]"
     NULL = '"NULL"'
     AGGREGATE_STATE = "AGGREGATE_STATE<?>"
     ANY = "ANY"
@@ -155,6 +167,7 @@ class Categories(StrEnum):
     TEXT_SIMILARITY = auto()
     TIMESTAMP = auto()
     VARIANT = auto()
+    GEOMETRY = auto()
 
 
 CATEGORY_TYPES = pl.Enum(Categories)

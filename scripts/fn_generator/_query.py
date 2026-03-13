@@ -220,10 +220,10 @@ def _simplify_generated_union(type_hint: str) -> str:
         .filter(lambda type_name: type_name != "")
         .collect()
     )
-    if tokens.iter().any(lambda type_name: type_name == Pql.INTO_EXPR):
+    if tokens.any(lambda type_name: type_name == Pql.INTO_EXPR):
         return Pql.INTO_EXPR.value
 
-    has_into_expr_column = tokens.iter().any(
+    has_into_expr_column = tokens.any(
         lambda type_name: type_name == Pql.INTO_EXPR_COLUMN
     )
     return (
@@ -281,6 +281,7 @@ def _to_param_names(params: pl.Expr) -> pl.Expr:
         params.str.strip_chars("'\"[]")
         .str.replace(r"\(.*$", EMPTY_STR)
         .str.replace_all(r"\.\.\.", EMPTY_STR)
+        .str.to_lowercase()
         .pipe(
             lambda expr: (
                 pl.when(expr.is_in(SHADOWERS))

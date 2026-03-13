@@ -52,6 +52,8 @@ The **gen-{fns, core, themes}** commands will respectively generate python code 
 - [A core API wrapper around `DuckDBPyRelation` and `Expression`](src/pql/sql/_code_gen/_core.py)
 - [A `Literal` for SQL display theming](src/pql/_typing.py) (see `Theme` type)
 
+**Note** that if you never generated the `table_functions` code, you need first to run `fns-to_parquet` once to get the parquet file with the data casted and updated, and then `gen-fns` to generate the code.
+
 ## References
 
 - [DuckDB functions](https://duckdb.org/docs/stable/sql/functions/overview)

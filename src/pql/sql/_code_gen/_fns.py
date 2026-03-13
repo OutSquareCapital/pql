@@ -74,6 +74,16 @@ class Fns(DuckHandler):
         """
         return self._new(func("age", self.inner(), timestamp))
 
+    def ago(self) -> Self:
+        """SQL ago function.
+
+        **SQL name**: *ago*
+
+        Returns:
+            Self
+        """
+        return self._new(func("ago", self.inner()))
+
     def all(self) -> Self:
         """Returns TRUE if every input value is TRUE, otherwise FALSE.
 
@@ -197,6 +207,27 @@ class Fns(DuckHandler):
         """
         return self._new(func("arg_max_null", self.inner(), val))
 
+    def arg_max_nulls_last(
+        self, val: IntoExpr, n: IntoExprColumn | int | None = None
+    ) -> Self:
+        """Finds the rows with N maximum vals, including nulls.
+
+        Calculates the arg expression at that row.
+
+        **SQL name**: *arg_max_nulls_last*
+
+        Args:
+            val (IntoExpr): `ANY | BIGINT | BLOB | DATE | DOUBLE | HUGEINT | INTEGER | TIMESTAMP | TIMESTAMP WITH TIME ZONE | VARCHAR` expression
+            n (IntoExprColumn | int | None): `BIGINT` expression
+
+        Examples:
+            arg_min_null_val(A, B, N)
+
+        Returns:
+            Self
+        """
+        return self._new(func("arg_max_nulls_last", self.inner(), val, n))
+
     def arg_min(self, val: IntoExpr, col2: IntoExprColumn | int | None = None) -> Self:
         """Finds the row with the minimum val.
 
@@ -236,6 +267,27 @@ class Fns(DuckHandler):
             Self
         """
         return self._new(func("arg_min_null", self.inner(), val))
+
+    def arg_min_nulls_last(
+        self, val: IntoExpr, n: IntoExprColumn | int | None = None
+    ) -> Self:
+        """Finds the rows with N minimum vals, including nulls.
+
+        Calculates the arg expression at that row.
+
+        **SQL name**: *arg_min_nulls_last*
+
+        Args:
+            val (IntoExpr): `ANY | BIGINT | BLOB | DATE | DOUBLE | HUGEINT | INTEGER | TIMESTAMP | TIMESTAMP WITH TIME ZONE | VARCHAR` expression
+            n (IntoExprColumn | int | None): `BIGINT` expression
+
+        Examples:
+            arg_min_null_val(A, B, N)
+
+        Returns:
+            Self
+        """
+        return self._new(func("arg_min_nulls_last", self.inner(), val, n))
 
     def argmax(self, val: IntoExpr, col2: IntoExprColumn | int | None = None) -> Self:
         """Finds the row with the maximum val.
@@ -814,20 +866,27 @@ class Fns(DuckHandler):
         """
         return self._new(func("currval", self.inner()))
 
-    def decode(self) -> Self:
+    def decode(self, varchar: IntoExprColumn | None = None) -> Self:
         r"""Converts `blob` to `VARCHAR`.
 
-        Fails if `blob` is not valid UTF-8.
+        Invalid UTF-8 is handled based on the error behavior argument.
+
+        Can be 'strict' (default, fail), 'replace' to replace invalid characters with '?', or 'ignore' to skip invalid characters.
 
         **SQL name**: *decode*
 
+        Args:
+            varchar (IntoExprColumn | None): `VARCHAR` expression
+
         Examples:
             decode('\xc3\xbc'::BLOB)
+            decode('\xa0'::BLOB, 'replace')
+            decode('\xa0'::BLOB, 'ignore')
 
         Returns:
             Self
         """
-        return self._new(func("decode", self.inner()))
+        return self._new(func("decode", self.inner(), varchar))
 
     def degrees(self) -> Self:
         """Converts radians to degrees.
@@ -995,6 +1054,16 @@ class Fns(DuckHandler):
         """
         return self._new(func("fdiv", self.inner(), y))
 
+    def fill(self) -> Self:
+        """SQL fill function.
+
+        **SQL name**: *fill*
+
+        Returns:
+            Self
+        """
+        return self._new(func("fill", self.inner()))
+
     def finalize(self) -> Self:
         """SQL finalize function.
 
@@ -1019,6 +1088,16 @@ class Fns(DuckHandler):
             Self
         """
         return self._new(func("first", self.inner()))
+
+    def first_value(self) -> Self:
+        """SQL first_value function.
+
+        **SQL name**: *first_value*
+
+        Returns:
+            Self
+        """
+        return self._new(func("first_value", self.inner()))
 
     def floor(self) -> Self:
         """Rounds the number down.
@@ -1204,6 +1283,19 @@ class Fns(DuckHandler):
             Self
         """
         return self._new(func("get_block_size", self.inner()))
+
+    def get_type(self) -> Self:
+        """Returns the type of the result of the expression.
+
+        **SQL name**: *get_type*
+
+        Examples:
+            get_type('abc')
+
+        Returns:
+            Self
+        """
+        return self._new(func("get_type", self.inner()))
 
     def getvariable(self) -> Self:
         """SQL getvariable function.
@@ -1421,6 +1513,20 @@ class Fns(DuckHandler):
         """
         return self._new(func("kurtosis", self.inner()))
 
+    def lag(self, col1: IntoExprColumn | int, col2: IntoExpr) -> Self:
+        """SQL lag function.
+
+        **SQL name**: *lag*
+
+        Args:
+            col1 (IntoExprColumn | int): `BIGINT` expression
+            col2 (IntoExpr): `T` expression
+
+        Returns:
+            Self
+        """
+        return self._new(func("lag", self.inner(), col1, col2))
+
     def last(self) -> Self:
         """Returns the last value of a column.
 
@@ -1435,6 +1541,16 @@ class Fns(DuckHandler):
             Self
         """
         return self._new(func("last", self.inner()))
+
+    def last_value(self) -> Self:
+        """SQL last_value function.
+
+        **SQL name**: *last_value*
+
+        Returns:
+            Self
+        """
+        return self._new(func("last_value", self.inner()))
 
     def lcm(self, y: IntoExprColumn | int) -> Self:
         """Computes the least common multiple of x and y.
@@ -1454,6 +1570,20 @@ class Fns(DuckHandler):
             Self
         """
         return self._new(func("lcm", self.inner(), y))
+
+    def lead(self, col1: IntoExprColumn | int, col2: IntoExpr) -> Self:
+        """SQL lead function.
+
+        **SQL name**: *lead*
+
+        Args:
+            col1 (IntoExprColumn | int): `BIGINT` expression
+            col2 (IntoExpr): `T` expression
+
+        Returns:
+            Self
+        """
+        return self._new(func("lead", self.inner(), col1, col2))
 
     def least_common_multiple(self, y: IntoExprColumn | int) -> Self:
         """Computes the least common multiple of x and y.
@@ -1593,6 +1723,22 @@ class Fns(DuckHandler):
             Self
         """
         return self._new(func("mad", self.inner()))
+
+    def make_type(self, *args: IntoExpr) -> Self:
+        """Construct a type from its name and optional parameters.
+
+        **SQL name**: *make_type*
+
+        Args:
+            *args (IntoExpr): `ANY` expression
+
+        Examples:
+            make_type('DECIMAL', 10, 2)
+
+        Returns:
+            Self
+        """
+        return self._new(func("make_type", self.inner(), *args))
 
     def max(self, col1: IntoExprColumn | int | None = None) -> Self:
         """Returns the maximum value present in arg.
@@ -1788,6 +1934,29 @@ class Fns(DuckHandler):
             Self
         """
         return self._new(func("nextval", self.inner()))
+
+    def nth_value(self, col1: IntoExprColumn | int) -> Self:
+        """SQL nth_value function.
+
+        **SQL name**: *nth_value*
+
+        Args:
+            col1 (IntoExprColumn | int): `BIGINT` expression
+
+        Returns:
+            Self
+        """
+        return self._new(func("nth_value", self.inner(), col1))
+
+    def ntile(self) -> Self:
+        """SQL ntile function.
+
+        **SQL name**: *ntile*
+
+        Returns:
+            Self
+        """
+        return self._new(func("ntile", self.inner()))
 
     def nullif(self, b: IntoExpr) -> Self:
         """SQL nullif function.
@@ -2340,6 +2509,19 @@ class Fns(DuckHandler):
         """
         return self._new(func("skewness", self.inner()))
 
+    def sleep_ms(self) -> Self:
+        """Sleeps for the specified number of milliseconds and returns NULL.
+
+        **SQL name**: *sleep_ms*
+
+        Examples:
+            sleep_ms(100)
+
+        Returns:
+            Self
+        """
+        return self._new(func("sleep_ms", self.inner()))
+
     def split_part(self, delimiter: IntoExpr, position: IntoExpr) -> Self:
         """SQL split_part function.
 
@@ -2451,6 +2633,25 @@ class Fns(DuckHandler):
             Self
         """
         return self._new(func("sumkahan", self.inner()))
+
+    def switch(
+        self, map_arg: IntoExprColumn | None = None, value: IntoExprColumn | None = None
+    ) -> Self:
+        """Creates a switch statement similar to CASE WHEN/THEN.
+
+        **SQL name**: *switch*
+
+        Args:
+            map_arg (IntoExprColumn | None): `MAP(K, V) | V` expression
+            value (IntoExprColumn | None): `V` expression
+
+        Examples:
+            switch(x, map({1 : 1}, default)
+
+        Returns:
+            Self
+        """
+        return self._new(func("switch", self.inner(), map_arg, value))
 
     def tan(self) -> Self:
         """Computes the tan of x.
@@ -2696,6 +2897,29 @@ class Fns(DuckHandler):
             Self
         """
         return self._new(func("variant_extract", self.inner(), col1))
+
+    def variant_normalize(self) -> Self:
+        """Normalizes the `input_variant` to a canonical representation.
+
+        **SQL name**: *variant_normalize*
+
+        Examples:
+            variant_normalize({'b': [1,2,3], 'a': 42})::VARIANT)
+
+        Returns:
+            Self
+        """
+        return self._new(func("variant_normalize", self.inner()))
+
+    def variant_to_parquet_variant(self) -> Self:
+        """SQL variant_to_parquet_variant function.
+
+        **SQL name**: *variant_to_parquet_variant*
+
+        Returns:
+            Self
+        """
+        return self._new(func("variant_to_parquet_variant", self.inner()))
 
     def variant_typeof(self) -> Self:
         """Returns the internal type of the `input_variant`.
@@ -3356,18 +3580,24 @@ class ListFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("list_inner_product", self.inner(), list2))
 
-    def intersect(self, l2: IntoExpr) -> T:
-        """SQL list_intersect function.
+    def intersect(self, list2: IntoExpr) -> T:
+        """Returns a list containing the distinct elements that are present in both `list1` and `list2`.
 
         **SQL name**: *list_intersect*
 
+        See Also:
+            array_intersect
+
         Args:
-            l2 (IntoExpr): `ANY` expression
+            list2 (IntoExpr): `T[]` expression
+
+        Examples:
+            list_intersect([1, 2, 3], [2, 3, 4])
 
         Returns:
             T
         """
-        return self._new(func("list_intersect", self.inner(), l2))
+        return self._new(func("list_intersect", self.inner(), list2))
 
     def kurtosis(self) -> T:
         """SQL list_kurtosis function.
@@ -4067,6 +4297,19 @@ class StructFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("struct_insert", self.inner(), *args))
 
+    def keys(self) -> T:
+        """Returns the field names of a STRUCT as a list.
+
+        **SQL name**: *struct_keys*
+
+        Examples:
+            struct_keys({'a': 1, 'b': 2})
+
+        Returns:
+            T
+        """
+        return self._new(func("struct_keys", self.inner()))
+
     def pack(self, *args: IntoExpr) -> T:
         """Create a STRUCT containing the argument values.
 
@@ -4122,6 +4365,19 @@ class StructFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("struct_update", self.inner(), *args))
 
+    def values(self) -> T:
+        """Returns the field values of a STRUCT as an UnnamedStruct.
+
+        **SQL name**: *struct_values*
+
+        Examples:
+            struct_values({'a': 1, 'b': 'world'})
+
+        Returns:
+            T
+        """
+        return self._new(func("struct_values", self.inner()))
+
 
 class RegexFns[T: Fns](NameSpaceHandler[T]):
     """Mixin providing auto-generated DuckDB regex functions as methods."""
@@ -4171,7 +4427,7 @@ class RegexFns[T: Fns](NameSpaceHandler[T]):
     def extract_all(
         self,
         regex: IntoExprColumn,
-        group: IntoExprColumn | int | None = None,
+        group: IntoExprColumn | SeqLiteral[str] | int | None = None,
         options: IntoExprColumn | None = None,
     ) -> T:
         r"""Finds non-overlapping occurrences of the `regex` in the `string` and returns the corresponding values of the capturing `group`.
@@ -4182,7 +4438,7 @@ class RegexFns[T: Fns](NameSpaceHandler[T]):
 
         Args:
             regex (IntoExprColumn): `VARCHAR` expression
-            group (IntoExprColumn | int | None): `INTEGER` expression
+            group (IntoExprColumn | SeqLiteral[str] | int | None): `INTEGER | VARCHAR[]` expression
             options (IntoExprColumn | None): `VARCHAR` expression
 
         Examples:
@@ -5237,6 +5493,19 @@ class StringFns[T: Fns](NameSpaceHandler[T]):
             func("parse_filename", self.inner(), trim_extension, separator)
         )
 
+    def parse_formatted_bytes(self) -> T:
+        """Parses a human-readable representation of a size in bytes into an integer.
+
+        **SQL name**: *parse_formatted_bytes*
+
+        Examples:
+            parse_formatted_bytes('16 KiB')
+
+        Returns:
+            T
+        """
+        return self._new(func("parse_formatted_bytes", self.inner()))
+
     def parse_path(self, separator: IntoExprColumn | None = None) -> T:
         """Returns a list of the components (directories and filename) in the `path` similarly to Python's `pathlib.parts` function.
 
@@ -5979,6 +6248,16 @@ class DateTimeFns[T: Fns](NameSpaceHandler[T]):
             T
         """
         return self._new(func("dayofyear", self.inner()))
+
+    def days_in_month(self) -> T:
+        """SQL days_in_month function.
+
+        **SQL name**: *days_in_month*
+
+        Returns:
+            T
+        """
+        return self._new(func("days_in_month", self.inner()))
 
     def decade(self) -> T:
         """Extract the decade component from a date or timestamp.
@@ -7189,18 +7468,24 @@ class ArrayFns[T: Fns](NameSpaceHandler[T]):
         """
         return self._new(func("array_inner_product", self.inner(), array2))
 
-    def intersect(self, l2: IntoExpr) -> T:
-        """SQL array_intersect function.
+    def intersect(self, list2: IntoExpr) -> T:
+        """Returns a list containing the distinct elements that are present in both `list1` and `list2`.
 
         **SQL name**: *array_intersect*
 
+        See Also:
+            list_intersect
+
         Args:
-            l2 (IntoExpr): `ANY` expression
+            list2 (IntoExpr): `T[]` expression
+
+        Examples:
+            array_intersect([1, 2, 3], [2, 3, 4])
 
         Returns:
             T
         """
-        return self._new(func("array_intersect", self.inner(), l2))
+        return self._new(func("array_intersect", self.inner(), list2))
 
     def length(self) -> T:
         """Returns the length of the `list`.
@@ -8221,3 +8506,123 @@ class EnumFns[T: Fns](NameSpaceHandler[T]):
             T
         """
         return self._new(func("enum_range_boundary", self.inner(), end))
+
+
+class GeoSpatialFns[T: Fns](NameSpaceHandler[T]):
+    """Mixin providing auto-generated DuckDB geospatial functions as methods."""
+
+    def asbinary(self) -> T:
+        """Returns the Well-Known Binary (WKB) representation of the geometry.
+
+        **SQL name**: *st_asbinary*
+
+        See Also:
+            st_aswkb
+
+        Examples:
+            st_asbinary(ST_GeomFromWKB(X'01010000000000000000000000000000000000000000000000000'))
+
+        Returns:
+            T
+        """
+        return self._new(func("st_asbinary", self.inner()))
+
+    def astext(self) -> T:
+        """Returns the Well-Known Text (WKT) representation of the geometry.
+
+        **SQL name**: *st_astext*
+
+        See Also:
+            st_aswkt
+
+        Examples:
+            ST_AsText(ST_GeomFromWKB(X'01010000000000000000000000000000000000000000000000'))
+
+        Returns:
+            T
+        """
+        return self._new(func("st_astext", self.inner()))
+
+    def aswkb(self) -> T:
+        """Returns the Well-Known Binary (WKB) representation of the geometry.
+
+        **SQL name**: *st_aswkb*
+
+        See Also:
+            st_asbinary
+
+        Examples:
+            st_aswkb(ST_GeomFromWKB(X'01010000000000000000000000000000000000000000000000000'))
+
+        Returns:
+            T
+        """
+        return self._new(func("st_aswkb", self.inner()))
+
+    def aswkt(self) -> T:
+        """Returns the Well-Known Text (WKT) representation of the geometry.
+
+        **SQL name**: *st_aswkt*
+
+        See Also:
+            st_astext
+
+        Examples:
+            ST_AsText(ST_GeomFromWKB(X'01010000000000000000000000000000000000000000000000'))
+
+        Returns:
+            T
+        """
+        return self._new(func("st_aswkt", self.inner()))
+
+    def crs(self) -> T:
+        """Returns the Coordinate Reference System (CRS) identifier of the geometry.
+
+        **SQL name**: *st_crs*
+
+        Returns:
+            T
+        """
+        return self._new(func("st_crs", self.inner()))
+
+    def geomfromwkb(self) -> T:
+        """Creates a geometry from Well-Known Binary (WKB) representation.
+
+        **SQL name**: *st_geomfromwkb*
+
+        Examples:
+            ST_GeomFromWKB(X'01010000000000000000000000000000000000000000000000')
+
+        Returns:
+            T
+        """
+        return self._new(func("st_geomfromwkb", self.inner()))
+
+    def intersects_extent(self, geom2: IntoExprColumn) -> T:
+        """Returns true if the geometries bounding boxes intersect.
+
+        **SQL name**: *st_intersects_extent*
+
+        Args:
+            geom2 (IntoExprColumn): `GEOMETRY` expression
+
+        Examples:
+            'POINT(5 5)'::GEOMETRY && 'LINESTRING(0 0, 10 20)'::GEOMETRY;
+
+        Returns:
+            T
+        """
+        return self._new(func("st_intersects_extent", self.inner(), geom2))
+
+    def setcrs(self, crs: IntoExprColumn) -> T:
+        """Sets the Coordinate Reference System (CRS) identifier of the geometry.
+
+        **SQL name**: *st_setcrs*
+
+        Args:
+            crs (IntoExprColumn): `VARCHAR` expression
+
+        Returns:
+            T
+        """
+        return self._new(func("st_setcrs", self.inner(), crs))

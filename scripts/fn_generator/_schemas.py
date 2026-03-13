@@ -34,7 +34,7 @@ class TableSchema:
     description = pl.String()
     """Only present for scalar and aggregate functions."""
     comment = pl.String()
-    tags = pl.List(pl.Struct({"key": pl.Null(), "value": pl.Null()}))
+    tags = pl.List(pl.Struct({"key": pl.String(), "value": pl.String()}))
     return_type = DTYPES
     parameters = pl.List(pl.String)
     parameter_types = pl.List(DTYPES)
