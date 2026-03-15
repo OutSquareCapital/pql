@@ -8,7 +8,7 @@ import pyochain as pc
 from ._core import DuckHandler, func, into_duckdb
 from ._expr import SqlExpr
 from .typing import IntoExpr, IntoExprColumn, PythonLiteral
-from .utils import TryIter, try_chain
+from .utils import TryIter, try_chain, try_iter
 
 
 def reduce(
@@ -76,10 +76,10 @@ def fn_once(rhs: IntoExpr) -> SqlExpr:
     return SqlExpr(LAMBDA_EXPR(into_duckdb(rhs)))
 
 
-def all(exclude: Iterable[IntoExprColumn] | None = None) -> SqlExpr:
+def all(exclude: TryIter[IntoExprColumn] = None) -> SqlExpr:
     return (
         pc.Option(exclude)
-        .map(lambda x: pc.Iter(x).map(into_duckdb))
+        .map(lambda x: try_iter(x).map(into_duckdb))
         .map(lambda exc: SqlExpr(duckdb.StarExpression(exclude=exc)))
         .unwrap_or_else(lambda: SqlExpr(duckdb.StarExpression()))
     )
