@@ -10,17 +10,29 @@ if TYPE_CHECKING:
     from ._typing import Themes
 
 
-def _get_kwords() -> dict[str, object]:
+@cache
+def _get_kwords():  # noqa: ANN202
     from sqlparse.tokens import Keyword
 
-    return {
-        "PIVOT": Keyword,
-        "UNPIVOT": Keyword,
-        "QUALIFY": Keyword,
-        "EXCLUDE": Keyword,
-        "REPLACE": Keyword,
-        "LAMBDA": Keyword,
-    }
+    from ._creation import from_table_function
+    from .sql import col, lit, when
+
+    name = col("keyword_name")
+
+    return (
+        from_table_function("duckdb_keywords")
+        .inner()
+        .select(
+            when(col("keyword_category").is_in(lit("reserved"), lit("unreserved")))
+            .then(name.str.upper())
+            .otherwise(name)
+        )
+        .fetchall()
+        .iter()
+        .flatten()
+        .map(lambda x: (x, Keyword))  # pyright: ignore[reportAny]
+        .collect(dict)
+    )
 
 
 @cache

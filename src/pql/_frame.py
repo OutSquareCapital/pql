@@ -438,24 +438,30 @@ class LazyFrame(sql.CoreHandler[sql.SqlFrame]):
 
     @overload
     def sql_query(
-        self, *, show: Literal[False] = False, theme: Themes = ...
+        self, *, pretty: bool = ..., show: Literal[False] = False, theme: Themes = ...
     ) -> str: ...
     @overload
-    def sql_query(self, *, show: Literal[True], theme: Themes = ...) -> None: ...
+    def sql_query(
+        self, *, pretty: bool = ..., show: Literal[True], theme: Themes = ...
+    ) -> None: ...
 
-    def sql_query(self, *, show: bool = False, theme: Themes = "monokai") -> str | None:
+    def sql_query(
+        self, *, pretty: bool = True, show: bool = False, theme: Themes = "github-dark"
+    ) -> str | None:
         """Generate or print SQL string.
 
         If `sqlparse` is installed, the SQL output will be formatted for better readability.
 
         Args:
+            pretty (bool): format the SQL output for better readability if `sqlparse` is installed.
             show (bool): print the query rather than returning it as a string.
             theme (Themes): If `rich` is installed and `show=True`, the SQL output will be syntax-highlighted in the terminal using the specified `theme`.
 
         Returns:
             str | None
         """
-        qry = format_sql(self.inner().sql_query())
+        raw_qry = self.inner().sql_query()
+        qry = format_sql(raw_qry) if pretty else raw_qry
         if show:  # pragma: no cover
             return show_sql(qry, theme)
         return qry
