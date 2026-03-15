@@ -738,13 +738,14 @@ class LazyFrame(sql.CoreHandler[sql.SqlFrame]):
         lhs_cols = lhs_select.chain(rhs_select).map(_expr_sql).join(", ")
 
         def _simple_asof_join(comparison: Callable[[sql.SqlExpr], sql.SqlExpr]) -> Self:
+            qry = f"""--sql
+            SELECT {lhs_cols}
+            FROM _lhs
+            ASOF LEFT JOIN _rhs ON {by_cond.chain(pc.Iter.once(comparison(rhs_key))).reduce(sql.SqlExpr.and_)}
+            """
             return self.__class__(
                 sql.from_query(
-                    f"""--sql
-                        SELECT {lhs_cols}
-                        FROM _lhs
-                        ASOF LEFT JOIN _rhs ON {by_cond.chain(pc.Iter.once(comparison(rhs_key))).reduce(sql.SqlExpr.and_)}
-                        """,
+                    qry,
                     _lhs=self.inner().set_alias(lhs).inner(),
                     _rhs=other.inner().set_alias(rhs).inner(),
                 )
@@ -858,41 +859,32 @@ class LazyFrame(sql.CoreHandler[sql.SqlFrame]):
     ) -> Self:
         """Create a spreadsheet-style pivot table."""
 
-        def _get_idx_and_vals(
-            on_cols: pc.Seq[str],
-        ) -> pc.Result[tuple[pc.Seq[str], pc.Seq[str]], ValueError]:
+        def _cols_not_in(cols: Iterable[str]) -> pc.Seq[str]:
+            return (
+                self.columns.iter()
+                .filter(lambda c: c not in on_cols and c not in cols)
+                .collect()
+            )
+
+        def _get_idx_and_vals() -> pc.Result[
+            tuple[pc.Seq[str], pc.Seq[str]], ValueError
+        ]:
             match (
-                pc.Option(index).map(lambda v: try_iter(v).collect()),
-                pc.Option(values).map(lambda v: try_iter(v).collect()),
+                try_iter(index).collect().then_some(),
+                try_iter(values).collect().then_some(),
             ):
                 case (pc.Some(idx), pc.Some(vals)):
                     return pc.Ok((idx, vals))
                 case (pc.Some(idx), _):
-                    return pc.Ok(
-                        (
-                            idx,
-                            (
-                                self.columns.iter()
-                                .filter(lambda c: c not in on_cols and c not in idx)
-                                .collect()
-                            ),
-                        )
-                    )
+                    return pc.Ok((idx, _cols_not_in(idx)))
                 case (_, pc.Some(vals)):
-                    return pc.Ok(
-                        (
-                            self.columns.iter()
-                            .filter(lambda c: c not in on_cols and c not in vals)
-                            .collect(),
-                            vals,
-                        )
-                    )
+                    return pc.Ok((_cols_not_in(vals), vals))
                 case _:
                     msg = "`pivot` needs either `index` or `values` to be specified"
                     return pc.Err(ValueError(msg))
 
         on_cols = try_iter(on).collect()
-        idx_cols, val_cols = on_cols.into(_get_idx_and_vals).unwrap()
+        idx_cols, val_cols = _get_idx_and_vals().unwrap()
 
         multi = val_cols.length() > 1
         pivoted = self.__class__(
