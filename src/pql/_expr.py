@@ -14,7 +14,7 @@ import pyochain as pc
 
 from . import _datatypes as dt, sql  # pyright: ignore[reportPrivateUsage]
 from ._computations import fill_nulls
-from ._meta import ExprKind, ExprMeta, ExprPlan
+from ._meta import TEMP_NAME, ExprKind, ExprMeta, ExprPlan
 from ._schema import Schema
 from .sql.utils import TryIter, try_chain, try_iter
 
@@ -53,6 +53,7 @@ class Sec(IntEnum):
 
 
 class RollingBounds(NamedTuple):
+    window_size: int
     start: int
     end: int
 
@@ -62,9 +63,12 @@ class RollingBounds(NamedTuple):
             case True:
                 left = window_size // 2
                 right = window_size - left - 1
-                return cls(-left, right)
+                return cls(window_size=window_size, start=-left, end=right)
             case False:
-                return cls(-(window_size - 1), 0)
+                return cls(window_size=window_size, start=-(window_size - 1), end=0)
+
+    def _clause(self, expr: sql.SqlExpr) -> sql.SqlExpr:
+        return expr.over(order_by=TEMP_NAME, frame_start=self.start, frame_end=self.end)
 
     def into_expr(
         self,
@@ -75,10 +79,10 @@ class RollingBounds(NamedTuple):
         return (
             sql.when(
                 expr.count()
-                .over(frame_start=self.start, frame_end=self.end)
-                .ge(min_samples.unwrap_or(self.start))
+                .pipe(self._clause)
+                .ge(min_samples.unwrap_or(self.window_size))
             )
-            .then(expr.pipe(agg).over(frame_start=self.start, frame_end=self.end))
+            .then(expr.pipe(agg).pipe(self._clause))
             .otherwise(_NONE)
         )
 

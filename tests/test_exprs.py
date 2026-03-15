@@ -503,19 +503,17 @@ def test_over(desc: bool) -> None:
     )
 
 
-def test_over_with_nulls_last() -> None:
-    """Polars is currently bugged and does not handle nulls last correctly in window functions.
-
-    Hence, we voluntarily don't test the ordering on a columns with nulls, otherwise it would fail.
-
-    That being said, in isolation, it does work on `pql`.
-
-    See:
-        https://github.com/pola-rs/polars/issues/24989
-    """
+def test_over_nested() -> None:
     assert_eq_pl(
-        pql.col("n").first().over("a", order_by="x", nulls_last=True),
-        pl.col("n").first().over("a", order_by="x", nulls_last=True),
+        pql.col("x").rolling_max(2).over("a"), pl.col("x").rolling_max(2).over("a")
+    )
+
+
+@pytest.mark.parametrize("nulls_last", [True, False])
+def test_over_with_nulls_last(*, nulls_last: bool) -> None:
+    assert_eq_pl(
+        pql.col("n").first().over("a", order_by="x", nulls_last=nulls_last),
+        pl.col("n").first().over("a", order_by="x", nulls_last=nulls_last),
     )
 
 

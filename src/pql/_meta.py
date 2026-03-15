@@ -20,6 +20,7 @@ if TYPE_CHECKING:
 EMPTY_MARKER = "__pql_empty__"
 SENTINEL = "__pql_selector__"
 SELECTOR = "__selector__"
+TEMP_NAME = "__pql_temp__"
 SENTINEL_COL = sql.col(SENTINEL)
 
 type ColumnResolver = Callable[[Schema], PyoCollection[str]]
@@ -150,8 +151,19 @@ class ExprPlan:
     def aliased_sql(self) -> pc.Iter[sql.SqlExpr]:
         return self.projections.iter().map(ResolvedExpr.as_aliased)
 
+    def windowed(self, lf: sql.SqlFrame) -> sql.SqlFrame:
+        match self.projections.any(lambda p: TEMP_NAME in str(p.expr)):
+            case True:
+                return lf.select(
+                    sql.row_number().over().sub(1).alias(TEMP_NAME), sql.all()
+                )
+            case False:
+                return lf
+
     def select_context(self, lf: sql.SqlFrame) -> sql.SqlFrame:
-        def _non_empty_slct(projs: pc.Seq[ResolvedExpr]) -> sql.SqlFrame:
+        def _non_empty_slct(
+            projs: pc.Seq[ResolvedExpr], lf: sql.SqlFrame
+        ) -> sql.SqlFrame:
             match projs.all(lambda r: r.kind == ExprKind.UNIQUE):
                 case True:
                     return lf.unique(
@@ -166,18 +178,21 @@ class ExprPlan:
                                 lambda exprs: lf.select(*exprs)
                             )
 
-        return self.projections.then(_non_empty_slct).unwrap_or_else(
-            lambda: sql.SqlFrame({EMPTY_MARKER: ()})
-        )
+        return self.projections.then(
+            lambda projs: _non_empty_slct(projs, self.windowed(lf))
+        ).unwrap_or_else(lambda: sql.SqlFrame({EMPTY_MARKER: ()}))
 
     def with_columns_context(
         self, lf: sql.SqlFrame, col_keys: PyoCollection[str]
     ) -> sql.SqlFrame:
-        match self.projections.any(lambda r: r.kind == ExprKind.SCALAR):
-            case True:
-                return self.resolve(col_keys).into(lf.aggregate)
-            case False:
-                return self.resolve(col_keys).into(lambda exprs: lf.select(*exprs))
+        def _resolve(lf: sql.SqlFrame) -> sql.SqlFrame:
+            match self.projections.any(lambda r: r.kind == ExprKind.SCALAR):
+                case True:
+                    return self.resolve(col_keys).into(lf.aggregate)
+                case False:
+                    return self.resolve(col_keys).into(lambda exprs: lf.select(*exprs))
+
+        return self.windowed(lf).pipe(_resolve)
 
     def with_fields_context(self, expr: sql.SqlExpr) -> sql.SqlExpr:
         return self.aliased_sql().into(lambda args: expr.struct.insert(*args))

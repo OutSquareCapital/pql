@@ -170,7 +170,14 @@ class OverBuilder:
         clauses = (
             pc.Iter((partition_by, order_by, frame, exclude)).filter(bool).join(" ")
         )
-        return self.__class__(f"{self.expr} OVER ({clauses})")
+        match "OVER (" in self.expr:
+            case True:
+                injection = pc.Iter((partition_by, order_by)).filter(bool).join(" ")
+                return self.__class__(
+                    self.expr.replace("OVER (", f"OVER ({injection} ")
+                )
+            case False:
+                return self.__class__(f"{self.expr} OVER ({clauses})")
 
     def build(self) -> Expression:
         return duckdb.SQLExpression(self.expr)

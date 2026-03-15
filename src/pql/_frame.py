@@ -12,7 +12,7 @@ import pyochain as pc
 
 from . import sql
 from ._funcs import col
-from ._meta import EMPTY_MARKER, ExprPlan
+from ._meta import EMPTY_MARKER, TEMP_NAME, ExprPlan
 from ._parser import format_sql, show_sql
 from ._schema import Schema
 from .sql.utils import TryIter, TrySeq, check_by_arg, try_chain, try_iter
@@ -47,7 +47,6 @@ if TYPE_CHECKING:
         PythonLiteral,
     )
 
-TEMP_NAME = "__pql_temp__"
 TEMP_COL = sql.col(TEMP_NAME)
 MAX_I64 = 9_223_372_036_854_775_807
 type OptSeq = pc.Option[pc.Seq[str]]
