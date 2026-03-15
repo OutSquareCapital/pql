@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from collections.abc import Callable, Iterable
+from collections.abc import Callable
 from dataclasses import dataclass, field, replace
 from enum import IntEnum, auto
 from typing import TYPE_CHECKING, NamedTuple, Self
@@ -115,11 +115,13 @@ class ResolvedExpr(NamedTuple):
     kind: ExprKind
 
     def implode_or_scalar(self) -> sql.SqlExpr:
-        return (
-            self.expr.alias(self.name)
-            if self.kind == ExprKind.SCALAR
-            else self.expr.implode().alias(self.name)
-        )
+        match self.kind:
+            case ExprKind.SCALAR:
+                return self.expr.alias(self.name)
+            case ExprKind.UNIQUE:
+                return self.expr.implode().list.distinct().alias(self.name)
+            case _:
+                return self.expr.implode().alias(self.name)
 
     def as_aliased(self) -> sql.SqlExpr:
         return self.expr.alias(self.name)
@@ -288,10 +290,10 @@ def all_columns_resolver(schema: Schema) -> PyoKeysView[str]:
     return schema.keys()
 
 
-def all_fn_resolver(exclude: pc.Option[Iterable[IntoExprColumn]]) -> ColumnResolver:
+def all_fn_resolver(exclude: pc.Option[TryIter[IntoExprColumn]]) -> ColumnResolver:
     return exclude.map(
         lambda exc: (
-            pc.Iter(exc)
+            try_iter(exc)
             .map(lambda value: sql.into_expr(value, as_col=True).get_name())
             .collect(pc.Set)
             .into(exclude_resolver)

@@ -76,7 +76,7 @@ def coalesce(exprs: TryIter[IntoExpr], *more_exprs: IntoExpr) -> Expr:
     return Expr(sql.coalesce(exprs, *more_exprs), ExprMeta(expr_name))
 
 
-def all(exclude: Iterable[IntoExprColumn] | None = None) -> Expr:
+def all(exclude: TryIter[IntoExprColumn] = None) -> Expr:
     """Create an expression representing all columns (equivalent to pl.all())."""
     return Expr(SENTINEL_COL, ExprMeta.from_all(all_fn_resolver(pc.Option(exclude))))
 
