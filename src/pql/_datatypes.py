@@ -344,6 +344,12 @@ class Binary(DataType):
 
 @final
 @dataclass(slots=True, unsafe_hash=True)
+class Geometry(DataType):
+    raw: DType = field(init=False, default=sql.ScalarType.GEOMETRY)
+
+
+@final
+@dataclass(slots=True, unsafe_hash=True)
 class String(StringType):
     raw: DType = field(init=False, default=sql.ScalarType.VARCHAR)
 
@@ -530,5 +536,6 @@ NON_NESTED_MAP: pc.Dict[StrIntoDType, DataType] = pc.Dict.from_ref(
         "bit": BitString(),
         "bignum": Number(),
         "uuid": UUID(),
+        "geometry": Geometry(),
     }
 )

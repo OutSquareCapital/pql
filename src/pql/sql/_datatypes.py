@@ -348,6 +348,7 @@ class ScalarType:
     BIGNUM = DType.from_duckdb(duckdb.dtype("bignum"))
     VARIANT = DType.from_duckdb(duckdb.dtype("variant"))
     TIME_NS = DType.from_duckdb(duckdb.dtype("time_ns"))
+    GEOMETRY = DType.from_duckdb(duckdb.dtype("geometry"))
 
 
 def parse_dtype(dtype: DuckDBPyType) -> SqlType:

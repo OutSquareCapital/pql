@@ -84,6 +84,11 @@ def sample_data() -> pql.LazyFrame:
                 "550e8400-e29b-41d4-a716-446655440001",
                 "550e8400-e29b-41d4-a716-446655440002",
             ],
+            "geometry": [
+                "POINT (30 10)",
+                "LINESTRING (30 10, 10 30, 40 40)",
+                "POLYGON ((30 10, 40 40, 20 40, 10 20, 30 10))",
+            ],
         }
     )
 
@@ -129,6 +134,7 @@ def _exprs() -> tuple[pql.Expr, ...]:
         pql.col("unioned").cast(pql.Union([pql.Int32(), pql.String(), pql.Float64()])),
         pql.col("bits").cast(pql.BitString()),
         pql.col("uuid_data").cast(pql.UUID()),
+        pql.col("geometry").cast(pql.Geometry()),
     )
 
 
@@ -139,6 +145,10 @@ def test_create_schema(sample_data: pql.LazyFrame) -> pql.Schema:
 @pytest.fixture(scope="session")
 def cast_schema(sample_data: pql.LazyFrame) -> pql.Schema:
     return test_create_schema(sample_data)
+
+
+def test_geometry(cast_schema: pc.Dict[str, pql.DataType]) -> None:
+    assert isinstance(cast_schema["geometry"], pql.Geometry)
 
 
 def test_signed_integer(cast_schema: pc.Dict[str, pql.DataType]) -> None:
