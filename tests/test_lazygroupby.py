@@ -418,16 +418,18 @@ def test_group_by_all_named_exprs(sample_df: pl.DataFrame) -> None:
 
 
 def test_unique_exprs(sample_df: pl.DataFrame) -> None:
-    exclude = "id"
+    dep = "department"
     assert_eq(
         pql.LazyFrame(sample_df)
-        .group_by("department")
-        .agg(pql.all(exclude=exclude).unique())
-        .sort("department")
+        .group_by(dep)
+        .agg(pql.col("sex").unique())
+        .explode(pql.selectors.by_dtype(pql.List))
+        .sort(dep)
         .collect(),
         sample_df.lazy()
-        .group_by("department")
-        .agg(pl.all().exclude(exclude).unique())
-        .sort("department")
+        .group_by(dep)
+        .agg(pl.col("sex").unique())
+        .explode(pl.selectors.by_dtype(pl.List))
+        .sort(dep)
         .collect(),
     )

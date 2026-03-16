@@ -364,9 +364,16 @@ class LazyFrame(sql.CoreHandler[sql.SqlFrame]):
             .into(self._filter)
         )
 
-    def explode(self, columns: TrySeq[str], *more_columns: str) -> Self:
+    def explode(
+        self, columns: TryIter[IntoExprColumn], *more_columns: IntoExprColumn
+    ) -> Self:
         """Explode list-like columns."""
-        to_explode_names = try_chain(columns, more_columns).collect()
+        to_explode_names = (
+            self.schema.into(ExprPlan, try_chain(columns, more_columns), {})
+            .projections.iter()
+            .map(lambda r: r.name)
+            .collect()
+        )
         to_explode = to_explode_names.iter().map(sql.col).collect()
         target = (
             to_explode.first()
