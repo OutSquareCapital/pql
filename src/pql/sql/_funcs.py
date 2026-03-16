@@ -89,8 +89,8 @@ def all(exclude: TryIter[IntoExprColumn] = None) -> SqlExpr:
 class Col:
     __slots__ = ()
 
-    def __call__(self, name: str) -> SqlExpr:
-        return SqlExpr(duckdb.ColumnExpression(name))
+    def __call__(self, *names: str) -> SqlExpr:
+        return SqlExpr(duckdb.ColumnExpression(*names))
 
     def __getattr__(self, name: str) -> SqlExpr:
         return self(name)

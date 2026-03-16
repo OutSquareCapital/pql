@@ -126,10 +126,6 @@ class ResolvedExpr(NamedTuple):
     def as_aliased(self) -> sql.SqlExpr:
         return self.expr.alias(self.name)
 
-    def as_unique(self) -> str:
-        base_sql = self.expr.get_name()
-        return base_sql if self.name == base_sql else f"{base_sql} AS {self.name}"
-
     def into_iter(self) -> pc.Iter[Self]:
         return pc.Iter.once(self)
 
@@ -173,8 +169,8 @@ class ExprPlan:
         ) -> sql.SqlFrame:
             match projs.all(lambda r: r.kind == ExprKind.UNIQUE):
                 case True:
-                    return lf.unique(
-                        projs.iter().map(lambda r: r.as_unique()).join(", ")
+                    return self.aliased_sql().into(
+                        lambda exprs: lf.select(*exprs).distinct()
                     )
                 case False:
                     match projs.all(lambda r: r.kind == ExprKind.SCALAR):

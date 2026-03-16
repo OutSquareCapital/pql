@@ -35,6 +35,12 @@ class SqlExpr(Expression, Fns):
 
     __slots__: ClassVar[Iterable[str]] = ()
 
+    def to_sql(self) -> str:
+        """Serialize expression to a SQL fragment, including AS alias when needed."""
+        base = str(self)
+        name = self.get_name()
+        return base if name == base else f"{base} AS {name}"
+
     @property
     def arr(self) -> SqlExprArrayNameSpace:
         """Access array functions."""

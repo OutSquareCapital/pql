@@ -52,6 +52,17 @@ MAX_I64 = 9_223_372_036_854_775_807
 type OptSeq = pc.Option[pc.Seq[str]]
 type OptTryIter[T] = pc.Option[TryIter[T]]
 
+PIVOT_AGG: dict[PivotAgg, Callable[[sql.SqlExpr], sql.SqlExpr]] = {
+    "min": sql.SqlExpr.min,
+    "max": sql.SqlExpr.max,
+    "first": sql.SqlExpr.first,
+    "last": sql.SqlExpr.last,
+    "sum": sql.SqlExpr.sum,
+    "mean": sql.SqlExpr.mean,
+    "median": sql.SqlExpr.median,
+    "count": sql.SqlExpr.count,
+}
+
 
 class JoinKeys[T: pc.Seq[str] | str](NamedTuple):
     left: T
@@ -605,6 +616,8 @@ class LazyFrame(sql.CoreHandler[sql.SqlFrame]):
         on_opt = try_iter(on).collect().then_some()
         left_on_opt = try_iter(left_on).collect().then_some()
         right_on_opt = try_iter(right_on).collect().then_some()
+        rhs_col = partial(sql.col, "rhs")
+        lhs_col = partial(sql.col, "lhs")
 
         def _validate_cross() -> pc.Result[None, ValueError]:
             match (on_opt, left_on_opt, right_on_opt):
@@ -636,11 +649,7 @@ class LazyFrame(sql.CoreHandler[sql.SqlFrame]):
                         other.inner().set_alias("rhs"),
                         condition=join_keys.left.iter()
                         .zip(join_keys.right)
-                        .map_star(
-                            lambda left, right: sql.col(f'lhs."{left}"').eq(
-                                sql.col(f'rhs."{right}"')
-                            )
-                        )
+                        .map_star(lambda left, right: lhs_col(left).eq(rhs_col(right)))
                         .reduce(sql.SqlExpr.and_),
                         how=how,
                     )
@@ -653,15 +662,15 @@ class LazyFrame(sql.CoreHandler[sql.SqlFrame]):
                 case (False, _, True):
                     return pc.NONE
                 case (False, True, False) | (True, True, _):
-                    return pc.Some(sql.col(f'rhs."{name}"').alias(f"{name}{suffix}"))
+                    return pc.Some(rhs_col(name).alias(f"{name}{suffix}"))
                 case _:
-                    return pc.Some(sql.col(f'rhs."{name}"'))
+                    return pc.Some(rhs_col(name))
 
         match how:
             case "inner" | "left" | "cross" | "outer":
                 return (
                     self.columns.iter()
-                    .map(lambda name: sql.col(f'lhs."{name}"'))
+                    .map(lhs_col)
                     .chain(
                         other.columns.iter()
                         .map(_rhs_expr)
@@ -707,30 +716,21 @@ class LazyFrame(sql.CoreHandler[sql.SqlFrame]):
                 case (True, _):
                     return pc.NONE
                 case (False, True):
-                    return pc.Some(sql.col(f'{rhs}."{name}"').alias(f"{name}{suffix}"))
+                    return pc.Some(sql.col(rhs, name).alias(f"{name}{suffix}"))
                 case _:
-                    return pc.Some(sql.col(f'{rhs}."{name}"'))
+                    return pc.Some(sql.col(rhs, name))
 
-        lhs_select = self.columns.iter().map(lambda c: sql.col(f'{lhs}."{c}"'))
+        lhs_select = self.columns.iter().map(lambda c: sql.col(lhs, c))
         rhs_select = other.columns.iter().map(_rhs_expr).filter_map(lambda x: x)
-
-        def _expr_sql(expr: sql.SqlExpr) -> str:
-            base_sql = str(expr)
-            alias_name = expr.get_name()
-            return base_sql if alias_name == base_sql else f"{base_sql} AS {alias_name}"
 
         by_cond = (
             by_keys.left.iter()
             .zip(by_keys.right)
-            .map_star(
-                lambda left, right: sql.col(f'{lhs}."{left}"').eq(
-                    sql.col(f'{rhs}."{right}"')
-                )
-            )
+            .map_star(lambda left, right: sql.col(lhs, left).eq(sql.col(rhs, right)))
         )
-        lhs_key = sql.col(f'{lhs}."{on_keys.left}"')
-        rhs_key = sql.col(f'{rhs}."{on_keys.right}"')
-        lhs_cols = lhs_select.chain(rhs_select).map(_expr_sql).join(", ")
+        lhs_key = sql.col(lhs, on_keys.left)
+        rhs_key = sql.col(rhs, on_keys.right)
+        lhs_cols = lhs_select.chain(rhs_select).map(sql.SqlExpr.to_sql).join(", ")
 
         def _simple_asof_join(comparison: Callable[[sql.SqlExpr], sql.SqlExpr]) -> Self:
             qry = f"""--sql
@@ -764,8 +764,8 @@ class LazyFrame(sql.CoreHandler[sql.SqlFrame]):
                     .set_alias(lhs)
                     .join(other.inner().set_alias(rhs), condition=condition, how="left")
                     .select(
-                        sql.all(exclude=drop_keys),
-                        sql.col(f'{rhs}."{on_keys.right}"').alias(asof_order),
+                        sql.all(drop_keys),
+                        sql.col(rhs, on_keys.right).alias(asof_order),
                     )
                     .select(
                         sql.all(),
@@ -882,20 +882,23 @@ class LazyFrame(sql.CoreHandler[sql.SqlFrame]):
         idx_cols, val_cols = _get_idx_and_vals().unwrap()
 
         multi = val_cols.length() > 1
-        pivoted = self.__class__(
-            self.inner().pivot(
+        agg = PIVOT_AGG[aggregate_function]
+        pivoted = (
+            self.inner()
+            .pivot(
                 on=on_cols,
                 using=val_cols.iter().map(
                     lambda c: (
-                        f"{aggregate_function}({c}) AS {c}"
+                        sql.col(c).pipe(agg).alias(c).to_sql()
                         if multi
-                        else f"{aggregate_function}({c})"
+                        else sql.col(c).pipe(agg).get_name()
                     )
                 ),
                 group_by=idx_cols,
                 in_values=on_columns,
                 order_by=idx_cols if maintain_order else None,
             )
+            .pipe(self.__class__)
         )
 
         match multi:
