@@ -127,7 +127,7 @@ class ResolvedExpr(NamedTuple):
         return self.expr.alias(self.name)
 
     def as_unique(self) -> str:
-        base_sql = str(self.expr)
+        base_sql = self.expr.get_name()
         return base_sql if self.name == base_sql else f"{base_sql} AS {self.name}"
 
 
