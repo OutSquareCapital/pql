@@ -198,7 +198,7 @@ class SqlExpr(Expression, Fns):
     ) -> Self:
         ordr = pc.Option(order_by)
         return self.__class__(
-            OverBuilder(str(self))
+            OverBuilder(self.get_name())
             .handle_nulls(ignore_nulls=ignore_nulls)
             .handle_distinct(distinct=distinct)
             .handle_fn_order_by(
@@ -261,7 +261,7 @@ class SqlExpr(Expression, Fns):
             Self
         """
         return self._new(
-            OverBuilder(str(func("cume_dist"))).build_fn(
+            OverBuilder(func("cume_dist").get_name()).build_fn(
                 order_by=pc.Option(order_by),
                 ignore_nulls=ignore_nulls,
                 fn_descending=descending,
@@ -285,7 +285,7 @@ class SqlExpr(Expression, Fns):
             Self
         """
         return self._new(
-            OverBuilder(str(func("percent_rank"))).build_fn(
+            OverBuilder(func("percent_rank").get_name()).build_fn(
                 order_by=pc.Option(order_by),
                 ignore_nulls=ignore_nulls,
                 fn_descending=descending,
@@ -309,7 +309,7 @@ class SqlExpr(Expression, Fns):
             Self
         """
         return self._new(
-            OverBuilder(str(func("rank"))).build_fn(
+            OverBuilder(func("rank").get_name()).build_fn(
                 order_by=pc.Option(order_by),
                 ignore_nulls=ignore_nulls,
                 fn_descending=descending,
@@ -333,7 +333,7 @@ class SqlExpr(Expression, Fns):
             Self
         """
         return self._new(
-            OverBuilder(str(func("row_number"))).build_fn(
+            OverBuilder(func("row_number").get_name()).build_fn(
                 order_by=pc.Option(order_by),
                 ignore_nulls=ignore_nulls,
                 fn_descending=descending,

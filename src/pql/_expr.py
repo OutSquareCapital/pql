@@ -254,7 +254,7 @@ class Expr(sql.CoreHandler[sql.SqlExpr]):
 
     @override
     def __hash__(self) -> int:
-        return hash(str(self.inner()))
+        return hash(self.inner().get_name())
 
     def add(self, other: IntoExpr) -> Self:
         """Add another expression or value."""
