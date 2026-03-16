@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING, ClassVar, Self
 import pyochain as pc
 
 from ._code_gen import Relation
-from ._creation import frame_init_into_duckdb, from_query
+from ._creation import from_query, into_relation
 from .utils import TryIter, try_iter
 
 if TYPE_CHECKING:
@@ -29,7 +29,7 @@ class SqlFrame(Relation):
     __slots__: ClassVar[Iterable[str]] = ("_inner",)
 
     def __init__(self, data: IntoRel, orient: Orientation = "col") -> None:
-        self._inner = frame_init_into_duckdb(data, orient=orient)
+        self._inner = into_relation(data, orient=orient)
 
     def pivot(
         self,

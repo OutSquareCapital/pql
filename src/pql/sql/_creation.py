@@ -27,7 +27,7 @@ def _unnest(k: str) -> duckdb.Expression:
     return duckdb.FunctionExpression("unnest", duckdb.ColumnExpression(k)).alias(k)
 
 
-def frame_init_into_duckdb(  # noqa: PLR0911
+def into_relation(  # noqa: PLR0911
     data: IntoRel, orient: Orientation = "col"
 ) -> duckdb.DuckDBPyRelation:
     from ._core import DuckHandler
@@ -65,7 +65,7 @@ def from_query(query: str, **relations: IntoRel) -> duckdb.DuckDBPyRelation:
 
     return (
         pc.Iter(relations.items())
-        .map_star(lambda k, v: (k, frame_init_into_duckdb(v)))
+        .map_star(lambda k, v: (k, into_relation(v)))
         .into(_as_namespace)
     )
 
