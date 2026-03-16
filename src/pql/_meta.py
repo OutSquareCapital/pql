@@ -75,8 +75,8 @@ class ExprMeta:
         return self.resolver.is_some()
 
     def resolve_output_names(
-        self, base_names: pc.traits.PyoCollection[str], forced_name: pc.Option[str]
-    ) -> pc.traits.PyoCollection[str]:
+        self, base_names: PyoCollection[str], forced_name: pc.Option[str]
+    ) -> PyoCollection[str]:
         match forced_name:
             case pc.Some(name):
                 return pc.Seq((name,))
@@ -131,7 +131,7 @@ class ResolvedExpr(NamedTuple):
         return base_sql if self.name == base_sql else f"{base_sql} AS {self.name}"
 
     def into_iter(self) -> pc.Iter[Self]:
-        return pc.Iter[ResolvedExpr].once(self)
+        return pc.Iter.once(self)
 
 
 @dataclass(slots=True, init=False)

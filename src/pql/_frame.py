@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Callable, Iterable, Mapping, Sequence
 from dataclasses import dataclass
+from functools import partial
 from pathlib import Path
 from typing import TYPE_CHECKING, NamedTuple, Self
 
@@ -510,11 +511,13 @@ class LazyFrame(sql.CoreHandler[sql.SqlFrame]):
 
     def std(self, ddof: int = 1) -> Self:
         """Aggregate the standard deviation of each column."""
-        return self._iter_agg(lambda x: x.std(ddof))
+        fn = partial(sql.SqlExpr.std, ddof=ddof)
+        return self._iter_agg(fn)
 
     def var(self, ddof: int = 1) -> Self:
         """Aggregate the variance of each column."""
-        return self._iter_agg(lambda x: x.var(ddof))
+        fn = partial(sql.SqlExpr.var, ddof=ddof)
+        return self._iter_agg(fn)
 
     def null_count(self) -> Self:
         """Return the null count of each column."""
