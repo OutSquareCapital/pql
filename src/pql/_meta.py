@@ -130,14 +130,19 @@ class ResolvedExpr(NamedTuple):
         base_sql = self.expr.get_name()
         return base_sql if self.name == base_sql else f"{base_sql} AS {self.name}"
 
+    def into_iter(self) -> pc.Iter[Self]:
+        return pc.Iter[ResolvedExpr].once(self)
+
 
 @dataclass(slots=True, init=False)
 class ExprPlan:
+    schema: Schema
     projections: pc.Seq[ResolvedExpr]
 
     def __init__(
         self, schema: Schema, exprs: pc.Iter[IntoExpr], named_exprs: dict[str, IntoExpr]
     ) -> None:
+        self.schema = schema
         expr_map = (
             pc.Iter(named_exprs.items())
             .map_star(lambda k, v: _projection_resolver(schema, v, pc.Some(k)))
@@ -184,15 +189,13 @@ class ExprPlan:
             lambda projs: _non_empty_slct(projs, self.windowed(lf))
         ).unwrap_or_else(lambda: sql.SqlFrame({EMPTY_MARKER: ()}))
 
-    def with_columns_context(
-        self, lf: sql.SqlFrame, col_keys: PyoCollection[str]
-    ) -> sql.SqlFrame:
+    def with_columns_context(self, lf: sql.SqlFrame) -> sql.SqlFrame:
         def _resolve(lf: sql.SqlFrame) -> sql.SqlFrame:
             match self.projections.any(lambda r: r.kind == ExprKind.SCALAR):
                 case True:
-                    return self.resolve(col_keys).into(lf.aggregate)
+                    return self.resolve().into(lf.aggregate)
                 case False:
-                    return self.resolve(col_keys).into(lambda exprs: lf.select(*exprs))
+                    return self.resolve().into(lambda exprs: lf.select(*exprs))
 
         return self.windowed(lf).pipe(_resolve)
 
@@ -211,10 +214,10 @@ class ExprPlan:
 
         return keys.iter().chain(plan).into(aggregator)
 
-    def resolve(self, col_keys: PyoCollection[str]) -> pc.Iter[sql.SqlExpr]:
+    def resolve(self) -> pc.Iter[sql.SqlExpr]:
 
         def _resolved(updates: pc.Dict[str, sql.SqlExpr]) -> pc.Iter[sql.SqlExpr]:
-            match updates.keys().any(lambda name: name in col_keys):
+            match updates.keys().any(lambda name: name in self.schema):
                 case False:
                     return (
                         updates.items()
@@ -224,7 +227,7 @@ class ExprPlan:
                     )
                 case True:
                     return (
-                        col_keys.iter()
+                        self.schema.iter()
                         .map(
                             lambda name: updates.get_item(name).map_or(
                                 sql.col(name), lambda c: c.alias(name)
@@ -233,7 +236,7 @@ class ExprPlan:
                         .chain(
                             updates.items()
                             .iter()
-                            .filter_star(lambda name, _expr: name not in col_keys)
+                            .filter_star(lambda name, _expr: name not in self.schema)
                             .map_star(lambda name, e: e.alias(name))
                         )
                     )
@@ -251,7 +254,6 @@ def _projection_resolver(
 ) -> pc.Iter[ResolvedExpr]:
     from ._expr import Expr
 
-    into_resolved = pc.Iter[ResolvedExpr].once
     match value:
         case Expr() as expr:
             base_names = expr.meta.resolver.map(lambda r: r(schema)).unwrap_or_else(
@@ -272,13 +274,15 @@ def _projection_resolver(
                         )
                     )
                 case False:
-                    return into_resolved(
-                        ResolvedExpr(expr.inner(), output_names.first(), kind)
+                    return (
+                        expr.inner()
+                        .pipe(ResolvedExpr, output_names.first(), kind)
+                        .into_iter()
                     )
         case _:
             resolved = sql.into_expr(value, as_col=True)
             output_name = alias_override.unwrap_or(resolved.inner().get_name())
-            return into_resolved(ResolvedExpr(resolved, output_name, kind=ExprKind.ROW))
+            return ResolvedExpr(resolved, output_name, kind=ExprKind.ROW).into_iter()
 
 
 def _replace_col(template: sql.SqlExpr, column_name: str) -> sql.SqlExpr:

@@ -186,10 +186,9 @@ class LazyFrame(sql.CoreHandler[sql.SqlFrame]):
         self, exprs: TryIter[IntoExpr], *more_exprs: IntoExpr, **named_exprs: IntoExpr
     ) -> Self:
         """Add or replace columns."""
-        schema = self.schema
         return (
-            ExprPlan(schema, try_chain(exprs, more_exprs), named_exprs)
-            .with_columns_context(self.inner(), schema.keys())
+            self.schema.into(ExprPlan, try_chain(exprs, more_exprs), named_exprs)
+            .with_columns_context(self.inner())
             .pipe(self._new)
         )
 
@@ -600,9 +599,9 @@ class LazyFrame(sql.CoreHandler[sql.SqlFrame]):
         suffix: str = "_right",
     ) -> Self:
         """Join with another LazyFrame."""
-        on_opt = pc.Option(on).map(lambda value: try_iter(value).collect())
-        left_on_opt = pc.Option(left_on).map(lambda value: try_iter(value).collect())
-        right_on_opt = pc.Option(right_on).map(lambda value: try_iter(value).collect())
+        on_opt = try_iter(on).collect().then_some()
+        left_on_opt = try_iter(left_on).collect().then_some()
+        right_on_opt = try_iter(right_on).collect().then_some()
 
         def _validate_cross() -> pc.Result[None, ValueError]:
             match (on_opt, left_on_opt, right_on_opt):
