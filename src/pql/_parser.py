@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from functools import cache, partial
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, override
 
 import pyochain as pc
 
@@ -50,6 +50,56 @@ def _formatter() -> partial[str]:  # pragma: no cover
     )
 
 
+def _get_names(fn: str, col_name: str) -> pc.Set[str]:
+    from ._creation import from_table_function
+
+    return (
+        from_table_function(fn)
+        .inner()
+        .select(col_name)
+        .fetchall()
+        .iter()
+        .flatten()
+        .collect(pc.Set)
+    )
+
+
+@cache
+def _duckdb_lexer():  # noqa: ANN202
+    from pygments.lexers.sql import SqlLexer  # pyright: ignore[reportMissingTypeStubs]
+    from pygments.token import (
+        Keyword,
+        Name,
+        _TokenType as TokenType,  # pyright: ignore[reportPrivateUsage]
+    )
+
+    keywords = _get_kwords()
+    dtypes = _get_names("duckdb_types", "type_name")
+    functions = _get_names("duckdb_functions", "function_name")
+
+    def _process(
+        pos: int, tokentype: TokenType, token_text: str
+    ) -> tuple[int, TokenType, str]:
+        match tokentype is Name:
+            case True if token_text in functions:
+                return (pos, Name.Function, token_text)
+            case True if token_text in keywords:
+                return (pos, Keyword, token_text)
+            case True if token_text in dtypes:
+                return (pos, Name.Builtin, token_text)
+            case _:
+                return (pos, tokentype, token_text)
+
+    class DuckDbSqlLexer(SqlLexer):
+        @override
+        def get_tokens_unprocessed(  # pyright: ignore[reportIncompatibleMethodOverride]
+            self, text: str
+        ) -> pc.Iter[tuple[int, TokenType, str]]:
+            return pc.Iter(super().get_tokens_unprocessed(text)).map_star(_process)
+
+    return DuckDbSqlLexer()
+
+
 def _try_import[T](importer: Callable[[], T]) -> pc.Option[T]:  # pragma: no cover
     try:
         return pc.Some(importer())
@@ -64,7 +114,7 @@ def _colorizer() -> Callable[[str, Themes], None]:  # pragma: no cover
 
     def _printer(txt: str, theme: Themes) -> None:
         return Console().print(
-            Syntax(txt, lexer="sql", theme=theme, background_color="default")
+            Syntax(txt, lexer=_duckdb_lexer(), theme=theme, background_color="default")
         )
 
     return _printer
