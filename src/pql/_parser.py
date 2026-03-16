@@ -1,16 +1,85 @@
 from __future__ import annotations
 
-from collections.abc import Callable
-from functools import cache, partial
-from typing import TYPE_CHECKING, override
+from dataclasses import dataclass
+from functools import partial
+from typing import TYPE_CHECKING, Self, override
 
+import duckdb
 import pyochain as pc
+import sqlparse
+from pygments import token
+from pygments.lexers.sql import SqlLexer  # pyright: ignore[reportMissingTypeStubs]
+from rich.console import Console
+from rich.syntax import Syntax
+from sqlparse.lexer import Lexer
 
 if TYPE_CHECKING:
+    from pygments.token import (
+        _TokenType as TokenType,  # pyright: ignore[reportPrivateUsage]
+    )
+
     from ._typing import Themes
 
+CONSOLE = Console()
+DUCK_PYGMENT_MAP = pc.Dict.from_ref(
+    {
+        duckdb.token_type.identifier: token.Name,
+        duckdb.token_type.keyword: token.Keyword,
+        duckdb.token_type.string_const: token.String,
+        duckdb.token_type.numeric_const: token.Number,
+        duckdb.token_type.comment: token.Comment,
+        duckdb.token_type.operator: token.Operator,
+    }
+)
 
-@cache
+
+def _get_names(fn: str, col_name: str) -> pc.Set[str]:
+    from ._creation import from_table_function
+
+    return (
+        from_table_function(fn)
+        .inner()
+        .select(col_name)
+        .fetchall()
+        .iter()
+        .flatten()
+        .collect(pc.Set)
+    )
+
+
+type ProcessedToken = tuple[int, TokenType, str]
+
+
+class DuckDbSqlLexer(SqlLexer):
+    @override
+    def get_tokens_unprocessed(  # pyright: ignore[reportIncompatibleMethodOverride]
+        self, text: str
+    ) -> pc.Iter[ProcessedToken]:
+        _process = partial(self._process, pc.Dict(duckdb.tokenize(text)))
+        return pc.Iter(super().get_tokens_unprocessed(text)).map_star(_process)
+
+    def _process(
+        self,
+        duck_tokens: pc.Dict[int, duckdb.token_type],
+        pos: int,
+        tokentype: TokenType,
+        token_text: str,
+    ) -> ProcessedToken:
+        match duck_tokens.get_item(pos):
+            case pc.Some(duckdb.token_type.identifier) if token_text in FUNCTIONS:
+                return (pos, token.Name.Function, token_text)
+            case pc.Some(duckdb.token_type.keyword) if token_text in DTYPES:
+                return (pos, token.Name.Builtin, token_text)
+            case pc.Some(duck_type):
+                return (
+                    pos,
+                    DUCK_PYGMENT_MAP.get_item(duck_type).unwrap_or(tokentype),
+                    token_text,
+                )
+            case _:
+                return (pos, tokentype, token_text)
+
+
 def _get_kwords():  # noqa: ANN202
     from sqlparse.tokens import Keyword
 
@@ -35,98 +104,32 @@ def _get_kwords():  # noqa: ANN202
     )
 
 
-@cache
-def _formatter() -> partial[str]:  # pragma: no cover
-    import sqlparse
-    from sqlparse.lexer import Lexer
+DTYPES = _get_names("duckdb_types", "type_name").union(
+    _get_names("duckdb_types", "logical_type")
+)
+FUNCTIONS = _get_names("duckdb_functions", "function_name")
 
-    Lexer.get_default_instance().add_keywords(_get_kwords())  # pyright: ignore[reportUnknownMemberType]
-    return partial(
-        sqlparse.format,
-        indent_width=4,
-        reindent=True,
-        keyword_case="upper",
-        use_space_around_operators=True,
-    )
+SYNTAX = partial(Syntax, lexer=DuckDbSqlLexer(), background_color="default")
 
-
-def _get_names(fn: str, col_name: str) -> pc.Set[str]:
-    from ._creation import from_table_function
-
-    return (
-        from_table_function(fn)
-        .inner()
-        .select(col_name)
-        .fetchall()
-        .iter()
-        .flatten()
-        .collect(pc.Set)
-    )
+Lexer.get_default_instance().add_keywords(_get_kwords())  # pyright: ignore[reportUnknownMemberType]
+FORMATTER = partial(
+    sqlparse.format,
+    indent_width=4,
+    reindent=True,
+    keyword_case="upper",
+    use_space_around_operators=True,
+)
 
 
-@cache
-def _duckdb_lexer():  # noqa: ANN202
-    from pygments.lexers.sql import SqlLexer  # pyright: ignore[reportMissingTypeStubs]
-    from pygments.token import (
-        Keyword,
-        Name,
-        _TokenType as TokenType,  # pyright: ignore[reportPrivateUsage]
-    )
+@dataclass(slots=True)
+class ParsedQuery:
+    raw: str
 
-    keywords = _get_kwords()
-    dtypes = _get_names("duckdb_types", "type_name")
-    functions = _get_names("duckdb_functions", "function_name")
+    def show(self, theme: Themes = "github-dark") -> None:
+        return CONSOLE.print(SYNTAX(self.raw, theme=theme))
 
-    def _process(
-        pos: int, tokentype: TokenType, token_text: str
-    ) -> tuple[int, TokenType, str]:
-        match tokentype is Name:
-            case True if token_text in functions:
-                return (pos, Name.Function, token_text)
-            case True if token_text in keywords:
-                return (pos, Keyword, token_text)
-            case True if token_text in dtypes:
-                return (pos, Name.Builtin, token_text)
-            case _:
-                return (pos, tokentype, token_text)
+    def prettify(self) -> Self:
+        return self.__class__(FORMATTER(self.raw))
 
-    class DuckDbSqlLexer(SqlLexer):
-        @override
-        def get_tokens_unprocessed(  # pyright: ignore[reportIncompatibleMethodOverride]
-            self, text: str
-        ) -> pc.Iter[tuple[int, TokenType, str]]:
-            return pc.Iter(super().get_tokens_unprocessed(text)).map_star(_process)
-
-    return DuckDbSqlLexer()
-
-
-def _try_import[T](importer: Callable[[], T]) -> pc.Option[T]:  # pragma: no cover
-    try:
-        return pc.Some(importer())
-    except ImportError:
-        return pc.NONE
-
-
-@cache
-def _colorizer() -> Callable[[str, Themes], None]:  # pragma: no cover
-    from rich.console import Console
-    from rich.syntax import Syntax
-
-    def _printer(txt: str, theme: Themes) -> None:
-        return Console().print(
-            Syntax(txt, lexer=_duckdb_lexer(), theme=theme, background_color="default")
-        )
-
-    return _printer
-
-
-def format_sql(qry: str) -> str:
-    return _try_import(_formatter).map(lambda sp: sp(qry)).unwrap_or(qry)
-
-
-def show_sql(qry: str, theme: Themes) -> None:  # pragma: no cover
-    return (
-        _try_import(_colorizer)
-        .map(lambda printer: printer(qry, theme))
-        .unwrap_or_else(lambda: print(qry))
-    )
+    def tokenize(self) -> pc.Vec[tuple[int, duckdb.token_type]]:
+        return pc.Vec.from_ref(duckdb.tokenize(self.raw))

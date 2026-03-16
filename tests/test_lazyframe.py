@@ -70,16 +70,24 @@ def test_clone(sample_df: pl.DataFrame) -> None:
 
 
 def test_sql_query(sample_df: pl.DataFrame) -> None:
-    sql = (
+    parsed = (
         pql.LazyFrame(sample_df)
         .filter(pql.col("age").gt(25))
         .select("name", "age")
         .sql_query()
     )
-    assert isinstance(sql, str)
-    assert "SELECT" in sql
-    assert "WHERE" in sql
-    assert sql.upper().count("WHERE") == 1
+    assert parsed.raw != parsed.prettify().raw
+    assert parsed.tokenize() != parsed.prettify().tokenize()
+    assert "SELECT" in parsed.raw
+    assert "WHERE" in parsed.raw
+    assert parsed.raw.upper().count("WHERE") == 1
+
+
+@pytest.mark.parametrize("theme", pql._typing.Themes.__args__)
+def test_sql_show(sample_df: pl.DataFrame, theme: pql._typing.Themes) -> None:
+    pql.LazyFrame(sample_df).select(
+        pql.col("salary").cast(pql.Float64())
+    ).sql_query().show(theme)
 
 
 def test_explain(sample_df: pl.DataFrame) -> None:
@@ -352,23 +360,23 @@ def test_rename_multiple_columns(sample_df: pl.DataFrame) -> None:
 
 def test_with_columns_add_only_uses_star(sample_df: pl.DataFrame) -> None:
     """Add-only with_columns must generate SELECT * instead of enumerating existing columns."""
-    sql = (
+    parsed = (
         pql.LazyFrame(sample_df)
         .with_columns(pql.col("age").mul(2).alias("age2"))
         .sql_query()
     )
-    outermost_select = sql.split("FROM")[0]
+    outermost_select = parsed.raw.split("FROM")[0]
     assert "SELECT *" in outermost_select
 
 
 def test_with_columns_override_enumerates_columns(sample_df: pl.DataFrame) -> None:
     """Override with_columns must enumerate columns (no SELECT *) to preserve order."""
-    sql = (
+    parsed = (
         pql.LazyFrame(sample_df)
         .with_columns(pql.col("age").mul(2).alias("age"))
         .sql_query()
     )
-    outermost_select = sql.split("FROM")[0]
+    outermost_select = parsed.raw.split("FROM")[0]
     assert "SELECT *" not in outermost_select
 
 

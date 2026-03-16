@@ -5,7 +5,7 @@ from __future__ import annotations
 from collections.abc import Callable, Iterable, Mapping, Sequence
 from dataclasses import dataclass
 from pathlib import Path
-from typing import TYPE_CHECKING, Literal, NamedTuple, Self, overload
+from typing import TYPE_CHECKING, NamedTuple, Self
 
 import narwhals as nw
 import pyochain as pc
@@ -13,7 +13,6 @@ import pyochain as pc
 from . import sql
 from ._funcs import col
 from ._meta import EMPTY_MARKER, TEMP_NAME, ExprPlan
-from ._parser import format_sql, show_sql
 from ._schema import Schema
 from .sql.utils import TryIter, TrySeq, check_by_arg, try_chain, try_iter
 
@@ -28,6 +27,7 @@ if TYPE_CHECKING:
     from ._datatypes import DataType
     from ._expr import Expr
     from ._groupby import LazyGroupBy
+    from ._parser import ParsedQuery
     from ._typing import (
         AsofJoinStrategy,
         FillNullStrategy,
@@ -35,7 +35,6 @@ if TYPE_CHECKING:
         JoinKeysRes,
         JoinStrategy,
         PivotAgg,
-        Themes,
         UniqueKeepStrategy,
     )
     from .sql.typing import (
@@ -443,35 +442,17 @@ class LazyFrame(sql.CoreHandler[sql.SqlFrame]):
             lambda c: sql.col(c).alias(rename_map.get_item(c).unwrap_or(c))
         )
 
-    @overload
-    def sql_query(
-        self, *, pretty: bool = ..., show: Literal[False] = False, theme: Themes = ...
-    ) -> str: ...
-    @overload
-    def sql_query(
-        self, *, pretty: bool = ..., show: Literal[True], theme: Themes = ...
-    ) -> None: ...
+    def sql_query(self) -> ParsedQuery:
+        """Generate a `ParsedQuery` object.
 
-    def sql_query(
-        self, *, pretty: bool = True, show: bool = False, theme: Themes = "github-dark"
-    ) -> str | None:
-        """Generate or print SQL string.
-
-        If `sqlparse` is installed, the SQL output will be formatted for better readability.
-
-        Args:
-            pretty (bool): format the SQL output for better readability if `sqlparse` is installed.
-            show (bool): print the query rather than returning it as a string.
-            theme (Themes): If `rich` is installed and `show=True`, the SQL output will be syntax-highlighted in the terminal using the specified `theme`.
+        Allow to format and display prettified `SQL`.
 
         Returns:
-            str | None
+            ParsedQuery
         """
-        raw_qry = self.inner().sql_query()
-        qry = format_sql(raw_qry) if pretty else raw_qry
-        if show:  # pragma: no cover
-            return show_sql(qry, theme)
-        return qry
+        from ._parser import ParsedQuery
+
+        return ParsedQuery(self.inner().sql_query())
 
     def explain(self, kind: ExplainType | ExplainTypeLiteral = "standard") -> str:
         return self.inner().explain(kind)
