@@ -20,7 +20,7 @@ type JoinKeysRes[T: pc.Seq[str] | str] = pc.Result[JoinKeys[T], ValueError]
 type GroupByClause = Literal["ROLLUP", "CUBE"]
 
 ### theme marker START
-type Themes = Literal[
+Themes = Literal[
     "abap",
     "algol",
     "algol_nu",
