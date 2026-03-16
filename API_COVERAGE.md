@@ -9,7 +9,7 @@ Each summary cell is `global (Narwhals, Polars)`.
 
 | Class               | Coverage              | Implemented   | Matched      | Missing       | Mismatched  | Extra       |
 | ------------------- | --------------------- | ------------- | ------------ | ------------- | ----------- | ----------- |
-| LazyFrame           | 39.3% (52.0%, 35.4%)  | 107 (25, 82)  | 42 (13, 29)  | 30 (0, 30)    | 35 (12, 23) | 33 (30, 3)  |
+| LazyFrame           | 38.3% (48.0%, 35.4%)  | 107 (25, 82)  | 41 (12, 29)  | 30 (0, 30)    | 36 (13, 23) | 33 (30, 3)  |
 | Expr                | 49.3% (71.4%, 42.1%)  | 284 (70, 214) | 140 (50, 90) | 101 (7, 94)   | 43 (13, 30) | 59 (58, 1)  |
 | LazyGroupBy         | 52.9% (0.0%, 56.2%)   | 17 (1, 16)    | 9 (0, 9)     | 4 (0, 4)      | 4 (1, 3)    | 11 (11, 0)  |
 | ExprStrNameSpace    | 31.8% (42.1%, 27.7%)  | 66 (19, 47)   | 21 (8, 13)   | 10 (0, 10)    | 35 (11, 24) | 20 (19, 1)  |
@@ -88,7 +88,7 @@ Each summary cell is `global (Narwhals, Polars)`.
 - `with_columns_seq`
   - **Polars**: (*exprs: IntoExpr | Iterable[IntoExpr], **named_exprs: IntoExpr) -> LazyFrame
 
-### [!] Signature Mismatches (20)
+### [!] Signature Mismatches (21)
 
 - `cast` (pl)
   - **Polars***: (`dtypes: Mapping[ColumnNameOrSelector | PolarsDataType, PolarsDataType | PythonDataType] | PolarsDataType | pl.DataTypeExpr | Schema`, `strict: bool`) -> LazyFrame
@@ -107,6 +107,10 @@ Each summary cell is `global (Narwhals, Polars)`.
 - `explain` (pl)
   - **Polars***: (`format: ExplainFormat`, `optimized: bool`, `type_coercion: bool`, `predicate_pushdown: bool`, `projection_pushdown: bool`, `simplify_expression: bool`, `slice_pushdown: bool`, `comm_subplan_elim: bool`, `comm_subexpr_elim: bool`, `cluster_with_columns: bool`, `collapse_joins: bool`, `streaming: bool`, `engine: EngineType`, `tree_format: bool | None`, `optimizations: QueryOptFlags`) -> str
   - **pql**: (`kind: ExplainType | ExplainTypeLiteral`) -> str
+- `explode` (nw)
+  - **Narwhals**: (`columns: str | Sequence[str]`, `*more_columns: str`) -> Self
+  - **Polars**: (`columns: ColumnNameOrSelector | Iterable[ColumnNameOrSelector]`, `*more_columns: ColumnNameOrSelector`, `empty_as_null: bool`, `keep_nulls: bool`) -> LazyFrame
+  - **pql**: (`columns: TryIter[IntoExprColumn]`, `*more_columns: IntoExprColumn`) -> Self
 - `fill_null` (pl)
   - **Polars***: (`value: Any | Expr | None`, strategy: FillNullStrategy | None, limit: int | None, `matches_supertype: bool`) -> LazyFrame
   - **pql**: (`value: IntoExpr`, strategy: FillNullStrategy | None, limit: int | None) -> Self
@@ -1075,7 +1079,7 @@ Each summary cell is `global (Narwhals, Polars)`.
 - `all` (nw)
   - **Narwhals**: () -> Expr
   - **Polars**: (`*names: str`, `ignore_nulls: bool`) -> Expr
-  - **pql**: (`exclude: Iterable[IntoExprColumn] | None`) -> Expr
+  - **pql**: (`exclude: TryIter[IntoExprColumn]`) -> Expr
 - `coalesce` (nw)
   - **Narwhals**: (exprs: IntoExpr | Iterable[IntoExpr], `*more_exprs: IntoExpr | NonNestedLiteral`) -> Expr
   - **Polars**: (exprs: IntoExpr | Iterable[IntoExpr], *more_exprs: IntoExpr, `eager: bool`) -> Expr | Series
