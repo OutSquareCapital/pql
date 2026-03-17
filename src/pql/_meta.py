@@ -99,6 +99,13 @@ class MultiMeta(ExprMeta):
     def resolve(
         self, template: sql.SqlExpr, schema: Schema, alias_override: pc.Option[str]
     ) -> pc.Iter[ResolvedExpr]:
+
+        def _replace_col(template: sql.SqlExpr, column_name: str) -> sql.SqlExpr:
+            raw_str = template.pipe(str).replace(
+                SENTINEL, str(ColumnExpression(column_name))
+            )
+            return sql.SqlExpr(SQLExpression(raw_str))
+
         base_names = self.resolver(schema)
         output_names = self.resolve_output_names(base_names, alias_override)
         match alias_override.is_none():
@@ -272,11 +279,6 @@ class ExprPlan:
             .collect(pc.Dict)
             .into(_resolved)
         )
-
-
-def _replace_col(template: sql.SqlExpr, column_name: str) -> sql.SqlExpr:
-    raw_str = template.pipe(str).replace(SENTINEL, str(ColumnExpression(column_name)))
-    return sql.SqlExpr(SQLExpression(raw_str))
 
 
 def all_columns_resolver() -> ColumnResolver:

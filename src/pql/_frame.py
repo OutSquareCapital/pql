@@ -15,7 +15,7 @@ from . import sql
 from ._funcs import col
 from ._meta import EMPTY_MARKER, TEMP_NAME, ExprPlan
 from ._schema import Schema
-from .sql.utils import TryIter, TrySeq, check_by_arg, try_chain, try_iter
+from .sql.utils import TryIter, TrySeq, check_by_arg, try_chain, try_iter, try_seq
 
 if TYPE_CHECKING:
     import polars as pl
@@ -50,7 +50,6 @@ if TYPE_CHECKING:
 TEMP_COL = sql.col(TEMP_NAME)
 MAX_I64 = 9_223_372_036_854_775_807
 type OptSeq = pc.Option[pc.Seq[str]]
-type OptTryIter[T] = pc.Option[TryIter[T]]
 
 PIVOT_AGG: dict[PivotAgg, Callable[[sql.SqlExpr], sql.SqlExpr]] = {
     "min": sql.SqlExpr.min,
@@ -60,6 +59,7 @@ PIVOT_AGG: dict[PivotAgg, Callable[[sql.SqlExpr], sql.SqlExpr]] = {
     "sum": sql.SqlExpr.sum,
     "mean": sql.SqlExpr.mean,
     "median": sql.SqlExpr.median,
+    "len": sql.SqlExpr.count,
     "count": sql.SqlExpr.count,
 }
 
@@ -86,15 +86,12 @@ class JoinKeys[T: pc.Seq[str] | str](NamedTuple):
 
     @staticmethod
     def from_by(
-        by: OptTryIter[str], by_left: OptTryIter[str], by_right: OptTryIter[str]
+        by: OptSeq, by_left: OptSeq, by_right: OptSeq
     ) -> JoinKeysRes[pc.Seq[str]]:
         match (by, by_left, by_right):
-            case (pc.Some(by_key), pc.NONE, pc.NONE):
-                vals = try_iter(by_key).collect()
+            case (pc.Some(vals), pc.NONE, pc.NONE):
                 return pc.Ok(JoinKeys(vals, vals))
-            case (pc.NONE, pc.Some(bl), pc.Some(br)):
-                left_vals = try_iter(bl).collect()
-                right_vals = try_iter(br).collect()
+            case (pc.NONE, pc.Some(left_vals), pc.Some(right_vals)):
                 match left_vals.length() == right_vals.length():
                     case True:
                         return pc.Ok(JoinKeys(left_vals, right_vals))
@@ -140,11 +137,7 @@ class LazyFrame(sql.CoreHandler[sql.SqlFrame]):
 
     def __init__(self, data: IntoRel, orient: Orientation = "col") -> None:
         self._cached_schema = pc.NONE
-        match data:
-            case sql.SqlFrame():
-                self._inner = data
-            case _:
-                self._inner = sql.SqlFrame(data, orient)
+        self._inner = sql.SqlFrame(data, orient)
 
     def _filter(
         self, preds: Iterable[IntoExprColumn], *more_preds: IntoExprColumn
@@ -602,7 +595,7 @@ class LazyFrame(sql.CoreHandler[sql.SqlFrame]):
         """Collect the schema (same as schema property for lazy)."""
         return self.schema
 
-    def join(  # noqa: PLR0913
+    def join(  # noqa: C901, PLR0913
         self,
         other: Self,
         on: TryIter[str] = None,
@@ -613,75 +606,94 @@ class LazyFrame(sql.CoreHandler[sql.SqlFrame]):
         suffix: str = "_right",
     ) -> Self:
         """Join with another LazyFrame."""
-        on_opt = try_iter(on).collect().then_some()
-        left_on_opt = try_iter(left_on).collect().then_some()
-        right_on_opt = try_iter(right_on).collect().then_some()
-        rhs_col = partial(sql.col, "rhs")
-        lhs_col = partial(sql.col, "lhs")
+        rhs = partial(sql.col, "rhs")
+        lhs = partial(sql.col, "lhs")
 
-        def _validate_cross() -> pc.Result[None, ValueError]:
-            match (on_opt, left_on_opt, right_on_opt):
-                case (pc.NONE, pc.NONE, pc.NONE):
-                    return pc.Ok(None)
-                case _:
-                    msg = (
-                        "Can not pass `left_on`, `right_on` or `on` keys for cross join"
-                    )
+        join_keys = JoinKeys.from_how(
+            how, try_seq(on), try_seq(left_on), try_seq(right_on)
+        ).unwrap()
 
-                    return pc.Err(ValueError(msg))
+        def _aliased_rhs(name: str) -> sql.SqlExpr:
+            return rhs(name).alias(f"{name}{suffix}")
 
-        match how:
-            case "cross":
-                _validate_cross().unwrap()
-                right_on_set = pc.Set[str].new()
-                rel = (
-                    self.inner().set_alias("lhs").cross(other.inner().set_alias("rhs"))
-                )
-            case _:
-                join_keys = JoinKeys.from_how(
-                    how, on_opt, left_on_opt, right_on_opt
-                ).unwrap()
-                right_on_set = join_keys.right.iter().collect(pc.Set)
-                rel = (
-                    self.inner()
-                    .set_alias("lhs")
-                    .join(
-                        other.inner().set_alias("rhs"),
-                        condition=join_keys.left.iter()
-                        .zip(join_keys.right)
-                        .map_star(lambda left, right: lhs_col(left).eq(rhs_col(right)))
-                        .reduce(sql.SqlExpr.and_),
-                        how=how,
-                    )
-                )
+        def _rhs_expr_outer(name: str) -> sql.SqlExpr:
+            match name in self.columns:
+                case True:
+                    return _aliased_rhs(name)
+                case False:
+                    return rhs(name)
 
         def _rhs_expr(name: str) -> pc.Option[sql.SqlExpr]:
-            col_in_lhs = name in self.columns
-            is_join_key = name in right_on_set
-            match (how == "outer", col_in_lhs, is_join_key):
-                case (False, _, True):
+            match (name in self.columns, name in join_keys.right):
+                case (_, True):
                     return pc.NONE
-                case (False, True, False) | (True, True, _):
-                    return pc.Some(rhs_col(name).alias(f"{name}{suffix}"))
+                case (True, False):
+                    return pc.Some(_aliased_rhs(name))
                 case _:
-                    return pc.Some(rhs_col(name))
+                    return pc.Some(rhs(name))
 
-        match how:
-            case "inner" | "left" | "cross" | "outer":
-                return (
-                    self.columns.iter()
-                    .map(lhs_col)
-                    .chain(
-                        other.columns.iter()
-                        .map(_rhs_expr)
-                        .filter_map(lambda expr: expr)
+        def _rhs_expr_right(name: str) -> sql.SqlExpr:
+            match (name in self.columns, name in join_keys.right):
+                case (True, False):
+                    return _aliased_rhs(name)
+                case _:
+                    return rhs(name)
+
+        def _cols_how() -> Iterable[IntoExprColumn]:
+            cols = self.columns.iter()
+            other_cols = other.columns.iter()
+            match how:
+                case "inner" | "left":
+                    return cols.map(lhs).chain(other_cols.filter_map(_rhs_expr))
+                case "outer":
+                    return cols.map(lhs).chain(other_cols.map(_rhs_expr_outer))
+                case "right":
+                    return (
+                        cols.filter(lambda name: name not in join_keys.left)
+                        .map(lhs)
+                        .chain(other_cols.map(_rhs_expr_right))
                     )
-                    .into(lambda x: rel.select(*x))
-                    .set_alias(self.inner().alias)
-                    .pipe(self._new)
-                )
-            case _:
-                return rel.select("lhs.*").set_alias(self.inner().alias).pipe(self._new)
+                case "semi" | "anti":
+                    return ("lhs.*",)
+
+        return (
+            self.inner()
+            .set_alias("lhs")
+            .join(
+                other.inner().set_alias("rhs"),
+                condition=join_keys.left.iter()
+                .zip(join_keys.right)
+                .map_star(lambda left, right: lhs(left).eq(rhs(right)))
+                .reduce(sql.SqlExpr.and_),
+                how=how,
+            )
+            .select(*_cols_how())
+            .set_alias(self.inner().alias)
+            .pipe(self._new)
+        )
+
+    def join_cross(self, other: Self, *, suffix: str = "_right") -> Self:
+        """Join with another LazyFrame."""
+        rhs = partial(sql.col, "rhs")
+        lhs = partial(sql.col, "lhs")
+
+        def _rhs_expr(name: str) -> sql.SqlExpr:
+            match name in self.columns:
+                case True:
+                    return rhs(name).alias(f"{name}{suffix}")
+                case False:
+                    return rhs(name)
+
+        return (
+            self.inner()
+            .set_alias("lhs")
+            .cross(other.inner().set_alias("rhs"))
+            .select(
+                *self.columns.iter().map(lhs).chain(other.columns.iter().map(_rhs_expr))
+            )
+            .set_alias(self.inner().alias)
+            .pipe(self._new)
+        )
 
     def join_asof(  # noqa: PLR0913
         self,
@@ -697,13 +709,13 @@ class LazyFrame(sql.CoreHandler[sql.SqlFrame]):
         suffix: str = "_right",
     ) -> Self:
         """Perform an asof join."""
-        rhs = "_rhs"
-        lhs = "_lhs"
+        rhs = partial(sql.col, "_rhs")
+        lhs = partial(sql.col, "_lhs")
         on_keys = JoinKeys.from_on(
             pc.Option(on), pc.Option(left_on), pc.Option(right_on)
         ).unwrap()
         by_keys = JoinKeys.from_by(
-            pc.Option(by), pc.Option(by_left), pc.Option(by_right)
+            try_seq(by), try_seq(by_left), try_seq(by_right)
         ).unwrap()
 
         left_columns = self.columns.iter().collect(pc.Set)
@@ -716,71 +728,33 @@ class LazyFrame(sql.CoreHandler[sql.SqlFrame]):
                 case (True, _):
                     return pc.NONE
                 case (False, True):
-                    return pc.Some(sql.col(rhs, name).alias(f"{name}{suffix}"))
+                    return pc.Some(rhs(name).alias(f"{name}{suffix}"))
                 case _:
-                    return pc.Some(sql.col(rhs, name))
+                    return pc.Some(rhs(name))
 
-        lhs_select = self.columns.iter().map(lambda c: sql.col(lhs, c))
-        rhs_select = other.columns.iter().map(_rhs_expr).filter_map(lambda x: x)
+        def _get_strategy(expr: sql.SqlExpr) -> sql.SqlExpr:
+            other = rhs(on_keys.right)
+            match strategy:
+                case "backward":
+                    return expr.ge(other)
+                case "forward":
+                    return expr.le(other)
 
         by_cond = (
             by_keys.left.iter()
             .zip(by_keys.right)
-            .map_star(lambda left, right: sql.col(lhs, left).eq(sql.col(rhs, right)))
+            .map_star(lambda left, right: lhs(left).eq(rhs(right)))
+            .chain(lhs(on_keys.left).pipe(_get_strategy).pipe(pc.Iter.once))
+            .reduce(sql.SqlExpr.and_)
         )
-        lhs_key = sql.col(lhs, on_keys.left)
-        rhs_key = sql.col(rhs, on_keys.right)
-        lhs_cols = lhs_select.chain(rhs_select).map(sql.SqlExpr.to_sql).join(", ")
+        selected = (
+            self.columns.iter()
+            .map(lhs)
+            .chain(other.columns.iter().filter_map(_rhs_expr))
+            .map(sql.SqlExpr.to_sql)
+        )
 
-        def _simple_asof_join(comparison: Callable[[sql.SqlExpr], sql.SqlExpr]) -> Self:
-            qry = f"""--sql
-            SELECT {lhs_cols}
-            FROM _lhs
-            ASOF LEFT JOIN _rhs
-            ON {by_cond.chain(pc.Iter.once(comparison(rhs_key))).reduce(sql.SqlExpr.and_)}
-            """
-            return self.__class__(
-                sql.from_query(
-                    qry,
-                    _lhs=self.inner().set_alias(lhs).inner(),
-                    _rhs=other.inner().set_alias(rhs).inner(),
-                )
-            )
-
-        match strategy:
-            case "backward":
-                return _simple_asof_join(lhs_key.ge)
-            case "forward":
-                return _simple_asof_join(lhs_key.le)
-            case "nearest":
-                asof_order = "__pql_asof_order__"
-                asof_rank = "__pql_asof_rank__"
-                condition = by_cond.chain(pc.Iter.once(lhs_key.ge(rhs_key))).reduce(
-                    sql.SqlExpr.and_
-                )
-
-                return (
-                    self.with_row_index(name=TEMP_NAME, order_by=self.columns)
-                    .inner()
-                    .set_alias(lhs)
-                    .join(other.inner().set_alias(rhs), condition=condition, how="left")
-                    .select(
-                        sql.all(drop_keys),
-                        sql.col(rhs, on_keys.right).alias(asof_order),
-                    )
-                    .select(
-                        sql.all(),
-                        sql.row_number()
-                        .over(
-                            partition_by=TEMP_COL,
-                            order_by=sql.col(asof_order).sub(on_keys.left).abs(),
-                        )
-                        .alias(asof_rank),
-                    )
-                    .filter(sql.col(asof_rank).eq(1))
-                    .select(sql.all(exclude=(asof_rank, asof_order, TEMP_NAME)))
-                    .pipe(self._new)
-                )
+        return self.inner().join_asof(other.inner(), by_cond, selected).pipe(self._new)
 
     def unique(
         self,
@@ -863,10 +837,7 @@ class LazyFrame(sql.CoreHandler[sql.SqlFrame]):
         def _get_idx_and_vals() -> pc.Result[
             tuple[pc.Seq[str], pc.Seq[str]], ValueError
         ]:
-            match (
-                try_iter(index).collect().then_some(),
-                try_iter(values).collect().then_some(),
-            ):
+            match (try_seq(index), try_seq(values)):
                 case (pc.Some(idx), pc.Some(vals)):
                     return pc.Ok((idx, vals))
                 case (pc.Some(idx), _):
@@ -897,7 +868,7 @@ class LazyFrame(sql.CoreHandler[sql.SqlFrame]):
                 in_values=on_columns,
                 order_by=idx_cols if maintain_order else None,
             )
-            .pipe(self.__class__)
+            .pipe(self._new)
         )
 
         match multi:

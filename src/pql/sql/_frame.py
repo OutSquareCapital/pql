@@ -1,18 +1,20 @@
 from __future__ import annotations
 
 from collections.abc import Iterable, Sequence
-from typing import TYPE_CHECKING, ClassVar, Self
+from typing import TYPE_CHECKING, ClassVar, Literal, Self
 
 import pyochain as pc
 
 from ._code_gen import Relation
 from ._creation import from_query, into_relation
+from ._funcs import into_expr
 from .utils import TryIter, try_iter
 
 if TYPE_CHECKING:
     from duckdb import DuckDBPyRelation
+    from pyochain.traits import PyoIterable
 
-    from .typing import IntoRel, Orientation, PythonLiteral
+    from .typing import IntoExpr, IntoRel, Orientation, PythonLiteral
 
 
 def _clause(on: TryIter[str], kword: str) -> str:
@@ -30,6 +32,23 @@ class SqlFrame(Relation):
 
     def __init__(self, data: IntoRel, orient: Orientation = "col") -> None:
         self._inner = into_relation(data, orient=orient)
+
+    def join_asof(
+        self,
+        other: IntoRel,
+        condition: IntoExpr,
+        select_cols: PyoIterable[str],
+        how: Literal["left", "inner"] = "left",
+    ) -> Self:
+        join_clause = "LEFT" if how == "left" else ""
+        qry = f"""--sql
+        SELECT {select_cols.join(", ")}
+        FROM _lhs
+        ASOF {join_clause} JOIN _rhs
+        ON {into_expr(condition).to_sql()}
+        """
+
+        return self.__class__(from_query(qry, _lhs=self.inner(), _rhs=other))
 
     def pivot(
         self,

@@ -13,6 +13,11 @@ type TrySeq[T] = Sequence[T] | T | None
 """Represent a value that may or may not be a `Sequence`."""
 
 
+def try_seq[T](val: TryIter[T]) -> pc.Option[pc.Seq[T]]:
+    """Try to convert a potentially iterable value to an `Option[Seq]`."""
+    return try_iter(val).collect().then_some()
+
+
 def try_iter[T](val: TryIter[T]) -> pc.Iter[T]:
     """Try to iterate over a value that may or may not be iterable.
 
