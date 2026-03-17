@@ -38,17 +38,17 @@ class SqlFrame(Relation):
         other: IntoRel,
         condition: IntoExpr,
         select_cols: PyoIterable[str],
-        how: Literal["left", "inner"] = "left",
+        how: Literal["left", "inner"],
     ) -> Self:
         join_clause = "LEFT" if how == "left" else ""
         qry = f"""--sql
         SELECT {select_cols.join(", ")}
-        FROM _lhs
-        ASOF {join_clause} JOIN _rhs
+        FROM lhs
+        ASOF {join_clause} JOIN rhs
         ON {into_expr(condition).to_sql()}
         """
 
-        return self.__class__(from_query(qry, _lhs=self.inner(), _rhs=other))
+        return self.__class__(from_query(qry, lhs=self.inner(), rhs=other))
 
     def pivot(
         self,

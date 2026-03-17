@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING, Literal
 import pyochain as pc
 
 if TYPE_CHECKING:
-    from ._frame import JoinKeys
+    from ._joins import JoinKeys
 type TimeUnit = Literal["ms", "us", "ns"]
 type EpochTimeUnit = TimeUnit | Literal["s", "d"]
 JoinStrategy = Literal["inner", "left", "right", "outer", "semi", "anti"]
