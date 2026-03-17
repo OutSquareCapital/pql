@@ -736,7 +736,8 @@ class LazyFrame(sql.CoreHandler[sql.SqlFrame]):
             qry = f"""--sql
             SELECT {lhs_cols}
             FROM _lhs
-            ASOF LEFT JOIN _rhs ON {by_cond.chain(pc.Iter.once(comparison(rhs_key))).reduce(sql.SqlExpr.and_)}
+            ASOF LEFT JOIN _rhs
+            ON {by_cond.chain(pc.Iter.once(comparison(rhs_key))).reduce(sql.SqlExpr.and_)}
             """
             return self.__class__(
                 sql.from_query(
@@ -772,9 +773,7 @@ class LazyFrame(sql.CoreHandler[sql.SqlFrame]):
                         sql.row_number()
                         .over(
                             partition_by=TEMP_COL,
-                            order_by=sql.col(asof_order)
-                            .sub(sql.col(on_keys.left))
-                            .abs(),
+                            order_by=sql.col(asof_order).sub(on_keys.left).abs(),
                         )
                         .alias(asof_rank),
                     )
