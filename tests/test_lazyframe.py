@@ -6,7 +6,7 @@ import pytest
 from polars.testing import assert_frame_equal
 
 import pql
-import pql._typing
+import pql._typing as t
 
 from ._utils import assert_lf_eq_pl
 
@@ -83,8 +83,8 @@ def test_sql_query(sample_df: pl.DataFrame) -> None:
     assert parsed.raw.upper().count("WHERE") == 1
 
 
-@pytest.mark.parametrize("theme", pql._typing.Themes.__args__)
-def test_sql_show(sample_df: pl.DataFrame, theme: pql._typing.Themes) -> None:
+@pytest.mark.parametrize("theme", t.Themes.__args__)
+def test_sql_show(sample_df: pl.DataFrame, theme: t.Themes) -> None:
     pql.LazyFrame(sample_df).select(
         pql.col("salary").cast(pql.Float64())
     ).sql_query().show(theme)
@@ -329,32 +329,23 @@ def test_cast(sample_df: pl.DataFrame) -> None:
 
 
 def test_pipe(sample_df: pl.DataFrame) -> None:
-    result = pql.LazyFrame(sample_df).pipe(lambda lf: lf)
-    expected = sample_df.lazy().pipe(lambda df: df)
-    assert_lf_eq_pl(result, expected)
+    assert_lf_eq_pl(
+        pql.LazyFrame(sample_df).pipe(lambda lf: lf),
+        sample_df.lazy().pipe(lambda df: df),
+    )
 
 
-def test_drop_single_column(sample_df: pl.DataFrame) -> None:
-    result = pql.LazyFrame(sample_df).drop("age")
-    expected = sample_df.lazy().drop("age")
-    assert_lf_eq_pl(result, expected)
+@pytest.mark.parametrize("cols", [["age"], ["age", "salary"]])
+def test_drop_single_column(sample_df: pl.DataFrame, cols: list[str]) -> None:
+    assert_lf_eq_pl(pql.LazyFrame(sample_df).drop(*cols), sample_df.lazy().drop(*cols))
 
 
-def test_drop_multiple_columns(sample_df: pl.DataFrame) -> None:
-    result = pql.LazyFrame(sample_df).drop("age", "salary")
-    expected = sample_df.lazy().drop("age", "salary")
-    assert_lf_eq_pl(result, expected)
-
-
-def test_rename_single_column(sample_df: pl.DataFrame) -> None:
-    result = pql.LazyFrame(sample_df).rename({"age": "years"})
-    expected = sample_df.lazy().rename({"age": "years"})
-    assert_lf_eq_pl(result, expected)
-
-
-def test_rename_multiple_columns(sample_df: pl.DataFrame) -> None:
-    result = pql.LazyFrame(sample_df).rename({"age": "years", "name": "full_name"})
-    expected = sample_df.lazy().rename({"age": "years", "name": "full_name"})
+@pytest.mark.parametrize(
+    "mapping", [{"age": "years"}, {"age": "years", "name": "full_name"}]
+)
+def test_rename(sample_df: pl.DataFrame, mapping: dict[str, str]) -> None:
+    result = pql.LazyFrame(sample_df).rename(mapping)
+    expected = sample_df.lazy().rename(mapping)
     assert_lf_eq_pl(result, expected)
 
 
@@ -440,7 +431,7 @@ def test_fill_null_with_value(sample_df: pl.DataFrame) -> None:
     "strategy",
     ["forward", "backward", "min", "max", "mean", "zero", "one"],
 )
-def test_fill_null_with_strategy(strategy: pql._typing.FillNullStrategy) -> None:
+def test_fill_null_with_strategy(strategy: t.FillNullStrategy) -> None:
     df = pl.DataFrame({"a": [1.0, None, None, 4.0, None]})
     assert_lf_eq_pl(
         pql.LazyFrame(df).fill_null(strategy=strategy),
@@ -452,7 +443,7 @@ def test_fill_null_with_strategy(strategy: pql._typing.FillNullStrategy) -> None
     "strategy",
     ["forward", "backward"],
 )
-def test_fill_null_with_strategy_limit(strategy: pql._typing.FillNullStrategy) -> None:
+def test_fill_null_with_strategy_limit(strategy: t.FillNullStrategy) -> None:
     df = pl.DataFrame({"a": [1, None, None, 4, None]})
     assert_lf_eq_pl(
         pql.LazyFrame(df).fill_null(strategy=strategy, limit=1),
@@ -468,7 +459,7 @@ def test_fill_null_with_value_limit_error() -> None:
 
 @pytest.mark.parametrize("strategy", ["min", "max", "mean", "zero", "one"])
 def test_fill_null_with_non_directional_strategy_limit_error(
-    strategy: pql._typing.FillNullStrategy,
+    strategy: t.FillNullStrategy,
 ) -> None:
     df = pl.DataFrame({"a": [1.0, None, None, 4.0]})
     with pytest.raises(ValueError, match="can only specify `limit`"):
@@ -612,15 +603,6 @@ def test_describe(sample_df: pl.DataFrame) -> None:
     )
 
 
-def test_join() -> None:
-    left = pl.DataFrame({"id": [1, 2, 3], "a": [10, 20, 30]})
-    right = pl.DataFrame({"id": [2, 3, 4], "b": [200, 300, 400]})
-    assert_lf_eq_pl(
-        pql.LazyFrame(left).join(pql.LazyFrame(right), on="id", how="inner"),
-        left.lazy().join(right.lazy(), on="id", how="inner"),
-    )
-
-
 def test_unnest() -> None:
     df = pl.DataFrame(
         {"id": [1, 2], "nested": [{"a": 10, "b": 100}, {"a": 20, "b": 200}]}
@@ -631,262 +613,21 @@ def test_unnest() -> None:
     )
 
 
-def test_join_asof_backward() -> None:
-    left = pl.DataFrame({"t": [1, 4, 9], "g": ["x", "x", "y"], "a": [1, 2, 3]})
-    right = pl.DataFrame({"u": [0, 3, 8], "g2": ["x", "x", "y"], "b": [100, 200, 300]})
-    assert_lf_eq_pl(
-        pql.LazyFrame(left).join_asof(
-            pql.LazyFrame(right),
-            left_on="t",
-            right_on="u",
-            by_left="g",
-            by_right="g2",
-            strategy="backward",
-        ),
-        left.lazy().join_asof(
-            right.lazy(),
-            left_on="t",
-            right_on="u",
-            by_left="g",
-            by_right="g2",
-            strategy="backward",
-        ),
-    )
-
-
-def test_join_left() -> None:
-    left = pl.DataFrame({"id": [1, 2, 3], "a": [10, 20, 30]})
-    right = pl.DataFrame({"id": [2, 3, 4], "b": [200, 300, 400]})
-    assert_lf_eq_pl(
-        pql.LazyFrame(left).join(pql.LazyFrame(right), on="id", how="left"),
-        left.lazy().join(right.lazy(), on="id", how="left"),
-    )
-
-
-def test_join_outer() -> None:
-    """outer=full for polars."""
-    left = pl.DataFrame({"id": [1, 2, 3], "a": [10, 20, 30]})
-    right = pl.DataFrame({"id": [2, 3, 4], "b": [200, 300, 400]})
-    assert_lf_eq_pl(
-        pql.LazyFrame(left).join(pql.LazyFrame(right), on="id", how="outer"),
-        left.lazy().join(right.lazy(), on="id", how="full"),
-    )
-
-
-def test_join_cross() -> None:
-    left = pl.DataFrame({"a": [1, 2]})
-    right = pl.DataFrame({"b": [10, 20]})
-    assert_lf_eq_pl(
-        pql.LazyFrame(left).join(pql.LazyFrame(right), how="cross"),
-        left.lazy().join(right.lazy(), how="cross"),
-    )
-
-
-def test_join_cross_with_keys_error() -> None:
-    left = pl.DataFrame({"id": [1, 2], "a": [10, 20]})
-    right = pl.DataFrame({"id": [2, 3], "b": [200, 300]})
-    with pytest.raises(ValueError, match="Can not pass"):
-        _ = pql.LazyFrame(left).join(pql.LazyFrame(right), on="id", how="cross")
-
-
-def test_join_left_on_right_on() -> None:
-    left = pl.DataFrame({"lid": [1, 2, 3], "a": [10, 20, 30]})
-    right = pl.DataFrame({"rid": [2, 3, 4], "b": [200, 300, 400]})
-    assert_lf_eq_pl(
-        pql.LazyFrame(left).join(
-            pql.LazyFrame(right), left_on="lid", right_on="rid", how="inner"
-        ),
-        left.lazy().join(right.lazy(), left_on="lid", right_on="rid", how="inner"),
-    )
-
-
-def test_join_semi() -> None:
-    left = pl.DataFrame({"id": [1, 2, 3], "a": [10, 20, 30]})
-    right = pl.DataFrame({"id": [2, 3, 4], "b": [200, 300, 400]})
-    result = pql.LazyFrame(left).join(pql.LazyFrame(right), on="id", how="semi")
-    expected = left.lazy().join(right.lazy(), on="id", how="semi")
-    assert_lf_eq_pl(result, expected)
-
-
-def test_join_anti() -> None:
-    left = pl.DataFrame({"id": [1, 2, 3], "a": [10, 20, 30]})
-    right = pl.DataFrame({"id": [2, 3, 4], "b": [200, 300, 400]})
-    result = pql.LazyFrame(left).join(pql.LazyFrame(right), on="id", how="anti")
-    expected = left.lazy().join(right.lazy(), on="id", how="anti")
-    assert_lf_eq_pl(result, expected)
-
-
-def test_join_on_multiple_keys() -> None:
-    left = pl.DataFrame({"id1": [1, 2, 3], "id2": ["a", "b", "c"], "a": [10, 20, 30]})
-    right = pl.DataFrame(
-        {"id1": [2, 3, 4], "id2": ["b", "c", "d"], "b": [200, 300, 400]}
-    )
-    assert_lf_eq_pl(
-        pql.LazyFrame(left).join(pql.LazyFrame(right), on=["id1", "id2"], how="inner"),
-        left.lazy().join(right.lazy(), on=["id1", "id2"], how="inner"),
-    )
-
-
-def test_join_column_overlap() -> None:
-    left = pl.DataFrame({"id": [1, 2], "a": [10, 20]})
-    right = pl.DataFrame({"id": [1, 2], "a": [100, 200]})
-    result = pql.LazyFrame(left).join(pql.LazyFrame(right), on="id")
-    expected = left.lazy().join(right.lazy(), on="id")
-    assert_lf_eq_pl(result, expected)
-
-
-def test_join_asof_forward() -> None:
-    left = pl.DataFrame({"t": [1, 4, 9], "g": ["x", "x", "y"], "a": [1, 2, 3]})
-    right = pl.DataFrame({"u": [0, 3, 8], "g2": ["x", "x", "y"], "b": [100, 200, 300]})
-    assert_lf_eq_pl(
-        pql.LazyFrame(left).join_asof(
-            pql.LazyFrame(right),
-            left_on="t",
-            right_on="u",
-            by_left="g",
-            by_right="g2",
-            strategy="forward",
-        ),
-        left.lazy().join_asof(
-            right.lazy(),
-            left_on="t",
-            right_on="u",
-            by_left="g",
-            by_right="g2",
-            strategy="forward",
-        ),
-    )
-
-
-def test_join_asof_nearest() -> None:
-    left = pl.DataFrame({"t": [1, 4, 9], "g": ["x", "x", "y"], "a": [1, 2, 3]})
-    right = pl.DataFrame({"u": [0, 3, 8], "g2": ["x", "x", "y"], "b": [100, 200, 300]})
-    assert_lf_eq_pl(
-        pql.LazyFrame(left).join_asof(
-            pql.LazyFrame(right),
-            left_on="t",
-            right_on="u",
-            by_left="g",
-            by_right="g2",
-            strategy="nearest",
-        ),
-        left.lazy().join_asof(
-            right.lazy(),
-            left_on="t",
-            right_on="u",
-            by_left="g",
-            by_right="g2",
-            strategy="nearest",
-        ),
-    )
-
-
-def test_join_asof_error_on_and_left_on() -> None:
-    left = pl.DataFrame({"t": [1, 4, 9], "a": [1, 2, 3]})
-    right = pl.DataFrame({"u": [0, 3, 8], "b": [100, 200, 300]})
-    with pytest.raises(ValueError, match="If `on` is specified"):
-        _ = pql.LazyFrame(left).join_asof(
-            pql.LazyFrame(right), on="t", left_on="t", right_on="u"
-        )
-
-
-def test_join_asof_error_no_keys() -> None:
-    left = pl.DataFrame({"t": [1, 4, 9], "a": [1, 2, 3]})
-    right = pl.DataFrame({"u": [0, 3, 8], "b": [100, 200, 300]})
-    with pytest.raises(ValueError, match="Either"):
-        _ = pql.LazyFrame(left).join_asof(pql.LazyFrame(right))
-
-
-def test_join_asof_error_left_on_without_right_on() -> None:
-    left = pl.DataFrame({"t": [1, 4, 9], "a": [1, 2, 3]})
-    right = pl.DataFrame({"u": [0, 3, 8], "b": [100, 200, 300]})
-    with pytest.raises(ValueError, match="Either"):
-        _ = pql.LazyFrame(left).join_asof(pql.LazyFrame(right), left_on="t")
-
-
-def test_join_asof_error_by_and_by_left() -> None:
-    left = pl.DataFrame({"t": [1, 4, 9], "g": ["x", "x", "y"], "a": [1, 2, 3]})
-    right = pl.DataFrame({"u": [0, 3, 8], "g2": ["x", "x", "y"], "b": [100, 200, 300]})
-    with pytest.raises(ValueError, match="If `by` is specified"):
-        _ = pql.LazyFrame(left).join_asof(
-            pql.LazyFrame(right),
-            left_on="t",
-            right_on="u",
-            by="g",
-            by_left="g",
-        )
-
-
-def test_join_asof_error_by_left_without_by_right() -> None:
-    left = pl.DataFrame({"t": [1, 4, 9], "g": ["x", "x", "y"], "a": [1, 2, 3]})
-    right = pl.DataFrame({"u": [0, 3, 8], "g2": ["x", "x", "y"], "b": [100, 200, 300]})
-    with pytest.raises(ValueError, match="Can not specify only"):
-        _ = pql.LazyFrame(left).join_asof(
-            pql.LazyFrame(right),
-            left_on="t",
-            right_on="u",
-            by_left="g",
-        )
-
-
-def test_join_asof_error_unequal_by_lengths() -> None:
-    left = pl.DataFrame({"t": [1, 4, 9], "g": ["x", "x", "y"], "a": [1, 2, 3]})
-    right = pl.DataFrame({"u": [0, 3, 8], "g2": ["x", "x", "y"], "b": [100, 200, 300]})
-    with pytest.raises(ValueError, match="must have the same length"):
-        _ = pql.LazyFrame(left).join_asof(
-            pql.LazyFrame(right),
-            left_on="t",
-            right_on="u",
-            by_left="g",
-            by_right=["g2", "b"],
-        )
-
-
-def test_unique_any(sample_df: pl.DataFrame) -> None:
-    assert_lf_eq_pl(
-        pql.LazyFrame(sample_df).unique(subset=["department"]),
-        sample_df.lazy().unique(subset=["department"], keep="any"),
-    )
-
-
-def test_unique_first(sample_df: pl.DataFrame) -> None:
+@pytest.mark.parametrize("strategy", t.UniqueKeepStrategy.__args__)
+def test_unique(sample_df: pl.DataFrame, strategy: t.UniqueKeepStrategy) -> None:
     assert_lf_eq_pl(
         pql.LazyFrame(sample_df).unique(
-            subset=["department"], keep="first", order_by="id"
+            subset=["department"], keep=strategy, order_by="id"
         ),
-        sample_df.lazy().unique(subset=["department"], keep="first"),
+        sample_df.lazy().unique(subset=["department"], keep=strategy).sort("id"),
     )
 
 
-def test_unique_last(sample_df: pl.DataFrame) -> None:
-    assert_lf_eq_pl(
-        pql.LazyFrame(sample_df).unique(
-            subset=["department"], keep="last", order_by="id"
-        ),
-        sample_df.lazy().unique(subset=["department"], keep="last"),
-    )
-
-
-def test_unique_none(sample_df: pl.DataFrame) -> None:
-    result = (
-        pql.LazyFrame(sample_df).unique(subset=["department"], keep="none").collect()
-    )
-    assert (
-        result.height
-        == sample_df.lazy().unique(subset=["department"], keep="none").collect().height
-    )
-
-
-def test_unique_first_without_order_by_error() -> None:
+@pytest.mark.parametrize("strategy", ["first", "last"])
+def test_unique_without_order_by_error(strategy: t.UniqueKeepStrategy) -> None:
     df = pl.DataFrame({"a": [1, 1, 2], "b": [1, 2, 3]})
     with pytest.raises(ValueError, match="`order_by` must be specified"):
-        _ = pql.LazyFrame(df).unique(keep="first")
-
-
-def test_unique_last_without_order_by_error() -> None:
-    df = pl.DataFrame({"a": [1, 1, 2], "b": [1, 2, 3]})
-    with pytest.raises(ValueError, match="`order_by` must be specified"):
-        _ = pql.LazyFrame(df).unique(keep="last")
+        _ = pql.LazyFrame(df).unique(keep=strategy)
 
 
 def test_unique_with_multiple_order_by() -> None:
@@ -907,35 +648,6 @@ def test_select_with_named_expr() -> None:
     df = pl.DataFrame({"a": [1, 2, 3], "b": [4, 5, 6]})
     result = pql.LazyFrame(df).select(pql.col("a"), doubled=pql.col("b").mul(2))
     expected = df.lazy().select(pl.col("a"), doubled=pl.col("b").mul(2))
-    assert_lf_eq_pl(result, expected)
-
-
-def test_join_left_on_right_on_length_mismatch() -> None:
-    left = pl.DataFrame({"id1": [1, 2], "id2": ["a", "b"], "a": [10, 20]})
-    right = pl.DataFrame({"id1": [1, 2], "b": [100, 200]})
-    with pytest.raises(ValueError, match="same length"):
-        _ = pql.LazyFrame(left).join(
-            pql.LazyFrame(right), left_on=["id1", "id2"], right_on="id1", how="inner"
-        )
-
-
-def test_join_left_with_multiple_keys() -> None:
-    left = pl.DataFrame({"id1": [1, 2, 3], "id2": ["a", "b", "c"], "a": [10, 20, 30]})
-    right = pl.DataFrame(
-        {"id1": [2, 3, 4], "id2": ["b", "c", "d"], "b": [200, 300, 400]}
-    )
-    result = pql.LazyFrame(left).join(
-        pql.LazyFrame(right),
-        left_on=["id1", "id2"],
-        right_on=["id1", "id2"],
-        how="left",
-    )
-    expected = left.lazy().join(
-        right.lazy(),
-        left_on=["id1", "id2"],
-        right_on=["id1", "id2"],
-        how="left",
-    )
     assert_lf_eq_pl(result, expected)
 
 
@@ -1035,10 +747,14 @@ def test_pivot_multiple_value_columns(sample_df: pl.DataFrame) -> None:
     )
 
 
-@pytest.mark.parametrize("agg", ["min", "max", "first", "last", "mean", "median"])
-def test_pivot_aggregate_fns(
-    sample_df: pl.DataFrame, agg: pql._typing.PivotAgg
-) -> None:
+@pytest.mark.parametrize(
+    "agg", pc.Iter[str](t.PivotAgg.__args__).filter(lambda agg: agg != "sum").collect()
+)
+def test_pivot_aggregate_fns(sample_df: pl.DataFrame, agg: t.PivotAgg) -> None:
+    """The `count` option is currently deprecated for polars, but `len` is NOT the right func to call in `SqlExpr`.
+
+    We keep both `count` and `len` as options for the `aggregate_function` parameter, but they both map to `len` in polars.
+    """
     assert_lf_eq_pl(
         pql.LazyFrame(sample_df).pivot(
             "department",
@@ -1075,25 +791,6 @@ def test_pivot_aggregate_sum(sample_df: pl.DataFrame) -> None:
             index="sex",
             values="salary",
             aggregate_function="sum",
-        ),
-    )
-
-
-def test_pivot_aggregate_len(sample_df: pl.DataFrame) -> None:
-    assert_lf_eq_pl(
-        pql.LazyFrame(sample_df).pivot(
-            "category",
-            on_columns=["A", "B"],
-            index="sex",
-            values="id",
-            aggregate_function="count",
-        ),
-        sample_df.lazy().pivot(
-            "category",
-            on_columns=["A", "B"],
-            index="sex",
-            values="id",
-            aggregate_function="len",
         ),
     )
 
