@@ -4,6 +4,7 @@ from abc import ABC, abstractmethod
 from collections.abc import Callable, Iterable
 from dataclasses import dataclass, field, replace
 from enum import IntEnum, auto
+from functools import partial
 from typing import TYPE_CHECKING, NamedTuple, Self, override
 
 import pyochain as pc
@@ -106,23 +107,17 @@ class MultiMeta(ExprMeta):
             )
             return sql.SqlExpr(SQLExpression(raw_str))
 
+        def _to_resolved(name: str, output: str) -> ResolvedExpr:
+            return ResolvedExpr(_replace_col(template, name), output, self.kind)
+
         base_names = self.resolver(schema)
         output_names = self.resolve_output_names(base_names, alias_override)
         match alias_override.is_none():
             case True:
-                return (
-                    base_names.iter()
-                    .zip(output_names)
-                    .map_star(
-                        lambda column_name, output_name: ResolvedExpr(
-                            _replace_col(template, column_name), output_name, self.kind
-                        )
-                    )
-                )
+                return base_names.iter().zip(output_names).map_star(_to_resolved)
             case False:
-                return ResolvedExpr(
-                    template, output_names.first(), self.kind
-                ).into_iter()
+                _res = partial(_to_resolved, output=output_names.first())
+                return base_names.iter().map(_res)
 
 
 class ResolvedExpr(NamedTuple):

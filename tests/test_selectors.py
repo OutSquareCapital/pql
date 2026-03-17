@@ -112,6 +112,27 @@ def test_selector_in_group_by_agg() -> None:
     )
 
 
+_selectors_lfs = [
+    _PQL_LF.select(pql.col("a"), total=cs.numeric()),
+    _PQL_LF.group_by("a").agg(total=cs.numeric().sum()),
+]
+
+
+@pytest.mark.parametrize("lf", _selectors_lfs)
+def test_named_selector_collect(lf: pql.LazyFrame) -> None:
+    assert_lf_eq_pl(lf, lf.collect().lazy())
+    assert lf.schema.keys().into(list) == ["a", "total"]
+
+
+@pytest.mark.parametrize("lf", _selectors_lfs)
+def test_named_selector_lazy(lf: pql.LazyFrame) -> None:
+    """Seems like when go `DuckDBPyRelation -> pl.LazyFrame`, it crashes with `pl.exceptions.ComputeError`, but not with `DuckDBPyRelation -> pl.DataFrame`."""
+    msg = "column appears more than once"
+    with pytest.raises(pl.exceptions.ComputeError, match=msg):
+        _ = lf.lazy().collect()
+    assert lf.schema.keys().into(list) == ["a", "total"]
+
+
 def test_empty_selector() -> None:
     assert_lf_eq_pl(
         _PQL_LF.select(pql.col("a")).select(cs.boolean()),
