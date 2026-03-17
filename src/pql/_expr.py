@@ -572,14 +572,7 @@ class Expr(sql.CoreHandler[sql.SqlExpr]):
                 return self._as_scalar(base.add(3))
 
     def skew(self, *, bias: bool = True) -> Self:
-        adjusted = self.inner().skewness()
-        match bias:
-            case False:
-                return self._as_scalar(adjusted)
-            case True:
-                n = self.inner().count()
-                factor = n.sub(2).truediv(n.mul(n.sub(1)).sqrt())
-                return self._as_scalar(adjusted.mul(factor))
+        return self._as_scalar(self.inner().skew(bias=bias))
 
     def quantile(self, quantile: float, *, interpolation: bool = True) -> Self:
         return self._as_scalar(

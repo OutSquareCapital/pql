@@ -112,6 +112,16 @@ class SqlExpr(Expression, Fns):
             case False:
                 return self.kurtosis_samp()
 
+    def skew(self, *, bias: bool) -> Self:
+        adjusted = self.skewness()
+        match bias:
+            case False:
+                return adjusted
+            case True:
+                n = self.count()
+                factor = n.sub(2).truediv(n.mul(n.sub(1)).sqrt())
+                return adjusted.mul(factor)
+
     def shift(self, n: int = 1) -> Self:
         match n:
             case 0:

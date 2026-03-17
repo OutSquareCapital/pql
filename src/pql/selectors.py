@@ -49,7 +49,7 @@ class Selector(Expr):
         match other:
             case Selector():
                 return Selector.__from_resolver__(
-                    lambda s: union_resolver(s, self._resolver, other._resolver)
+                    union_resolver(self._resolver, other._resolver)
                 )
             case _:
                 return Expr.__or__(self, other)
@@ -70,7 +70,7 @@ class Selector(Expr):
         match other:
             case Selector():
                 return Selector.__from_resolver__(
-                    lambda s: intersection_resolver(s, self._resolver, other._resolver)
+                    intersection_resolver(self._resolver, other._resolver)
                 )
             case _:
                 return Expr.__and__(self, other)
@@ -91,7 +91,7 @@ class Selector(Expr):
         match other:
             case Selector():
                 return Selector.__from_resolver__(
-                    lambda s: difference_resolver(s, self._resolver, other._resolver)
+                    difference_resolver(self._resolver, other._resolver)
                 )
             case _:
                 return Expr.__sub__(self, other)
@@ -105,9 +105,7 @@ class Selector(Expr):
         return self.difference(other)
 
     def complement(self) -> Selector:
-        return Selector.__from_resolver__(
-            lambda s: complement_resolver(s, self._resolver)
-        )
+        return Selector.__from_resolver__(complement_resolver(self._resolver))
 
     @override
     def __invert__(self) -> Selector:
@@ -136,7 +134,7 @@ def boolean() -> Selector:
 
 def all() -> Selector:
     """Select all columns."""
-    return Selector.__from_resolver__(all_columns_resolver)
+    return Selector.__from_resolver__(all_columns_resolver())
 
 
 def float() -> Selector:

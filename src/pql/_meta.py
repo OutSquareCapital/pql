@@ -13,7 +13,7 @@ from . import sql
 from .sql.utils import TryIter, try_chain, try_iter
 
 if TYPE_CHECKING:
-    from pyochain.traits import PyoCollection, PyoIterable, PyoKeysView
+    from pyochain.traits import PyoCollection, PyoIterable
 
     from ._datatypes import DataType
     from ._schema import Schema
@@ -281,8 +281,8 @@ def _replace_col(template: sql.SqlExpr, column_name: str) -> sql.SqlExpr:
     return sql.SqlExpr(SQLExpression(raw_str))
 
 
-def all_columns_resolver(schema: Schema) -> PyoKeysView[str]:
-    return schema.keys()
+def all_columns_resolver() -> ColumnResolver:
+    return Schema.keys
 
 
 def all_fn_resolver(exclude: pc.Option[TryIter[IntoExprColumn]]) -> ColumnResolver:
@@ -293,7 +293,7 @@ def all_fn_resolver(exclude: pc.Option[TryIter[IntoExprColumn]]) -> ColumnResolv
             .collect(pc.Set)
             .into(exclude_resolver)
         )
-    ).unwrap_or(all_columns_resolver)
+    ).unwrap_or(all_columns_resolver())
 
 
 def exclude_resolver(excluded: pc.Set[str]) -> ColumnResolver:
@@ -303,7 +303,7 @@ def exclude_resolver(excluded: pc.Set[str]) -> ColumnResolver:
 
 
 def agg_expr_resolver(cols: pc.Option[pc.Seq[str]]) -> ColumnResolver:
-    return cols.map(fixed_resolver).unwrap_or(all_columns_resolver)
+    return cols.map(fixed_resolver).unwrap_or(all_columns_resolver())
 
 
 def fixed_resolver(names: pc.Seq[str]) -> ColumnResolver:
@@ -328,27 +328,35 @@ def name_resolver(predicate: Callable[[str], bool]) -> ColumnResolver:
     return lambda schema: schema.keys().iter().filter(predicate).collect()
 
 
-def difference_resolver(
-    schema: Schema, left: ColumnResolver, right: ColumnResolver
-) -> pc.Seq[str]:
-    right_resolver = right(schema)
-    return left(schema).iter().filter(lambda n: n not in right_resolver).collect()
+def difference_resolver(left: ColumnResolver, right: ColumnResolver) -> ColumnResolver:
+    def _fn(schema: Schema) -> PyoCollection[str]:
+        right_resolver = right(schema)
+        return left(schema).iter().filter(lambda n: n not in right_resolver).collect()
+
+    return _fn
 
 
-def complement_resolver(schema: Schema, resolver: ColumnResolver) -> pc.Seq[str]:
-    excluded = resolver(schema)
-    return schema.keys().iter().filter(lambda n: n not in excluded).collect()
+def complement_resolver(resolver: ColumnResolver) -> ColumnResolver:
+    def _fn(schema: Schema) -> pc.Seq[str]:
+        excluded = resolver(schema)
+        return schema.keys().iter().filter(lambda n: n not in excluded).collect()
+
+    return _fn
 
 
 def intersection_resolver(
-    schema: Schema, left: ColumnResolver, right: ColumnResolver
-) -> pc.Seq[str]:
-    right_set = right(schema)
-    return left(schema).iter().filter(lambda n: n in right_set).collect()
+    left: ColumnResolver, right: ColumnResolver
+) -> ColumnResolver:
+    def _fn(schema: Schema) -> pc.Seq[str]:
+        right_set = right(schema)
+        return left(schema).iter().filter(lambda n: n in right_set).collect()
+
+    return _fn
 
 
-def union_resolver(
-    schema: Schema, left: ColumnResolver, right: ColumnResolver
-) -> pc.Seq[str]:
-    selected = left(schema).iter().chain(right(schema)).collect(pc.Set)
-    return schema.keys().iter().filter(lambda n: n in selected).collect()
+def union_resolver(left: ColumnResolver, right: ColumnResolver) -> ColumnResolver:
+    def _fn(schema: Schema) -> pc.Seq[str]:
+        selected = left(schema).iter().chain(right(schema)).collect(pc.Set)
+        return schema.keys().iter().filter(lambda n: n in selected).collect()
+
+    return _fn
