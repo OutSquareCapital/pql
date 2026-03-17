@@ -9,7 +9,7 @@ Each summary cell is `global (Narwhals, Polars)`.
 
 | Class               | Coverage              | Implemented   | Matched      | Missing       | Mismatched  | Extra       |
 | ------------------- | --------------------- | ------------- | ------------ | ------------- | ----------- | ----------- |
-| LazyFrame           | 38.3% (48.0%, 35.4%)  | 107 (25, 82)  | 41 (12, 29)  | 30 (0, 30)    | 36 (13, 23) | 33 (30, 3)  |
+| LazyFrame           | 38.3% (48.0%, 35.4%)  | 107 (25, 82)  | 41 (12, 29)  | 30 (0, 30)    | 36 (13, 23) | 35 (31, 4)  |
 | Expr                | 49.5% (72.5%, 42.1%)  | 283 (69, 214) | 140 (50, 90) | 100 (6, 94)   | 43 (13, 30) | 59 (58, 1)  |
 | LazyGroupBy         | 52.9% (0.0%, 56.2%)   | 17 (1, 16)    | 9 (0, 9)     | 4 (0, 4)      | 4 (1, 3)    | 11 (11, 0)  |
 | ExprStrNameSpace    | 31.8% (42.1%, 27.7%)  | 66 (19, 47)   | 21 (8, 13)   | 10 (0, 10)    | 35 (11, 24) | 20 (19, 1)  |
@@ -165,10 +165,11 @@ Each summary cell is `global (Narwhals, Polars)`.
   - **Polars**: (`on: ColumnNameOrSelector | Sequence[ColumnNameOrSelector] | None`, `index: ColumnNameOrSelector | Sequence[ColumnNameOrSelector] | None`, `variable_name: str | None`, `value_name: str | None`, `streamable: bool`) -> LazyFrame
   - **pql**: (`on: TryIter[str]`, `index: TryIter[str]`, variable_name: str, value_name: str) -> Self
 
-### [+] Extra Methods (pql-only) (3)
+### [+] Extra Methods (pql-only) (4)
 
 - `group_by_all`
 - `inner`
+- `join_cross`
 - `sql_query`
 
 ## Expr
