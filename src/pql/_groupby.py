@@ -43,8 +43,7 @@ class LazyGroupBy:
 
     def _agg_columns(self, func: Callable[[Expr], Expr]) -> LazyFrame:
         return (
-            self._agg_schema.keys()
-            .iter()
+            self._agg_schema.iter()
             .map(lambda name: col(name).pipe(func).alias(name))
             .into(self.agg)
         )

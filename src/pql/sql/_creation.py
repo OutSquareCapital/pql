@@ -73,7 +73,7 @@ def from_query(query: str, **relations: IntoRel) -> duckdb.DuckDBPyRelation:
 
 def from_dicts(data: Sequence[Mapping[str, PythonLiteral]]) -> duckdb.DuckDBPyRelation:
     return (
-        pc.Iter(data[0].keys())
+        pc.Iter(data[0])
         .map(lambda key: (key, pc.Iter(data).map(lambda row: row[key]).collect(tuple)))
         .into(from_dict)
     )
@@ -111,7 +111,7 @@ def from_dict(data: IntoDict[str, Any]) -> duckdb.DuckDBPyRelation:  # pyright: 
     data = pc.Dict(data)
 
     raw_vals = data.items().iter().map_star(_to_expr).collect(tuple)
-    unnested = data.keys().iter().map(_unnest)
+    unnested = data.iter().map(_unnest)
     return duckdb.values(raw_vals).select(*unnested)
 
 

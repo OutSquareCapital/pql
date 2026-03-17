@@ -108,9 +108,7 @@ class MultiMeta(ExprMeta):
                     .zip(output_names)
                     .map_star(
                         lambda column_name, output_name: ResolvedExpr(
-                            _replace_col(template, column_name),
-                            output_name,
-                            self.kind,
+                            _replace_col(template, column_name), output_name, self.kind
                         )
                     )
                 )
@@ -244,7 +242,7 @@ class ExprPlan:
     def resolve(self) -> pc.Iter[sql.SqlExpr]:
 
         def _resolved(updates: pc.Dict[str, sql.SqlExpr]) -> pc.Iter[sql.SqlExpr]:
-            match updates.keys().any(lambda name: name in self.schema):
+            match updates.any(lambda name: name in self.schema):
                 case False:
                     return (
                         updates.items()
@@ -297,9 +295,7 @@ def all_fn_resolver(exclude: pc.Option[TryIter[IntoExprColumn]]) -> ColumnResolv
 
 
 def exclude_resolver(excluded: pc.Set[str]) -> ColumnResolver:
-    return lambda schema: (
-        schema.keys().iter().filter(lambda n: n not in excluded).collect()
-    )
+    return lambda schema: schema.iter().filter(lambda n: n not in excluded).collect()
 
 
 def agg_expr_resolver(cols: pc.Option[pc.Seq[str]]) -> ColumnResolver:
@@ -325,7 +321,7 @@ def dtype_resolver(*on: type[DataType]) -> ColumnResolver:
 
 
 def name_resolver(predicate: Callable[[str], bool]) -> ColumnResolver:
-    return lambda schema: schema.keys().iter().filter(predicate).collect()
+    return lambda schema: schema.iter().filter(predicate).collect()
 
 
 def difference_resolver(left: ColumnResolver, right: ColumnResolver) -> ColumnResolver:
@@ -339,7 +335,7 @@ def difference_resolver(left: ColumnResolver, right: ColumnResolver) -> ColumnRe
 def complement_resolver(resolver: ColumnResolver) -> ColumnResolver:
     def _fn(schema: Schema) -> pc.Seq[str]:
         excluded = resolver(schema)
-        return schema.keys().iter().filter(lambda n: n not in excluded).collect()
+        return schema.iter().filter(lambda n: n not in excluded).collect()
 
     return _fn
 
@@ -357,6 +353,6 @@ def intersection_resolver(
 def union_resolver(left: ColumnResolver, right: ColumnResolver) -> ColumnResolver:
     def _fn(schema: Schema) -> pc.Seq[str]:
         selected = left(schema).iter().chain(right(schema)).collect(pc.Set)
-        return schema.keys().iter().filter(lambda n: n in selected).collect()
+        return schema.iter().filter(lambda n: n in selected).collect()
 
     return _fn
