@@ -10,7 +10,7 @@ Each summary cell is `global (Narwhals, Polars)`.
 | Class               | Coverage              | Implemented   | Matched      | Missing       | Mismatched  | Extra       |
 | ------------------- | --------------------- | ------------- | ------------ | ------------- | ----------- | ----------- |
 | LazyFrame           | 38.3% (48.0%, 35.4%)  | 107 (25, 82)  | 41 (12, 29)  | 30 (0, 30)    | 36 (13, 23) | 33 (30, 3)  |
-| Expr                | 49.3% (71.4%, 42.1%)  | 284 (70, 214) | 140 (50, 90) | 101 (7, 94)   | 43 (13, 30) | 59 (58, 1)  |
+| Expr                | 49.5% (72.5%, 42.1%)  | 283 (69, 214) | 140 (50, 90) | 100 (6, 94)   | 43 (13, 30) | 59 (58, 1)  |
 | LazyGroupBy         | 52.9% (0.0%, 56.2%)   | 17 (1, 16)    | 9 (0, 9)     | 4 (0, 4)      | 4 (1, 3)    | 11 (11, 0)  |
 | ExprStrNameSpace    | 31.8% (42.1%, 27.7%)  | 66 (19, 47)   | 21 (8, 13)   | 10 (0, 10)    | 35 (11, 24) | 20 (19, 1)  |
 | ExprListNameSpace   | 54.7% (90.0%, 46.5%)  | 53 (10, 43)   | 29 (9, 20)   | 20 (0, 20)    | 4 (1, 3)    | 15 (14, 1)  |
@@ -18,10 +18,10 @@ Each summary cell is `global (Narwhals, Polars)`.
 | ExprNameNameSpace   | 81.2% (100.0%, 70.0%) | 16 (6, 10)    | 13 (6, 7)    | 3 (0, 3)      | 0 (0, 0)    | 3 (2, 1)    |
 | ExprArrNameSpace    | 54.8% (100.0%, 54.8%) | 31 (0, 31)    | 17 (0, 17)   | 10 (0, 10)    | 4 (0, 4)    | 27 (24, 3)  |
 | ExprDtNameSpace     | 51.5% (60.9%, 46.7%)  | 68 (23, 45)   | 35 (14, 21)  | 25 (7, 18)    | 8 (2, 6)    | 13 (12, 1)  |
-| ModuleFunctions     | 19.9% (33.8%, 14.3%)  | 236 (68, 168) | 47 (23, 24)  | 141 (22, 119) | 48 (23, 25) | 27 (15, 12) |
+| ModuleFunctions     | 20.7% (39.0%, 14.3%)  | 227 (59, 168) | 47 (23, 24)  | 132 (13, 119) | 48 (23, 25) | 29 (16, 13) |
 | selectors           | 57.1% (71.4%, 54.3%)  | 42 (7, 35)    | 24 (5, 19)   | 13 (1, 12)    | 5 (1, 4)    | 17 (17, 0)  |
-| DataType            | 62.5% (100.0%, 60.0%) | 16 (1, 15)    | 10 (1, 9)    | 5 (0, 5)      | 1 (0, 1)    | 9 (9, 0)    |
-| Schema              | 32.4% (30.0%, 35.3%)  | 37 (20, 17)   | 12 (6, 6)    | 23 (13, 10)   | 2 (1, 1)    | 68 (34, 34) |
+| DataType            | 57.1% (100.0%, 57.1%) | 14 (0, 14)    | 8 (0, 8)     | 5 (0, 5)      | 1 (0, 1)    | 9 (9, 0)    |
+| Schema              | 38.7% (42.9%, 35.3%)  | 31 (14, 17)   | 12 (6, 6)    | 17 (7, 10)    | 2 (1, 1)    | 68 (34, 34) |
 
 ## LazyFrame
 
@@ -173,12 +173,10 @@ Each summary cell is `global (Narwhals, Polars)`.
 
 ## Expr
 
-### [x] Missing Methods (95)
+### [x] Missing Methods (94)
 
 - `agg_groups`
   - **Polars**: () -> Expr
-- `any_value`
-  - **Narwhals**: (ignore_nulls: bool) -> Self
 - `append`
   - **Polars**: (other: IntoExpr, upcast: bool) -> Expr
 - `arg_max`
@@ -762,7 +760,7 @@ Each summary cell is `global (Narwhals, Polars)`.
 
 ## ModuleFunctions
 
-### [x] Missing Methods (128)
+### [x] Missing Methods (119)
 
 - `BaseExtension`
   - **Polars**: (name: str, storage: PolarsDataType, metadata: str | None) -> None
@@ -908,22 +906,8 @@ Each summary cell is `global (Narwhals, Polars)`.
   - **Polars**: (exprs: Sequence[str | Expr], function: Callable[[Sequence[Series]], Series | Any], return_dtype: DataTypeExpr | None, is_elementwise: bool, returns_scalar: bool) -> Expr
 - `map_groups`
   - **Polars**: (exprs: Sequence[str | Expr], function: Callable[[Sequence[Series]], Series | Any], return_dtype: DataTypeExpr | None, is_elementwise: bool, returns_scalar: bool) -> Expr
-- `maybe_align_index`
-  - **Narwhals**: (lhs: FrameOrSeriesT, rhs: Series[Any] | DataFrame[Any] | LazyFrame[Any]) -> FrameOrSeriesT
-- `maybe_convert_dtypes`
-  - **Narwhals**: (obj: FrameOrSeriesT, *args: bool, **kwargs: bool | str) -> FrameOrSeriesT
-- `maybe_get_index`
-  - **Narwhals**: (obj: DataFrame[Any] | LazyFrame[Any] | Series[Any]) -> Any | None
-- `maybe_reset_index`
-  - **Narwhals**: (obj: FrameOrSeriesT) -> FrameOrSeriesT
-- `maybe_set_index`
-  - **Narwhals**: (obj: FrameOrSeriesT, column_names: str | list[str] | None, index: Series[IntoSeriesT] | list[Series[IntoSeriesT]] | None) -> FrameOrSeriesT
 - `n_unique`
   - **Polars**: (*columns: str) -> Expr
-- `narwhalify`
-  - **Narwhals**: (func: Callable[..., Any] | None, pass_through: bool, eager_only: bool, series_only: bool, allow_series: bool | None) -> Callable[..., Any]
-- `new_series`
-  - **Narwhals**: (name: str, values: Any, dtype: IntoDType | None, backend: IntoBackend[EagerAllowed]) -> Series[Any]
 - `nth`
   - **Narwhals**: (*indices: int | Sequence[int]) -> Expr
   - **Polars**: (*indices: int | Sequence[int], strict: bool) -> Expr
@@ -1023,10 +1007,6 @@ Each summary cell is `global (Narwhals, Polars)`.
   - **Polars**: (start: time | IntoExprColumn | None, end: time | IntoExprColumn | None, interval: str | timedelta, closed: ClosedInterval, eager: bool) -> Series | Expr
 - `time_ranges`
   - **Polars**: (start: time | IntoExprColumn | None, end: time | IntoExprColumn | None, interval: str | timedelta, closed: ClosedInterval, eager: bool) -> Series | Expr
-- `to_native`
-  - **Narwhals**: (narwhals_object: DataFrame[IntoDataFrameT] | LazyFrame[IntoLazyFrameT] | Series[IntoSeriesT], pass_through: bool) -> IntoDataFrameT | IntoLazyFrameT | IntoSeriesT | Any
-- `to_py_scalar`
-  - **Narwhals**: (scalar_like: Any) -> Any
 - `union`
   - **Polars**: (items: Iterable[PolarsType], how: ConcatMethod, strict: bool) -> PolarsType
 - `var`
@@ -1124,10 +1104,11 @@ Each summary cell is `global (Narwhals, Polars)`.
   - **Polars**: (`*names: str`) -> Expr
   - **pql**: (`cols: TryIter[str]`, `*more_cols: str`) -> Expr
 
-### [+] Extra Methods (pql-only) (12)
+### [+] Extra Methods (pql-only) (13)
 
 - `BitString`
 - `DatetimeTZ`
+- `Geometry`
 - `Json`
 - `Map`
 - `Number`
@@ -1205,7 +1186,7 @@ Each summary cell is `global (Narwhals, Polars)`.
 
 ## Schema
 
-### [x] Missing Methods (16)
+### [x] Missing Methods (10)
 
 - `contains_dtype`
   - **Polars**: (dtype: DataType, recursive: bool) -> bool
@@ -1215,14 +1196,6 @@ Each summary cell is `global (Narwhals, Polars)`.
 - `dtypes`
   - **Narwhals**: () -> list[DType]
   - **Polars**: () -> list[DataType]
-- `from_arrow`
-  - **Narwhals**: (schema: IntoArrowSchema) -> Self
-- `from_native`
-  - **Narwhals**: (schema: IntoArrowSchema | IntoPolarsSchema | IntoPandasSchema) -> Self
-- `from_pandas_like`
-  - **Narwhals**: (schema: IntoPandasSchema) -> Self
-- `from_polars`
-  - **Narwhals**: (schema: IntoPolarsSchema) -> Self
 - `fromkeys`
   - **Narwhals**: (iterable, value=...)
   - **Polars**: (iterable, value=...)
@@ -1240,10 +1213,6 @@ Each summary cell is `global (Narwhals, Polars)`.
   - **Polars**: (compat_level: CompatLevel | None) -> Schema
 - `to_frame`
   - **Polars**: (eager: bool) -> DataFrame | LazyFrame
-- `to_pandas`
-  - **Narwhals**: (dtype_backend: DTypeBackend | Iterable[DTypeBackend]) -> dict[str, Any]
-- `to_polars`
-  - **Narwhals**: () -> Schema
 - `to_python`
   - **Polars**: () -> dict[str, type]
 

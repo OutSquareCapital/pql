@@ -33,7 +33,6 @@ IGNORED_MEMBERS: IgnoredMembers = pc.Dict(
         Pql.MODULE_FUNCTIONS: _args(
             "show_versions",
             "col",
-            "from_native",
             "Utf8",
             "StringCache",
             "Series",
@@ -47,7 +46,6 @@ IGNORED_MEMBERS: IgnoredMembers = pc.Dict(
             "enable_string_cache",
             "unregister_extension_type",
             "using_string_cache",
-            "get_native_namespace",
             "get_extension_type",
             "generate_temporary_column_name",
             "QueryOptFlags",
@@ -62,7 +60,7 @@ IGNORED_MEMBERS: IgnoredMembers = pc.Dict(
             "disable_string_cache",
             "Categories",
         ),
-        Pql.LAZY_FRAME: _args("to_native", "cache", "clear"),
+        Pql.LAZY_FRAME: _args("cache", "clear"),
         Pql.SELECTORS: _args("Selector", "categorical"),
     }
 )

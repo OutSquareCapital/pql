@@ -126,13 +126,24 @@ class ClassComparison:
                 .collect(pc.Set)
             )
 
+        narwhals_methods = self.narwhals_cls.map(
+            lambda cls: _get_public_methods(cls, self.names)
+        ).unwrap_or_else(pc.Set.new)
+        polars_methods = _get_public_methods(self.polars_cls, self.names)
+        pql_methods = _get_public_methods(self.pql_cls, self.names)
+
         return ComparisonReport(
             self.name,
-            self.narwhals_cls.map(lambda cls: _get_public_methods(cls, self.names))
-            .unwrap_or_else(pc.Set.new)
-            .union(_get_public_methods(self.polars_cls, self.names))
-            .union(_get_public_methods(self.pql_cls, self.names))
+            narwhals_methods.union(polars_methods)
+            .union(pql_methods)
             .iter()
+            .filter(
+                lambda name: (
+                    not narwhals_methods.contains(name)
+                    or polars_methods.contains(name)
+                    or pql_methods.contains(name)
+                )
+            )
             .map(
                 lambda name: ComparisonResult.from_method(
                     self.narwhals_cls, self.polars_cls, self.pql_cls, name, self.name
