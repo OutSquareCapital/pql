@@ -1,4 +1,5 @@
 from collections.abc import Callable, Mapping, Sequence
+from functools import partial
 from typing import Any, cast
 
 import duckdb
@@ -50,6 +51,7 @@ def into_relation(  # noqa: PLR0911
 
 
 _QRY_ERR = "No relation provided"
+_PY_CODE = partial(exec, "relation = dk.from_query(qry)")
 
 
 def from_query(query: str, **relations: IntoRel) -> duckdb.DuckDBPyRelation:
@@ -59,8 +61,7 @@ def from_query(query: str, **relations: IntoRel) -> duckdb.DuckDBPyRelation:
         rels: IntoDict[str, duckdb.DuckDBPyRelation],
     ) -> duckdb.DuckDBPyRelation:
         namespace = {"dk": duckdb, "qry": query, **dict(rels)}
-        py_code = "relation = dk.from_query(qry)"
-        exec(py_code, locals=namespace)  # noqa: S102
+        _PY_CODE(locals=namespace)
         return cast(duckdb.DuckDBPyRelation, namespace["relation"])
 
     return (
