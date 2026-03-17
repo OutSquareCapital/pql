@@ -189,7 +189,7 @@ class LazyFrame(sql.CoreHandler[sql.SqlFrame]):
     ) -> Self:
         """Select columns or expressions."""
         return (
-            self.schema.into(ExprPlan, try_chain(exprs, more_exprs), named_exprs)
+            self.schema.into(ExprPlan, exprs, more_exprs, named_exprs)
             .select_context(self.inner())
             .pipe(self._new)
         )
@@ -199,7 +199,7 @@ class LazyFrame(sql.CoreHandler[sql.SqlFrame]):
     ) -> Self:
         """Add or replace columns."""
         return (
-            self.schema.into(ExprPlan, try_chain(exprs, more_exprs), named_exprs)
+            self.schema.into(ExprPlan, exprs, more_exprs, named_exprs)
             .with_columns_context(self.inner())
             .pipe(self._new)
         )
@@ -268,7 +268,7 @@ class LazyFrame(sql.CoreHandler[sql.SqlFrame]):
     ) -> Self:
         """Aggregate with GROUP BY ALL — DuckDB auto-detects grouping keys."""
         return (
-            self.schema.into(ExprPlan, try_chain(exprs, more_exprs), named_exprs)
+            self.schema.into(ExprPlan, exprs, more_exprs, named_exprs)
             .group_by_all_context(self.inner())
             .pipe(self._new)
         )
@@ -379,7 +379,7 @@ class LazyFrame(sql.CoreHandler[sql.SqlFrame]):
     ) -> Self:
         """Explode list-like columns."""
         to_explode_names = (
-            self.schema.into(ExprPlan, try_chain(columns, more_columns), {})
+            self.schema.into(ExprPlan, columns, more_columns, {})
             .projections.iter()
             .map(lambda r: r.name)
             .collect()

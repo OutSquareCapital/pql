@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 
 from . import sql
 from ._expr import Expr
-from ._meta import ExprMeta
+from ._meta import ExprMeta, SingleMeta
 
 if TYPE_CHECKING:
     from .sql.typing import IntoExpr
@@ -21,7 +21,7 @@ class When:
     _when: sql.When
 
     def then(self, value: IntoExpr) -> Then:
-        return Then(self._when.then(value), ExprMeta("literal"))
+        return Then(self._when.then(value), SingleMeta("literal"))
 
 
 @dataclass(slots=True, init=False)

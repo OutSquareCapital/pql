@@ -12,7 +12,7 @@ from ._expr import Expr
 from ._meta import (
     SENTINEL_COL,
     ColumnResolver,
-    ExprMeta,
+    MultiMeta,
     all_columns_resolver,
     complement_resolver,
     difference_resolver,
@@ -25,18 +25,21 @@ from ._meta import (
 
 if TYPE_CHECKING:
     from .sql.typing import IntoExpr
+SELECTOR = "__selector__"
 
 
 class Selector(Expr):
     """Column selector based on dtype predicates."""
 
+    meta: MultiMeta  # pyright: ignore[reportIncompatibleVariableOverride]
+
     @property
     def _resolver(self) -> ColumnResolver:
-        return self.meta.resolver.unwrap()
+        return self.meta.resolver
 
     @classmethod
     def __from_resolver__(cls, resolver: ColumnResolver) -> Self:
-        return cls(SENTINEL_COL, ExprMeta.from_selector(resolver))
+        return cls(SENTINEL_COL, MultiMeta(SELECTOR, resolver=resolver))
 
     @overload
     def union(self, other: Selector) -> Selector: ...
@@ -44,7 +47,7 @@ class Selector(Expr):
     def union(self, other: IntoExpr) -> Expr: ...
     def union(self, other: IntoExpr) -> Selector | Expr:
         match other:
-            case Selector() if self.meta.is_multi and other.meta.is_multi:
+            case Selector():
                 return Selector.__from_resolver__(
                     lambda s: union_resolver(s, self._resolver, other._resolver)
                 )
@@ -65,7 +68,7 @@ class Selector(Expr):
     def intersection(self, other: IntoExpr) -> Expr: ...
     def intersection(self, other: IntoExpr) -> Selector | Expr:
         match other:
-            case Selector() if self.meta.is_multi and other.meta.is_multi:
+            case Selector():
                 return Selector.__from_resolver__(
                     lambda s: intersection_resolver(s, self._resolver, other._resolver)
                 )
@@ -86,7 +89,7 @@ class Selector(Expr):
     def difference(self, other: IntoExpr) -> Expr: ...
     def difference(self, other: IntoExpr) -> Selector | Expr:
         match other:
-            case Selector() if self.meta.is_multi and other.meta.is_multi:
+            case Selector():
                 return Selector.__from_resolver__(
                     lambda s: difference_resolver(s, self._resolver, other._resolver)
                 )

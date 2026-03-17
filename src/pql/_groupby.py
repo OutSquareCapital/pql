@@ -11,11 +11,11 @@ from ._expr import Expr
 from ._funcs import col, lit
 from ._meta import ExprPlan
 from ._schema import Schema
-from .sql.utils import TryIter, try_chain
 
 if TYPE_CHECKING:
     from ._frame import LazyFrame
     from .sql.typing import IntoExpr
+    from .sql.utils import TryIter
 
 
 @final
@@ -91,7 +91,7 @@ class LazyGroupBy:
         **named_aggs: IntoExpr,
     ) -> LazyFrame:
         return (
-            self._agg_schema.into(ExprPlan, try_chain(aggs, more_aggs), named_aggs)
+            self._agg_schema.into(ExprPlan, aggs, more_aggs, named_aggs)
             .agg_context(self._keys, self._aggregator)
             .pipe(self._frame.__class__)
         )

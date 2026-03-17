@@ -1364,7 +1364,7 @@ class ExprStructNameSpace(ExprNameSpaceBase):
     ) -> Expr:
         """Return a new struct with updated or additional fields."""
         return (
-            ExprPlan(Schema(()), try_chain(exprs, more_exprs), named_exprs)
+            ExprPlan(Schema(()), exprs, more_exprs, named_exprs)
             .with_fields_context(self.inner())
             .pipe(self._new)
         )

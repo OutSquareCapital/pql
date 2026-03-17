@@ -1,15 +1,16 @@
 from __future__ import annotations
 
-from collections.abc import Callable
+from abc import ABC, abstractmethod
+from collections.abc import Callable, Iterable
 from dataclasses import dataclass, field, replace
 from enum import IntEnum, auto
-from typing import TYPE_CHECKING, NamedTuple, Self
+from typing import TYPE_CHECKING, NamedTuple, Self, override
 
 import pyochain as pc
 from duckdb import ColumnExpression, SQLExpression
 
 from . import sql
-from .sql.utils import TryIter, try_iter
+from .sql.utils import TryIter, try_chain, try_iter
 
 if TYPE_CHECKING:
     from pyochain.traits import PyoCollection, PyoIterable, PyoKeysView
@@ -19,7 +20,6 @@ if TYPE_CHECKING:
     from .sql.typing import IntoExpr, IntoExprColumn
 EMPTY_MARKER = "__pql_empty__"
 SENTINEL = "__pql_selector__"
-SELECTOR = "__selector__"
 TEMP_NAME = "__pql_temp__"
 SENTINEL_COL = sql.col(SENTINEL)
 
@@ -34,45 +34,17 @@ class ExprKind(IntEnum):
 
 
 @dataclass(slots=True)
-class ExprMeta:
+class ExprMeta(ABC):
     """Metadata for expressions, used for tracking properties that affect query generation."""
 
     root_name: str
     alias_name: pc.Option[Callable[[str], str]] = field(default_factory=lambda: pc.NONE)
     kind: ExprKind = ExprKind.ROW
-    resolver: pc.Option[ColumnResolver] = field(default_factory=lambda: pc.NONE)
 
-    @classmethod
-    def from_selector(cls, resolver: ColumnResolver) -> Self:
-        return cls(SELECTOR, resolver=pc.Some(resolver))
-
-    @classmethod
-    def from_horizontal(cls, exprs: TryIter[IntoExpr]) -> Self:
-        return (
-            try_iter(exprs)
-            .next()
-            .map(lambda v: sql.into_expr(v, as_col=True).get_name())
-            .map(cls)
-            .unwrap()
-        )
-
-    @classmethod
-    def from_agg_expr(
-        cls, cols: pc.Option[pc.Seq[str]], resolver: ColumnResolver
-    ) -> Self:
-        return cls(
-            cols.map(lambda c: c.first()).unwrap_or("all"),
-            kind=ExprKind.SCALAR,
-            resolver=pc.Some(resolver),
-        )
-
-    @classmethod
-    def from_all(cls, resolver: ColumnResolver) -> Self:
-        return cls("all", resolver=pc.Some(resolver))
-
-    @property
-    def is_multi(self) -> bool:
-        return self.resolver.is_some()
+    @abstractmethod
+    def resolve(
+        self, template: sql.SqlExpr, schema: Schema, alias_override: pc.Option[str]
+    ) -> pc.Iter[ResolvedExpr]: ...
 
     def resolve_output_names(
         self, base_names: PyoCollection[str], forced_name: pc.Option[str]
@@ -107,6 +79,47 @@ class ExprMeta:
         return replace(self, alias_name=pc.NONE)
 
 
+@dataclass(slots=True)
+class SingleMeta(ExprMeta):
+    @override
+    def resolve(
+        self, template: sql.SqlExpr, schema: Schema, alias_override: pc.Option[str]
+    ) -> pc.Iter[ResolvedExpr]:
+        output_names = self.resolve_output_names(
+            pc.Seq((self.root_name,)), alias_override
+        )
+        return ResolvedExpr(template, output_names.first(), self.kind).into_iter()
+
+
+@dataclass(slots=True)
+class MultiMeta(ExprMeta):
+    resolver: ColumnResolver = field(kw_only=True)
+
+    @override
+    def resolve(
+        self, template: sql.SqlExpr, schema: Schema, alias_override: pc.Option[str]
+    ) -> pc.Iter[ResolvedExpr]:
+        base_names = self.resolver(schema)
+        output_names = self.resolve_output_names(base_names, alias_override)
+        match alias_override.is_none():
+            case True:
+                return (
+                    base_names.iter()
+                    .zip(output_names)
+                    .map_star(
+                        lambda column_name, output_name: ResolvedExpr(
+                            _replace_col(template, column_name),
+                            output_name,
+                            self.kind,
+                        )
+                    )
+                )
+            case False:
+                return ResolvedExpr(
+                    template, output_names.first(), self.kind
+                ).into_iter()
+
+
 class ResolvedExpr(NamedTuple):
     """A fully resolved expression ready for SQL emission."""
 
@@ -136,19 +149,37 @@ class ExprPlan:
     projections: pc.Seq[ResolvedExpr]
 
     def __init__(
-        self, schema: Schema, exprs: pc.Iter[IntoExpr], named_exprs: dict[str, IntoExpr]
+        self,
+        schema: Schema,
+        exprs: TryIter[IntoExpr],
+        more_exprs: Iterable[IntoExpr],
+        named_exprs: dict[str, IntoExpr],
     ) -> None:
+
+        def _resolve(
+            val: IntoExpr, alias_override: pc.Option[str] = pc.NONE
+        ) -> pc.Iter[ResolvedExpr]:
+            from ._expr import Expr
+
+            match val:
+                case Expr() as expr:
+                    return expr.meta.resolve(expr.inner(), schema, alias_override)
+                case _:
+                    resolved = sql.into_expr(val, as_col=True)
+                    output_name = alias_override.unwrap_or(resolved.inner().get_name())
+                    return ResolvedExpr(
+                        resolved, output_name, kind=ExprKind.ROW
+                    ).into_iter()
+
         self.schema = schema
         expr_map = (
             pc.Iter(named_exprs.items())
-            .map_star(lambda k, v: _projection_resolver(schema, v, pc.Some(k)))
+            .map_star(lambda k, v: _resolve(v, pc.Some(k)))
             .flatten()
             .collect()
         )
         self.projections = (
-            exprs.flat_map(lambda value: _projection_resolver(schema, value))
-            .chain(expr_map)
-            .collect()
+            try_chain(exprs, more_exprs).flat_map(_resolve).chain(expr_map).collect()
         )
 
     def aliased_sql(self) -> pc.Iter[sql.SqlExpr]:
@@ -243,42 +274,6 @@ class ExprPlan:
             .collect(pc.Dict)
             .into(_resolved)
         )
-
-
-def _projection_resolver(
-    schema: Schema, value: IntoExpr, alias_override: pc.Option[str] = pc.NONE
-) -> pc.Iter[ResolvedExpr]:
-    from ._expr import Expr
-
-    match value:
-        case Expr() as expr:
-            base_names = expr.meta.resolver.map(lambda r: r(schema)).unwrap_or_else(
-                lambda: pc.Seq((expr.meta.root_name,))
-            )
-            output_names = expr.meta.resolve_output_names(base_names, alias_override)
-            kind = expr.meta.kind
-            match expr.meta.is_multi and alias_override.is_none():
-                case True:
-                    template = expr.inner()
-                    return (
-                        base_names.iter()
-                        .zip(output_names)
-                        .map_star(
-                            lambda column_name, output_name: ResolvedExpr(
-                                _replace_col(template, column_name), output_name, kind
-                            )
-                        )
-                    )
-                case False:
-                    return (
-                        expr.inner()
-                        .pipe(ResolvedExpr, output_names.first(), kind)
-                        .into_iter()
-                    )
-        case _:
-            resolved = sql.into_expr(value, as_col=True)
-            output_name = alias_override.unwrap_or(resolved.inner().get_name())
-            return ResolvedExpr(resolved, output_name, kind=ExprKind.ROW).into_iter()
 
 
 def _replace_col(template: sql.SqlExpr, column_name: str) -> sql.SqlExpr:

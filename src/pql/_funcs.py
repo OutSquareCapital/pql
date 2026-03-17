@@ -5,7 +5,14 @@ import pyochain as pc
 
 from . import sql
 from ._expr import Expr
-from ._meta import SENTINEL_COL, ExprMeta, agg_expr_resolver, all_fn_resolver
+from ._meta import (
+    SENTINEL_COL,
+    ExprKind,
+    MultiMeta,
+    SingleMeta,
+    agg_expr_resolver,
+    all_fn_resolver,
+)
 from .sql.typing import IntoExpr, IntoExprColumn, PythonLiteral
 from .sql.utils import TryIter, try_chain, try_iter
 
@@ -15,7 +22,7 @@ class Col:
     __slots__ = ()
 
     def __call__(self, name: str) -> Expr:
-        return Expr(sql.col(name), ExprMeta(name))
+        return Expr(sql.col(name), SingleMeta(name))
 
     def __getattr__(self, name: str) -> Expr:
         return self(name)
@@ -26,12 +33,12 @@ col: Col = Col()
 
 def lit(value: PythonLiteral) -> Expr:
     """Create a literal expression."""
-    return Expr(sql.lit(value), ExprMeta("literal"))
+    return Expr(sql.lit(value), SingleMeta("literal"))
 
 
 def len() -> Expr:
     """Return the number of rows."""
-    return Expr(sql.lit(1), ExprMeta("len")).count()
+    return Expr(sql.lit(1), SingleMeta("len")).count()
 
 
 def _agg_expr(
@@ -43,7 +50,13 @@ def _agg_expr(
         try_chain(cols, more_cols)
         .collect()
         .then_some()
-        .into(lambda cols: ExprMeta.from_agg_expr(cols, agg_expr_resolver(cols)))
+        .into(
+            lambda cols: MultiMeta(
+                cols.map(lambda c: c.first()).unwrap_or("all"),
+                kind=ExprKind.SCALAR,
+                resolver=agg_expr_resolver(cols),
+            )
+        )
     )
     return Expr(agg(SENTINEL_COL), meta)
 
@@ -73,41 +86,56 @@ def coalesce(exprs: TryIter[IntoExpr], *more_exprs: IntoExpr) -> Expr:
     expr_name = (
         try_iter(exprs).next().map(sql.into_expr, as_col=True).unwrap().get_name()
     )
-    return Expr(sql.coalesce(exprs, *more_exprs), ExprMeta(expr_name))
+    return Expr(sql.coalesce(exprs, *more_exprs), SingleMeta(expr_name))
 
 
 def all(exclude: TryIter[IntoExprColumn] = None) -> Expr:
     """Create an expression representing all columns (equivalent to pl.all())."""
-    return Expr(SENTINEL_COL, ExprMeta.from_all(all_fn_resolver(pc.Option(exclude))))
-
-
-def sum_horizontal(exprs: TryIter[IntoExpr], *more_exprs: IntoExpr) -> Expr:
-    return Expr(sql.sum_horizontal(exprs, *more_exprs), ExprMeta.from_horizontal(exprs))
-
-
-def min_horizontal(exprs: TryIter[IntoExpr], *more_exprs: IntoExpr) -> Expr:
-    return Expr(sql.min_horizontal(exprs, *more_exprs), ExprMeta.from_horizontal(exprs))
-
-
-def max_horizontal(exprs: TryIter[IntoExpr], *more_exprs: IntoExpr) -> Expr:
-    return Expr(sql.max_horizontal(exprs, *more_exprs), ExprMeta.from_horizontal(exprs))
-
-
-def mean_horizontal(exprs: TryIter[IntoExpr], *more_exprs: IntoExpr) -> Expr:
     return Expr(
-        sql.mean_horizontal(exprs, *more_exprs), ExprMeta.from_horizontal(exprs)
+        SENTINEL_COL, MultiMeta("all", resolver=all_fn_resolver(pc.Option(exclude)))
     )
 
 
+def _horizontal_fn(
+    exprs: TryIter[IntoExpr],
+    more_exprs: Iterable[IntoExpr],
+    fn: Callable[..., sql.SqlExpr],
+) -> Expr:
+    meta = (
+        try_iter(exprs)
+        .next()
+        .map(lambda v: sql.into_expr(v, as_col=True).get_name())
+        .map(SingleMeta)
+        .unwrap()
+    )
+    return Expr(fn(exprs, *more_exprs), meta)
+
+
+def sum_horizontal(exprs: TryIter[IntoExpr], *more_exprs: IntoExpr) -> Expr:
+    return _horizontal_fn(exprs, more_exprs, sql.sum_horizontal)
+
+
+def min_horizontal(exprs: TryIter[IntoExpr], *more_exprs: IntoExpr) -> Expr:
+    return _horizontal_fn(exprs, more_exprs, sql.min_horizontal)
+
+
+def max_horizontal(exprs: TryIter[IntoExpr], *more_exprs: IntoExpr) -> Expr:
+    return _horizontal_fn(exprs, more_exprs, sql.max_horizontal)
+
+
+def mean_horizontal(exprs: TryIter[IntoExpr], *more_exprs: IntoExpr) -> Expr:
+    return _horizontal_fn(exprs, more_exprs, sql.mean_horizontal)
+
+
 def all_horizontal(exprs: TryIter[IntoExpr], *more_exprs: IntoExpr) -> Expr:
-    return Expr(sql.all_horizontal(exprs, *more_exprs), ExprMeta.from_horizontal(exprs))
+    return _horizontal_fn(exprs, more_exprs, sql.all_horizontal)
 
 
 def any_horizontal(exprs: TryIter[IntoExpr], *more_exprs: IntoExpr) -> Expr:
-    return Expr(sql.any_horizontal(exprs, *more_exprs), ExprMeta.from_horizontal(exprs))
+    return _horizontal_fn(exprs, more_exprs, sql.any_horizontal)
 
 
-_ELEMENT = Expr(sql.element(), ExprMeta("element"))
+_ELEMENT = Expr(sql.element(), SingleMeta("element"))
 
 
 def element() -> Expr:
