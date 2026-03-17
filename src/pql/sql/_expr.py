@@ -26,7 +26,14 @@ from ._window import Kword, OverBuilder, get_order_by, get_partition_by
 from .utils import try_iter
 
 if TYPE_CHECKING:
-    from .typing import FrameMode, IntoExpr, IntoExprColumn, RoundMode, WindowExclude
+    from .typing import (
+        ClosedInterval,
+        FrameMode,
+        IntoExpr,
+        IntoExprColumn,
+        RoundMode,
+        WindowExclude,
+    )
     from .utils import TryIter
 
 
@@ -144,6 +151,56 @@ class SqlExpr(Expression, Fns):
                 return self.quantile_cont(quantile)
             case False:
                 return self.quantile_disc(quantile)
+
+    def is_between(
+        self, lower_bound: IntoExpr, upper_bound: IntoExpr, closed: ClosedInterval
+    ) -> Self:
+        match closed:
+            case "both":
+                return self.ge(lower_bound).and_(self.le(upper_bound))
+            case "left":
+                return self.ge(lower_bound).and_(self.lt(upper_bound))
+            case "right":
+                return self.gt(lower_bound).and_(self.le(upper_bound))
+            case "none":
+                return self.gt(lower_bound).and_(self.lt(upper_bound))
+
+    def clip(self, lower_bound: IntoExpr = None, upper_bound: IntoExpr = None) -> Self:
+        match (lower_bound, upper_bound):
+            case (None, None):
+                return self
+            case (None, upper):
+                return self.least(upper)
+            case (lower, None):
+                return self.greatest(lower)
+            case (lower, upper):
+                return self.greatest(lower).least(upper)
+
+    def is_close(
+        self,
+        other: IntoExpr,
+        abs_tol: float = 1e-8,
+        rel_tol: float = 1e-5,
+        *,
+        nans_equal: bool = False,
+    ) -> Self:
+        """Check if two floating point values are close."""
+        from ._funcs import into_expr, lit
+        from ._when import when
+
+        other_expr = into_expr(other)
+        threshold = lit(abs_tol).add(lit(rel_tol).mul(other_expr.abs()))
+        close = self.sub(other_expr).abs().le(threshold)
+        match nans_equal:
+            case False:
+                return close
+            case True:
+                return self._new(
+                    when(self.is_nan().and_(other_expr.is_nan()))
+                    .then(value=True)
+                    .otherwise(close)
+                    .inner()
+                )
 
     def log(self, x: IntoExprColumn | float | None = None) -> Self:
         """Computes the logarithm of x to base b.

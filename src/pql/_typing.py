@@ -10,7 +10,6 @@ type JoinStrategy = Literal["inner", "left", "right", "outer", "semi", "anti", "
 type AsofJoinStrategy = Literal["backward", "forward", "nearest"]
 type UniqueKeepStrategy = Literal["any", "none", "first", "last"]
 type TransferEncoding = Literal["hex", "base64"]
-type ClosedInterval = Literal["both", "left", "right", "none"]
 type RankMethod = Literal["average", "min", "max", "dense", "ordinal"]
 type FillNullStrategy = Literal[
     "forward", "backward", "min", "max", "mean", "zero", "one"

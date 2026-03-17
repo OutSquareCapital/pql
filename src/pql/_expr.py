@@ -21,14 +21,13 @@ from .sql.utils import TryIter, try_chain, try_iter
 if TYPE_CHECKING:
     from ._datatypes import DataType
     from ._typing import (
-        ClosedInterval,
         EpochTimeUnit,
         FillNullStrategy,
         RankMethod,
         TimeUnit,
         TransferEncoding,
     )
-    from .sql.typing import IntoExpr, IntoExprColumn, RoundMode
+    from .sql.typing import ClosedInterval, IntoExpr, IntoExprColumn, RoundMode
 
 _NONE = sql.lit(None)
 _EMPTY_STR = sql.lit("")
@@ -358,26 +357,10 @@ class Expr(sql.CoreHandler[sql.SqlExpr]):
         upper_bound: IntoExpr,
         closed: ClosedInterval = "both",
     ) -> Self:
-        match closed:
-            case "both":
-                return self.ge(lower_bound).and_(self.le(upper_bound))
-            case "left":
-                return self.ge(lower_bound).and_(self.lt(upper_bound))
-            case "right":
-                return self.gt(lower_bound).and_(self.le(upper_bound))
-            case "none":
-                return self.gt(lower_bound).and_(self.lt(upper_bound))
+        return self._new(self.inner().is_between(lower_bound, upper_bound, closed))
 
     def clip(self, lower_bound: IntoExpr = None, upper_bound: IntoExpr = None) -> Self:
-        match (lower_bound, upper_bound):
-            case (None, None):
-                return self
-            case (None, upper):
-                return self._new(self.inner().least(upper))
-            case (lower, None):
-                return self._new(self.inner().greatest(lower))
-            case (lower, upper):
-                return self._new(self.inner().greatest(lower).least(upper))
+        return self._new(self.inner().clip(lower_bound, upper_bound))
 
     def count(self) -> Self:
         """Count the number of values."""
@@ -456,18 +439,9 @@ class Expr(sql.CoreHandler[sql.SqlExpr]):
         nans_equal: bool = False,
     ) -> Self:
         """Check if two floating point values are close."""
-        other_expr = sql.into_expr(other)
-        threshold = sql.lit(abs_tol).add(sql.lit(rel_tol).mul(other_expr.abs()))
-        close = self.inner().sub(other_expr).abs().le(threshold)
-        match nans_equal:
-            case False:
-                return self._new(close)
-            case True:
-                return self._new(
-                    sql.when(self.inner().is_nan().and_(other_expr.is_nan()))
-                    .then(value=True)
-                    .otherwise(close)
-                )
+        return self._new(
+            self.inner().is_close(other, abs_tol, rel_tol, nans_equal=nans_equal)
+        )
 
     def rolling_max(
         self,

@@ -140,3 +140,4 @@ type ParquetCompression = DuckParquetCompression
 type Orientation = Literal["row", "col"]
 type FrameMode = Literal["ROWS", "RANGE", "GROUPS"]
 type WindowExclude = Literal["current_row", "group", "ties", "no_others"]
+type ClosedInterval = Literal["both", "left", "right", "none"]
