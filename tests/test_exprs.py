@@ -314,7 +314,7 @@ def test_pct_change(n: int) -> None:
 
 
 @pytest.mark.parametrize("closed", ["both", "left", "right", "none"])
-def test_is_between(closed: t.ClosedInterval) -> None:
+def test_is_between(closed: pql.sql.typing.ClosedInterval) -> None:
     assert_eq_pl(
         pql.col("x").is_between(2, 10, closed=closed),
         pl.col("x").is_between(2, 10, closed=closed),

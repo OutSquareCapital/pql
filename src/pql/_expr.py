@@ -823,16 +823,11 @@ class Expr(sql.CoreHandler[sql.SqlExpr]):
 
     def is_first_distinct(self) -> Self:
         """Check if value is first occurrence."""
-        return self._new(self.inner().row_number().over(self.inner()).eq(1))
+        return self._new(self.inner().is_first_distinct())
 
     def is_last_distinct(self) -> Self:
         """Check if value is last occurrence."""
-        return self._new(
-            self.inner()
-            .row_number()
-            .over(self.inner(), self.inner(), descending=True, nulls_last=True)
-            .eq(1)
-        )
+        return self._new(self.inner().is_last_distinct())
 
 
 @dataclass(slots=True)

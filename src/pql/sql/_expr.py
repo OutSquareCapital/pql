@@ -202,6 +202,19 @@ class SqlExpr(Expression, Fns):
                     .inner()
                 )
 
+    def is_first_distinct(self) -> Self:
+        """Check if value is first occurrence."""
+        return self._new(self.row_number().over(self).eq(1).inner())
+
+    def is_last_distinct(self) -> Self:
+        """Check if value is last occurrence."""
+        return self._new(
+            self.row_number()
+            .over(self, self, descending=True, nulls_last=True)
+            .eq(1)
+            .inner()
+        )
+
     def log(self, x: IntoExprColumn | float | None = None) -> Self:
         """Computes the logarithm of x to base b.
 

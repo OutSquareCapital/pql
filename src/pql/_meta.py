@@ -10,13 +10,13 @@ import pyochain as pc
 from duckdb import ColumnExpression, SQLExpression
 
 from . import sql
+from ._schema import Schema
 from .sql.utils import TryIter, try_chain, try_iter
 
 if TYPE_CHECKING:
     from pyochain.traits import PyoCollection, PyoIterable
 
     from ._datatypes import DataType
-    from ._schema import Schema
     from .sql.typing import IntoExpr, IntoExprColumn
 EMPTY_MARKER = "__pql_empty__"
 SENTINEL = "__pql_selector__"
