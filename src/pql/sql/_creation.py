@@ -32,10 +32,13 @@ def into_relation(  # noqa: PLR0911
     data: IntoRel, orient: Orientation = "col"
 ) -> duckdb.DuckDBPyRelation:
     from ._core import DuckHandler
+    from ._frame import SqlFrame
 
     match data:
         case duckdb.DuckDBPyRelation():
             return data
+        case SqlFrame():
+            return data.inner()
         case duckdb.Expression():
             return duckdb.values(data)
         case DuckHandler():
