@@ -10,7 +10,7 @@ from ._datatypes import DataType
 
 class Schema(pc.Dict[str, DataType]):
     @classmethod
-    def from_frame(cls, frame: sql.SqlFrame) -> Self:
+    def from_frame(cls, frame: sql.Frame) -> Self:
         dtypes = frame.dtypes.iter().map(
             lambda d: DataType.__from_sql__(sql.parse_dtype(d))
         )

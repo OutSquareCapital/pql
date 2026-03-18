@@ -31,7 +31,7 @@ from ._expr import (
     SqlExprDateTimeNameSpace,
     SqlExprListNameSpace,
 )
-from ._frame import SqlFrame
+from ._frame import Frame
 from ._funcs import (
     all,
     all_horizontal,
@@ -61,6 +61,7 @@ __all__ = [
     "DType",
     "DecimalType",
     "EnumType",
+    "Frame",
     "Kword",
     "ListType",
     "MapType",
@@ -69,7 +70,6 @@ __all__ = [
     "SqlExprArrayNameSpace",
     "SqlExprDateTimeNameSpace",
     "SqlExprListNameSpace",
-    "SqlFrame",
     "SqlType",
     "StructType",
     "Then",

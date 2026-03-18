@@ -26,7 +26,7 @@ def _clause(on: TryIter[str], kword: str) -> str:
     )
 
 
-class SqlFrame(Relation):
+class Frame(Relation):
     _inner: DuckDBPyRelation
     __slots__: ClassVar[Iterable[str]] = ("_inner",)
 
