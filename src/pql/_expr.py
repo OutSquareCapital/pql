@@ -116,13 +116,6 @@ class Expr(sql.CoreHandler[sql.SqlExpr]):
     def _as_scalar(self, expr: sql.SqlExpr) -> Self:
         return self._with_meta(expr, kind=ExprKind.SCALAR)
 
-    def _reversed(self, expr: sql.SqlExpr, *, reverse: bool = False) -> Self:
-        match reverse:
-            case True:
-                return self._as_window(expr.over(frame_start=0))
-            case False:
-                return self._as_window(expr.over(frame_end=0))
-
     def _clear_alias_name(self) -> Expr:
         return self._new(self.inner(), pc.Some(self.meta.clear_alias()))
 
@@ -565,7 +558,7 @@ class Expr(sql.CoreHandler[sql.SqlExpr]):
 
     def n_unique(self) -> Self:
         """Count distinct values."""
-        return self._as_scalar(self.inner().implode().list.distinct().list.length())
+        return self._as_scalar(self.inner().n_unique())
 
     def null_count(self) -> Self:
         """Count null values."""
@@ -573,7 +566,7 @@ class Expr(sql.CoreHandler[sql.SqlExpr]):
 
     def has_nulls(self) -> Self:
         """Return whether the expression contains nulls."""
-        return self._as_scalar(self.inner().is_null().any())
+        return self._as_scalar(self.inner().has_nulls())
 
     def rank(self, method: RankMethod = "average", *, descending: bool = False) -> Self:
         """Compute rank values."""
@@ -605,23 +598,23 @@ class Expr(sql.CoreHandler[sql.SqlExpr]):
 
     def cum_count(self, *, reverse: bool = False) -> Self:
         """Cumulative non-null count."""
-        return self._reversed(self.inner().count(), reverse=reverse)
+        return self._as_window(self.inner().cum_count(reverse=reverse))
 
     def cum_sum(self, *, reverse: bool = False) -> Self:
         """Cumulative sum."""
-        return self._reversed(self.inner().sum(), reverse=reverse)
+        return self._as_window(self.inner().cum_sum(reverse=reverse))
 
     def cum_prod(self, *, reverse: bool = False) -> Self:
         """Cumulative product."""
-        return self._reversed(self.inner().product(), reverse=reverse)
+        return self._as_window(self.inner().cum_prod(reverse=reverse))
 
     def cum_min(self, *, reverse: bool = False) -> Self:
         """Cumulative minimum."""
-        return self._reversed(self.inner().min(), reverse=reverse)
+        return self._as_window(self.inner().cum_min(reverse=reverse))
 
     def cum_max(self, *, reverse: bool = False) -> Self:
         """Cumulative maximum."""
-        return self._reversed(self.inner().max(), reverse=reverse)
+        return self._as_window(self.inner().cum_max(reverse=reverse))
 
     def over(
         self,

@@ -48,6 +48,13 @@ class SqlExpr(Expression, Fns):
         name = self.get_name()
         return base if name == base else f"{base} AS {name}"
 
+    def _reversed(self, expr: Self, *, reverse: bool = False) -> Self:
+        match reverse:
+            case True:
+                return expr.over(frame_start=0)
+            case False:
+                return expr.over(frame_end=0)
+
     @property
     def arr(self) -> SqlExprArrayNameSpace:
         """Access array functions."""
@@ -97,6 +104,26 @@ class SqlExpr(Expression, Fns):
     def geo(self) -> SqlExprGeoSpatialNameSpace:
         """Access geospatial functions."""
         return SqlExprGeoSpatialNameSpace(self)
+
+    def cum_count(self, *, reverse: bool = False) -> Self:
+        """Cumulative non-null count."""
+        return self._reversed(self.count(), reverse=reverse)
+
+    def cum_sum(self, *, reverse: bool = False) -> Self:
+        """Cumulative sum."""
+        return self._reversed(self.sum(), reverse=reverse)
+
+    def cum_prod(self, *, reverse: bool = False) -> Self:
+        """Cumulative product."""
+        return self._reversed(self.product(), reverse=reverse)
+
+    def cum_min(self, *, reverse: bool = False) -> Self:
+        """Cumulative minimum."""
+        return self._reversed(self.min(), reverse=reverse)
+
+    def cum_max(self, *, reverse: bool = False) -> Self:
+        """Cumulative maximum."""
+        return self._reversed(self.max(), reverse=reverse)
 
     def var(self, ddof: int) -> Self:
         match ddof:
@@ -175,6 +202,14 @@ class SqlExpr(Expression, Fns):
                 return self.greatest(lower)
             case (lower, upper):
                 return self.greatest(lower).least(upper)
+
+    def n_unique(self) -> Self:
+        """Count distinct values."""
+        return self._new(self.implode().list.distinct().list.length().inner())
+
+    def has_nulls(self) -> Self:
+        """Return whether the expression contains nulls."""
+        return self._new(self.is_null().any().inner())
 
     def is_close(
         self,
