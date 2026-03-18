@@ -53,6 +53,22 @@ class Marker(StrEnum):
             case False:
                 return result
 
+    @classmethod
+    def empty_frame(cls) -> sql.SqlFrame:
+        return sql.SqlFrame({cls.EMPTY: ()})
+
+    @classmethod
+    def windowed(
+        cls, lf: sql.SqlFrame, cols: PyoIterable[ResolvedExpr]
+    ) -> sql.SqlFrame:
+        match cols.any(lambda p: cls.TEMP in str(p.expr)):
+            case True:
+                return lf.select(
+                    sql.row_number().over().sub(1).alias(cls.TEMP), sql.all()
+                )
+            case False:
+                return lf
+
 
 type Resolver = Callable[[Schema], PyoCollection[str]]
 
@@ -208,15 +224,6 @@ class ExprPlan:
     def aliased_sql(self) -> pc.Iter[sql.SqlExpr]:
         return self.projections.iter().map(ResolvedExpr.as_aliased)
 
-    def windowed(self, lf: sql.SqlFrame) -> sql.SqlFrame:
-        match self.projections.any(lambda p: Marker.TEMP in str(p.expr)):
-            case True:
-                return lf.select(
-                    sql.row_number().over().sub(1).alias(Marker.TEMP), sql.all()
-                )
-            case False:
-                return lf
-
     def select_context(self, lf: sql.SqlFrame) -> sql.SqlFrame:
         def _non_empty_slct(
             projs: pc.Seq[ResolvedExpr], lf: sql.SqlFrame
@@ -236,8 +243,8 @@ class ExprPlan:
                             )
 
         return self.projections.then(
-            lambda projs: _non_empty_slct(projs, self.windowed(lf))
-        ).unwrap_or_else(lambda: sql.SqlFrame({Marker.EMPTY: ()}))
+            lambda projs: _non_empty_slct(projs, Marker.windowed(lf, projs))
+        ).unwrap_or_else(Marker.empty_frame)
 
     def with_columns_context(self, lf: sql.SqlFrame) -> sql.SqlFrame:
         def _resolve(lf: sql.SqlFrame) -> sql.SqlFrame:
@@ -247,7 +254,7 @@ class ExprPlan:
                 case False:
                     return self.resolve().into(lambda exprs: lf.select(*exprs))
 
-        return self.windowed(lf).pipe(_resolve)
+        return Marker.windowed(lf, self.projections).pipe(_resolve)
 
     def with_fields_context(self, expr: sql.SqlExpr) -> sql.SqlExpr:
         return self.aliased_sql().into(lambda args: expr.struct.insert(*args))
