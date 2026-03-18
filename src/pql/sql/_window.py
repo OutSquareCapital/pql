@@ -4,8 +4,8 @@ from collections.abc import Iterable
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Literal, Self
 
-import duckdb
 import pyochain as pc
+from duckdb import SQLExpression
 
 from .utils import TryIter, try_iter
 
@@ -180,7 +180,7 @@ class OverBuilder:
                 return self.__class__(f"{self.expr} OVER ({clauses})")
 
     def build(self) -> Expression:
-        return duckdb.SQLExpression(self.expr)
+        return SQLExpression(self.expr)
 
     def build_fn(
         self,
