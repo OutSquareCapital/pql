@@ -9,19 +9,7 @@ import pyochain as pc
 
 from . import _datatypes as dt  # pyright: ignore[reportPrivateUsage]
 from ._expr import Expr
-from ._meta import (
-    Marker,
-    MultiMeta,
-    Resolver,
-    all_columns_resolver,
-    complement_resolver,
-    difference_resolver,
-    dtype_resolver,
-    intersection_resolver,
-    name_resolver,
-    ordered_name_resolver,
-    union_resolver,
-)
+from ._meta import Marker, MultiMeta, Resolver, ResolverFn
 
 if TYPE_CHECKING:
     from .sql.typing import IntoExpr
@@ -33,11 +21,11 @@ class Selector(Expr):
     meta: MultiMeta  # pyright: ignore[reportIncompatibleVariableOverride]
 
     @property
-    def _resolver(self) -> Resolver:
+    def _resolver(self) -> ResolverFn:
         return self.meta.resolver
 
     @classmethod
-    def __from_resolver__(cls, resolver: Resolver) -> Self:
+    def __from_resolver__(cls, resolver: ResolverFn) -> Self:
         return cls(Marker.MULTI.to_expr(), MultiMeta(Marker.MULTI, resolver=resolver))
 
     @overload
@@ -48,7 +36,7 @@ class Selector(Expr):
         match other:
             case Selector():
                 return self.__from_resolver__(
-                    union_resolver(self._resolver, other._resolver)
+                    Resolver.union(self._resolver, other._resolver)
                 )
             case _:
                 return Expr.__or__(self, other)
@@ -69,7 +57,7 @@ class Selector(Expr):
         match other:
             case Selector():
                 return self.__from_resolver__(
-                    intersection_resolver(self._resolver, other._resolver)
+                    Resolver.intersection(self._resolver, other._resolver)
                 )
             case _:
                 return Expr.__and__(self, other)
@@ -90,7 +78,7 @@ class Selector(Expr):
         match other:
             case Selector():
                 return self.__from_resolver__(
-                    difference_resolver(self._resolver, other._resolver)
+                    Resolver.difference(self._resolver, other._resolver)
                 )
             case _:
                 return Expr.__sub__(self, other)
@@ -104,7 +92,7 @@ class Selector(Expr):
         return self.difference(other)
 
     def complement(self) -> Selector:
-        return self.__from_resolver__(complement_resolver(self._resolver))
+        return self.__from_resolver__(Resolver.complement(self._resolver))
 
     @override
     def __invert__(self) -> Selector:
@@ -113,92 +101,92 @@ class Selector(Expr):
 
 def by_dtype(*dtypes: type[dt.DataType]) -> Selector:
     """Select columns matching any of the given dtype classes."""
-    return Selector.__from_resolver__(dtype_resolver(*dtypes))
+    return Selector.__from_resolver__(Resolver.dtype(*dtypes))
 
 
 def numeric() -> Selector:
     """Select all numeric columns."""
-    return Selector.__from_resolver__(dtype_resolver(dt.NumericType))
+    return Selector.__from_resolver__(Resolver.dtype(dt.NumericType))
 
 
 def string() -> Selector:
     """Select all string columns."""
-    return Selector.__from_resolver__(dtype_resolver(dt.StringType))
+    return Selector.__from_resolver__(Resolver.dtype(dt.StringType))
 
 
 def boolean() -> Selector:
     """Select all boolean columns."""
-    return Selector.__from_resolver__(dtype_resolver(dt.Boolean))
+    return Selector.__from_resolver__(Resolver.dtype(dt.Boolean))
 
 
 def all() -> Selector:
     """Select all columns."""
-    return Selector.__from_resolver__(all_columns_resolver())
+    return Selector.__from_resolver__(Resolver.all_columns())
 
 
 def float() -> Selector:
     """Select all float columns."""
-    return Selector.__from_resolver__(dtype_resolver(dt.FloatType))
+    return Selector.__from_resolver__(Resolver.dtype(dt.FloatType))
 
 
 def integer() -> Selector:
     """Select all integer columns."""
-    return Selector.__from_resolver__(dtype_resolver(dt.IntegerType))
+    return Selector.__from_resolver__(Resolver.dtype(dt.IntegerType))
 
 
 def signed_integer() -> Selector:
     """Select all signed integer columns."""
-    return Selector.__from_resolver__(dtype_resolver(dt.SignedIntegerType))
+    return Selector.__from_resolver__(Resolver.dtype(dt.SignedIntegerType))
 
 
 def unsigned_integer() -> Selector:
     """Select all unsigned integer columns."""
-    return Selector.__from_resolver__(dtype_resolver(dt.UnsignedIntegerType))
+    return Selector.__from_resolver__(Resolver.dtype(dt.UnsignedIntegerType))
 
 
 def temporal() -> Selector:
     """Select all temporal columns."""
-    return Selector.__from_resolver__(dtype_resolver(dt.TemporalType))
+    return Selector.__from_resolver__(Resolver.dtype(dt.TemporalType))
 
 
 def date() -> Selector:
     """Select all date columns."""
-    return Selector.__from_resolver__(dtype_resolver(dt.Date))
+    return Selector.__from_resolver__(Resolver.dtype(dt.Date))
 
 
 def time() -> Selector:
     """Select all time columns."""
-    return Selector.__from_resolver__(dtype_resolver(dt.Time))
+    return Selector.__from_resolver__(Resolver.dtype(dt.Time))
 
 
 def duration() -> Selector:
     """Select all duration columns."""
-    return Selector.__from_resolver__(dtype_resolver(dt.Duration))
+    return Selector.__from_resolver__(Resolver.dtype(dt.Duration))
 
 
 def binary() -> Selector:
     """Select all binary columns."""
-    return Selector.__from_resolver__(dtype_resolver(dt.Binary))
+    return Selector.__from_resolver__(Resolver.dtype(dt.Binary))
 
 
 def enum() -> Selector:
     """Select all enum columns."""
-    return Selector.__from_resolver__(dtype_resolver(dt.Enum))
+    return Selector.__from_resolver__(Resolver.dtype(dt.Enum))
 
 
 def decimal() -> Selector:
     """Select all decimal columns."""
-    return Selector.__from_resolver__(dtype_resolver(dt.Decimal))
+    return Selector.__from_resolver__(Resolver.dtype(dt.Decimal))
 
 
 def nested() -> Selector:
     """Select all nested (list, array, struct, map) columns."""
-    return Selector.__from_resolver__(dtype_resolver(dt.NestedType))
+    return Selector.__from_resolver__(Resolver.dtype(dt.NestedType))
 
 
 def struct() -> Selector:
     """Select all struct columns."""
-    return Selector.__from_resolver__(dtype_resolver(dt.Struct))
+    return Selector.__from_resolver__(Resolver.dtype(dt.Struct))
 
 
 # ──── name-based selectors ────
@@ -208,32 +196,32 @@ def matches(pattern: str) -> Selector:
     """Select columns whose names match the given regex pattern."""
     compiled = re.compile(pattern)
     return Selector.__from_resolver__(
-        name_resolver(lambda name: compiled.search(name) is not None)
+        Resolver.name(lambda name: compiled.search(name) is not None)
     )
 
 
 def by_name(*names: str) -> Selector:
     """Select columns by exact name."""
-    return Selector.__from_resolver__(ordered_name_resolver(pc.Seq(names)))
+    return Selector.__from_resolver__(Resolver.ordered_name(pc.Seq(names)))
 
 
 def starts_with(*prefix: str) -> Selector:
     """Select columns whose names start with any of the given prefixes."""
     return Selector.__from_resolver__(
-        name_resolver(lambda name: name.startswith(prefix))
+        Resolver.name(lambda name: name.startswith(prefix))
     )
 
 
 def ends_with(*suffix: str) -> Selector:
     """Select columns whose names end with any of the given suffixes."""
-    return Selector.__from_resolver__(name_resolver(lambda name: name.endswith(suffix)))
+    return Selector.__from_resolver__(Resolver.name(lambda name: name.endswith(suffix)))
 
 
 def contains(*substring: str) -> Selector:
     """Select columns whose names contain any of the given substrings."""
     subs = pc.Seq(substring)
     return Selector.__from_resolver__(
-        name_resolver(lambda name: subs.iter().any(lambda s: s in name))
+        Resolver.name(lambda name: subs.iter().any(lambda s: s in name))
     )
 
 

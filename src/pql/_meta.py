@@ -68,7 +68,7 @@ class Marker(StrEnum):
                 return lf
 
 
-type Resolver = Callable[[Schema], PyoCollection[str]]
+type ResolverFn = Callable[[Schema], PyoCollection[str]]
 
 
 class ExprKind(IntEnum):
@@ -138,7 +138,7 @@ class SingleMeta(ExprMeta):
 
 @dataclass(slots=True)
 class MultiMeta(ExprMeta):
-    resolver: Resolver = field(kw_only=True)
+    resolver: ResolverFn = field(kw_only=True)
 
     @override
     def resolve(
@@ -302,78 +302,84 @@ class ExprPlan:
         )
 
 
-def all_columns_resolver() -> Resolver:
-    return Schema.keys
+class Resolver:
+    """Namespace class for resolver functions used in multi expressions."""
 
+    @staticmethod
+    def all_columns() -> ResolverFn:
+        return Schema.keys
 
-def all_fn_resolver(exclude: pc.Option[TryIter[IntoExprColumn]]) -> Resolver:
-    return exclude.map(
-        lambda exc: (
-            try_iter(exc)
-            .map(lambda value: sql.into_expr(value, as_col=True).get_name())
-            .collect(pc.Set)
-            .into(exclude_resolver)
+    @staticmethod
+    def all_fn(exclude: pc.Option[TryIter[IntoExprColumn]]) -> ResolverFn:
+        return exclude.map(
+            lambda exc: (
+                try_iter(exc)
+                .map(lambda value: sql.into_expr(value, as_col=True).get_name())
+                .collect(pc.Set)
+                .into(Resolver.exclude)
+            )
+        ).unwrap_or(Resolver.all_columns())
+
+    @staticmethod
+    def exclude(excluded: pc.Set[str]) -> ResolverFn:
+        return lambda schema: (
+            schema.iter().filter(lambda n: n not in excluded).collect()
         )
-    ).unwrap_or(all_columns_resolver())
 
+    @staticmethod
+    def agg_expr(cols: pc.Option[pc.Seq[str]]) -> ResolverFn:
+        return cols.map(Resolver.fixed).unwrap_or(Resolver.all_columns())
 
-def exclude_resolver(excluded: pc.Set[str]) -> Resolver:
-    return lambda schema: schema.iter().filter(lambda n: n not in excluded).collect()
+    @staticmethod
+    def fixed(names: pc.Seq[str]) -> ResolverFn:
+        return lambda _schema: names
 
+    @staticmethod
+    def ordered_name(names: pc.Seq[str]) -> ResolverFn:
+        return lambda schema: names.iter().filter(lambda name: name in schema).collect()
 
-def agg_expr_resolver(cols: pc.Option[pc.Seq[str]]) -> Resolver:
-    return cols.map(fixed_resolver).unwrap_or(all_columns_resolver())
+    @staticmethod
+    def dtype(*on: type[DataType]) -> ResolverFn:
+        return lambda schema: (
+            schema.items()
+            .iter()
+            .filter_star(lambda _, dtype: isinstance(dtype, on))
+            .map_star(lambda name, _: name)
+            .collect()
+        )
 
+    @staticmethod
+    def name(predicate: Callable[[str], bool]) -> ResolverFn:
+        return lambda schema: schema.iter().filter(predicate).collect()
 
-def fixed_resolver(names: pc.Seq[str]) -> Resolver:
-    return lambda _schema: names
+    @staticmethod
+    def difference(left: ResolverFn, right_fn: ResolverFn) -> ResolverFn:
+        def _fn(schema: Schema) -> PyoCollection[str]:
+            right = right_fn(schema)
+            return left(schema).iter().filter(lambda n: n not in right).collect()
 
+        return _fn
 
-def ordered_name_resolver(names: pc.Seq[str]) -> Resolver:
-    return lambda schema: names.iter().filter(lambda name: name in schema).collect()
+    @staticmethod
+    def complement(resolver: ResolverFn) -> ResolverFn:
+        def _fn(schema: Schema) -> pc.Seq[str]:
+            excluded = resolver(schema)
+            return schema.iter().filter(lambda n: n not in excluded).collect()
 
+        return _fn
 
-def dtype_resolver(*on: type[DataType]) -> Resolver:
-    return lambda schema: (
-        schema.items()
-        .iter()
-        .filter_star(lambda _, dtype: isinstance(dtype, on))
-        .map_star(lambda name, _: name)
-        .collect()
-    )
+    @staticmethod
+    def intersection(left: ResolverFn, right: ResolverFn) -> ResolverFn:
+        def _fn(schema: Schema) -> pc.Seq[str]:
+            right_set = right(schema)
+            return left(schema).iter().filter(lambda n: n in right_set).collect()
 
+        return _fn
 
-def name_resolver(predicate: Callable[[str], bool]) -> Resolver:
-    return lambda schema: schema.iter().filter(predicate).collect()
+    @staticmethod
+    def union(left: ResolverFn, right: ResolverFn) -> ResolverFn:
+        def _fn(schema: Schema) -> pc.Seq[str]:
+            selected = left(schema).iter().chain(right(schema)).collect(pc.Set)
+            return schema.iter().filter(lambda n: n in selected).collect()
 
-
-def difference_resolver(left: Resolver, right: Resolver) -> Resolver:
-    def _fn(schema: Schema) -> PyoCollection[str]:
-        right_resolver = right(schema)
-        return left(schema).iter().filter(lambda n: n not in right_resolver).collect()
-
-    return _fn
-
-
-def complement_resolver(resolver: Resolver) -> Resolver:
-    def _fn(schema: Schema) -> pc.Seq[str]:
-        excluded = resolver(schema)
-        return schema.iter().filter(lambda n: n not in excluded).collect()
-
-    return _fn
-
-
-def intersection_resolver(left: Resolver, right: Resolver) -> Resolver:
-    def _fn(schema: Schema) -> pc.Seq[str]:
-        right_set = right(schema)
-        return left(schema).iter().filter(lambda n: n in right_set).collect()
-
-    return _fn
-
-
-def union_resolver(left: Resolver, right: Resolver) -> Resolver:
-    def _fn(schema: Schema) -> pc.Seq[str]:
-        selected = left(schema).iter().chain(right(schema)).collect(pc.Set)
-        return schema.iter().filter(lambda n: n in selected).collect()
-
-    return _fn
+        return _fn

@@ -5,14 +5,7 @@ import pyochain as pc
 
 from . import sql
 from ._expr import Expr
-from ._meta import (
-    ExprKind,
-    Marker,
-    MultiMeta,
-    SingleMeta,
-    agg_expr_resolver,
-    all_fn_resolver,
-)
+from ._meta import ExprKind, Marker, MultiMeta, Resolver, SingleMeta
 from .sql.typing import IntoExpr, IntoExprColumn, PythonLiteral
 from .sql.utils import TryIter, try_chain, try_iter
 
@@ -54,7 +47,7 @@ def _agg_expr(
             lambda cols: MultiMeta(
                 cols.map(lambda c: c.first()).unwrap_or(Marker.ALL),
                 kind=ExprKind.SCALAR,
-                resolver=agg_expr_resolver(cols),
+                resolver=Resolver.agg_expr(cols),
             )
         )
     )
@@ -91,7 +84,7 @@ def coalesce(exprs: TryIter[IntoExpr], *more_exprs: IntoExpr) -> Expr:
 
 def all(exclude: TryIter[IntoExprColumn] = None) -> Expr:
     """Create an expression representing all columns (equivalent to pl.all())."""
-    meta = MultiMeta(Marker.ALL, resolver=all_fn_resolver(pc.Option(exclude)))
+    meta = MultiMeta(Marker.ALL, resolver=Resolver.all_fn(pc.Option(exclude)))
     return Expr(Marker.MULTI.to_expr(), meta)
 
 
