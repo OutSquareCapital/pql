@@ -209,7 +209,7 @@ class SqlExpr(Expression, Fns):
 
     def has_nulls(self) -> Self:
         """Return whether the expression contains nulls."""
-        return self._new(self.is_null().any().inner())
+        return self.is_null().any()
 
     def is_close(
         self,
@@ -243,11 +243,8 @@ class SqlExpr(Expression, Fns):
 
     def is_last_distinct(self) -> Self:
         """Check if value is last occurrence."""
-        return self._new(
-            self.row_number()
-            .over(self, self, descending=True, nulls_last=True)
-            .eq(1)
-            .inner()
+        return (
+            self.row_number().over(self, self, descending=True, nulls_last=True).eq(1)
         )
 
     def log(self, x: IntoExprColumn | float | None = None) -> Self:
