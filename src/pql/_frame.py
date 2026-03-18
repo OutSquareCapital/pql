@@ -8,13 +8,12 @@ from functools import partial
 from pathlib import Path
 from typing import TYPE_CHECKING, Self
 
-import narwhals as nw
 import pyochain as pc
 
 from . import sql
 from ._funcs import col
 from ._joins import JoinBuilder, JoinKeys
-from ._meta import EMPTY_MARKER, TEMP_NAME, ExprPlan
+from ._meta import ExprPlan, Marker
 from ._schema import Schema
 from .sql.utils import TryIter, TrySeq, check_by_arg, try_chain, try_iter, try_seq
 
@@ -24,7 +23,6 @@ if TYPE_CHECKING:
     from _duckdb._enums import (  # pyright: ignore[reportMissingModuleSource]
         ExplainTypeLiteral,
     )
-    from narwhals.typing import IntoFrameT
 
     from ._datatypes import DataType
     from ._expr import Expr
@@ -47,10 +45,7 @@ if TYPE_CHECKING:
         PythonLiteral,
     )
 
-TEMP_COL = sql.col(TEMP_NAME)
 MAX_I64 = 9_223_372_036_854_775_807
-type OptSeq = pc.Option[pc.Seq[str]]
-
 PIVOT_AGG: dict[PivotAgg, Callable[[sql.SqlExpr], sql.SqlExpr]] = {
     "min": sql.SqlExpr.min,
     "max": sql.SqlExpr.max,
@@ -98,20 +93,13 @@ class LazyFrame(sql.CoreHandler[sql.SqlFrame]):
             .into(lambda exprs: self.inner().aggregate(exprs).pipe(self._new))
         )
 
-    def _drop_marker(self, result: IntoFrameT) -> IntoFrameT:
-        match EMPTY_MARKER in self.inner().columns:
-            case True:
-                return nw.from_native(result).drop(EMPTY_MARKER).to_native()
-            case False:
-                return result
-
     def lazy(self) -> pl.LazyFrame:
         """Get a Polars LazyFrame."""
-        return self.inner().pl(lazy=True).pipe(self._drop_marker)
+        return self.inner().pl(lazy=True).pipe(Marker.drop_marker, self.columns)
 
     def collect(self) -> pl.DataFrame:
         """Execute the query and return a Polars DataFrame."""
-        return self.inner().pl().pipe(self._drop_marker)
+        return self.inner().pl().pipe(Marker.drop_marker, self.columns)
 
     def select(
         self, exprs: TryIter[IntoExpr], *more_exprs: IntoExpr, **named_exprs: IntoExpr
@@ -501,10 +489,11 @@ class LazyFrame(sql.CoreHandler[sql.SqlFrame]):
 
     def gather_every(self, n: int, offset: int = 0) -> Self:
         """Take every nth row starting from offset."""
+        expr = Marker.TEMP.to_expr()
         return (
-            self.with_row_index(name=TEMP_NAME, order_by=self.columns)
-            .filter(TEMP_COL.ge(offset).and_(TEMP_COL.sub(offset).mod(n).eq(0)))
-            .drop(TEMP_NAME)
+            self.with_row_index(name=Marker.TEMP, order_by=self.columns)
+            .filter(expr.ge(offset).and_(expr.sub(offset).mod(n).eq(0)))
+            .drop(Marker.TEMP)
         )
 
     @property
@@ -700,10 +689,10 @@ class LazyFrame(sql.CoreHandler[sql.SqlFrame]):
             .into(_marker)
             .map(
                 lambda expr: (
-                    expr.alias(TEMP_NAME)
+                    expr.alias(Marker.TEMP)
                     .pipe(self.with_columns)
-                    .filter(TEMP_COL.eq(1))
-                    .drop(TEMP_NAME)
+                    .filter(Marker.TEMP.to_expr().eq(1))
+                    .drop(Marker.TEMP)
                 )
             )
             .unwrap()

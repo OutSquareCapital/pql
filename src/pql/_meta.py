@@ -1,12 +1,13 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from collections.abc import Callable, Iterable
+from collections.abc import Callable, Collection, Iterable
 from dataclasses import dataclass, field, replace
-from enum import IntEnum, auto
+from enum import IntEnum, StrEnum, auto
 from functools import partial
 from typing import TYPE_CHECKING, NamedTuple, Self, override
 
+import narwhals as nw
 import pyochain as pc
 from duckdb import ColumnExpression, SQLExpression
 
@@ -15,16 +16,45 @@ from ._schema import Schema
 from .sql.utils import TryIter, try_chain, try_iter
 
 if TYPE_CHECKING:
+    from narwhals.typing import IntoFrameT
     from pyochain.traits import PyoCollection, PyoIterable
 
     from ._datatypes import DataType
     from .sql.typing import IntoExpr, IntoExprColumn
-EMPTY_MARKER = "__pql_empty__"
-SENTINEL = "__pql_selector__"
-TEMP_NAME = "__pql_temp__"
-SENTINEL_COL = sql.col(SENTINEL)
 
-type ColumnResolver = Callable[[Schema], PyoCollection[str]]
+
+class Marker(StrEnum):
+    """Column name markers for special expression types."""
+
+    ALL = auto()
+    ELEMENT = auto()
+    LIT = "literal"
+    LEN = "len"
+    EMPTY = "__pql_empty__"
+    """Marker for empty `LazyFrames`. DuckDB doesn't allow empty `DuckDBPyRelation`, so we need to create an empty column that is cleaned up afterwards if we want to convert to another type of empty frame."""
+    MULTI = "__pql_multi__"
+    """Marker for expressions that resolve to multiple columns, used as a placeholder in templates."""
+    TEMP = "__pql_temp__"
+
+    def to_expr(self) -> sql.SqlExpr:
+        return sql.col(self.value)
+
+    @classmethod
+    def replace_col(cls, template: sql.SqlExpr, column_name: str) -> sql.SqlExpr:
+        col_expr = str(ColumnExpression(column_name))
+        raw_str = template.pipe(str).replace(cls.MULTI, col_expr)
+        return sql.SqlExpr(SQLExpression(raw_str))
+
+    @classmethod
+    def drop_marker(cls, result: IntoFrameT, cols: Collection[str]) -> IntoFrameT:
+        match cls.EMPTY in cols:
+            case True:
+                return nw.from_native(result).drop(cls.EMPTY).to_native()
+            case False:
+                return result
+
+
+type Resolver = Callable[[Schema], PyoCollection[str]]
 
 
 class ExprKind(IntEnum):
@@ -94,21 +124,14 @@ class SingleMeta(ExprMeta):
 
 @dataclass(slots=True)
 class MultiMeta(ExprMeta):
-    resolver: ColumnResolver = field(kw_only=True)
+    resolver: Resolver = field(kw_only=True)
 
     @override
     def resolve(
         self, template: sql.SqlExpr, schema: Schema, alias_override: pc.Option[str]
     ) -> pc.Iter[ResolvedExpr]:
-
-        def _replace_col(template: sql.SqlExpr, column_name: str) -> sql.SqlExpr:
-            raw_str = template.pipe(str).replace(
-                SENTINEL, str(ColumnExpression(column_name))
-            )
-            return sql.SqlExpr(SQLExpression(raw_str))
-
         def _to_resolved(name: str, output: str) -> ResolvedExpr:
-            return ResolvedExpr(_replace_col(template, name), output, self.kind)
+            return ResolvedExpr(Marker.replace_col(template, name), output, self.kind)
 
         base_names = self.resolver(schema)
         output_names = self.resolve_output_names(base_names, alias_override)
@@ -186,10 +209,10 @@ class ExprPlan:
         return self.projections.iter().map(ResolvedExpr.as_aliased)
 
     def windowed(self, lf: sql.SqlFrame) -> sql.SqlFrame:
-        match self.projections.any(lambda p: TEMP_NAME in str(p.expr)):
+        match self.projections.any(lambda p: Marker.TEMP in str(p.expr)):
             case True:
                 return lf.select(
-                    sql.row_number().over().sub(1).alias(TEMP_NAME), sql.all()
+                    sql.row_number().over().sub(1).alias(Marker.TEMP), sql.all()
                 )
             case False:
                 return lf
@@ -214,7 +237,7 @@ class ExprPlan:
 
         return self.projections.then(
             lambda projs: _non_empty_slct(projs, self.windowed(lf))
-        ).unwrap_or_else(lambda: sql.SqlFrame({EMPTY_MARKER: ()}))
+        ).unwrap_or_else(lambda: sql.SqlFrame({Marker.EMPTY: ()}))
 
     def with_columns_context(self, lf: sql.SqlFrame) -> sql.SqlFrame:
         def _resolve(lf: sql.SqlFrame) -> sql.SqlFrame:
@@ -276,11 +299,11 @@ class ExprPlan:
         )
 
 
-def all_columns_resolver() -> ColumnResolver:
+def all_columns_resolver() -> Resolver:
     return Schema.keys
 
 
-def all_fn_resolver(exclude: pc.Option[TryIter[IntoExprColumn]]) -> ColumnResolver:
+def all_fn_resolver(exclude: pc.Option[TryIter[IntoExprColumn]]) -> Resolver:
     return exclude.map(
         lambda exc: (
             try_iter(exc)
@@ -291,23 +314,23 @@ def all_fn_resolver(exclude: pc.Option[TryIter[IntoExprColumn]]) -> ColumnResolv
     ).unwrap_or(all_columns_resolver())
 
 
-def exclude_resolver(excluded: pc.Set[str]) -> ColumnResolver:
+def exclude_resolver(excluded: pc.Set[str]) -> Resolver:
     return lambda schema: schema.iter().filter(lambda n: n not in excluded).collect()
 
 
-def agg_expr_resolver(cols: pc.Option[pc.Seq[str]]) -> ColumnResolver:
+def agg_expr_resolver(cols: pc.Option[pc.Seq[str]]) -> Resolver:
     return cols.map(fixed_resolver).unwrap_or(all_columns_resolver())
 
 
-def fixed_resolver(names: pc.Seq[str]) -> ColumnResolver:
+def fixed_resolver(names: pc.Seq[str]) -> Resolver:
     return lambda _schema: names
 
 
-def ordered_name_resolver(names: pc.Seq[str]) -> ColumnResolver:
+def ordered_name_resolver(names: pc.Seq[str]) -> Resolver:
     return lambda schema: names.iter().filter(lambda name: name in schema).collect()
 
 
-def dtype_resolver(*on: type[DataType]) -> ColumnResolver:
+def dtype_resolver(*on: type[DataType]) -> Resolver:
     return lambda schema: (
         schema.items()
         .iter()
@@ -317,11 +340,11 @@ def dtype_resolver(*on: type[DataType]) -> ColumnResolver:
     )
 
 
-def name_resolver(predicate: Callable[[str], bool]) -> ColumnResolver:
+def name_resolver(predicate: Callable[[str], bool]) -> Resolver:
     return lambda schema: schema.iter().filter(predicate).collect()
 
 
-def difference_resolver(left: ColumnResolver, right: ColumnResolver) -> ColumnResolver:
+def difference_resolver(left: Resolver, right: Resolver) -> Resolver:
     def _fn(schema: Schema) -> PyoCollection[str]:
         right_resolver = right(schema)
         return left(schema).iter().filter(lambda n: n not in right_resolver).collect()
@@ -329,7 +352,7 @@ def difference_resolver(left: ColumnResolver, right: ColumnResolver) -> ColumnRe
     return _fn
 
 
-def complement_resolver(resolver: ColumnResolver) -> ColumnResolver:
+def complement_resolver(resolver: Resolver) -> Resolver:
     def _fn(schema: Schema) -> pc.Seq[str]:
         excluded = resolver(schema)
         return schema.iter().filter(lambda n: n not in excluded).collect()
@@ -337,9 +360,7 @@ def complement_resolver(resolver: ColumnResolver) -> ColumnResolver:
     return _fn
 
 
-def intersection_resolver(
-    left: ColumnResolver, right: ColumnResolver
-) -> ColumnResolver:
+def intersection_resolver(left: Resolver, right: Resolver) -> Resolver:
     def _fn(schema: Schema) -> pc.Seq[str]:
         right_set = right(schema)
         return left(schema).iter().filter(lambda n: n in right_set).collect()
@@ -347,7 +368,7 @@ def intersection_resolver(
     return _fn
 
 
-def union_resolver(left: ColumnResolver, right: ColumnResolver) -> ColumnResolver:
+def union_resolver(left: Resolver, right: Resolver) -> Resolver:
     def _fn(schema: Schema) -> pc.Seq[str]:
         selected = left(schema).iter().chain(right(schema)).collect(pc.Set)
         return schema.iter().filter(lambda n: n in selected).collect()

@@ -10,9 +10,9 @@ import pyochain as pc
 from . import _datatypes as dt  # pyright: ignore[reportPrivateUsage]
 from ._expr import Expr
 from ._meta import (
-    SENTINEL_COL,
-    ColumnResolver,
+    Marker,
     MultiMeta,
+    Resolver,
     all_columns_resolver,
     complement_resolver,
     difference_resolver,
@@ -25,7 +25,6 @@ from ._meta import (
 
 if TYPE_CHECKING:
     from .sql.typing import IntoExpr
-SELECTOR = "__selector__"
 
 
 class Selector(Expr):
@@ -34,78 +33,78 @@ class Selector(Expr):
     meta: MultiMeta  # pyright: ignore[reportIncompatibleVariableOverride]
 
     @property
-    def _resolver(self) -> ColumnResolver:
+    def _resolver(self) -> Resolver:
         return self.meta.resolver
 
     @classmethod
-    def __from_resolver__(cls, resolver: ColumnResolver) -> Self:
-        return cls(SENTINEL_COL, MultiMeta(SELECTOR, resolver=resolver))
+    def __from_resolver__(cls, resolver: Resolver) -> Self:
+        return cls(Marker.MULTI.to_expr(), MultiMeta(Marker.MULTI, resolver=resolver))
 
     @overload
-    def union(self, other: Selector) -> Selector: ...
+    def union(self, other: Self) -> Self: ...
     @overload
     def union(self, other: IntoExpr) -> Expr: ...
-    def union(self, other: IntoExpr) -> Selector | Expr:
+    def union(self, other: IntoExpr) -> Self | Expr:
         match other:
             case Selector():
-                return Selector.__from_resolver__(
+                return self.__from_resolver__(
                     union_resolver(self._resolver, other._resolver)
                 )
             case _:
                 return Expr.__or__(self, other)
 
     @overload
-    def __or__(self, other: Selector) -> Selector: ...
+    def __or__(self, other: Self) -> Self: ...
     @overload
     def __or__(self, other: IntoExpr) -> Expr: ...
     @override
-    def __or__(self, other: IntoExpr) -> Selector | Expr:
+    def __or__(self, other: IntoExpr) -> Self | Expr:
         return self.union(other)
 
     @overload
-    def intersection(self, other: Selector) -> Selector: ...
+    def intersection(self, other: Self) -> Self: ...
     @overload
     def intersection(self, other: IntoExpr) -> Expr: ...
-    def intersection(self, other: IntoExpr) -> Selector | Expr:
+    def intersection(self, other: IntoExpr) -> Self | Expr:
         match other:
             case Selector():
-                return Selector.__from_resolver__(
+                return self.__from_resolver__(
                     intersection_resolver(self._resolver, other._resolver)
                 )
             case _:
                 return Expr.__and__(self, other)
 
     @overload
-    def __and__(self, other: Selector) -> Selector: ...
+    def __and__(self, other: Self) -> Self: ...
     @overload
     def __and__(self, other: IntoExpr) -> Expr: ...
     @override
-    def __and__(self, other: IntoExpr) -> Selector | Expr:
+    def __and__(self, other: IntoExpr) -> Self | Expr:
         return self.intersection(other)
 
     @overload
-    def difference(self, other: Selector) -> Selector: ...
+    def difference(self, other: Self) -> Self: ...
     @overload
     def difference(self, other: IntoExpr) -> Expr: ...
-    def difference(self, other: IntoExpr) -> Selector | Expr:
+    def difference(self, other: IntoExpr) -> Self | Expr:
         match other:
             case Selector():
-                return Selector.__from_resolver__(
+                return self.__from_resolver__(
                     difference_resolver(self._resolver, other._resolver)
                 )
             case _:
                 return Expr.__sub__(self, other)
 
     @overload
-    def __sub__(self, other: Selector) -> Selector: ...
+    def __sub__(self, other: Self) -> Self: ...
     @overload
     def __sub__(self, other: IntoExpr) -> Expr: ...
     @override
-    def __sub__(self, other: IntoExpr) -> Selector | Expr:
+    def __sub__(self, other: IntoExpr) -> Self | Expr:
         return self.difference(other)
 
     def complement(self) -> Selector:
-        return Selector.__from_resolver__(complement_resolver(self._resolver))
+        return self.__from_resolver__(complement_resolver(self._resolver))
 
     @override
     def __invert__(self) -> Selector:

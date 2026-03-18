@@ -14,7 +14,7 @@ import pyochain as pc
 
 from . import _datatypes as dt, sql  # pyright: ignore[reportPrivateUsage]
 from ._computations import fill_nulls
-from ._meta import TEMP_NAME, ExprKind, ExprMeta, ExprPlan
+from ._meta import ExprKind, ExprMeta, ExprPlan, Marker
 from ._schema import Schema
 from .sql.utils import TryIter, try_chain, try_iter
 
@@ -67,7 +67,9 @@ class RollingBounds(NamedTuple):
                 return cls(window_size=window_size, start=-(window_size - 1), end=0)
 
     def _clause(self, expr: sql.SqlExpr) -> sql.SqlExpr:
-        return expr.over(order_by=TEMP_NAME, frame_start=self.start, frame_end=self.end)
+        return expr.over(
+            order_by=Marker.TEMP, frame_start=self.start, frame_end=self.end
+        )
 
     def into_expr(
         self,
