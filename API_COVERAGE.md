@@ -9,7 +9,7 @@ Each summary cell is `global (Narwhals, Polars)`.
 
 | Class               | Coverage              | Implemented   | Matched      | Missing       | Mismatched  | Extra       |
 | ------------------- | --------------------- | ------------- | ------------ | ------------- | ----------- | ----------- |
-| LazyFrame           | 38.3% (48.0%, 35.4%)  | 107 (25, 82)  | 41 (12, 29)  | 30 (0, 30)    | 36 (13, 23) | 35 (31, 4)  |
+| LazyFrame           | 39.0% (48.0%, 36.2%)  | 105 (25, 80)  | 41 (12, 29)  | 28 (0, 28)    | 36 (13, 23) | 35 (31, 4)  |
 | Expr                | 49.5% (72.5%, 42.1%)  | 283 (69, 214) | 140 (50, 90) | 100 (6, 94)   | 43 (13, 30) | 59 (58, 1)  |
 | LazyGroupBy         | 52.9% (0.0%, 56.2%)   | 17 (1, 16)    | 9 (0, 9)     | 4 (0, 4)      | 4 (1, 3)    | 11 (11, 0)  |
 | ExprStrNameSpace    | 31.8% (42.1%, 27.7%)  | 66 (19, 47)   | 21 (8, 13)   | 10 (0, 10)    | 35 (11, 24) | 20 (19, 1)  |
@@ -25,7 +25,7 @@ Each summary cell is `global (Narwhals, Polars)`.
 
 ## LazyFrame
 
-### [x] Missing Methods (30)
+### [x] Missing Methods (28)
 
 - `collect_async`
   - **Polars**: (gevent: bool, engine: EngineType, optimizations: QueryOptFlags) -> Awaitable[DataFrame] | _GeventDataFrameResult[DataFrame]
@@ -63,8 +63,6 @@ Each summary cell is `global (Narwhals, Polars)`.
   - **Polars**: () -> LazyFrame
 - `rolling`
   - **Polars**: (index_column: IntoExpr, period: str | timedelta, offset: str | timedelta | None, closed: ClosedInterval, group_by: IntoExpr | Iterable[IntoExpr] | None) -> LazyGroupBy
-- `select_seq`
-  - **Polars**: (*exprs: IntoExpr | Iterable[IntoExpr], **named_exprs: IntoExpr) -> LazyFrame
 - `serialize`
   - **Polars**: (file: IOBase | str | Path | None, format: SerializationFormat) -> bytes | str | None
 - `set_sorted`
@@ -85,8 +83,6 @@ Each summary cell is `global (Narwhals, Polars)`.
   - **Polars**: (query: str, table_name: str) -> LazyFrame
 - `update`
   - **Polars**: (other: LazyFrame, on: str | Sequence[str] | None, how: Literal['left', 'inner', 'full'], left_on: str | Sequence[str] | None, right_on: str | Sequence[str] | None, include_nulls: bool, maintain_order: MaintainOrderJoin | None) -> LazyFrame
-- `with_columns_seq`
-  - **Polars**: (*exprs: IntoExpr | Iterable[IntoExpr], **named_exprs: IntoExpr) -> LazyFrame
 
 ### [!] Signature Mismatches (21)
 
@@ -1082,7 +1078,7 @@ Each summary cell is `global (Narwhals, Polars)`.
   - **pql**: (`data: SeqIntoVals`) -> LazyFrame
 - `lit` (nw)
   - **Narwhals**: (value: PythonLiteral, `dtype: IntoDType | None`) -> Expr
-  - **Polars**: (value: Any, `dtype: PolarsDataType | None`, `allow_object: bool`) -> Expr
+  - **Polars**: (value: Any, `dtype: PolarsDataType | DataTypeExpr | None`, `allow_object: bool`) -> Expr
   - **pql**: (value: PythonLiteral) -> Expr
 - `max` (nw)
   - **Narwhals**: (`*columns: str`) -> Expr

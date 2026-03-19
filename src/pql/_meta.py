@@ -31,7 +31,9 @@ class Marker(StrEnum):
     LIT = "literal"
     LEN = "len"
     EMPTY = "__pql_empty__"
-    """Marker for empty `LazyFrames`. DuckDB doesn't allow empty `DuckDBPyRelation`, so we need to create an empty column that is cleaned up afterwards if we want to convert to another type of empty frame."""
+    """Marker for empty `LazyFrames`.
+
+    DuckDB doesn't allow empty `DuckDBPyRelation`, so we need to create an empty column that is cleaned up afterwards if we want to convert to another type of empty frame."""
     MULTI = "__pql_multi__"
     """Marker for expressions that resolve to multiple columns, used as a placeholder in templates."""
     TEMP = "__pql_temp__"
