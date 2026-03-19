@@ -1,4 +1,3 @@
-from collections.abc import Callable
 from dataclasses import dataclass, field
 from enum import StrEnum
 from typing import Self
@@ -6,7 +5,7 @@ from typing import Self
 import pyochain as pc
 
 from ._infos import ComparisonResult
-from ._rules import RefBackend, Status
+from ._rules import Status
 
 
 class BarColor(StrEnum):
@@ -38,61 +37,47 @@ class ArrayBuilder:
         return self
 
     def count_cell(self) -> Self:
-        return self._add(
-            _for_each_ref(
-                lambda ref: _count_for_ref(self.results, ref, _has_reference)
-            ).into(_int_pair_with_total)
-        )
+        return self._add(str(self._count_with()))
 
     def status_cell(self, status: Status) -> Self:
-        return self._add(
-            _for_each_ref(
-                lambda ref: _count_for_ref_status(self.results, ref, status)
-            ).into(_int_pair_with_total)
-        )
+        return self._add(str(self._count_for_status(status)))
 
     def coverage_cell(self) -> Self:
-        global_pct = _global_coverage_percent(self.results)
+        global_pct = self._coverage_percent()
         bar = _generate_progress_bar(global_pct)
-        return self._add(
-            _for_each_ref(lambda ref: _coverage_percent(self.results, ref)).into(
-                lambda pair: f"{bar} ({pair[0]:.1f}%, {pair[1]:.1f}%)"
-            )
-        )
+        return self._add(f"{bar} ({global_pct:.1f}%)")
 
     def with_name(self, name: str) -> Self:
         return self._add(name)
 
+    def _count_for_status(self, status: Status) -> int:
+        return (
+            self.results.iter()
+            .filter(
+                lambda result: (
+                    result.infos.status()
+                    .map(lambda current: current == status)
+                    .unwrap_or(default=False)
+                )
+            )
+            .length()
+        )
 
-def _has_reference(result: ComparisonResult, ref: RefBackend) -> bool:
-    return result.infos.has_reference(ref)
+    def _coverage_percent(self) -> float:
+        total = self._count_with()
+        matched = self._count_for_status(Status.MATCH)
+        match total:
+            case 0:
+                return 100.0
+            case _:
+                return (matched / total) * 100
 
-
-def _global_coverage_percent(results: pc.Vec[ComparisonResult]) -> float:
-    totals = _for_each_ref(lambda ref: _count_for_ref(results, ref, _has_reference))
-    matched = _for_each_ref(
-        lambda ref: _count_for_ref_status(results, ref, Status.MATCH)
-    )
-    total = totals.sum()
-    match total:
-        case 0:
-            return 100.0
-        case _:
-            return (matched.sum() / total) * 100
-
-
-def _coverage_percent(results: pc.Vec[ComparisonResult], ref: RefBackend) -> float:
-    total = _count_for_ref(results, ref, _has_reference)
-    matched = _count_for_ref_status(results, ref, Status.MATCH)
-    match total:
-        case 0:
-            return 100.0
-        case _:
-            return (matched / total) * 100
-
-
-def _for_each_ref[T](mapper: Callable[[RefBackend], T]) -> pc.Seq[T]:
-    return pc.Iter(RefBackend).map(mapper).collect()
+    def _count_with(self) -> int:
+        return (
+            self.results.iter()
+            .filter(lambda result: result.infos.has_reference())
+            .length()
+        )
 
 
 def _generate_progress_bar(percentage: float, width: int = 10) -> str:
@@ -104,31 +89,3 @@ def _generate_progress_bar(percentage: float, width: int = 10) -> str:
     filled_bar = f'<span style="color: {color};">{"█" * filled}</span>'
     empty_bar = f'<span style="color: #bdc3c7;">{"░" * empty}</span>'
     return filled_bar + empty_bar
-
-
-def _int_pair_with_total(pair: pc.Seq[int]) -> str:
-    return f"{pair.sum()} ({pair[0]}, {pair[1]})"
-
-
-def _count_for_ref(
-    results: pc.Vec[ComparisonResult],
-    ref: RefBackend,
-    predicate: Callable[[ComparisonResult, RefBackend], bool],
-) -> int:
-    return results.iter().filter(lambda result: predicate(result, ref)).length()
-
-
-def _count_for_ref_status(
-    results: pc.Vec[ComparisonResult], ref: RefBackend, status: Status
-) -> int:
-    return (
-        results.iter()
-        .filter(
-            lambda result: (
-                result.infos.status_for_ref(ref)
-                .map(lambda current: current == status)
-                .unwrap_or(default=False)
-            )
-        )
-        .length()
-    )

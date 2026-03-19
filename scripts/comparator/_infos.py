@@ -2,13 +2,13 @@ from __future__ import annotations
 
 import inspect
 from dataclasses import dataclass, field
-from typing import NamedTuple, Self
+from typing import Self
 
 import pyochain as pc
 
 from .._utils import Builtins, Pql, Typing, get_attr
 from ._parse import extract_last_name, normalize_annotation
-from ._rules import IGNORED_PARAMS, MismatchOn, RefBackend, Status
+from ._rules import IGNORED_PARAMS, Status
 
 type MapInfo = pc.Dict[str, ParamInfo]
 
@@ -23,13 +23,6 @@ def annotations_differ(pl_param: ParamInfo, pql_param: ParamInfo) -> bool:
             return normalized_pl != normalized_pql
         case _:
             return False
-
-
-class MethodStatus(NamedTuple):
-    """Status of a method comparison."""
-
-    status: Status
-    mismatch_source: MismatchOn
 
 
 @dataclass(slots=True)
@@ -107,27 +100,17 @@ class MethodInfo:
 
 @dataclass(slots=True)
 class ComparisonInfos:
-    """Holds MethodInfo for narwhals, polars, and pql."""
+    """Holds MethodInfo for Polars and pql."""
 
-    narwhals: pc.Option[MethodInfo] = field(default_factory=lambda: pc.NONE)
     polars: pc.Option[MethodInfo] = field(default_factory=lambda: pc.NONE)
     pql_info: pc.Option[MethodInfo] = field(default_factory=lambda: pc.NONE)
     ignored_params: pc.Set[str] = field(default_factory=pc.Set[str].new)
 
-    def reference(self, ref: RefBackend) -> pc.Option[MethodInfo]:
-        match ref:
-            case RefBackend.NARWHALS:
-                return self.narwhals
-            case RefBackend.POLARS:
-                return self.polars
+    def has_reference(self) -> bool:
+        return self.polars.is_some()
 
-    def has_reference(self, ref: RefBackend) -> bool:
-        return self.reference(ref).is_some()
-
-    def status_for_ref(self, ref: RefBackend) -> pc.Option[Status]:
-        match (self.reference(ref), self.pql_info):
-            case (pc.NONE, pc.NONE):
-                return pc.NONE
+    def status(self) -> pc.Option[Status]:
+        match (self.polars, self.pql_info):
             case (pc.Some(_), pc.NONE):
                 return pc.Some(Status.MISSING)
             case (pc.NONE, pc.Some(_)):
@@ -145,41 +128,24 @@ class ComparisonInfos:
             case _:
                 return pc.NONE
 
-    def to_status(self) -> MethodStatus:  # noqa: C901, PLR0911
+    def to_status(self) -> Status:
         """Classify the method comparison result."""
-        match (self.pql_info, self.narwhals, self.polars):
-            case (pc.NONE, pc.Some(_), _):
-                return MethodStatus(Status.MISSING, MismatchOn.NULL)
-            case (pc.Some(_), pc.NONE, pc.NONE):
-                return MethodStatus(Status.EXTRA, MismatchOn.NULL)
-            case (pc.Some(target), pc.NONE, pc.Some(pl_info)):
-                match _method_mismatch(target, pl_info, self.ignored_params):
+        match (self.pql_info, self.polars):
+            case (pc.NONE, pc.Some(_)):
+                return Status.MISSING
+            case (pc.Some(_), pc.NONE):
+                return Status.EXTRA
+            case (pc.Some(target), pc.Some(pl_info)):
+                is_mismatch = _mismatch_against(
+                    target.to_map(), pl_info.to_map(), self.ignored_params
+                )
+                match is_mismatch:
                     case True:
-                        return MethodStatus(Status.SIGNATURE_MISMATCH, MismatchOn.PL)
+                        return Status.SIGNATURE_MISMATCH
                     case False:
-                        return MethodStatus(Status.MATCH, MismatchOn.NULL)
-            case (pc.Some(target), pc.Some(nw_info), pc.Some(pl_info)):
-                nw_mismatch = _method_mismatch(target, nw_info, self.ignored_params)
-                pl_mismatch = _method_mismatch(target, pl_info, self.ignored_params)
-                match nw_mismatch and pl_mismatch:
-                    case True:
-                        return MethodStatus(Status.SIGNATURE_MISMATCH, MismatchOn.NW)
-                    case False:
-                        return MethodStatus(Status.MATCH, MismatchOn.NULL)
-            case (pc.Some(target), pc.Some(nw_info), pc.NONE):
-                match _method_mismatch(target, nw_info, self.ignored_params):
-                    case True:
-                        return MethodStatus(Status.SIGNATURE_MISMATCH, MismatchOn.NW)
-                    case False:
-                        return MethodStatus(Status.MATCH, MismatchOn.NULL)
+                        return Status.MATCH
             case _:
-                return MethodStatus(Status.MISSING, MismatchOn.NULL)
-
-
-def _method_mismatch(
-    target: MethodInfo, other: MethodInfo, ignored: pc.Set[str]
-) -> bool:
-    return _mismatch_against(target.to_map(), other.to_map(), ignored)
+                return Status.MISSING
 
 
 def _get_annotation_str(annotation: object) -> pc.Option[str]:
@@ -234,21 +200,19 @@ class ComparisonResult:
     """Result of comparing a single method."""
 
     method_name: str
-    classification: MethodStatus
+    classification: Status
     infos: ComparisonInfos
 
     @classmethod
     def from_method(
         cls,
-        narwhals_cls: pc.Option[object],
         polars_cls: object,
         pql_cls: object,
         method_name: str,
         class_name: Pql,
     ) -> Self:
-        """Compare a single method between narwhals, polars, and pql."""
+        """Compare a single method between Polars and pql."""
         infos = ComparisonInfos(
-            narwhals=narwhals_cls.and_then(_get_method_info, method_name),
             polars=_get_method_info(polars_cls, method_name),
             pql_info=_get_method_info(pql_cls, method_name),
             ignored_params=ignored_params_for(class_name, method_name),
@@ -261,51 +225,20 @@ class ComparisonResult:
 
     def to_format(self, *, status: Status) -> pc.Iter[str]:
         """Format a single comparison result as markdown lines."""
-        match (status, self.infos.narwhals, self.infos.polars, self.infos.pql_info):
-            case (Status.MISSING, _, _, _):
-                return (
-                    pc.Iter.once(f"- `{self.method_name}`")
-                    .chain(
-                        self.infos.narwhals.map(
-                            lambda info: pc.Iter.once(
-                                f"  - **Narwhals**: {info.signature_str()}"
-                            )
-                        ).unwrap_or(pc.Iter(()))
-                    )
-                    .chain(
-                        self.infos.polars.map(
-                            lambda info: pc.Iter.once(
-                                f"  - **Polars**: {info.signature_str()}"
-                            )
-                        ).unwrap_or(pc.Iter(()))
-                    )
-                )
-            case (Status.SIGNATURE_MISMATCH, pc.Some(nw_info), _, pc.Some(pql_info)):
-                return (
-                    pc.Iter(
-                        (
-                            f"- `{self.method_name}` ({self.classification.mismatch_source.value})",
-                            f"  - **Narwhals**: {_signature_with_diff(nw_info, pql_info, self.infos.ignored_params)}",
+        match (status, self.infos.polars, self.infos.pql_info):
+            case (Status.MISSING, _, _):
+                return pc.Iter.once(f"- `{self.method_name}`").chain(
+                    self.infos.polars.map(
+                        lambda info: pc.Iter.once(
+                            f"  - **Polars**: {info.signature_str()}"
                         )
-                    )
-                    .chain(
-                        self.infos.polars.map(
-                            lambda pl_info: pc.Iter.once(
-                                f"  - **Polars**: {_signature_with_diff(pl_info, pql_info, self.infos.ignored_params)}"
-                            )
-                        ).unwrap_or(pc.Iter(()))
-                    )
-                    .chain(
-                        pc.Iter.once(
-                            f"  - **pql**: {_signature_with_diff(pql_info, nw_info, self.infos.ignored_params)}"
-                        )
-                    )
+                    ).unwrap_or(pc.Iter(()))
                 )
-            case (Status.SIGNATURE_MISMATCH, _, pc.Some(pl_info), pc.Some(pql_info)):
+            case (Status.SIGNATURE_MISMATCH, pc.Some(pl_info), pc.Some(pql_info)):
                 return pc.Iter(
                     (
-                        f"- `{self.method_name}` ({self.classification.mismatch_source.value})",
-                        f"  - **Polars***: {_signature_with_diff(pl_info, pql_info, self.infos.ignored_params)}",
+                        f"- `{self.method_name}`",
+                        f"  - **Polars**: {_signature_with_diff(pl_info, pql_info, self.infos.ignored_params)}",
                         f"  - **pql**: {_signature_with_diff(pql_info, pl_info, self.infos.ignored_params)}",
                     )
                 )

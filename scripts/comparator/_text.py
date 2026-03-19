@@ -56,7 +56,7 @@ This report shows the API coverage of pql compared to other libraries.
 
 ## Summary
 
-Each summary cell is `global (Narwhals, Polars)`.
+Each summary cell is relative to Polars.
 """
     return pc.Iter.once(txt)
 
@@ -79,7 +79,6 @@ def _summary_header() -> pc.Seq[str]:
 class ClassComparison:
     """Converter between entry arguments and ComparisonReport."""
 
-    narwhals_cls: pc.Option[object]
     polars_cls: object
     pql_cls: object
     name: Pql
@@ -87,27 +86,16 @@ class ClassComparison:
 
     def to_report(self) -> ComparisonReport:
         """Compare two classes and return comparison results."""
-        narwhals_methods = self.narwhals_cls.map(
-            self._get_public_methods
-        ).unwrap_or_else(pc.Set.new)
         polars_methods = self._get_public_methods(self.polars_cls)
         pql_methods = self._get_public_methods(self.pql_cls)
 
         return ComparisonReport(
             self.name,
-            narwhals_methods.union(polars_methods)
-            .union(pql_methods)
+            polars_methods.union(pql_methods)
             .iter()
-            .filter(
-                lambda name: (
-                    not narwhals_methods.contains(name)
-                    or polars_methods.contains(name)
-                    or pql_methods.contains(name)
-                )
-            )
             .map(
                 lambda name: ComparisonResult.from_method(
-                    self.narwhals_cls, self.polars_cls, self.pql_cls, name, self.name
+                    self.polars_cls, self.pql_cls, name, self.name
                 )
             )
             .sort(key=lambda r: r.method_name),
@@ -205,4 +193,4 @@ def _format_row(row: pc.Seq[str], widths: pc.Seq[int]) -> str:
 def _by_status(
     results: pc.Vec[ComparisonResult], status: Status
 ) -> pc.Seq[ComparisonResult]:
-    return results.iter().filter(lambda r: r.classification.status == status).collect()
+    return results.iter().filter(lambda r: r.classification == status).collect()

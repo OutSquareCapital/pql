@@ -5,11 +5,6 @@ import pyochain as pc
 from .._utils import Pql
 
 
-class RefBackend(StrEnum):
-    NARWHALS = auto()
-    POLARS = auto()
-
-
 def _args(*args: str) -> pc.Set[str]:
     return pc.Set(args)
 
@@ -109,11 +104,3 @@ class Status(StrEnum):
     SIGNATURE_MISMATCH = auto()
     MATCH = auto()
     EXTRA = auto()
-
-
-class MismatchOn(StrEnum):
-    """Source of a signature mismatch."""
-
-    NW = auto()
-    PL = auto()
-    NULL = ""
