@@ -657,19 +657,21 @@ class LazyFrame(sql.CoreHandler[sql.Frame]):
                 pc.Option(order_by).map(lambda value: try_iter(value).collect()),
             ):
                 case ("none", _):
-                    return pc.Ok(sql.all().count().over(partition_by=subset_cols))
+                    return pc.Ok(
+                        sql.all().count().over(partition_by=pc.Some(subset_cols))
+                    )
                 case ("first", pc.Some(order_by_cols)):
                     return pc.Ok(
                         sql.row_number().over(
-                            partition_by=subset_cols,
-                            order_by=order_by_cols,
+                            partition_by=pc.Some(subset_cols),
+                            order_by=pc.Some(order_by_cols),
                         )
                     )
                 case ("last", pc.Some(order_by_cols)):
                     return pc.Ok(
                         sql.row_number().over(
-                            partition_by=subset_cols,
-                            order_by=order_by_cols,
+                            partition_by=pc.Some(subset_cols),
+                            order_by=pc.Some(order_by_cols),
                             descending=True,
                             nulls_last=True,
                         )
@@ -680,7 +682,9 @@ class LazyFrame(sql.CoreHandler[sql.Frame]):
 
                     return pc.Err(ValueError(msg))
                 case _:
-                    return pc.Ok(sql.row_number().over(partition_by=subset_cols))
+                    return pc.Ok(
+                        sql.row_number().over(partition_by=pc.Some(subset_cols))
+                    )
 
         return (
             pc.Option(subset)
@@ -791,7 +795,8 @@ class LazyFrame(sql.CoreHandler[sql.Frame]):
         return (
             self.inner()
             .select(
-                sql.row_number().over(order_by=order_by).sub(1).alias(name), sql.all()
+                sql.row_number().over(order_by=pc.Some(order_by)).sub(1).alias(name),
+                sql.all(),
             )
             .pipe(self._new)
         )

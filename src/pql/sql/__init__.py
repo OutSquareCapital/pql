@@ -51,7 +51,7 @@ from ._funcs import (
     unnest,
 )
 from ._when import ChainedThen, ChainedWhen, Then, When, when
-from ._window import Kword
+from ._window import NullsClause, SortClause
 
 __all__ = [
     "ArrayType",
@@ -62,10 +62,11 @@ __all__ = [
     "DecimalType",
     "EnumType",
     "Frame",
-    "Kword",
     "ListType",
     "MapType",
+    "NullsClause",
     "ScalarType",
+    "SortClause",
     "SqlExpr",
     "SqlExprArrayNameSpace",
     "SqlExprDateTimeNameSpace",

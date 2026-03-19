@@ -47,8 +47,10 @@ def fill_nulls(  # noqa: PLR0911
 
 FILL_STRATEGY: pc.Dict[str, Callable[[sql.SqlExpr], sql.SqlExpr]] = pc.Dict.from_ref(
     {
-        "forward": lambda expr: expr.last_value().over(frame_end=0, ignore_nulls=True),
-        "backward": lambda expr: expr.any_value().over(frame_start=0),
+        "forward": lambda expr: expr.last_value().over(
+            frame_end=pc.Some(0), ignore_nulls=True
+        ),
+        "backward": lambda expr: expr.any_value().over(frame_start=pc.Some(0)),
         "min": lambda expr: sql.coalesce(expr, expr.min().over()),
         "max": lambda expr: sql.coalesce(expr, expr.max().over()),
         "mean": lambda expr: sql.coalesce(expr, expr.mean().over()),

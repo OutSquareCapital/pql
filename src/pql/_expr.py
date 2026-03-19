@@ -68,7 +68,9 @@ class RollingBounds(NamedTuple):
 
     def _clause(self, expr: sql.SqlExpr) -> sql.SqlExpr:
         return expr.over(
-            order_by=Marker.TEMP, frame_start=self.start, frame_end=self.end
+            order_by=pc.Some(Marker.TEMP),
+            frame_start=pc.Some(self.start),
+            frame_end=pc.Some(self.end),
         )
 
     def into_expr(
@@ -571,9 +573,11 @@ class Expr(sql.CoreHandler[sql.SqlExpr]):
     def rank(self, method: RankMethod = "average", *, descending: bool = False) -> Self:
         """Compute rank values."""
         base_rank = (
-            self.inner().rank().over(order_by=self.inner(), descending=descending)
+            self.inner()
+            .rank()
+            .over(order_by=pc.Some(self.inner()), descending=descending)
         )
-        peer_count = sql.all().count().over(self.inner())
+        peer_count = sql.all().count().over(pc.Some(self.inner()))
         match method:
             case "average":
                 max_rank = base_rank.add(peer_count).sub(1)
@@ -586,13 +590,13 @@ class Expr(sql.CoreHandler[sql.SqlExpr]):
                 expr = (
                     self.inner()
                     .dense_rank()
-                    .over(order_by=self.inner(), descending=descending)
+                    .over(order_by=pc.Some(self.inner()), descending=descending)
                 )
             case "ordinal":
                 expr = (
                     self.inner()
                     .row_number()
-                    .over(order_by=self.inner(), descending=descending)
+                    .over(order_by=pc.Some(self.inner()), descending=descending)
                 )
         return self._as_window(expr)
 
@@ -638,8 +642,12 @@ class Expr(sql.CoreHandler[sql.SqlExpr]):
                             .collect()
                         )
                     )
-                    .map(lambda order_exprs: expr(partition_exprs, order_exprs))
-                    .unwrap_or_else(lambda: expr(partition_exprs))
+                    .map(
+                        lambda order_exprs: expr(
+                            pc.Some(partition_exprs), pc.Some(order_exprs)
+                        )
+                    )
+                    .unwrap_or_else(lambda: expr(pc.Some(partition_exprs)))
                 )
             )
             .pipe(self._as_window)
@@ -747,15 +755,17 @@ class Expr(sql.CoreHandler[sql.SqlExpr]):
 
     def forward_fill(self) -> Self:
         """Fill null values with the last non-null value."""
-        return self._new(self.inner().last_value().over(frame_end=0, ignore_nulls=True))
+        return self._new(
+            self.inner().last_value().over(frame_end=pc.Some(0), ignore_nulls=True)
+        )
 
     def backward_fill(self, limit: int | None = None) -> Self:
         """Fill null values with the next non-null value."""
         expr = self.inner().any_value()
         return (
             pc.Option(limit)
-            .map(lambda lmt: expr.over(frame_start=0, frame_end=lmt))
-            .unwrap_or_else(lambda: expr.over(frame_start=0))
+            .map(lambda lmt: expr.over(frame_start=pc.Some(0), frame_end=pc.Some(lmt)))
+            .unwrap_or_else(lambda: expr.over(frame_start=pc.Some(0)))
             .pipe(self._as_window)
         )
 
@@ -810,11 +820,11 @@ class Expr(sql.CoreHandler[sql.SqlExpr]):
 
     def is_duplicated(self) -> Self:
         """Check if value is duplicated."""
-        return self._new(sql.all().count().over(self.inner()).gt(1))
+        return self._new(sql.all().count().over(pc.Some(self.inner())).gt(1))
 
     def is_unique(self) -> Self:
         """Check if value is unique."""
-        return self._new(sql.all().count().over(self.inner()).eq(1))
+        return self._new(sql.all().count().over(pc.Some(self.inner())).eq(1))
 
     def is_first_distinct(self) -> Self:
         """Check if value is first occurrence."""
@@ -1182,8 +1192,8 @@ class _VecNameSpace[T: sql.SqlExprListNameSpace | sql.SqlExprArrayNameSpace](
         """Sort the lists of the column."""
         return self._new(
             self._vec.sort(
-                sql.lit(sql.Kword.sort_order(desc=descending)),
-                sql.lit(sql.Kword.null_order(last=nulls_last)),
+                sql.lit(sql.SortClause.order(desc=descending)),
+                sql.lit(sql.NullsClause.order(last=nulls_last)),
             )
         )
 

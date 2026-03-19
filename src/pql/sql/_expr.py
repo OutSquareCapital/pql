@@ -7,6 +7,8 @@ from typing import TYPE_CHECKING, ClassVar, Self
 
 import pyochain as pc
 
+from pql.sql.typing import IntoExprColumn
+
 from ._code_gen import (
     ArrayFns,
     DateTimeFns,
@@ -22,8 +24,7 @@ from ._code_gen import (
     StructFns,
 )
 from ._core import func
-from ._window import Kword, OverBuilder, get_order_by, get_partition_by
-from .utils import try_iter
+from ._window import FrameBound, OverBuilder, get_order, get_partition, make_spec
 
 if TYPE_CHECKING:
     from .typing import (
@@ -51,9 +52,9 @@ class SqlExpr(Expression, Fns):
     def _reversed(self, expr: Self, *, reverse: bool = False) -> Self:
         match reverse:
             case True:
-                return expr.over(frame_start=0)
+                return expr.over(frame_start=pc.Some(0))
             case False:
-                return expr.over(frame_end=0)
+                return expr.over(frame_end=pc.Some(0))
 
     @property
     def arr(self) -> SqlExprArrayNameSpace:
@@ -239,12 +240,14 @@ class SqlExpr(Expression, Fns):
 
     def is_first_distinct(self) -> Self:
         """Check if value is first occurrence."""
-        return self._new(self.row_number().over(self).eq(1).inner())
+        return self._new(self.row_number().over(pc.Some(self)).eq(1).inner())
 
     def is_last_distinct(self) -> Self:
         """Check if value is last occurrence."""
         return (
-            self.row_number().over(self, self, descending=True, nulls_last=True).eq(1)
+            self.row_number()
+            .over(pc.Some(self), pc.Some(self), descending=True, nulls_last=True)
+            .eq(1)
         )
 
     def log(self, x: IntoExprColumn | float | None = None) -> Self:
@@ -298,14 +301,14 @@ class SqlExpr(Expression, Fns):
 
     def over(  # noqa: PLR0913
         self,
-        partition_by: TryIter[IntoExprColumn] = None,
-        order_by: TryIter[IntoExprColumn] = None,
-        frame_start: int | str | None = None,
-        frame_end: int | str | None = None,
+        partition_by: pc.Option[TryIter[IntoExprColumn]] = pc.NONE,
+        order_by: pc.Option[TryIter[IntoExprColumn]] = pc.NONE,
+        frame_start: pc.Option[FrameBound] = pc.NONE,
+        frame_end: pc.Option[FrameBound] = pc.NONE,
         frame_mode: FrameMode = "ROWS",
-        exclude: WindowExclude | None = None,
-        filter_cond: IntoExprColumn | None = None,
-        fn_order_by: TryIter[IntoExprColumn] = None,
+        exclude: pc.Option[WindowExclude] = pc.NONE,
+        filter_cond: pc.Option[IntoExprColumn] = pc.NONE,
+        fn_order_by: pc.Option[TryIter[IntoExprColumn]] = pc.NONE,
         *,
         descending: TryIter[bool] = False,
         nulls_last: TryIter[bool] = False,
@@ -314,31 +317,26 @@ class SqlExpr(Expression, Fns):
         fn_descending: TryIter[bool] = False,
         fn_nulls_last: TryIter[bool] = False,
     ) -> Self:
-        ordr = pc.Option(order_by)
+        order = get_order(order_by, descending=descending, nulls_last=nulls_last)
+        spec = make_spec(
+            frame_mode,
+            has_order_by=order_by.is_some(),
+            frame_start=frame_start,
+            frame_end=frame_end,
+            exclude=exclude,
+        )
         return self.__class__(
-            OverBuilder(self.get_name())
+            OverBuilder.from_expr(self.inner())
             .handle_nulls(ignore_nulls=ignore_nulls)
             .handle_distinct(distinct=distinct)
             .handle_fn_order_by(
-                pc.Option(fn_order_by),
+                fn_order_by=fn_order_by,
                 fn_descending=fn_descending,
                 fn_nulls_last=fn_nulls_last,
             )
-            .handle_filter(filter_cond=pc.Option(filter_cond))
-            .join_clauses(
-                pc.Option(partition_by)
-                .map(lambda x: try_iter(x).collect())
-                .into(get_partition_by),
-                ordr.map(lambda x: try_iter(x).collect()).into(
-                    get_order_by, descending=descending, nulls_last=nulls_last
-                ),
-                Kword.frame_clause(
-                    frame_mode,
-                    pc.Option(frame_start),
-                    pc.Option(frame_end),
-                    has_order_by=ordr.is_some(),
-                ),
-                pc.Option(exclude).map(Kword.exclude_clause).unwrap_or(""),  # pyright: ignore[reportArgumentType]
+            .handle_filter(filter_cond)
+            .handle_clauses(
+                partition_by=get_partition(partition_by), order=order, spec=spec
             )
             .build()
         )
@@ -379,8 +377,8 @@ class SqlExpr(Expression, Fns):
             Self
         """
         return self._new(
-            OverBuilder(func("cume_dist").get_name()).build_fn(
-                order_by=pc.Option(order_by),
+            OverBuilder.from_expr(func("cume_dist")).build_fn(
+                fn_order_by=pc.Option(order_by),
                 ignore_nulls=ignore_nulls,
                 fn_descending=descending,
                 fn_nulls_last=nulls_last,
@@ -403,8 +401,8 @@ class SqlExpr(Expression, Fns):
             Self
         """
         return self._new(
-            OverBuilder(func("percent_rank").get_name()).build_fn(
-                order_by=pc.Option(order_by),
+            OverBuilder.from_expr(func("percent_rank")).build_fn(
+                fn_order_by=pc.Option(order_by),
                 ignore_nulls=ignore_nulls,
                 fn_descending=descending,
                 fn_nulls_last=nulls_last,
@@ -427,8 +425,8 @@ class SqlExpr(Expression, Fns):
             Self
         """
         return self._new(
-            OverBuilder(func("rank").get_name()).build_fn(
-                order_by=pc.Option(order_by),
+            OverBuilder.from_expr(func("rank")).build_fn(
+                fn_order_by=pc.Option(order_by),
                 ignore_nulls=ignore_nulls,
                 fn_descending=descending,
                 fn_nulls_last=nulls_last,
@@ -451,8 +449,8 @@ class SqlExpr(Expression, Fns):
             Self
         """
         return self._new(
-            OverBuilder(func("row_number").get_name()).build_fn(
-                order_by=pc.Option(order_by),
+            OverBuilder.from_expr(func("row_number")).build_fn(
+                fn_order_by=pc.Option(order_by),
                 ignore_nulls=ignore_nulls,
                 fn_descending=descending,
                 fn_nulls_last=nulls_last,
