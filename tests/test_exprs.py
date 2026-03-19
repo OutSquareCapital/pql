@@ -1,3 +1,6 @@
+from collections.abc import Callable
+from typing import cast
+
 import narwhals as nw
 import polars as pl
 import pytest
@@ -29,14 +32,11 @@ def test_xor() -> None:
     )
 
 
-def test_repeat_by() -> None:
+@pytest.mark.parametrize("by", ["age", "n", 2])
+def test_repeat_by(by: int | str) -> None:
     assert_eq_pl(
-        pql.col("x").repeat_by(pql.col("n")).alias("repeated"),
-        (pl.col("x").repeat_by(pl.col("n")).alias("repeated")),
-    )
-    assert_eq_pl(
-        pql.col("x").repeat_by(2).alias("repeated"),
-        pl.col("x").repeat_by(2).alias("repeated"),
+        pql.col("x").repeat_by(by).alias("repeated"),
+        (pl.col("x").repeat_by(by).alias("repeated")),
     )
 
 
@@ -191,8 +191,13 @@ _SIMPLE_FNS = {
 
 
 @pytest.mark.parametrize("fn", _SIMPLE_FNS)
-def test_simple_methods(fn: str) -> None:
+def test_simple_methods_on_x(fn: str) -> None:
     on_simple_fn(pql.col("x"), pl.col("x"), fn)
+
+
+@pytest.mark.parametrize("fn", ["null_count", "has_nulls"])
+def test_simple_methods_on_age(fn: str) -> None:
+    on_simple_fn(pql.col("age"), pl.col("age"), fn)
 
 
 def test_uint_only_simple() -> None:
@@ -287,16 +292,8 @@ def test_add() -> None:
 
 
 def test_mod() -> None:
-    assert_eq(
-        (
-            (pql.col("age") % 10).alias("age_mod_10_bis"),
-            pql.col("age").mod(10).alias("age_mod_10"),
-        ),
-        (
-            (nw.col("age") % 10).alias("age_mod_10_bis"),
-            nw.col("age").__mod__(10).alias("age_mod_10"),
-        ),
-    )
+    assert_eq(pql.col("age").__mod__(10), nw.col("age").__mod__(10))
+    assert_eq(pql.col("age").mod(10), nw.col("age").__mod__(10))
 
 
 def test_is_in() -> None:
@@ -394,21 +391,21 @@ def test_is_close() -> None:
     )
 
 
-def test_rolling_mean() -> None:
+@pytest.mark.parametrize("center", [True, False])
+@pytest.mark.parametrize("window_size", [2, 4])
+@pytest.mark.parametrize("min_samples", [None, 1, 2])
+@pytest.mark.parametrize(
+    "method",
+    ["rolling_mean", "rolling_sum", "rolling_min", "rolling_max", "rolling_median"],
+)
+def test_rolling(
+    method: str, window_size: int, min_samples: int | None, center: bool
+) -> None:
+    pql_fn = cast(Callable[..., pql.Expr], getattr(pql.col("x"), method))
+    pl_fn = cast(Callable[..., pl.Expr], getattr(pl.col("x"), method))
     assert_eq_pl(
-        pql.col("x").rolling_mean(window_size=3, min_samples=2, center=False),
-        pl.col("x").rolling_mean(window_size=3, min_samples=2, center=False),
-    )
-    assert_eq_pl(
-        pql.col("x").rolling_mean(window_size=3, min_samples=2, center=True),
-        pl.col("x").rolling_mean(window_size=3, min_samples=2, center=True),
-    )
-
-
-def test_rolling_sum() -> None:
-    assert_eq_pl(
-        pql.col("x").rolling_sum(window_size=3, min_samples=2, center=False),
-        pl.col("x").rolling_sum(window_size=3, min_samples=2, center=False),
+        pql_fn(window_size=window_size, min_samples=min_samples, center=center),
+        pl_fn(window_size=window_size, min_samples=min_samples, center=center),
     )
 
 
@@ -426,57 +423,27 @@ def test_rolling_var() -> None:
     )
 
 
-def test_rolling_min() -> None:
+@pytest.mark.parametrize("lower_bound", [None, 2, 10])
+@pytest.mark.parametrize("upper_bound", [None, 10, 20])
+def test_clip(lower_bound: int | None, upper_bound: int | None) -> None:
     assert_eq_pl(
-        pql.col("x").rolling_min(window_size=3, min_samples=2, center=False),
-        pl.col("x").rolling_min(window_size=3, min_samples=2, center=False),
+        pql.col("x").clip(lower_bound=lower_bound, upper_bound=upper_bound),
+        pl.col("x").clip(lower_bound=lower_bound, upper_bound=upper_bound),
     )
 
 
-def test_rolling_max() -> None:
+@pytest.mark.parametrize("fisher", [True, False])
+@pytest.mark.parametrize("bias", [True, False])
+def test_kurtosis(fisher: bool, bias: bool) -> None:
     assert_eq_pl(
-        pql.col("x").rolling_max(window_size=3, min_samples=2, center=False),
-        pl.col("x").rolling_max(window_size=3, min_samples=2, center=False),
+        pql.col("x").kurtosis(fisher=fisher, bias=bias),
+        pl.col("x").kurtosis(fisher=fisher, bias=bias),
     )
 
 
-def test_rolling_median() -> None:
-    assert_eq_pl(
-        pql.col("x").rolling_median(window_size=3, min_samples=2, center=False),
-        pl.col("x").rolling_median(window_size=3, min_samples=2, center=False),
-    )
-
-
-def test_clip() -> None:
-    assert_eq_pl(
-        pql.col("x").clip(lower_bound=2, upper_bound=10).alias("x_clip"),
-        pl.col("x").clip(lower_bound=2, upper_bound=10).alias("x_clip"),
-    )
-    assert_eq_pl(
-        pql.col("x").clip(lower_bound=2).alias("x_clip_lower"),
-        pl.col("x").clip(lower_bound=2).alias("x_clip_lower"),
-    )
-    assert_eq_pl(
-        pql.col("x").clip(upper_bound=10).alias("x_clip_upper"),
-        pl.col("x").clip(upper_bound=10).alias("x_clip_upper"),
-    )
-    assert_eq_pl(
-        pql.col("x").clip().alias("x_clip_none"),
-        pl.col("x").clip().alias("x_clip_none"),
-    )
-
-
-def test_kurtosis() -> None:
-    assert_eq_pl(pql.col("x").kurtosis(), pl.col("x").kurtosis())
-    assert_eq_pl(
-        pql.col("x").kurtosis(fisher=False), pl.col("x").kurtosis(fisher=False)
-    )
-    assert_eq_pl(pql.col("x").kurtosis(bias=False), pl.col("x").kurtosis(bias=False))
-
-
-def test_skew() -> None:
-    assert_eq_pl(pql.col("x").skew(), pl.col("x").skew())
-    assert_eq_pl(pql.col("x").skew(bias=False), pl.col("x").skew(bias=False))
+@pytest.mark.parametrize("bias", [True, False])
+def test_skew(bias: bool) -> None:
+    assert_eq_pl(pql.col("x").skew(bias=bias), pl.col("x").skew(bias=bias))
 
 
 def test_quantile() -> None:
@@ -491,15 +458,11 @@ def test_quantile() -> None:
 
 
 @pytest.mark.parametrize("desc", [True, False])
-def test_over(desc: bool) -> None:
+@pytest.mark.parametrize("order_by", ["n", None])
+def test_over(order_by: str | None, desc: bool) -> None:
     assert_eq_pl(
-        pql.col("x").sum().over("a", order_by="n", descending=desc),
-        pl.col("x").sum().over("a", order_by="n", descending=desc),
-    )
-
-    assert_eq_pl(
-        pql.col("x").sum().over("a", descending=desc),
-        pl.col("x").sum().over("a", descending=desc),
+        pql.col("x").sum().over("a", order_by=order_by, descending=desc),
+        pl.col("x").sum().over("a", order_by=order_by, descending=desc),
     )
 
 
@@ -529,14 +492,11 @@ def test_fill_null(strategy: t.FillNullStrategy) -> None:
 
 
 @pytest.mark.parametrize("limit", [0, 1])
-def test_fill_null_limit(limit: int) -> None:
+@pytest.mark.parametrize("strategy", ["forward", "backward"])
+def test_fill_null_limit(strategy: t.FillNullStrategy, limit: int) -> None:
     assert_eq_pl(
-        pql.col("age").fill_null(strategy="forward", limit=limit),
-        pl.col("age").fill_null(strategy="forward", limit=limit),
-    )
-    assert_eq_pl(
-        pql.col("age").fill_null(strategy="backward", limit=limit),
-        pl.col("age").fill_null(strategy="backward", limit=limit),
+        pql.col("age").fill_null(strategy=strategy, limit=limit),
+        pl.col("age").fill_null(strategy=strategy, limit=limit),
     )
 
 
@@ -577,14 +537,10 @@ def test_fill_val_and_strat() -> None:
         _ = pl.col("age").fill_null(value=0, strategy="min")
 
 
-def test_std() -> None:
-    assert_eq_pl(pql.col("x").std(), pl.col("x").std())
-    assert_eq_pl(pql.col("x").std(ddof=0), pl.col("x").std(ddof=0))
-
-
-def test_var() -> None:
-    assert_eq_pl(pql.col("x").var(), pl.col("x").var())
-    assert_eq_pl(pql.col("x").var(ddof=0), pl.col("x").var(ddof=0))
+@pytest.mark.parametrize("ddof", [0, 1])
+def test_std_and_var(ddof: int) -> None:
+    assert_eq_pl(pql.col("x").std(ddof=ddof), pl.col("x").std(ddof=ddof))
+    assert_eq_pl(pql.col("x").var(ddof=ddof), pl.col("x").var(ddof=ddof))
 
 
 def test_all() -> None:
@@ -593,14 +549,6 @@ def test_all() -> None:
 
 def test_any() -> None:
     assert_eq_pl(pql.col("x").gt(10).any(), pl.col("x").gt(10).any())
-
-
-def test_null_count() -> None:
-    assert_eq_pl(pql.col("age").null_count(), pl.col("age").null_count())
-
-
-def test_has_nulls() -> None:
-    assert_eq_pl(pql.col("age").has_nulls(), pl.col("age").has_nulls())
 
 
 @pytest.mark.parametrize("method", ["average", "min", "max", "dense", "ordinal"])
