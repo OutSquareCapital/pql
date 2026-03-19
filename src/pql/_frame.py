@@ -759,12 +759,13 @@ class LazyFrame(sql.CoreHandler[sql.Frame]):
             match multi:
                 case True:
 
-                    def _rename_col(vc: str) -> pc.Iter[sql.SqlExpr]:
-                        return on_values.iter().map(
-                            lambda ov: sql.col(f"{ov}_{vc}").alias(
-                                f"{vc}{separator}{ov}"
-                            )
-                        )
+                    def _rename_col(val_col: str) -> pc.Iter[sql.SqlExpr]:
+                        def _swap(on_val: str) -> sql.SqlExpr:
+                            in_ = f"{on_val}_{val_col}"
+                            out = f"{val_col}{separator}{on_val}"
+                            return sql.col(in_).alias(out)
+
+                        return on_values.iter().map(_swap)
 
                     on_values = pc.Iter(on_columns).map(str).collect()
                     cols = (
