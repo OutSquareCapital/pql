@@ -8,7 +8,7 @@ from collections.abc import Callable
 from dataclasses import dataclass, replace
 from enum import IntEnum
 from functools import partial
-from typing import TYPE_CHECKING, NamedTuple, Self, override
+from typing import TYPE_CHECKING, Self, override
 
 import pyochain as pc
 
@@ -51,45 +51,6 @@ class Sec(IntEnum):
     BY_DAY = 86_400
 
 
-class RollingBounds(NamedTuple):
-    window_size: int
-    start: int
-    end: int
-
-    @classmethod
-    def new(cls, window_size: int, *, center: bool) -> Self:
-        match center:
-            case True:
-                left = window_size // 2
-                right = window_size - left - 1
-                return cls(window_size=window_size, start=-left, end=right)
-            case False:
-                return cls(window_size=window_size, start=-(window_size - 1), end=0)
-
-    def _clause(self, expr: sql.SqlExpr) -> sql.SqlExpr:
-        return expr.over(
-            order_by=pc.Some(Marker.TEMP),
-            frame_start=pc.Some(self.start),
-            frame_end=pc.Some(self.end),
-        )
-
-    def into_expr(
-        self,
-        expr: sql.SqlExpr,
-        agg: Callable[[sql.SqlExpr], sql.SqlExpr],
-        min_samples: pc.Option[int],
-    ) -> sql.SqlExpr:
-        return (
-            sql.when(
-                expr.count()
-                .pipe(self._clause)
-                .ge(min_samples.unwrap_or(self.window_size))
-            )
-            .then(expr.pipe(agg).pipe(self._clause))
-            .otherwise(_NONE)
-        )
-
-
 @dataclass(slots=True, init=False)
 class Expr(sql.CoreHandler[sql.SqlExpr]):
     """Expression wrapper providing Polars-like API over DuckDB expressions."""
@@ -129,9 +90,15 @@ class Expr(sql.CoreHandler[sql.SqlExpr]):
         *,
         center: bool,
     ) -> Self:
+        spec = sql.BoundsValues.rolling(window_size, center=center)
+
+        def _clause(e: sql.SqlExpr) -> sql.SqlExpr:
+            return sql.SqlExpr(sql.rolling_agg(e.inner(), Marker.TEMP, spec))
+
         return (
-            RollingBounds.new(window_size, center=center)
-            .into_expr(self.inner(), agg, pc.Option(min_samples))
+            sql.when(self.inner().count().pipe(_clause).ge(min_samples or window_size))
+            .then(self.inner().pipe(agg).pipe(_clause))
+            .otherwise(_NONE)
             .pipe(self._as_window)
         )
 

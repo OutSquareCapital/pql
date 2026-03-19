@@ -180,9 +180,9 @@ class OverBuilder:
     def handle_clauses(self, **kwargs: Unpack[ClauseArgs]) -> Self:
         match self.expr.find(exp.Window):
             case None:
-                return self.__class__(_wrap_in_window(self.expr, **kwargs))
+                return self.__class__(_wrap_in_window(self.expr, kwargs))
             case _:
-                return self.__class__(_inject_into_existing(self.expr, **kwargs))
+                return self.__class__(_inject_into_existing(self.expr, kwargs))
 
     def build(self) -> Expression:
         return SQLExpression(self.expr.sql(dialect="duckdb"))
@@ -197,33 +197,46 @@ class OverBuilder:
         )
 
 
-def _inject_into_existing(expr: exp.Expr, **kwargs: Unpack[ClauseArgs]) -> exp.Expr:
-    inj = partial(_inject, with_spec=False, **kwargs)
+def rolling_agg(expr: Expression, order_by: str, spec: BoundsValues) -> Expression:
+    """Build a window expression with a prebuilt spec. Used by rolling aggregations."""
+    return (
+        OverBuilder.from_expr(expr)
+        .handle_clauses(
+            partition_by=pc.NONE,
+            order=get_order(pc.Some(order_by), descending=False, nulls_last=False),
+            spec=pc.Some(spec.into_spec("ROWS")),
+        )
+        .build()
+    )
+
+
+def _inject_into_existing(expr: exp.Expr, clauses: ClauseArgs) -> exp.Expr:
+    inj = partial(_inject, clauses=clauses, with_spec=False)
     pc.Iter(expr.find_all(exp.Window)).for_each(inj)
     return expr
 
 
-def _wrap_in_window(expr: exp.Expr, **kwargs: Unpack[ClauseArgs]) -> exp.Window:
+def _wrap_in_window(expr: exp.Expr, clauses: ClauseArgs) -> exp.Window:
     window = exp.Window(this=expr)
-    _inject(window, with_spec=True, **kwargs)
+    _inject(window, clauses, with_spec=True)
     return window
 
 
-def _inject(w: exp.Window, *, with_spec: bool, **kwargs: Unpack[ClauseArgs]) -> None:
-    _ = kwargs["partition_by"].map(lambda pb: w.set("partition_by", pb))
-    _ = kwargs["order"].map(lambda o: w.set("order", o))
+def _inject(w: exp.Window, clauses: ClauseArgs, *, with_spec: bool) -> None:
+    _ = clauses["partition_by"].map(lambda pb: w.set("partition_by", pb))
+    _ = clauses["order"].map(lambda o: w.set("order", o))
     if with_spec:
-        _ = kwargs["spec"].map(lambda s: w.set("spec", s))
+        _ = clauses["spec"].map(lambda s: w.set("spec", s))
 
 
 def make_spec(
-    mode: FrameMode, *, has_order_by: bool, **kwargs: Unpack[BoundArgs]
+    mode: FrameMode, *, has_order_by: bool, **bounds: Unpack[BoundArgs]
 ) -> pc.Option[exp.WindowSpec]:
     return (
-        BoundsValues.new(has_order_by=has_order_by, **kwargs)
+        BoundsValues.new(bounds, has_order_by=has_order_by)
         .map(lambda b: b.into_spec(mode))
         .inspect(
-            lambda spec: kwargs["exclude"].inspect(lambda ex: spec.set("exclude", ex))
+            lambda spec: bounds["exclude"].inspect(lambda ex: spec.set("exclude", ex))
         )
     )
 
@@ -238,10 +251,8 @@ class Side(NamedTuple):
         match value:
             case 0:
                 return cls(Bounds.CURRENT, Bounds.ROW)
-            case int(n) if n < 0:
-                return cls(str(-n), Bounds.PRECEDING)
             case int(n):
-                return cls(str(n), Bounds.FOLLOWING)
+                return cls(str(n), direction)
             case _:
                 return cls(value, direction)
 
@@ -251,8 +262,24 @@ class BoundsValues(NamedTuple):
     end: Side
 
     @classmethod
-    def new(cls, *, has_order_by: bool, **kwargs: Unpack[BoundArgs]) -> pc.Option[Self]:
-        match (kwargs["frame_start"], kwargs["frame_end"]):
+    def rolling(cls, window_size: int, *, center: bool) -> Self:
+        size = window_size - 1
+        match center:
+            case True:
+                left = window_size // 2
+                right = size - left
+                return cls(
+                    Side(str(left), Bounds.PRECEDING),
+                    Side(str(right), Bounds.FOLLOWING),
+                )
+            case False:
+                return cls(
+                    Side(str(size), Bounds.PRECEDING), Side(Bounds.CURRENT, Bounds.ROW)
+                )
+
+    @classmethod
+    def new(cls, bounds: BoundArgs, *, has_order_by: bool) -> pc.Option[Self]:
+        match (bounds["frame_start"], bounds["frame_end"]):
             case (pc.Some(s), pc.Some(e)):
                 return pc.Some(
                     cls(Side.new(s, Bounds.PRECEDING), Side.new(e, Bounds.FOLLOWING))
@@ -271,7 +298,7 @@ class BoundsValues(NamedTuple):
                         Side.new(e, Bounds.FOLLOWING),
                     )
                 )
-            case _ if has_order_by or kwargs["exclude"].is_some():
+            case _ if has_order_by or bounds["exclude"].is_some():
                 return pc.Some(
                     cls(
                         Side.new(Bounds.UNBOUNDED, Bounds.PRECEDING),

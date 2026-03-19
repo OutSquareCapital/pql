@@ -51,10 +51,11 @@ from ._funcs import (
     unnest,
 )
 from ._when import ChainedThen, ChainedWhen, Then, When, when
-from ._window import NullsClause, SortClause
+from ._window import BoundsValues, NullsClause, SortClause, rolling_agg
 
 __all__ = [
     "ArrayType",
+    "BoundsValues",
     "ChainedThen",
     "ChainedWhen",
     "CoreHandler",
@@ -98,6 +99,7 @@ __all__ = [
     "min_horizontal",
     "parse_dtype",
     "reduce",
+    "rolling_agg",
     "row_number",
     "sum_horizontal",
     "typing",
