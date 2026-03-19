@@ -11,7 +11,7 @@ Each summary cell is `global (Narwhals, Polars)`.
 | ------------------- | ---------------------------------------------------------------------------------------------------- | ------------- | ------------ | ------------- | ----------- | ----------- |
 | LazyFrame           | <span style="color: #f39c12;">███</span><span style="color: #bdc3c7;">░░░░░░░</span> (48.0%, 36.2%)  | 105 (25, 80)  | 41 (12, 29)  | 28 (0, 28)    | 36 (13, 23) | 35 (31, 4)  |
 | Expr                | <span style="color: #f39c12;">████</span><span style="color: #bdc3c7;">░░░░░░</span> (72.5%, 42.1%)  | 283 (69, 214) | 140 (50, 90) | 100 (6, 94)   | 43 (13, 30) | 59 (58, 1)  |
-| LazyGroupBy         | <span style="color: #f39c12;">█████</span><span style="color: #bdc3c7;">░░░░░</span> (0.0%, 56.2%)   | 17 (1, 16)    | 9 (0, 9)     | 4 (0, 4)      | 4 (1, 3)    | 11 (11, 0)  |
+| LazyGroupBy         | <span style="color: #f39c12;">█████</span><span style="color: #bdc3c7;">░░░░░</span> (0.0%, 62.5%)   | 17 (1, 16)    | 10 (0, 10)   | 4 (0, 4)      | 3 (1, 2)    | 11 (11, 0)  |
 | ExprStrNameSpace    | <span style="color: #f39c12;">███</span><span style="color: #bdc3c7;">░░░░░░░</span> (42.1%, 27.7%)  | 66 (19, 47)   | 21 (8, 13)   | 10 (0, 10)    | 35 (11, 24) | 20 (19, 1)  |
 | ExprListNameSpace   | <span style="color: #f39c12;">█████</span><span style="color: #bdc3c7;">░░░░░</span> (90.0%, 46.5%)  | 53 (10, 43)   | 29 (9, 20)   | 20 (0, 20)    | 4 (1, 3)    | 15 (14, 1)  |
 | ExprStructNameSpace | <span style="color: #f39c12;">█████</span><span style="color: #bdc3c7;">░░░░░</span> (100.0%, 40.0%) | 6 (1, 5)      | 3 (1, 2)     | 2 (0, 2)      | 1 (0, 1)    | 4 (3, 1)    |
@@ -441,7 +441,7 @@ Each summary cell is `global (Narwhals, Polars)`.
 - `tail`
   - **Polars**: (n: int) -> LazyFrame
 
-### [!] Signature Mismatches (3)
+### [!] Signature Mismatches (2)
 
 - `first` (pl)
   - **Polars***: (`ignore_nulls: bool`) -> LazyFrame
@@ -449,9 +449,6 @@ Each summary cell is `global (Narwhals, Polars)`.
 - `last` (pl)
   - **Polars***: (`ignore_nulls: bool`) -> LazyFrame
   - **pql**: () -> LazyFrame
-- `len` (pl)
-  - **Polars***: (`name: str | None`) -> LazyFrame
-  - **pql**: (`name: str`) -> LazyFrame
 
 ## ExprStrNameSpace
 

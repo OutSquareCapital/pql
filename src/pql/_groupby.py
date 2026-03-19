@@ -8,7 +8,7 @@ import pyochain as pc
 
 from . import sql
 from ._expr import Expr
-from ._funcs import col, lit
+from ._funcs import col, len
 from ._meta import ExprPlan
 from ._schema import Schema
 
@@ -48,8 +48,8 @@ class LazyGroupBy:
             .into(self.agg)
         )
 
-    def len(self, name: str = "len") -> LazyFrame:
-        return self.agg(lit(1).count().alias(name))
+    def len(self, name: str | None = None) -> LazyFrame:
+        return self.agg(pc.Option(name).map(len().alias).unwrap_or_else(len))
 
     def all(self) -> LazyFrame:
         return self._agg_columns(Expr.implode)
