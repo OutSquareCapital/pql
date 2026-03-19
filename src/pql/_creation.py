@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
 
 from . import sql
 from ._frame import LazyFrame
@@ -10,9 +10,9 @@ if TYPE_CHECKING:
     from narwhals.typing import IntoFrame
 
     from .sql.typing import (
+        AnyArray,
         IntoDict,
         IntoRel,
-        NPArrayLike,
         Orientation,
         PythonLiteral,
         SeqIntoVals,
@@ -35,7 +35,7 @@ def from_df(df: IntoFrame) -> LazyFrame:
     return LazyFrame(sql.from_df(df))
 
 
-def from_numpy(arr: NPArrayLike[Any, Any], orient: Orientation = "col") -> LazyFrame:  # pyright: ignore[reportExplicitAny]
+def from_numpy(arr: AnyArray, orient: Orientation = "col") -> LazyFrame:
     return LazyFrame(sql.from_numpy(arr, orient=orient))
 
 

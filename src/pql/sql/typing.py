@@ -70,6 +70,9 @@ class NPArrayLike[S: tuple[Any, ...], D](NPProtocol, Protocol):
     def T(self) -> Self: ...  # noqa: D102, N802
 
 
+type AnyArray = NPArrayLike[Any, Any]  # pyright: ignore[reportExplicitAny]
+
+
 type IntoDict[K, V] = Mapping[K, V] | Iterable[tuple[K, V]]
 type ExprLike = SqlExpr | Expr | DuckHandler
 """Types that are already expressions wrappers and can be used directly as expressions."""
@@ -85,7 +88,7 @@ type SeqIntoVals = (
     Sequence[duckdb.Expression]
     | Sequence[Mapping[str, PythonLiteral]]
     | Sequence[PythonLiteral]
-    | NPArrayLike[Any, Any]  # pyright: ignore[reportExplicitAny]
+    | AnyArray
 )
 
 type IntoValues = ExprIntoVals | Mapping[str, Sequence[PythonLiteral]] | SeqIntoVals

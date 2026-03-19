@@ -8,6 +8,7 @@ import pyochain as pc
 from narwhals.typing import IntoFrame
 
 from .typing import (
+    AnyArray,
     FrameLike,
     IntoDict,
     IntoRel,
@@ -18,6 +19,10 @@ from .typing import (
 )
 
 COL0 = "column_0"
+
+
+def _named(j: object) -> str:
+    return f"column_{j}"
 
 
 def _to_expr(k: str, v: PythonLiteral) -> duckdb.Expression:
@@ -92,7 +97,7 @@ def from_records(data: SeqIntoVals) -> duckdb.DuckDBPyRelation:
             return (
                 pc.Iter(vals)
                 .enumerate()
-                .map_star(lambda k, v: (f"column_{k}", v))
+                .map_star(lambda k, v: (_named(k), v))
                 .into(from_dict)
             )
         case duckdb.Expression():
@@ -114,14 +119,10 @@ def from_dict(data: IntoDict[str, Any]) -> duckdb.DuckDBPyRelation:  # pyright: 
     data = pc.Dict(data)
 
     raw_vals = data.items().iter().map_star(_to_expr).collect(tuple)
-    unnested = data.iter().map(_unnest)
-    return duckdb.values(raw_vals).select(*unnested)
+    return duckdb.values(raw_vals).select(*data.iter().map(_unnest))
 
 
-def from_numpy(
-    data: NPArrayLike[Any, Any],  # pyright: ignore[reportExplicitAny]
-    orient: Orientation = "col",
-) -> duckdb.DuckDBPyRelation:
+def from_numpy(data: AnyArray, orient: Orientation = "col") -> duckdb.DuckDBPyRelation:
 
     match data.ndim:
         case 1:
@@ -129,33 +130,23 @@ def from_numpy(
         case _:
             arr = data.T if orient == "col" else data
 
-            def _array_strategy(
-                data: NPArrayLike[Any, Any],  # pyright: ignore[reportExplicitAny]
-            ) -> tuple[int, Callable[[int], NPArrayLike[Any, Any]]]:  # pyright: ignore[reportExplicitAny]
-                match (data.ndim, orient):
+            def _array_strategy() -> tuple[int, Callable[[int], AnyArray]]:
+                match (arr.ndim, orient):
                     case (2, _) | (_, "row"):
-
-                        def _arr_getter(j: int) -> NPArrayLike[Any, Any]:  # pyright: ignore[reportExplicitAny]
-                            return arr[:, j]  # pyright: ignore[reportAny]
-
-                        return 1, _arr_getter
+                        return 1, lambda j: arr[:, j]  # pyright: ignore[reportAny]
                     case _:
+                        return 0, lambda j: arr[j]  # pyright: ignore[reportAny]
 
-                        def _arr_getter(j: int) -> NPArrayLike[Any, Any]:  # pyright: ignore[reportExplicitAny]
-                            return arr[j]  # pyright: ignore[reportAny]
+            def _named_array(names: pc.Seq[str]) -> duckdb.DuckDBPyRelation:
+                vals = (
+                    names.iter()
+                    .enumerate()
+                    .map_star(lambda j, name: _to_expr(name, _arr_getter(j)))
+                    .collect(tuple)
+                )
 
-                        return 0, _arr_getter
+                return duckdb.values(vals).select(*names.iter().map(_unnest))
 
-            axis, _arr_getter = _array_strategy(arr)
-
-            names = (
-                pc.Iter(range(arr.shape[axis])).map(lambda j: f"column_{j}").collect()  # pyright: ignore[reportAny]
-            )
-            vals = (
-                names.iter()
-                .enumerate()
-                .map_star(lambda j, name: _to_expr(name, _arr_getter(j)))
-                .collect(tuple)
-            )
-
-            return duckdb.values(vals).select(*names.iter().map(_unnest))
+            axis, _arr_getter = _array_strategy()
+            names_nb: int = arr.shape[axis]  # pyright: ignore[reportAny]
+            return pc.Iter(range(names_nb)).map(_named).collect().into(_named_array)
