@@ -4,6 +4,7 @@ from collections.abc import Iterable, Sequence
 from typing import TYPE_CHECKING, ClassVar, Literal, Self
 
 import pyochain as pc
+from sqlglot import exp
 
 from ._code_gen import Relation
 from ._creation import from_query, into_relation
@@ -15,15 +16,6 @@ if TYPE_CHECKING:
     from pyochain.traits import PyoIterable
 
     from .typing import IntoExpr, IntoRel, Orientation, PythonLiteral
-
-
-def _clause(on: TryIter[str], kword: str) -> str:
-    return (
-        pc.Option(on)
-        .map(lambda o: try_iter(o).join(", "))
-        .map(lambda c: f" {kword} {c}")
-        .unwrap_or("")
-    )
 
 
 class Frame(Relation):
@@ -40,13 +32,13 @@ class Frame(Relation):
         select_cols: PyoIterable[str],
         how: Literal["left", "inner"],
     ) -> Self:
-        join_clause = "LEFT" if how == "left" else ""
-        qry = f"""--sql
-        SELECT {select_cols.join(", ")}
-        FROM lhs
-        ASOF {join_clause} JOIN rhs
-        ON {into_expr(condition).to_sql()}
-        """
+        join_type = "asof left" if how == "left" else "asof"
+        qry = (
+            exp.select(*select_cols)  # pyright: ignore[reportUnknownMemberType]
+            .from_("lhs")
+            .join("rhs", on=into_expr(condition).to_sql(), join_type=join_type)
+            .sql(dialect="duckdb")
+        )
 
         return self.__class__(from_query(qry, lhs=self.inner(), rhs=other))
 
@@ -59,25 +51,45 @@ class Frame(Relation):
         order_by: TryIter[str],
     ) -> Self:
 
-        def _in_clause(vals: Sequence[PythonLiteral]) -> str:
-            cols = (
-                pc.Iter(vals)
-                .map(lambda v: f"'{v}'" if isinstance(v, str) else str(v))
-                .join(", ")
+        def _on_exprs(on_iter: pc.Seq[str]) -> PyoIterable[exp.Expr] | PyoIterable[str]:
+            match in_values:
+                case Sequence() as vals:
+                    return pc.Iter.once(
+                        exp.In(
+                            this=on_iter.first(),
+                            expressions=pc.Iter(vals).map(exp.convert).collect(),
+                        )
+                    )
+                case None:
+                    return on_iter
+
+        def _group() -> exp.Group | None:
+            group = try_iter(group_by).then(
+                lambda cols: exp.Group(expressions=cols.collect(list))
             )
-            return f" IN ({cols})"
+            return group.unwrap() if group.is_some() else None
 
-        in_clause = pc.Option(in_values).map(_in_clause).unwrap_or("")
+        pivot = exp.Pivot(
+            this=exp.to_table("rel"),  # pyright: ignore[reportUnknownMemberType]
+            expressions=try_iter(on).collect().into(_on_exprs),
+            using=try_iter(using),
+            group=_group(),
+        )
+        qry = (
+            try_iter(order_by)
+            .collect()
+            .then(
+                lambda cols: (
+                    exp.select("*")  # pyright: ignore[reportUnknownMemberType]
+                    .from_(exp.Subquery(this=pivot))
+                    .order_by(*cols)
+                    .sql(dialect="duckdb")
+                )
+            )
+            .unwrap_or_else(lambda: pivot.sql(dialect="duckdb"))
+        )
 
-        qry = f"""--sql
-        PIVOT _rel
-        ON {try_iter(on).join(", ")}{in_clause}
-        {_clause(on=using, kword="USING")}
-        {_clause(on=group_by, kword="GROUP BY")}
-        {_clause(on=order_by, kword="ORDER BY")}
-        """
-
-        return self.__class__(from_query(qry, _rel=self.inner()))
+        return self.__class__(from_query(qry, rel=self.inner()))
 
     def unpivot(
         self,
@@ -88,26 +100,31 @@ class Frame(Relation):
         order_by: TryIter[str] = None,
     ) -> Self:
         """Unpivot from wide to long format."""
-        index_cols = (
-            pc.Option(index)
-            .map(lambda value: try_iter(value).collect())
-            .unwrap_or_else(pc.Seq[str].new)
-        )
-        on_cols = (
-            pc.Option(on)
-            .map(try_iter)
+        index_cols = try_iter(index).collect()
+        on_exprs = (
+            try_iter(on)
+            .then_some()
             .unwrap_or_else(
                 lambda: self.columns.iter().filter(lambda name: name not in index_cols)
             )
-            .join(", ")
         )
-        slct_cols = index_cols.iter().chain((variable_name, value_name)).join(", ")
+        unpivot = exp.Pivot(
+            this=exp.to_table("rel"),  # pyright: ignore[reportUnknownMemberType]
+            expressions=on_exprs,
+            unpivot=True,
+            into=exp.UnpivotColumns(this=variable_name, expressions=(value_name,)),
+        )
+        query = (
+            index_cols.iter()
+            .chain((variable_name, value_name))
+            .into(lambda x: exp.select(*x))  # pyright: ignore[reportUnknownMemberType]
+            .from_(exp.Subquery(this=unpivot))
+        )
+        qry = (
+            try_iter(order_by)
+            .then(lambda cols: query.order_by(*cols))  # pyright: ignore[reportUnknownMemberType]
+            .unwrap_or(query)
+            .sql(dialect="duckdb")
+        )
 
-        qry = f"""--sql
-        SELECT {slct_cols}
-        FROM (UNPIVOT _rel ON {on_cols}
-        INTO NAME {variable_name} VALUE {value_name})
-        {_clause(on=order_by, kword="ORDER BY")}
-        """
-
-        return self.__class__(from_query(qry, _rel=self.inner()))
+        return self.__class__(from_query(qry, rel=self.inner()))
