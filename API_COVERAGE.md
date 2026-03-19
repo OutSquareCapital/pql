@@ -10,14 +10,14 @@ Each summary cell is relative to Polars.
 | Class               | Coverage                                                                                     | Implemented | Matched | Missing | Mismatched | Extra |
 | ------------------- | -------------------------------------------------------------------------------------------- | ----------- | ------- | ------- | ---------- | ----- |
 | LazyFrame           | <span style="color: #f39c12;">███</span><span style="color: #bdc3c7;">░░░░░░░</span> (36.2%) | 80          | 29      | 28      | 23         | 4     |
-| Expr                | <span style="color: #f39c12;">████</span><span style="color: #bdc3c7;">░░░░░░</span> (42.1%) | 214         | 90      | 94      | 30         | 1     |
+| Expr                | <span style="color: #f39c12;">████</span><span style="color: #bdc3c7;">░░░░░░</span> (41.6%) | 214         | 89      | 94      | 31         | 1     |
 | LazyGroupBy         | <span style="color: #27ae60;">██████</span><span style="color: #bdc3c7;">░░░░</span> (62.5%) | 16          | 10      | 4       | 2          | 0     |
-| ExprStrNameSpace    | <span style="color: #e74c3c;">██</span><span style="color: #bdc3c7;">░░░░░░░░</span> (27.7%) | 47          | 13      | 10      | 24         | 1     |
-| ExprListNameSpace   | <span style="color: #f39c12;">████</span><span style="color: #bdc3c7;">░░░░░░</span> (46.5%) | 43          | 20      | 20      | 3          | 1     |
-| ExprStructNameSpace | <span style="color: #f39c12;">████</span><span style="color: #bdc3c7;">░░░░░░</span> (40.0%) | 5           | 2       | 2       | 1          | 1     |
-| ExprNameNameSpace   | <span style="color: #27ae60;">███████</span><span style="color: #bdc3c7;">░░░</span> (70.0%) | 10          | 7       | 3       | 0          | 1     |
-| ExprArrNameSpace    | <span style="color: #f39c12;">█████</span><span style="color: #bdc3c7;">░░░░░</span> (54.8%) | 31          | 17      | 10      | 4          | 3     |
-| ExprDtNameSpace     | <span style="color: #f39c12;">████</span><span style="color: #bdc3c7;">░░░░░░</span> (46.7%) | 45          | 21      | 18      | 6          | 1     |
+| ExprStrNameSpace    | <span style="color: #e74c3c;">██</span><span style="color: #bdc3c7;">░░░░░░░░</span> (27.7%) | 47          | 13      | 10      | 24         | 2     |
+| ExprListNameSpace   | <span style="color: #f39c12;">████</span><span style="color: #bdc3c7;">░░░░░░</span> (46.5%) | 43          | 20      | 20      | 3          | 2     |
+| ExprStructNameSpace | <span style="color: #f39c12;">████</span><span style="color: #bdc3c7;">░░░░░░</span> (40.0%) | 5           | 2       | 2       | 1          | 2     |
+| ExprNameNameSpace   | <span style="color: #27ae60;">███████</span><span style="color: #bdc3c7;">░░░</span> (70.0%) | 10          | 7       | 3       | 0          | 2     |
+| ExprArrNameSpace    | <span style="color: #f39c12;">█████</span><span style="color: #bdc3c7;">░░░░░</span> (54.8%) | 31          | 17      | 10      | 4          | 4     |
+| ExprDtNameSpace     | <span style="color: #f39c12;">████</span><span style="color: #bdc3c7;">░░░░░░</span> (46.7%) | 45          | 21      | 18      | 6          | 2     |
 | ModuleFunctions     | <span style="color: #e74c3c;">█</span><span style="color: #bdc3c7;">░░░░░░░░░</span> (14.3%) | 168         | 24      | 119     | 25         | 13    |
 | selectors           | <span style="color: #f39c12;">█████</span><span style="color: #bdc3c7;">░░░░░</span> (54.3%) | 35          | 19      | 12      | 4          | 0     |
 | DataType            | <span style="color: #f39c12;">█████</span><span style="color: #bdc3c7;">░░░░░</span> (57.1%) | 14          | 8       | 5       | 1          | 0     |
@@ -356,7 +356,7 @@ Each summary cell is relative to Polars.
 - `value_counts`
   - **Polars**: (sort: bool, parallel: bool, name: str_ | None, normalize: bool) -> Expr
 
-### [!] Signature Mismatches (30)
+### [!] Signature Mismatches (31)
 
 - `alias`
   - **Polars**: (`name: str_`) -> Expr
@@ -376,6 +376,9 @@ Each summary cell is relative to Polars.
 - `diff`
   - **Polars**: (`n: int | IntoExpr`, `null_behavior: NullBehavior`) -> Expr
   - **pql**: () -> Self
+- `fill_nan`
+  - **Polars**: (`value: int | float | Expr | None`) -> Expr
+  - **pql**: (`value: float | IntoExprColumn | None`) -> Self
 - `fill_null`
   - **Polars**: (`value: Any | Expr | None`, strategy: FillNullStrategy | None, limit: int | None) -> Expr
   - **pql**: (`value: IntoExpr`, strategy: FillNullStrategy | None, limit: int | None) -> Self
@@ -417,7 +420,7 @@ Each summary cell is relative to Polars.
   - **pql**: (method: RankMethod, descending: bool) -> Self
 - `repeat_by`
   - **Polars**: (`by: Series | Expr | str_ | int`) -> Expr
-  - **pql**: (`by: Expr | int`) -> Self
+  - **pql**: (`by: IntoExprColumn | int`) -> Self
 - `replace`
   - **Polars**: (`old: IntoExpr | Sequence[Any] | Mapping[Any, Any]`, `new: IntoExpr | Sequence[Any] | NoDefault`, `default: IntoExpr | NoDefault`, `return_dtype: PolarsDataType | None`) -> Expr
   - **pql**: (`old: IntoExpr`, `new: IntoExpr`) -> Self
@@ -575,9 +578,10 @@ Each summary cell is relative to Polars.
   - **Polars**: (`length: int | IntoExprColumn`) -> Expr
   - **pql**: (`width: int`) -> Expr
 
-### [+] Extra Methods (pql-only) (1)
+### [+] Extra Methods (pql-only) (2)
 
 - `inner`
+- `pipe`
 
 ## ExprListNameSpace
 
@@ -636,9 +640,10 @@ Each summary cell is relative to Polars.
   - **Polars**: (`maintain_order: bool`) -> Expr
   - **pql**: () -> Expr
 
-### [+] Extra Methods (pql-only) (1)
+### [+] Extra Methods (pql-only) (2)
 
 - `inner`
+- `pipe`
 
 ## ExprStructNameSpace
 
@@ -655,9 +660,10 @@ Each summary cell is relative to Polars.
   - **Polars**: (`name: str | list[str]`, `*more_names: str`) -> Expr
   - **pql**: (`name: str`) -> Expr
 
-### [+] Extra Methods (pql-only) (1)
+### [+] Extra Methods (pql-only) (2)
 
 - `inner`
+- `pipe`
 
 ## ExprNameNameSpace
 
@@ -670,9 +676,10 @@ Each summary cell is relative to Polars.
 - `suffix_fields`
   - **Polars**: (suffix: str) -> Expr
 
-### [+] Extra Methods (pql-only) (1)
+### [+] Extra Methods (pql-only) (2)
 
 - `inner`
+- `pipe`
 
 ## ExprArrNameSpace
 
@@ -714,11 +721,12 @@ Each summary cell is relative to Polars.
   - **Polars**: (`maintain_order: bool`) -> Expr
   - **pql**: () -> Expr
 
-### [+] Extra Methods (pql-only) (3)
+### [+] Extra Methods (pql-only) (4)
 
 - `drop_nulls`
 - `filter`
 - `inner`
+- `pipe`
 
 ## ExprDtNameSpace
 
@@ -782,9 +790,10 @@ Each summary cell is relative to Polars.
   - **Polars**: (`every: timedelta | Expr`) -> Expr
   - **pql**: (`every: str`) -> Expr
 
-### [+] Extra Methods (pql-only) (1)
+### [+] Extra Methods (pql-only) (2)
 
 - `inner`
+- `pipe`
 
 ## ModuleFunctions
 
@@ -1075,7 +1084,7 @@ Each summary cell is relative to Polars.
   - **pql**: (`data: Sequence[Mapping[str, PythonLiteral]]`) -> LazyFrame
 - `from_numpy`
   - **Polars**: (`data: ndarray[Any, Any]`, `schema: SchemaDefinition | None`, `schema_overrides: SchemaDict | None`, `orient: Orientation | None`) -> DataFrame
-  - **pql**: (`arr: NPArrayLike[Any, Any]`, `orient: Orientation`) -> LazyFrame
+  - **pql**: (`arr: AnyArray`, `orient: Orientation`) -> LazyFrame
 - `from_records`
   - **Polars**: (`data: Sequence[Any]`, `schema: SchemaDefinition | None`, `schema_overrides: SchemaDict | None`, `strict: bool`, `orient: Orientation | None`, `infer_schema_length: int | None`) -> DataFrame
   - **pql**: (`data: SeqIntoVals`) -> LazyFrame
