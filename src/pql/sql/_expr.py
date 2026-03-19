@@ -212,6 +212,19 @@ class SqlExpr(Expression, Fns):
         """Return whether the expression contains nulls."""
         return self.is_null().any()
 
+    def repeat_by(self, by: IntoExprColumn | int) -> Self:
+        """Repeat values by count, returning a list."""
+        from ._funcs import into_expr
+
+        expr = into_expr(by, as_col=True).list.range().list.eval(self).inner()
+        return self._new(expr)
+
+    def replace(self, old: IntoExpr, new: IntoExpr) -> Self:
+        """Replace values."""
+        from ._when import when
+
+        return self._new(when(self.eq(old)).then(new).otherwise(self).inner())
+
     def is_close(
         self,
         other: IntoExpr,
@@ -249,6 +262,37 @@ class SqlExpr(Expression, Fns):
             .over(pc.Some(self), pc.Some(self), descending=True, nulls_last=True)
             .eq(1)
         )
+
+    def is_duplicated(self) -> Self:
+        """Check if value is duplicated."""
+        from ._funcs import all
+
+        return self._new(all().count().over(pc.Some(self)).gt(1).inner())
+
+    def is_unique(self) -> Self:
+        """Check if value is unique."""
+        from ._funcs import all
+
+        return self._new(all().count().over(pc.Some(self)).eq(1).inner())
+
+    def forward_fill(self) -> Self:
+        """Fill null values with the last non-null value."""
+        return self.last_value().over(frame_end=pc.Some(0), ignore_nulls=True)
+
+    def backward_fill(self, limit: int | None) -> Self:
+        """Fill null values with the next non-null value."""
+        expr = self.any_value()
+        return (
+            pc.Option(limit)
+            .map(lambda lmt: expr.over(frame_start=pc.Some(0), frame_end=pc.Some(lmt)))
+            .unwrap_or_else(lambda: expr.over(frame_start=pc.Some(0)))
+        )
+
+    def fill_nan(self, value: float | IntoExprColumn | None) -> Self:
+        """Fill NaN values."""
+        from ._when import when
+
+        return self._new(when(self.is_nan()).then(value).otherwise(self).inner())
 
     def log(self, x: IntoExprColumn | float | None = None) -> Self:
         """Computes the logarithm of x to base b.

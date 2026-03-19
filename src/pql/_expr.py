@@ -722,19 +722,11 @@ class Expr(sql.CoreHandler[sql.SqlExpr]):
 
     def forward_fill(self) -> Self:
         """Fill null values with the last non-null value."""
-        return self._new(
-            self.inner().last_value().over(frame_end=pc.Some(0), ignore_nulls=True)
-        )
+        return self._new(self.inner().forward_fill())
 
     def backward_fill(self, limit: int | None = None) -> Self:
         """Fill null values with the next non-null value."""
-        expr = self.inner().any_value()
-        return (
-            pc.Option(limit)
-            .map(lambda lmt: expr.over(frame_start=pc.Some(0), frame_end=pc.Some(lmt)))
-            .unwrap_or_else(lambda: expr.over(frame_start=pc.Some(0)))
-            .pipe(self._as_window)
-        )
+        return self._as_window(self.inner().backward_fill(limit))
 
     def is_nan(self) -> Self:
         """Check if value is NaN."""
@@ -752,11 +744,9 @@ class Expr(sql.CoreHandler[sql.SqlExpr]):
         """Check if value is infinite."""
         return self._new(self.inner().is_inf())
 
-    def fill_nan(self, value: float | Expr | None) -> Self:
+    def fill_nan(self, value: float | IntoExprColumn | None) -> Self:
         """Fill NaN values."""
-        return self._new(
-            sql.when(self.inner().is_nan()).then(value).otherwise(self.inner())
-        )
+        return self._new(self.inner().fill_nan(value))
 
     def fill_null(
         self,
@@ -777,21 +767,19 @@ class Expr(sql.CoreHandler[sql.SqlExpr]):
 
     def replace(self, old: IntoExpr, new: IntoExpr) -> Self:
         """Replace values."""
-        return self._new(
-            sql.when(self.inner().eq(old)).then(new).otherwise(self.inner())
-        )
+        return self._new(self.inner().replace(old, new))
 
-    def repeat_by(self, by: Expr | int) -> Self:
+    def repeat_by(self, by: IntoExprColumn | int) -> Self:
         """Repeat values by count, returning a list."""
-        return self._new(sql.into_expr(by).list.range().list.eval(self.inner()))
+        return self._new(self.inner().repeat_by(by))
 
     def is_duplicated(self) -> Self:
         """Check if value is duplicated."""
-        return self._new(sql.all().count().over(pc.Some(self.inner())).gt(1))
+        return self._new(self.inner().is_duplicated())
 
     def is_unique(self) -> Self:
         """Check if value is unique."""
-        return self._new(sql.all().count().over(pc.Some(self.inner())).eq(1))
+        return self._new(self.inner().is_unique())
 
     def is_first_distinct(self) -> Self:
         """Check if value is first occurrence."""
