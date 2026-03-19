@@ -799,7 +799,7 @@ class Expr(sql.CoreHandler[sql.SqlExpr]):
     ) -> Self:
         return (
             self.inner()
-            .pipe(fill_nulls, value, strategy, limit)
+            .pipe(fill_nulls, pc.Option(value), pc.Option(strategy), pc.Option(limit))
             .map(self._new)
             .unwrap()
         )
