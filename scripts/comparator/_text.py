@@ -1,12 +1,12 @@
-from collections.abc import Callable
 from dataclasses import dataclass, field
 from types import ModuleType
 
 import pyochain as pc
 
 from .._utils import Dunders, Pql, get_attr
+from ._array_builder import ArrayBuilder
 from ._infos import ComparisonResult
-from ._rules import RefBackend, Status
+from ._rules import Status
 
 
 @dataclass(slots=True)
@@ -33,18 +33,18 @@ class ComparisonReport:
             )
         )
 
-    def to_row(self) -> pc.Seq[str]:
+    def to_row(self) -> pc.Vec[str]:
         """Return a row of summary data as columns."""
-        return pc.Seq(
-            (
-                self.name,
-                _coverage_cell(self.results),
-                _count_cell(self.results, _has_reference),
-                _status_cell(self.results, Status.MATCH),
-                _status_cell(self.results, Status.MISSING),
-                _status_cell(self.results, Status.SIGNATURE_MISMATCH),
-                _status_cell(self.results, Status.EXTRA),
-            )
+        return (
+            ArrayBuilder(self.results)
+            .with_name(self.name)
+            .coverage_cell()
+            .count_cell()
+            .status_cell(Status.MATCH)
+            .status_cell(Status.MISSING)
+            .status_cell(Status.SIGNATURE_MISMATCH)
+            .status_cell(Status.EXTRA)
+            .build()
         )
 
 
@@ -83,54 +83,15 @@ class ClassComparison:
     polars_cls: object
     pql_cls: object
     name: Pql
-    names: pc.Option[pc.Set[str]] = field(default_factory=lambda: pc.NONE)
     ignored_names: pc.Set[str] = field(default_factory=pc.Set[str].new)
 
     def to_report(self) -> ComparisonReport:
         """Compare two classes and return comparison results."""
-
-        def _get_public_methods(
-            cls: object, names: pc.Option[pc.Set[str]]
-        ) -> pc.Set[str]:
-            def _module_public_names() -> pc.Set[str]:
-                match cls:
-                    case ModuleType() as mod:
-                        return pc.Set(mod.__all__)  # pyright: ignore[reportAny]
-                    case _:
-                        return pc.Set(dir(cls))
-
-            return (
-                names.unwrap_or_else(_module_public_names)
-                .iter()
-                .filter(
-                    lambda name: (
-                        not name.startswith("_")
-                        and not self.ignored_names.contains(name)
-                        and not (
-                            get_attr(cls, name)
-                            .and_then(lambda attr: get_attr(attr, Dunders.DEPRECATED))
-                            .map(bool)
-                            .unwrap_or(default=False)
-                        )
-                        and (
-                            get_attr(cls, name)
-                            .map(
-                                lambda attr: (
-                                    callable(attr) or isinstance(attr, property)
-                                )
-                            )
-                            .unwrap_or(default=False)
-                        )
-                    )
-                )
-                .collect(pc.Set)
-            )
-
         narwhals_methods = self.narwhals_cls.map(
-            lambda cls: _get_public_methods(cls, self.names)
+            self._get_public_methods
         ).unwrap_or_else(pc.Set.new)
-        polars_methods = _get_public_methods(self.polars_cls, self.names)
-        pql_methods = _get_public_methods(self.pql_cls, self.names)
+        polars_methods = self._get_public_methods(self.polars_cls)
+        pql_methods = self._get_public_methods(self.pql_cls)
 
         return ComparisonReport(
             self.name,
@@ -152,6 +113,33 @@ class ClassComparison:
             .sort(key=lambda r: r.method_name),
         )
 
+    def _get_public_methods(self, cls: object) -> pc.Set[str]:
+        def _module_public_names() -> pc.Set[str]:
+            match cls:
+                case ModuleType() as mod:
+                    return pc.Set(mod.__all__)  # pyright: ignore[reportAny]
+                case _:
+                    return pc.Set(dir(cls))
+
+        def _predicate(name: str) -> bool:
+            return (
+                not name.startswith("_")
+                and not self.ignored_names.contains(name)
+                and not (
+                    get_attr(cls, name)
+                    .and_then(lambda attr: get_attr(attr, Dunders.DEPRECATED))
+                    .map(bool)
+                    .unwrap_or(default=False)
+                )
+                and (
+                    get_attr(cls, name)
+                    .map(lambda attr: callable(attr) or isinstance(attr, property))
+                    .unwrap_or(default=False)
+                )
+            )
+
+        return _module_public_names().iter().filter(_predicate).collect(pc.Set)
+
 
 def render_summary_table(comps: pc.Seq[ComparisonReport]) -> pc.Iter[str]:
     data_rows = _summary_rows(comps)
@@ -171,7 +159,7 @@ def render_summary_table(comps: pc.Seq[ComparisonReport]) -> pc.Iter[str]:
     )
 
 
-def _summary_rows(comps: pc.Seq[ComparisonReport]) -> pc.Seq[pc.Seq[str]]:
+def _summary_rows(comps: pc.Seq[ComparisonReport]) -> pc.Seq[pc.Vec[str]]:
     return comps.iter().map(lambda comp: comp.to_row()).collect()
 
 
@@ -212,88 +200,6 @@ def _format_row(row: pc.Seq[str], widths: pc.Seq[int]) -> str:
         .join(" | ")
     )
     return f"| {cells} |"
-
-
-def _for_each_ref[T](mapper: Callable[[RefBackend], T]) -> pc.Seq[T]:
-    return pc.Iter(RefBackend).map(mapper).collect()
-
-
-def _count_cell(
-    results: pc.Vec[ComparisonResult],
-    predicate: Callable[[ComparisonResult, RefBackend], bool],
-) -> str:
-    return _for_each_ref(lambda ref: _count_for_ref(results, ref, predicate)).into(
-        _int_pair_with_total
-    )
-
-
-def _status_cell(results: pc.Vec[ComparisonResult], status: Status) -> str:
-    return _for_each_ref(lambda ref: _count_for_ref_status(results, ref, status)).into(
-        _int_pair_with_total
-    )
-
-
-def _coverage_cell(results: pc.Vec[ComparisonResult]) -> str:
-    return _for_each_ref(lambda ref: _coverage_percent(results, ref)).into(
-        lambda pair: (
-            f"{_global_coverage_percent(results):.1f}% ({pair[0]:.1f}%, {pair[1]:.1f}%)"
-        )
-    )
-
-
-def _int_pair_with_total(pair: pc.Seq[int]) -> str:
-    return f"{pair.sum()} ({pair[0]}, {pair[1]})"
-
-
-def _global_coverage_percent(results: pc.Vec[ComparisonResult]) -> float:
-    totals = _for_each_ref(lambda ref: _count_for_ref(results, ref, _has_reference))
-    matched = _for_each_ref(
-        lambda ref: _count_for_ref_status(results, ref, Status.MATCH)
-    )
-    total = totals.sum()
-    match total:
-        case 0:
-            return 100.0
-        case _:
-            return (matched.sum() / total) * 100
-
-
-def _coverage_percent(results: pc.Vec[ComparisonResult], ref: RefBackend) -> float:
-    total = _count_for_ref(results, ref, _has_reference)
-    matched = _count_for_ref_status(results, ref, Status.MATCH)
-    match total:
-        case 0:
-            return 100.0
-        case _:
-            return (matched / total) * 100
-
-
-def _count_for_ref(
-    results: pc.Vec[ComparisonResult],
-    ref: RefBackend,
-    predicate: Callable[[ComparisonResult, RefBackend], bool],
-) -> int:
-    return results.iter().filter(lambda result: predicate(result, ref)).length()
-
-
-def _count_for_ref_status(
-    results: pc.Vec[ComparisonResult], ref: RefBackend, status: Status
-) -> int:
-    return (
-        results.iter()
-        .filter(
-            lambda result: (
-                result.infos.status_for_ref(ref)
-                .map(lambda current: current == status)
-                .unwrap_or(default=False)
-            )
-        )
-        .length()
-    )
-
-
-def _has_reference(result: ComparisonResult, ref: RefBackend) -> bool:
-    return result.infos.has_reference(ref)
 
 
 def _by_status(

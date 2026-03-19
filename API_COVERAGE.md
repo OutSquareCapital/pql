@@ -7,21 +7,21 @@ This report shows the API coverage of pql compared to other libraries.
 
 Each summary cell is `global (Narwhals, Polars)`.
 
-| Class               | Coverage              | Implemented   | Matched      | Missing       | Mismatched  | Extra       |
-| ------------------- | --------------------- | ------------- | ------------ | ------------- | ----------- | ----------- |
-| LazyFrame           | 39.0% (48.0%, 36.2%)  | 105 (25, 80)  | 41 (12, 29)  | 28 (0, 28)    | 36 (13, 23) | 35 (31, 4)  |
-| Expr                | 49.5% (72.5%, 42.1%)  | 283 (69, 214) | 140 (50, 90) | 100 (6, 94)   | 43 (13, 30) | 59 (58, 1)  |
-| LazyGroupBy         | 52.9% (0.0%, 56.2%)   | 17 (1, 16)    | 9 (0, 9)     | 4 (0, 4)      | 4 (1, 3)    | 11 (11, 0)  |
-| ExprStrNameSpace    | 31.8% (42.1%, 27.7%)  | 66 (19, 47)   | 21 (8, 13)   | 10 (0, 10)    | 35 (11, 24) | 20 (19, 1)  |
-| ExprListNameSpace   | 54.7% (90.0%, 46.5%)  | 53 (10, 43)   | 29 (9, 20)   | 20 (0, 20)    | 4 (1, 3)    | 15 (14, 1)  |
-| ExprStructNameSpace | 50.0% (100.0%, 40.0%) | 6 (1, 5)      | 3 (1, 2)     | 2 (0, 2)      | 1 (0, 1)    | 4 (3, 1)    |
-| ExprNameNameSpace   | 81.2% (100.0%, 70.0%) | 16 (6, 10)    | 13 (6, 7)    | 3 (0, 3)      | 0 (0, 0)    | 3 (2, 1)    |
-| ExprArrNameSpace    | 54.8% (100.0%, 54.8%) | 31 (0, 31)    | 17 (0, 17)   | 10 (0, 10)    | 4 (0, 4)    | 27 (24, 3)  |
-| ExprDtNameSpace     | 51.5% (60.9%, 46.7%)  | 68 (23, 45)   | 35 (14, 21)  | 25 (7, 18)    | 8 (2, 6)    | 13 (12, 1)  |
-| ModuleFunctions     | 20.7% (39.0%, 14.3%)  | 227 (59, 168) | 47 (23, 24)  | 132 (13, 119) | 48 (23, 25) | 29 (16, 13) |
-| selectors           | 57.1% (71.4%, 54.3%)  | 42 (7, 35)    | 24 (5, 19)   | 13 (1, 12)    | 5 (1, 4)    | 17 (17, 0)  |
-| DataType            | 57.1% (100.0%, 57.1%) | 14 (0, 14)    | 8 (0, 8)     | 5 (0, 5)      | 1 (0, 1)    | 9 (9, 0)    |
-| Schema              | 38.7% (42.9%, 35.3%)  | 31 (14, 17)   | 12 (6, 6)    | 17 (7, 10)    | 2 (1, 1)    | 68 (34, 34) |
+| Class               | Coverage                                                                                             | Implemented   | Matched      | Missing       | Mismatched  | Extra       |
+| ------------------- | ---------------------------------------------------------------------------------------------------- | ------------- | ------------ | ------------- | ----------- | ----------- |
+| LazyFrame           | <span style="color: #f39c12;">███</span><span style="color: #bdc3c7;">░░░░░░░</span> (48.0%, 36.2%)  | 105 (25, 80)  | 41 (12, 29)  | 28 (0, 28)    | 36 (13, 23) | 35 (31, 4)  |
+| Expr                | <span style="color: #f39c12;">████</span><span style="color: #bdc3c7;">░░░░░░</span> (72.5%, 42.1%)  | 283 (69, 214) | 140 (50, 90) | 100 (6, 94)   | 43 (13, 30) | 59 (58, 1)  |
+| LazyGroupBy         | <span style="color: #f39c12;">█████</span><span style="color: #bdc3c7;">░░░░░</span> (0.0%, 56.2%)   | 17 (1, 16)    | 9 (0, 9)     | 4 (0, 4)      | 4 (1, 3)    | 11 (11, 0)  |
+| ExprStrNameSpace    | <span style="color: #f39c12;">███</span><span style="color: #bdc3c7;">░░░░░░░</span> (42.1%, 27.7%)  | 66 (19, 47)   | 21 (8, 13)   | 10 (0, 10)    | 35 (11, 24) | 20 (19, 1)  |
+| ExprListNameSpace   | <span style="color: #f39c12;">█████</span><span style="color: #bdc3c7;">░░░░░</span> (90.0%, 46.5%)  | 53 (10, 43)   | 29 (9, 20)   | 20 (0, 20)    | 4 (1, 3)    | 15 (14, 1)  |
+| ExprStructNameSpace | <span style="color: #f39c12;">█████</span><span style="color: #bdc3c7;">░░░░░</span> (100.0%, 40.0%) | 6 (1, 5)      | 3 (1, 2)     | 2 (0, 2)      | 1 (0, 1)    | 4 (3, 1)    |
+| ExprNameNameSpace   | <span style="color: #27ae60;">████████</span><span style="color: #bdc3c7;">░░</span> (100.0%, 70.0%) | 16 (6, 10)    | 13 (6, 7)    | 3 (0, 3)      | 0 (0, 0)    | 3 (2, 1)    |
+| ExprArrNameSpace    | <span style="color: #f39c12;">█████</span><span style="color: #bdc3c7;">░░░░░</span> (100.0%, 54.8%) | 31 (0, 31)    | 17 (0, 17)   | 10 (0, 10)    | 4 (0, 4)    | 27 (24, 3)  |
+| ExprDtNameSpace     | <span style="color: #f39c12;">█████</span><span style="color: #bdc3c7;">░░░░░</span> (60.9%, 46.7%)  | 68 (23, 45)   | 35 (14, 21)  | 25 (7, 18)    | 8 (2, 6)    | 13 (12, 1)  |
+| ModuleFunctions     | <span style="color: #e74c3c;">██</span><span style="color: #bdc3c7;">░░░░░░░░</span> (39.0%, 14.3%)  | 227 (59, 168) | 47 (23, 24)  | 132 (13, 119) | 48 (23, 25) | 29 (16, 13) |
+| selectors           | <span style="color: #f39c12;">█████</span><span style="color: #bdc3c7;">░░░░░</span> (71.4%, 54.3%)  | 42 (7, 35)    | 24 (5, 19)   | 13 (1, 12)    | 5 (1, 4)    | 17 (17, 0)  |
+| DataType            | <span style="color: #f39c12;">█████</span><span style="color: #bdc3c7;">░░░░░</span> (100.0%, 57.1%) | 14 (0, 14)    | 8 (0, 8)     | 5 (0, 5)      | 1 (0, 1)    | 9 (9, 0)    |
+| Schema              | <span style="color: #f39c12;">███</span><span style="color: #bdc3c7;">░░░░░░░</span> (42.9%, 35.3%)  | 31 (14, 17)   | 12 (6, 6)    | 17 (7, 10)    | 2 (1, 1)    | 68 (34, 34) |
 
 ## LazyFrame
 
