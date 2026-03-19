@@ -702,7 +702,7 @@ class LazyFrame(sql.CoreHandler[sql.Frame]):
             .unwrap()
         )
 
-    def pivot(  # noqa: PLR0913
+    def pivot(  # noqa: C901, PLR0913
         self,
         on: TryIter[str],
         on_columns: Sequence[PythonLiteral],
@@ -736,47 +736,47 @@ class LazyFrame(sql.CoreHandler[sql.Frame]):
                     msg = "`pivot` needs either `index` or `values` to be specified"
                     return pc.Err(ValueError(msg))
 
-        on_cols = try_iter(on).collect()
+        on_cols = try_iter(on).collect(dict.fromkeys)
         idx_cols, val_cols = _get_idx_and_vals().unwrap()
 
         multi = val_cols.length() > 1
         agg = PIVOT_AGG[aggregate_function]
-        pivoted = (
-            self.inner()
-            .pivot(
-                on=on_cols,
-                using=val_cols.iter().map(
-                    lambda c: (
-                        sql.col(c).pipe(agg).alias(c).to_sql()
-                        if multi
-                        else sql.col(c).pipe(agg).get_name()
-                    )
-                ),
-                group_by=idx_cols,
-                in_values=on_columns,
-                order_by=idx_cols if maintain_order else None,
-            )
-            .pipe(self._new)
-        )
 
-        match multi:
-            case True:
-                on_values = pc.Iter(on_columns).map(str).collect()
-                return pivoted.select(
-                    idx_cols.iter()
-                    .map(sql.col)
-                    .chain(
-                        val_cols.iter().flat_map(
-                            lambda vc: on_values.iter().map(
-                                lambda ov: sql.col(f"{ov}_{vc}").alias(
-                                    f"{vc}{separator}{ov}"
-                                )
+        def _aliased(col: str) -> str:
+            expr = sql.col(col).pipe(agg)
+            return expr.alias(col).to_sql() if multi else expr.get_name()
+
+        def _pivoted(lf: sql.Frame) -> sql.Frame:
+            return lf.pivot(
+                on_cols,
+                val_cols.iter().map(_aliased),
+                idx_cols,
+                pc.Some(on_columns),
+                idx_cols if maintain_order else None,
+            )
+
+        def _handle_multi(lf: sql.Frame) -> sql.Frame:
+            match multi:
+                case True:
+
+                    def _rename_col(vc: str) -> pc.Iter[sql.SqlExpr]:
+                        return on_values.iter().map(
+                            lambda ov: sql.col(f"{ov}_{vc}").alias(
+                                f"{vc}{separator}{ov}"
                             )
                         )
+
+                    on_values = pc.Iter(on_columns).map(str).collect()
+                    cols = (
+                        idx_cols.iter()
+                        .map(sql.col)
+                        .chain(val_cols.iter().flat_map(_rename_col))
                     )
-                )
-            case False:
-                return pivoted
+                    return lf.select(*cols)
+                case False:
+                    return lf
+
+        return self.inner().pipe(_pivoted).pipe(_handle_multi).pipe(self._new)
 
     def unpivot(
         self,

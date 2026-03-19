@@ -25,6 +25,10 @@ class Frame(Relation):
     def __init__(self, data: IntoRel, orient: Orientation = "col") -> None:
         self._inner = into_relation(data, orient=orient)
 
+    def _from_sql_expr(self, expr: exp.Expr, **kwargs: IntoRel) -> Self:
+        qry = from_query(expr.sql(dialect="duckdb"), **kwargs)
+        return self.__class__(qry)
+
     def join_asof(
         self,
         other: IntoRel,
@@ -37,30 +41,26 @@ class Frame(Relation):
             exp.select(*select_cols)  # pyright: ignore[reportUnknownMemberType]
             .from_("lhs")
             .join("rhs", on=into_expr(condition).to_sql(), join_type=join_type)
-            .sql(dialect="duckdb")
         )
 
-        return self.__class__(from_query(qry, lhs=self.inner(), rhs=other))
+        return self._from_sql_expr(qry, lhs=self.inner(), rhs=other)
 
     def pivot(
         self,
         on: TryIter[str],
         using: TryIter[str],
         group_by: TryIter[str],
-        in_values: Sequence[PythonLiteral] | None,
+        in_values: pc.Option[Sequence[PythonLiteral]],
         order_by: TryIter[str],
     ) -> Self:
 
         def _on_exprs(on_iter: pc.Seq[str]) -> PyoIterable[exp.Expr] | PyoIterable[str]:
             match in_values:
-                case Sequence() as vals:
-                    return pc.Iter.once(
-                        exp.In(
-                            this=on_iter.first(),
-                            expressions=pc.Iter(vals).map(exp.convert).collect(),
-                        )
-                    )
-                case None:
+                case pc.Some(vals):
+                    converted = pc.Iter(vals).map(exp.convert).collect()
+                    expr = exp.In(this=on_iter.first(), expressions=converted)
+                    return pc.Iter.once(expr)
+                case _:
                     return on_iter
 
         def _group() -> exp.Group | None:
@@ -69,27 +69,24 @@ class Frame(Relation):
             )
             return group.unwrap() if group.is_some() else None
 
-        pivot = exp.Pivot(
-            this=exp.to_table("rel"),  # pyright: ignore[reportUnknownMemberType]
-            expressions=try_iter(on).collect().into(_on_exprs),
-            using=try_iter(using),
-            group=_group(),
-        )
-        qry = (
-            try_iter(order_by)
-            .collect()
-            .then(
-                lambda cols: (
-                    exp.select("*")  # pyright: ignore[reportUnknownMemberType]
-                    .from_(exp.Subquery(this=pivot))
-                    .order_by(*cols)
-                    .sql(dialect="duckdb")
-                )
+        def _pivot() -> exp.Expr:
+            return exp.Pivot(
+                this=exp.to_table("rel"),  # pyright: ignore[reportUnknownMemberType]
+                expressions=try_iter(on).collect().into(_on_exprs),
+                using=try_iter(using),
+                group=_group(),
             )
-            .unwrap_or_else(lambda: pivot.sql(dialect="duckdb"))
-        )
 
-        return self.__class__(from_query(qry, rel=self.inner()))
+        def _select_ordered(cols: Iterable[str]) -> exp.Expr:
+            return (
+                exp.select("*")  # pyright: ignore[reportUnknownMemberType]
+                .from_(exp.Subquery(this=_pivot()))
+                .order_by(*cols)
+            )
+
+        qry = try_iter(order_by).collect().then(_select_ordered).unwrap_or_else(_pivot)
+
+        return self._from_sql_expr(qry, rel=self.inner())
 
     def unpivot(
         self,
@@ -100,31 +97,31 @@ class Frame(Relation):
         order_by: TryIter[str] = None,
     ) -> Self:
         """Unpivot from wide to long format."""
-        index_cols = try_iter(index).collect()
-        on_exprs = (
+        index_cols = try_iter(index).collect(dict.fromkeys)
+        unpivot_cols = (
             try_iter(on)
             .then_some()
             .unwrap_or_else(
                 lambda: self.columns.iter().filter(lambda name: name not in index_cols)
             )
         )
-        unpivot = exp.Pivot(
-            this=exp.to_table("rel"),  # pyright: ignore[reportUnknownMemberType]
-            expressions=on_exprs,
-            unpivot=True,
-            into=exp.UnpivotColumns(this=variable_name, expressions=(value_name,)),
-        )
-        query = (
-            index_cols.iter()
-            .chain((variable_name, value_name))
-            .into(lambda x: exp.select(*x))  # pyright: ignore[reportUnknownMemberType]
-            .from_(exp.Subquery(this=unpivot))
-        )
+
+        def _unpivot() -> exp.Pivot:
+            return exp.Pivot(
+                this=exp.to_table("rel"),  # pyright: ignore[reportUnknownMemberType]
+                expressions=unpivot_cols,
+                unpivot=True,
+                into=exp.UnpivotColumns(this=variable_name, expressions=(value_name,)),
+            )
+
+        def _select() -> exp.Select:
+            sub_qry = exp.Subquery(this=_unpivot())
+            return exp.select(*index_cols, variable_name, value_name).from_(sub_qry)  # pyright: ignore[reportUnknownMemberType]
+
         qry = (
             try_iter(order_by)
-            .then(lambda cols: query.order_by(*cols))  # pyright: ignore[reportUnknownMemberType]
-            .unwrap_or(query)
-            .sql(dialect="duckdb")
+            .then(lambda cols: _select().order_by(*cols))  # pyright: ignore[reportUnknownMemberType]
+            .unwrap_or_else(_select)
         )
 
-        return self.__class__(from_query(qry, rel=self.inner()))
+        return self._from_sql_expr(qry, rel=self.inner())
