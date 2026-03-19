@@ -4,7 +4,7 @@ from polars.expr.datetime import ExprDateTimeNameSpace
 
 import pql
 import pql._typing
-from pql._expr import ExprDateTimeNameSpace as PqlExprDateTimeNameSpace
+from pql._namespaces import ExprDateTimeNameSpace as PqlExprDateTimeNameSpace
 
 from ._utils import assert_eq_pl, on_simple_fn
 

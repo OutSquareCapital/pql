@@ -2,53 +2,32 @@
 
 from __future__ import annotations
 
-import re
-from abc import ABC, abstractmethod
 from collections.abc import Callable
 from dataclasses import dataclass, replace
-from enum import IntEnum
 from functools import partial
 from typing import TYPE_CHECKING, Self, override
 
 import pyochain as pc
 
-from . import _datatypes as dt, sql  # pyright: ignore[reportPrivateUsage]
+from . import sql
 from ._computations import fill_nulls
-from ._meta import ExprKind, ExprMeta, ExprPlan, Marker
-from ._schema import Schema
+from ._meta import ExprKind, ExprMeta, Marker
 from .sql.utils import TryIter, try_chain, try_iter
 
 if TYPE_CHECKING:
     from ._datatypes import DataType
-    from ._typing import (
-        EpochTimeUnit,
-        FillNullStrategy,
-        RankMethod,
-        TimeUnit,
-        TransferEncoding,
+    from ._namespaces import (
+        ExprArrayNameSpace,
+        ExprDateTimeNameSpace,
+        ExprListNameSpace,
+        ExprNameNameSpace,
+        ExprStringNameSpace,
+        ExprStructNameSpace,
     )
+    from ._typing import FillNullStrategy, RankMethod
     from .sql.typing import ClosedInterval, IntoExpr, IntoExprColumn, RoundMode
 
 _NONE = sql.lit(None)
-_EMPTY_STR = sql.lit("")
-G_PARAM = sql.lit("g")
-_ESCAPE = sql.lit(" ")
-_STR_AGG = sql.lit("string_agg")
-_DAY = sql.lit("day")
-_MONTH = sql.lit("month")
-_ZERO = sql.lit("0")
-_TITLECASE = sql.lit(r"[a-z]*[^a-z]*")
-_ESCAPE_REGEX = sql.lit(r"([.^$*+?{}\[\]\\|()])")
-_ESCAPE_REPLACE = sql.lit(r"\\\1")
-
-
-class Sec(IntEnum):
-    TO_NANO = 1_000_000_000
-    TO_MICRO = 1_000_000
-    TO_MILLI = 1_000
-    BY_MINUTE = 60
-    BY_HOUR = 3_600
-    BY_DAY = 86_400
 
 
 @dataclass(slots=True, init=False)
@@ -105,31 +84,43 @@ class Expr(sql.CoreHandler[sql.SqlExpr]):
     @property
     def str(self) -> ExprStringNameSpace:
         """Access string operations."""
+        from ._namespaces import ExprStringNameSpace
+
         return ExprStringNameSpace(self)
 
     @property
     def list(self) -> ExprListNameSpace:
         """Access list operations."""
+        from ._namespaces import ExprListNameSpace
+
         return ExprListNameSpace(self)
 
     @property
     def arr(self) -> ExprArrayNameSpace:
         """Access array operations."""
+        from ._namespaces import ExprArrayNameSpace
+
         return ExprArrayNameSpace(self)
 
     @property
     def struct(self) -> ExprStructNameSpace:
         """Access struct operations."""
+        from ._namespaces import ExprStructNameSpace
+
         return ExprStructNameSpace(self)
 
     @property
     def name(self) -> ExprNameNameSpace:
         """Access name operations."""
+        from ._namespaces import ExprNameNameSpace
+
         return ExprNameNameSpace(self)
 
     @property
     def dt(self) -> ExprDateTimeNameSpace:
         """Access datetime operations."""
+        from ._namespaces import ExprDateTimeNameSpace
+
         return ExprDateTimeNameSpace(self)
 
     def __add__(self, other: IntoExpr) -> Self:
@@ -788,649 +779,3 @@ class Expr(sql.CoreHandler[sql.SqlExpr]):
     def is_last_distinct(self) -> Self:
         """Check if value is last occurrence."""
         return self._new(self.inner().is_last_distinct())
-
-
-@dataclass(slots=True)
-class ExprNameSpaceBase:
-    _parent: Expr
-
-    def inner(self) -> sql.SqlExpr:
-        return self._parent.inner()
-
-    def _new(self, expr: sql.SqlExpr) -> Expr:
-        return self._parent._new(expr)  # pyright: ignore[reportPrivateUsage]
-
-    def _with_alias_mapper(self, mapper: Callable[[str], str]) -> Expr:
-        return self._parent._new(  # pyright: ignore[reportPrivateUsage]
-            self._parent.inner(),
-            pc.Some(self._parent.meta.with_alias_mapper(mapper)),
-        )
-
-
-@dataclass(slots=True)
-class ExprStringNameSpace(ExprNameSpaceBase):
-    """String operations namespace (equivalent to pl.Expr.str)."""
-
-    def join(
-        self, delimiter: IntoExprColumn = _EMPTY_STR, *, ignore_nulls: bool = True
-    ) -> Expr:
-        """Vertically concatenate string values into a single string."""
-        aggregated = self.inner().str.agg(delimiter)
-        match ignore_nulls:
-            case True:
-                return self._parent._as_scalar(aggregated)  # pyright: ignore[reportPrivateUsage]
-            case False:
-                return self._parent._as_scalar(  # pyright: ignore[reportPrivateUsage]
-                    sql.when(self.inner().is_null().any())
-                    .then(_NONE)
-                    .otherwise(aggregated)
-                )
-
-    def escape_regex(self) -> Expr:
-        """Escape all regex meta characters in the string."""
-        return self._new(
-            self.inner().re.replace(_ESCAPE_REGEX, _ESCAPE_REPLACE, G_PARAM)
-        )
-
-    def to_uppercase(self) -> Expr:
-        """Convert to uppercase."""
-        return self._new(self.inner().str.upper())
-
-    def to_lowercase(self) -> Expr:
-        """Convert to lowercase."""
-        return self._new(self.inner().str.lower())
-
-    def len_chars(self) -> Expr:
-        """Get the length in characters."""
-        return self._new(self.inner().str.length())
-
-    def contains(self, pattern: IntoExprColumn, *, literal: bool = False) -> Expr:
-        """Check if string contains a pattern."""
-        match literal:
-            case True:
-                return self._new(self.inner().str.contains(pattern))
-            case False:
-                return self._new(self.inner().re.matches(pattern))
-
-    def starts_with(self, prefix: IntoExprColumn) -> Expr:
-        """Check if string starts with prefix."""
-        return self._new(self.inner().str.starts_with(prefix))
-
-    def ends_with(self, suffix: IntoExprColumn) -> Expr:
-        """Check if string ends with suffix."""
-        return self._new(self.inner().str.ends_with(suffix))
-
-    def replace(
-        self, pattern: str, value: IntoExprColumn, *, literal: bool = False, n: int = 1
-    ) -> Expr:
-        """Replace first matching substring with a new string value."""
-        pattern_expr = sql.lit(re.escape(pattern) if literal else pattern)
-
-        def _replace_once(expr: sql.SqlExpr) -> sql.SqlExpr:
-            return expr.str.replace(pattern_expr, value)
-
-        match n:
-            case 0:
-                return self._new(self.inner())
-            case n_val if n_val < 0:
-                return self._new(self.inner().re.replace(pattern_expr, value, G_PARAM))
-            case _:
-                return (
-                    pc.Iter(range(n))
-                    .fold(self.inner(), lambda acc, _: _replace_once(acc))
-                    .pipe(self._new)
-                )
-
-    def strip_chars(self, characters: IntoExprColumn | None = None) -> Expr:
-        """Strip leading and trailing characters."""
-        return self._new(self.inner().str.trim(characters))
-
-    def strip_chars_start(self, characters: IntoExprColumn | None = None) -> Expr:
-        """Strip leading characters."""
-        return self._new(self.inner().str.ltrim(characters))
-
-    def strip_chars_end(self, characters: IntoExprColumn | None = None) -> Expr:
-        """Strip trailing characters."""
-        return self._new(self.inner().str.rtrim(characters))
-
-    def slice(self, offset: int, length: int | None = None) -> Expr:
-        """Extract a substring."""
-        return self._new(self.inner().str.substring(offset + 1, length))
-
-    def len_bytes(self) -> Expr:
-        """Get the length in bytes."""
-        return self._new(self.inner().encode().octet_length())
-
-    def split(self, by: IntoExprColumn) -> Expr:
-        """Split string by separator."""
-        return self._new(self.inner().str.split(by))
-
-    def extract_all(self, pattern: IntoExprColumn) -> Expr:
-        """Extract all regex matches."""
-        return self._new(self.inner().re.extract_all(pattern))
-
-    def extract(self, pattern: IntoExprColumn, group_index: int = 1) -> Expr:
-        """Extract a regex capture group."""
-        return self._new(self.inner().re.extract(pattern, group_index))
-
-    def find(self, pattern: IntoExprColumn, *, literal: bool = False) -> Expr:
-        """Return the first match offset as a zero-based index."""
-        match literal:
-            case True:
-                return (
-                    self.inner()
-                    .str.strpos(pattern)
-                    .pipe(
-                        lambda pos: (
-                            sql.when(pos.eq(0)).then(_NONE).otherwise(pos.sub(1))
-                        )
-                    )
-                    .pipe(self._new)
-                )
-            case False:
-                return (
-                    self.inner()
-                    .re.extract(pattern, 0)
-                    .pipe(
-                        lambda matched: (
-                            sql.when(matched.eq(_EMPTY_STR))
-                            .then(_NONE)
-                            .otherwise(self.inner().str.strpos(matched).sub(1))
-                        )
-                    )
-                    .pipe(self._new)
-                )
-
-    def json_path_match(self, json_path: IntoExprColumn) -> Expr:
-        """Extract first JSONPath match from string JSON values."""
-        return self._new(self.inner().json.extract_string(json_path))
-
-    def to_date(self, format: IntoExprColumn | None = None) -> Expr:  # noqa: A002
-        """Parse string values as date."""
-        match format:
-            case None:
-                return self._parent.cast(dt.Date())
-            case _:
-                return self._new(self.inner().str.strptime(format)).cast(dt.Date())
-
-    def to_datetime(self, format: IntoExprColumn | None = None) -> Expr:  # noqa: A002
-        """Parse string values as datetime."""
-        match format:
-            case None:
-                return self._parent.cast(dt.Datetime())
-            case _:
-                return self._new(self.inner().str.strptime(format)).cast(dt.Datetime())
-
-    def to_time(self, format: IntoExprColumn | None = None) -> Expr:  # noqa: A002
-        """Parse string values as time."""
-        match format:
-            case None:
-                return self._parent.cast(dt.Time())
-            case _:
-                return self._new(self.inner().str.strptime(format)).cast(dt.Time())
-
-    def strptime(self, format: IntoExprColumn) -> Expr:  # noqa: A002
-        """Parse string values into datetime using one or more formats."""
-        return self._new(self.inner().str.strptime(format))
-
-    def encode(self, encoding: TransferEncoding = "base64") -> Expr:
-        """Encode UTF-8 strings as binary values."""
-        match encoding:
-            case "base64":
-                return self._new(self.inner().encode().str.to_base64())
-            case "hex":
-                return self._new(self.inner().encode().str.to_hex().str.lower())
-
-    def normalize(self) -> Expr:
-        """Normalize strings using NFC normalization."""
-        return self._new(self.inner().str.nfc_normalize())
-
-    def to_decimal(self, scale: int) -> Expr:
-        """Parse string values as decimal with the requested scale."""
-        return self._parent.cast(dt.Decimal(scale=scale))
-
-    def count_matches(self, pattern: IntoExprColumn, *, literal: bool = False) -> Expr:
-        """Count pattern matches."""
-        pattern_expr = sql.into_expr(pattern)
-        match literal:
-            case False:
-                return self._new(self.inner().re.extract_all(pattern_expr).list.len())
-            case True:
-                return (
-                    self.inner()
-                    .str.length()
-                    .sub(
-                        self.inner().str.replace(pattern_expr, _EMPTY_STR).str.length()
-                    )
-                    .truediv(pattern_expr.str.length())
-                    .pipe(self._new)
-                )
-
-    def strip_prefix(self, prefix: IntoExpr) -> Expr:
-        """Strip prefix from string."""
-        match prefix:
-            case str() as prefix_str:
-                return (
-                    self.inner()
-                    .re.replace(sql.lit(f"^{re.escape(prefix_str)}"), _EMPTY_STR)
-                    .pipe(self._new)
-                )
-            case _:
-                return (
-                    sql.into_expr(prefix)
-                    .pipe(
-                        lambda prefix: sql.when(
-                            self.inner().str.starts_with(prefix),
-                        ).then(self.inner().str.substring(prefix.str.length().add(1)))
-                    )
-                    .otherwise(self.inner())
-                    .pipe(self._new)
-                )
-
-    def strip_suffix(self, suffix: IntoExpr) -> Expr:
-        """Strip suffix from string."""
-        match suffix:
-            case str() as suffix_str:
-                return (
-                    self.inner()
-                    .re.replace(sql.lit(f"{re.escape(suffix_str)}$"), _EMPTY_STR)
-                    .pipe(self._new)
-                )
-            case _:
-                return sql.into_expr(suffix).pipe(
-                    lambda expr: (
-                        sql.when(self.inner().str.ends_with(expr))
-                        .then(
-                            self.inner().str.substring(
-                                1, self.inner().str.length().sub(expr.str.length())
-                            )
-                        )
-                        .otherwise(self.inner())
-                        .pipe(self._new)
-                    )
-                )
-
-    def head(self, n: int) -> Expr:
-        """Get first n characters."""
-        return self._new(self.inner().str.left(n))
-
-    def tail(self, n: int) -> Expr:
-        """Get last n characters."""
-        return self._new(self.inner().str.right(n))
-
-    def reverse(self) -> Expr:
-        """Reverse the string."""
-        return self._new(self.inner().str.reverse())
-
-    def pad_start(self, length: int, fill_char: IntoExprColumn = _ESCAPE) -> Expr:
-        return self._new(self.inner().str.lpad(length, fill_char))
-
-    def pad_end(self, length: int, fill_char: IntoExprColumn = _ESCAPE) -> Expr:
-        return self._new(self.inner().str.rpad(length, fill_char))
-
-    def zfill(self, width: int) -> Expr:
-        return self._new(self.inner().str.lpad(width, _ZERO))
-
-    def replace_all(
-        self, pattern: IntoExprColumn, value: IntoExprColumn, *, literal: bool = False
-    ) -> Expr:
-        """Replace all occurrences."""
-        match literal:
-            case True:
-                return self._new(self.inner().str.replace(pattern, value))
-            case False:
-                return self._new(self.inner().re.replace(pattern, value, G_PARAM))
-
-    def to_titlecase(self) -> Expr:
-        """Convert to title case."""
-        return self._new(
-            self.inner()
-            .str.lower()
-            .re.extract_all(_TITLECASE)
-            .list.eval(
-                sql.element()
-                .list.extract(1)
-                .str.upper()
-                .str.concat(sql.element().str.substring(2))
-            )
-            .list.aggregate(_STR_AGG, _EMPTY_STR)
-        )
-
-
-@dataclass(slots=True)
-class _VecNameSpace[T: sql.SqlExprListNameSpace | sql.SqlExprArrayNameSpace](
-    ExprNameSpaceBase, ABC
-):
-    """Common list/array operations namespace."""
-
-    @property
-    @abstractmethod
-    def _vec(self) -> T:  # pragma: no cover
-        raise NotImplementedError
-
-    def eval(self, expr: Expr) -> Expr:
-        """Run an expression against each array element."""
-        return self._new(self._vec.eval(expr.inner()))
-
-    def filter(self, predicate: Expr) -> Expr:
-        return self._new(self._vec.filter(predicate.inner()))
-
-    def drop_nulls(self) -> Expr:
-        """Drop null values in each list."""
-        return self._new(self._vec.filter(sql.element().is_not_null()))
-
-    def contains(self, item: IntoExpr) -> Expr:
-        """Check if subarrays contain the given item."""
-        return self._new(self._vec.contains(item))
-
-    def all(self) -> Expr:
-        """Return whether all values in the list are true."""
-        return self._new(self.inner().list.bool_and())
-
-    def any(self) -> Expr:
-        """Return whether any value in the listis true."""
-        return self._new(self.inner().list.bool_or())
-
-    def len(self) -> Expr:
-        """Return the number of elements in each array."""
-        return self._new(self._vec.length())
-
-    def unique(self) -> Expr:
-        """Return unique values in each array."""
-        return self._new(self._vec.distinct())
-
-    def reverse(self) -> Expr:
-        """Reverse the arrays of the expression."""
-        return self._new(self._vec.reverse())
-
-    def sort(self, *, descending: bool = False, nulls_last: bool = False) -> Expr:
-        """Sort the lists of the column."""
-        return self._new(
-            self._vec.sort(
-                sql.lit(sql.SortClause.order(desc=descending)),
-                sql.lit(sql.NullsClause.order(last=nulls_last)),
-            )
-        )
-
-    def first(self) -> Expr:
-        """Get the first element of each array."""
-        return self._new(self.inner().list.first())
-
-    def last(self) -> Expr:
-        """Get the last element of each array."""
-        return self._new(self.inner().list.last())
-
-    def min(self) -> Expr:
-        """Compute the min value of the arrays in the column."""
-        return self._new(self.inner().list.min())
-
-    def max(self) -> Expr:
-        """Compute the max value of the arrays in the column."""
-        return self._new(self.inner().list.max())
-
-    def mean(self) -> Expr:
-        """Compute the mean value of the arrays in the column."""
-        return self._new(self.inner().list.avg())
-
-    def median(self) -> Expr:
-        """Compute the median value of the arrays in the column."""
-        return self._new(self.inner().list.median())
-
-    def sum(self) -> Expr:
-        """Compute the sum value of the arrays in the column."""
-        return self._new(self.inner().list.sum())
-
-    def std(self, ddof: int = 1) -> Expr:
-        """Compute the standard deviation of the arrays in the column."""
-        return self._new(self.inner().list.std(ddof))
-
-    def var(self, ddof: int = 1) -> Expr:
-        """Compute the variance of the arrays in the column."""
-        return self._new(self.inner().list.var(ddof))
-
-    def get(self, index: int) -> Expr:
-        """Return the value by index in each array."""
-        return self._new(self._vec.extract(index + 1 if index >= 0 else index))
-
-
-@dataclass(slots=True)
-class ExprArrayNameSpace(_VecNameSpace[sql.SqlExprArrayNameSpace]):
-    """Array operations namespace (equivalent to pl.Expr.array)."""
-
-    @property
-    @override
-    def _vec(self) -> sql.SqlExprArrayNameSpace:
-        return self.inner().arr
-
-    def n_unique(self) -> Expr:
-        """Return the number of unique values in each array."""
-        return self._new(self.inner().arr.distinct().arr.length())
-
-    def count_matches(self, element: IntoExpr) -> Expr:
-        """Count matches in each array."""
-        return self._new(
-            self.inner().arr.filter(sql.element().eq(element)).arr.length()
-        )
-
-    def join(self, separator: IntoExprColumn, *, ignore_nulls: bool = True) -> Expr:
-        """Join string values in each array with a separator."""
-        joined = self.inner().arr.aggregate(_STR_AGG, separator)
-        match ignore_nulls:
-            case True:
-                return self._new(sql.coalesce(joined, _EMPTY_STR))
-            case False:
-                return self._new(
-                    sql.when(
-                        self.inner()
-                        .arr.filter(sql.element().is_null())
-                        .arr.length()
-                        .gt(0)
-                    )
-                    .then(_NONE)
-                    .otherwise(sql.coalesce(joined, _EMPTY_STR))
-                )
-
-
-@dataclass(slots=True)
-class ExprListNameSpace(_VecNameSpace[sql.SqlExprListNameSpace]):
-    """List operations namespace (equivalent to pl.Expr.list)."""
-
-    @property
-    @override
-    def _vec(self) -> sql.SqlExprListNameSpace:
-        return self.inner().list
-
-    def n_unique(self) -> Expr:
-        """Return the number of unique values in each list."""
-        return self._new(self.inner().list.distinct().list.length())
-
-    def count_matches(self, element: IntoExpr) -> Expr:
-        """Count matches in each list."""
-        return self._new(
-            self.inner().list.filter(sql.element().eq(element)).list.length()
-        )
-
-    def join(self, separator: IntoExprColumn, *, ignore_nulls: bool = True) -> Expr:
-        """Join string values in each list with a separator."""
-        joined = self.inner().list.aggregate(_STR_AGG, separator)
-        match ignore_nulls:
-            case True:
-                return self._new(sql.coalesce(joined, _EMPTY_STR))
-            case False:
-                return self._new(
-                    sql.when(
-                        self.inner()
-                        .list.filter(sql.element().is_null())
-                        .list.length()
-                        .gt(0)
-                    )
-                    .then(_NONE)
-                    .otherwise(sql.coalesce(joined, _EMPTY_STR))
-                )
-
-
-@dataclass(slots=True)
-class ExprStructNameSpace(ExprNameSpaceBase):
-    """Struct operations namespace (equivalent to pl.Expr.struct)."""
-
-    def field(self, name: str) -> Expr:
-        """Retrieve a struct field by name."""
-        return self._new(self.inner().struct.extract(sql.lit(name))).alias(name)
-
-    def json_encode(self) -> Expr:
-        """Encode struct values as JSON strings."""
-        return self._new(self.inner().to_json())
-
-    def with_fields(
-        self, exprs: TryIter[IntoExpr], *more_exprs: IntoExpr, **named_exprs: IntoExpr
-    ) -> Expr:
-        """Return a new struct with updated or additional fields."""
-        return (
-            ExprPlan(Schema(()), exprs, more_exprs, named_exprs)
-            .with_fields_context(self.inner())
-            .pipe(self._new)
-        )
-
-
-@dataclass(slots=True)
-class ExprNameNameSpace(ExprNameSpaceBase):
-    """Name operations namespace (equivalent to pl.Expr.name)."""
-
-    def keep(self) -> Expr:
-        return self._parent._clear_alias_name()  # pyright: ignore[reportPrivateUsage]
-
-    def map(self, function: Callable[[str], str]) -> Expr:
-        return self._with_alias_mapper(function)
-
-    def prefix(self, prefix: str) -> Expr:
-        return self._with_alias_mapper(lambda name: f"{prefix}{name}")
-
-    def suffix(self, suffix: str) -> Expr:
-        return self._with_alias_mapper(lambda name: f"{name}{suffix}")
-
-    def to_lowercase(self) -> Expr:
-        return self._with_alias_mapper(str.lower)
-
-    def to_uppercase(self) -> Expr:
-        return self._with_alias_mapper(str.upper)
-
-    def replace(self, pattern: str, value: str, *, literal: bool = False) -> Expr:
-        match literal:
-            case True:
-                return self._with_alias_mapper(
-                    lambda name: name.replace(pattern, value)
-                )
-            case False:
-                regex = re.compile(pattern)
-                return self._with_alias_mapper(lambda name: regex.sub(value, name))
-
-
-@dataclass(slots=True)
-class ExprDateTimeNameSpace(ExprNameSpaceBase):
-    """Date and datetime operations namespace (equivalent to pl.Expr.dt)."""
-
-    def millennium(self) -> Expr:
-        return self._new(self.inner().dt.millennium())
-
-    def century(self) -> Expr:
-        return self._new(self.inner().dt.century())
-
-    def year(self) -> Expr:
-        return self._new(self.inner().dt.year())
-
-    def iso_year(self) -> Expr:
-        return self._new(self.inner().dt.isoyear())
-
-    def quarter(self) -> Expr:
-        return self._new(self.inner().dt.quarter())
-
-    def month(self) -> Expr:
-        return self._new(self.inner().dt.month())
-
-    def week(self) -> Expr:
-        return self._new(self.inner().dt.week())
-
-    def weekday(self) -> Expr:
-        return self._new(self.inner().dt.isodow())
-
-    def day(self) -> Expr:
-        return self._new(self.inner().dt.day())
-
-    def ordinal_day(self) -> Expr:
-        return self._new(self.inner().dt.dayofyear())
-
-    def hour(self) -> Expr:
-        return self._new(self.inner().dt.hour())
-
-    def minute(self) -> Expr:
-        return self._new(self.inner().dt.minute())
-
-    def second(self) -> Expr:
-        return self._new(self.inner().dt.second())
-
-    def millisecond(self) -> Expr:
-        return self._new(self.inner().dt.millisecond().mod(Sec.TO_MILLI))
-
-    def microsecond(self) -> Expr:
-        return self._new(self.inner().dt.microsecond().mod(Sec.TO_MICRO))
-
-    def nanosecond(self) -> Expr:
-        return self._new(self.inner().dt.nanosecond().mod(Sec.TO_NANO))
-
-    def month_start(self) -> Expr:
-        return self._new(
-            self.inner()
-            .dt.trunc(_MONTH)
-            .add(self.inner().sub(self.inner().dt.trunc(_DAY)))
-        )
-
-    def month_end(self) -> Expr:
-        return self._new(
-            self.inner()
-            .dt.last_day()
-            .add(self.inner().sub(self.inner().dt.trunc(_DAY)))
-        )
-
-    def date(self) -> Expr:
-        return self._parent.cast(dt.Date())
-
-    def time(self) -> Expr:
-        return self._parent.cast(dt.Time())
-
-    def to_string(self, format: IntoExprColumn) -> Expr:  # noqa: A002
-        return self._new(self.inner().str.strftime(format))
-
-    def strftime(self, format: IntoExprColumn) -> Expr:  # noqa: A002
-        return self._new(self.inner().str.strftime(format))
-
-    def epoch(self, time_unit: EpochTimeUnit = "us") -> Expr:
-        match time_unit:
-            case "d":
-                return self._new(
-                    self.inner()
-                    .dt.epoch_us()
-                    .truediv(Sec.BY_DAY * Sec.TO_MICRO)
-                    .floor()
-                )
-            case "s":
-                return self._new(
-                    self.inner().dt.epoch_us().truediv(Sec.TO_MICRO).floor()
-                )
-            case "ms":
-                return self._new(self.inner().dt.epoch_ms())
-            case "us":
-                return self._new(self.inner().dt.epoch_us())
-            case "ns":
-                return self._new(self.inner().dt.epoch_ns())
-
-    def timestamp(self, time_unit: TimeUnit = "us") -> Expr:
-        return self.epoch(time_unit)
-
-    def truncate(self, every: str) -> Expr:
-        return self._new(self.inner().dt.trunc(sql.lit(every)))
-
-    def round(self, every: str) -> Expr:
-        return self._new(self.inner().dt.trunc(sql.lit(every)))
-
-    def offset_by(self, by: IntoExpr) -> Expr:
-        return self._new(self.inner().dt.add(by))
