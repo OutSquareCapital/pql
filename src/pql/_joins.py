@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from functools import partial
-from typing import TYPE_CHECKING, ClassVar, NamedTuple
+from typing import TYPE_CHECKING, NamedTuple
 
 import pyochain as pc
 
@@ -14,14 +14,23 @@ if TYPE_CHECKING:
     from ._typing import JoinKeysRes, JoinStrategy
 type OptSeq = pc.Option[pc.Seq[str]]
 
+_RHS = partial(sql.col, "rhs")
+_LHS = partial(sql.col, "lhs")
+
 
 @dataclass(slots=True)
 class JoinBuilder:
     suffix: str
     left: PyoCollection[str]
     right: PyoCollection[str]
-    rhs: ClassVar[partial[sql.SqlExpr]] = partial(sql.col, "rhs")
-    lhs: ClassVar[partial[sql.SqlExpr]] = partial(sql.col, "lhs")
+
+    @staticmethod
+    def rhs(name: str) -> sql.SqlExpr:
+        return _RHS(name)
+
+    @staticmethod
+    def lhs(name: str) -> sql.SqlExpr:
+        return _LHS(name)
 
     def equals(self, left: str, right: str) -> sql.SqlExpr:
         return self.lhs(left).eq(self.rhs(right))
