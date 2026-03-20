@@ -781,7 +781,7 @@ def test_pivot_aggregate_fns(sample_df: pl.DataFrame, agg: t.PivotAgg) -> None:
             on_columns=["Engineering", "Sales"],
             index="sex",
             values="salary",
-            aggregate_function=agg,  # pyright: ignore[reportArgumentType]
+            aggregate_function="len" if agg == "count" else agg,
         ),
     )
 
