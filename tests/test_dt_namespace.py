@@ -3,7 +3,7 @@ import pytest
 from polars.expr.datetime import ExprDateTimeNameSpace
 
 import pql
-import pql._typing
+import pql.sql.typing as t
 from pql._namespaces import ExprDateTimeNameSpace as PqlExprDateTimeNameSpace
 
 from ._utils import assert_eq_pl, on_simple_fn
@@ -46,13 +46,13 @@ def test_simple_fns(fn: str) -> None:
     on_simple_fn(_pql_dt(), _pl_dt(), fn)
 
 
-@pytest.mark.parametrize("unit", ["d", "s", "ms", "us", "ns"])
-def test_epoch(unit: pql._typing.EpochTimeUnit) -> None:
+@pytest.mark.parametrize("unit", t.EpochTimeUnit.__args__)
+def test_epoch(unit: t.EpochTimeUnit) -> None:
     assert_eq_pl(_pql_dt().epoch(unit), _pl_dt().epoch(unit))
 
 
-@pytest.mark.parametrize("unit", ["ms", "us", "ns"])
-def test_timestamp(unit: pql._typing.TimeUnit) -> None:
+@pytest.mark.parametrize("unit", t.TimeUnit.__args__)
+def test_timestamp(unit: t.TimeUnit) -> None:
     assert_eq_pl(_pql_dt().timestamp(unit), _pl_dt().timestamp(unit))
 
 

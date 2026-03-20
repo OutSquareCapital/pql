@@ -142,3 +142,6 @@ type Orientation = Literal["row", "col"]
 type FrameMode = Literal["ROWS", "RANGE", "GROUPS"]
 type WindowExclude = Literal["CURRENT ROW", "GROUP", "TIES", "NO OTHERS"]
 ClosedInterval = Literal["both", "left", "right", "none"]
+
+TimeUnit = Literal["ms", "us", "ns"]
+EpochTimeUnit = Literal["ms", "us", "ns", "s", "d"]

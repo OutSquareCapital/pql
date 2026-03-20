@@ -13,10 +13,8 @@ import pyochain as pc
 from . import sql
 
 if TYPE_CHECKING:
-    from pql.sql._datatypes import DType
-
-    from ._typing import EpochTimeUnit
-    from .sql.typing import DTypeIds, IntoDict, StrIntoDType
+    from .sql._datatypes import DType
+    from .sql.typing import DTypeIds, EpochTimeUnit, IntoDict, StrIntoDType
 
 
 @dataclass(slots=True)
