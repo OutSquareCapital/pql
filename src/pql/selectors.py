@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import re
-from typing import TYPE_CHECKING, Self, overload, override
+from typing import TYPE_CHECKING, Self, final, overload, override
 
 import pyochain as pc
 
@@ -15,10 +15,12 @@ if TYPE_CHECKING:
     from .sql.typing import IntoExpr
 
 
+@final
 class Selector(Expr):
     """Column selector based on dtype predicates."""
 
     meta: MultiMeta  # pyright: ignore[reportIncompatibleVariableOverride]
+    __slots__ = ()
 
     @property
     def _resolver(self) -> ResolverFn:
