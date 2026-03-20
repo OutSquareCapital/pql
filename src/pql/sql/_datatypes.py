@@ -93,7 +93,10 @@ class Field:
     @classmethod
     def from_raw(cls, raw: RawNamedType) -> Self:
         name, dtype = raw
-        return cls(name, parse_dtype(dtype))
+        return cls(name, DType.parse(dtype))
+
+    def to_duckdb(self) -> tuple[str, DuckDBPyType]:
+        return (self.name, self.dtype.to_duckdb())
 
 
 @dataclass(slots=True)
@@ -113,6 +116,14 @@ class DType:
 
     def to_duckdb(self) -> DuckDBPyType:
         return duckdb.type(self.type_id)
+
+    @classmethod
+    def parse(cls, dtype: DuckDBPyType) -> SqlType:
+        """Main entry point to convert a raw DuckDBPyType into a parsed `DType`.
+
+        Recursively matches the raw type id to the appropriate parsing logic.
+        """
+        return DTYPE_MAP.get_item(dtype.id).unwrap_or(cls).from_duckdb(dtype)
 
 
 @dataclass(slots=True)
@@ -145,20 +156,23 @@ class EnumType(DType):
 
     @classmethod
     def new(cls, categories: Iterable[str] | type[Enum]) -> Self:
-        match categories:
+        cats = EnumType._collect_cats(categories)
+        raw_sql = f"ENUM{cats!r}"
+        return cls.from_duckdb(duckdb.dtype(raw_sql))
+
+    @staticmethod
+    def _collect_cats(cats: Iterable[str] | type[Enum]) -> tuple[str, ...]:
+        match cats:
             case type():
-                cats = pc.Iter(categories).map(lambda i: i.value)  # pyright: ignore[reportAny]
+                return pc.Iter(cats).map(lambda i: i.value).collect(tuple)  # pyright: ignore[reportAny]
             case Iterable():
-                cats = pc.Iter(categories)
-        raw_sql = f"ENUM{cats.collect(tuple)!r}"
-        return cls.from_duckdb(DuckDBPyType(raw_sql))
+                return tuple(cats)
 
     @override
     @classmethod
     def from_duckdb(cls, dtype: DuckDBPyType) -> Self:
-        return cls(
-            str(dtype), dtype.id, NamedValues.from_raw(Cast.into_enum(dtype.children))
-        )
+        child = NamedValues.from_raw(Cast.into_enum(dtype.children))
+        return cls(str(dtype), dtype.id, child)
 
     @override
     def to_duckdb(self) -> DuckDBPyType:
@@ -178,9 +192,8 @@ class ListType(DType):
     @override
     @classmethod
     def from_duckdb(cls, dtype: DuckDBPyType) -> Self:
-        return cls(
-            str(dtype), dtype.id, Field.from_raw(*Cast.into_list(dtype.children))
-        )
+        child = Field.from_raw(*Cast.into_list(dtype.children))
+        return cls(str(dtype), dtype.id, child)
 
     @override
     def to_duckdb(self) -> DuckDBPyType:
@@ -222,22 +235,13 @@ class StructType(DType):
     @override
     @classmethod
     def from_duckdb(cls, dtype: DuckDBPyType) -> Self:
-        return cls(
-            str(dtype),
-            dtype.id,
-            pc.Vec.from_ref(Cast.into_struct(dtype.children))
-            .iter()
-            .map(Field.from_raw)
-            .collect(),
-        )
+        fields = pc.Iter(Cast.into_struct(dtype.children)).map(Field.from_raw).collect()
+        return cls(str(dtype), dtype.id, fields)
 
     @override
     def to_duckdb(self) -> DuckDBPyType:
-        return duckdb.struct_type(
-            self.fields.iter()
-            .map(lambda field: (field.name, field.dtype.to_duckdb()))
-            .collect(dict)
-        )
+        fields = self.fields.iter().map(Field.to_duckdb).collect(dict)
+        return duckdb.struct_type(fields)
 
 
 @dataclass(slots=True)
@@ -275,23 +279,18 @@ class UnionType(DType):
     @override
     @classmethod
     def from_duckdb(cls, dtype: DuckDBPyType) -> Self:
-        return cls(
-            str(dtype),
-            dtype.id,
-            pc.Vec.from_ref(Cast.into_union(dtype.children))
-            .iter()
+        fields = (
+            pc.Iter(Cast.into_union(dtype.children))
             .skip(1)  # First dtype is the tag of the union itself
             .map(Field.from_raw)
-            .collect(),
+            .collect()
         )
+        return cls(str(dtype), dtype.id, fields)
 
     @override
     def to_duckdb(self) -> DuckDBPyType:
-        return duckdb.union_type(
-            self.fields.iter()
-            .map(lambda field: (field.name, field.dtype.to_duckdb()))
-            .collect(dict)
-        )
+        fields = self.fields.iter().map(Field.to_duckdb).collect(dict)
+        return duckdb.union_type(fields)
 
 
 type NestedType = ListType | ArrayType | StructType | UnionType
@@ -349,11 +348,3 @@ class ScalarType:
     VARIANT = DType.from_duckdb(duckdb.dtype("variant"))
     TIME_NS = DType.from_duckdb(duckdb.dtype("time_ns"))
     GEOMETRY = DType.from_duckdb(duckdb.dtype("geometry"))
-
-
-def parse_dtype(dtype: DuckDBPyType) -> SqlType:
-    """Main entry point to convert a raw DuckDBPyType into a parsed `DType`.
-
-    Recursively matches the raw type id to the appropriate parsing logic.
-    """
-    return DTYPE_MAP.get_item(dtype.id).unwrap_or(DType).from_duckdb(dtype)

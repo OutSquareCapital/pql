@@ -23,7 +23,6 @@ from ._datatypes import (
     SqlType,
     StructType,
     UnionType,
-    parse_dtype,
 )
 from ._expr import (
     SqlExpr,
@@ -97,7 +96,6 @@ __all__ = [
     "max_horizontal",
     "mean_horizontal",
     "min_horizontal",
-    "parse_dtype",
     "reduce",
     "rolling_agg",
     "row_number",
