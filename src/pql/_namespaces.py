@@ -16,8 +16,8 @@ from ._schema import Schema
 from .sql import namespaces as nm
 
 if TYPE_CHECKING:
-    from ._typing import EpochTimeUnit, TimeUnit, TransferEncoding
-    from .sql.typing import IntoExpr, IntoExprColumn
+    from ._typing import TransferEncoding
+    from .sql.typing import EpochTimeUnit, IntoExpr, IntoExprColumn, TimeUnit
     from .sql.utils import TryIter
 
 
@@ -63,24 +63,13 @@ class ExprStringNameSpace(ExprNameSpaceBase):
         self, delimiter: IntoExprColumn = Lit.EMPTY_STR, *, ignore_nulls: bool = True
     ) -> Expr:
         """Vertically concatenate string values into a single string."""
-        aggregated = self.inner().inner().str.agg(delimiter)
-        match ignore_nulls:
-            case True:
-                return self.inner()._as_scalar(aggregated)  # pyright: ignore[reportPrivateUsage]
-            case False:
-                return self.inner()._as_scalar(  # pyright: ignore[reportPrivateUsage]
-                    sql.when(self.inner().is_null().any())
-                    .then(Lit.NONE)
-                    .otherwise(aggregated)
-                )
+        return self.inner()._as_scalar(  # pyright: ignore[reportPrivateUsage]
+            self.inner().inner().str.join(delimiter, ignore_nulls=ignore_nulls)
+        )
 
     def escape_regex(self) -> Expr:
         """Escape all regex meta characters in the string."""
-        return self._new(
-            self.inner()
-            .inner()
-            .re.replace(Lit.ESCAPE_REGEX, Lit.ESCAPE_REPLACE, Lit.G_PARAM)
-        )
+        return self._new(self.inner().inner().str.escape_regex())
 
     def to_uppercase(self) -> Expr:
         """Convert to uppercase."""
@@ -167,33 +156,7 @@ class ExprStringNameSpace(ExprNameSpaceBase):
 
     def find(self, pattern: IntoExprColumn, *, literal: bool = False) -> Expr:
         """Return the first match offset as a zero-based index."""
-        match literal:
-            case True:
-                return (
-                    self.inner()
-                    .inner()
-                    .str.strpos(pattern)
-                    .pipe(
-                        lambda pos: (
-                            sql.when(pos.eq(0)).then(Lit.NONE).otherwise(pos.sub(1))
-                        )
-                    )
-                    .pipe(self._new)
-                )
-            case False:
-                return (
-                    self.inner()
-                    .inner()
-                    .re.extract(pattern, 0)
-                    .pipe(
-                        lambda matched: (
-                            sql.when(matched.eq(Lit.EMPTY_STR))
-                            .then(Lit.NONE)
-                            .otherwise(self.inner().inner().str.strpos(matched).sub(1))
-                        )
-                    )
-                    .pipe(self._new)
-                )
+        return self._new(self.inner().inner().str.find(pattern, literal=literal))
 
     def json_path_match(self, json_path: IntoExprColumn) -> Expr:
         """Extract first JSONPath match from string JSON values."""
@@ -211,23 +174,11 @@ class ExprStringNameSpace(ExprNameSpaceBase):
 
     def to_datetime(self, format: IntoExprColumn | None = None) -> Expr:  # noqa: A002
         """Parse string values as datetime."""
-        match format:
-            case None:
-                return self.inner().cast(dt.Datetime())
-            case _:
-                return self._new(self.inner().inner().str.strptime(format)).cast(
-                    dt.Datetime()
-                )
+        return self._new(self.inner().inner().dt.to_datetime(format))
 
     def to_time(self, format: IntoExprColumn | None = None) -> Expr:  # noqa: A002
         """Parse string values as time."""
-        match format:
-            case None:
-                return self.inner().cast(dt.Time())
-            case _:
-                return self._new(self.inner().inner().str.strptime(format)).cast(
-                    dt.Time()
-                )
+        return self._new(self.inner().inner().dt.to_time(format))
 
     def strptime(self, format: IntoExprColumn) -> Expr:  # noqa: A002
         """Parse string values into datetime using one or more formats."""
@@ -251,82 +202,17 @@ class ExprStringNameSpace(ExprNameSpaceBase):
 
     def count_matches(self, pattern: IntoExprColumn, *, literal: bool = False) -> Expr:
         """Count pattern matches."""
-        pattern_expr = sql.into_expr(pattern)
-        match literal:
-            case False:
-                return self._new(
-                    self.inner().inner().re.extract_all(pattern_expr).list.len()
-                )
-            case True:
-                return (
-                    self.inner()
-                    .inner()
-                    .str.length()
-                    .sub(
-                        self.inner()
-                        .inner()
-                        .str.replace(pattern_expr, Lit.EMPTY_STR)
-                        .str.length()
-                    )
-                    .truediv(pattern_expr.str.length())
-                    .pipe(self._new)
-                )
+        return self._new(
+            self.inner().inner().str.count_matches(pattern, literal=literal)
+        )
 
     def strip_prefix(self, prefix: IntoExpr) -> Expr:
         """Strip prefix from string."""
-        match prefix:
-            case str() as prefix_str:
-                return (
-                    self.inner()
-                    .inner()
-                    .re.replace(sql.lit(f"^{re.escape(prefix_str)}"), Lit.EMPTY_STR)
-                    .pipe(self._new)
-                )
-            case _:
-                return (
-                    sql.into_expr(prefix)
-                    .pipe(
-                        lambda prefix: sql.when(
-                            self.inner().str.starts_with(prefix),
-                        ).then(
-                            self.inner()
-                            .inner()
-                            .str.substring(prefix.str.length().add(1))
-                        )
-                    )
-                    .otherwise(self.inner())
-                    .pipe(self._new)
-                )
+        return self._new(self.inner().inner().str.strip_prefix(prefix))
 
     def strip_suffix(self, suffix: IntoExpr) -> Expr:
         """Strip suffix from string."""
-        match suffix:
-            case str() as suffix_str:
-                return (
-                    self.inner()
-                    .inner()
-                    .re.replace(sql.lit(f"{re.escape(suffix_str)}$"), Lit.EMPTY_STR)
-                    .pipe(self._new)
-                )
-            case _:
-                return sql.into_expr(suffix).pipe(
-                    lambda expr: (
-                        sql.when(self.inner().str.ends_with(expr))
-                        .then(
-                            self.inner()
-                            .inner()
-                            .str.substring(
-                                1,
-                                self.inner()
-                                .inner()
-                                .str.length()
-                                .sub(expr.str.length()),
-                            )
-                        )
-                        .otherwise(self.inner())
-                        .pipe(self._new)
-                    )
-                )
+        return self._new(self.inner().inner().str.strip_suffix(suffix))
 
     def head(self, n: int) -> Expr:
         """Get first n characters."""
@@ -353,29 +239,13 @@ class ExprStringNameSpace(ExprNameSpaceBase):
         self, pattern: IntoExprColumn, value: IntoExprColumn, *, literal: bool = False
     ) -> Expr:
         """Replace all occurrences."""
-        match literal:
-            case True:
-                return self._new(self.inner().inner().str.replace(pattern, value))
-            case False:
-                return self._new(
-                    self.inner().inner().re.replace(pattern, value, Lit.G_PARAM)
-                )
+        return self._new(
+            self.inner().inner().str.replace_all(pattern, value, literal=literal)
+        )
 
     def to_titlecase(self) -> Expr:
         """Convert to title case."""
-        return self._new(
-            self.inner()
-            .inner()
-            .str.lower()
-            .re.extract_all(Lit.TITLECASE)
-            .list.eval(
-                sql.element()
-                .list.extract(1)
-                .str.upper()
-                .str.concat(sql.element().str.substring(2))
-            )
-            .list.aggregate(Lit.STR_AGG, Lit.EMPTY_STR)
-        )
+        return self._new(self.inner().inner().str.to_titlecase())
 
 
 @dataclass(slots=True)
@@ -473,6 +343,9 @@ class _VecNameSpace[T: nm.SqlExprListNameSpace | nm.SqlExprArrayNameSpace](
         """Return the value by index in each array."""
         return self._new(self._vec.extract(index + 1 if index >= 0 else index))
 
+    def join(self, separator: IntoExprColumn, *, ignore_nulls: bool = True) -> Expr:
+        return self._new(self._vec.join(separator, ignore_nulls=ignore_nulls))
+
 
 @dataclass(slots=True)
 class ExprArrayNameSpace(_VecNameSpace[nm.SqlExprArrayNameSpace]):
@@ -493,25 +366,6 @@ class ExprArrayNameSpace(_VecNameSpace[nm.SqlExprArrayNameSpace]):
             self.inner().inner().arr.filter(sql.element().eq(element)).arr.length()
         )
 
-    def join(self, separator: IntoExprColumn, *, ignore_nulls: bool = True) -> Expr:
-        """Join string values in each array with a separator."""
-        joined = self.inner().inner().arr.aggregate(Lit.STR_AGG, separator)
-        match ignore_nulls:
-            case True:
-                return self._new(sql.coalesce(joined, Lit.EMPTY_STR))
-            case False:
-                return self._new(
-                    sql.when(
-                        self.inner()
-                        .inner()
-                        .arr.filter(sql.element().is_null())
-                        .arr.length()
-                        .gt(0)
-                    )
-                    .then(Lit.NONE)
-                    .otherwise(sql.coalesce(joined, Lit.EMPTY_STR))
-                )
-
 
 @dataclass(slots=True)
 class ExprListNameSpace(_VecNameSpace[nm.SqlExprListNameSpace]):
@@ -531,25 +385,6 @@ class ExprListNameSpace(_VecNameSpace[nm.SqlExprListNameSpace]):
         return self._new(
             self.inner().inner().list.filter(sql.element().eq(element)).list.length()
         )
-
-    def join(self, separator: IntoExprColumn, *, ignore_nulls: bool = True) -> Expr:
-        """Join string values in each list with a separator."""
-        joined = self.inner().inner().list.aggregate(Lit.STR_AGG, separator)
-        match ignore_nulls:
-            case True:
-                return self._new(sql.coalesce(joined, Lit.EMPTY_STR))
-            case False:
-                return self._new(
-                    sql.when(
-                        self.inner()
-                        .inner()
-                        .list.filter(sql.element().is_null())
-                        .list.length()
-                        .gt(0)
-                    )
-                    .then(Lit.NONE)
-                    .otherwise(sql.coalesce(joined, Lit.EMPTY_STR))
-                )
 
 
 @dataclass(slots=True)
@@ -665,20 +500,10 @@ class ExprDateTimeNameSpace(ExprNameSpaceBase):
         return self._new(self.inner().inner().dt.nanosecond().mod(Sec.TO_NANO))
 
     def month_start(self) -> Expr:
-        return self._new(
-            self.inner()
-            .inner()
-            .dt.trunc(Lit.MONTH)
-            .add(self.inner().sub(self.inner().inner().dt.trunc(Lit.DAY)))
-        )
+        return self._new(self.inner().inner().dt.month_start())
 
     def month_end(self) -> Expr:
-        return self._new(
-            self.inner()
-            .inner()
-            .dt.last_day()
-            .add(self.inner().sub(self.inner().inner().dt.trunc(Lit.DAY)))
-        )
+        return self._new(self.inner().inner().dt.month_end())
 
     def date(self) -> Expr:
         return self.inner().cast(dt.Date())

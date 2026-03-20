@@ -2,9 +2,10 @@
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass
 from datetime import date, datetime
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, final
 
 from pql.sql.typing import IntoExprColumn
 
@@ -22,9 +23,28 @@ from ._code_gen import (
 )
 from ._core import func
 from ._expr import SqlExpr
+from ._funcs import coalesce, element, into_expr, lit
+from ._when import when
 
 if TYPE_CHECKING:
     from .typing import IntoExpr, IntoExprColumn
+
+
+@final
+class Lit:
+    """Literals constants expressions."""
+
+    TITLECASE = lit(r"[a-z]*[^a-z]*")
+    NONE = lit(None)
+    G_PARAM = lit("g")
+    EMPTY_STR = lit("")
+    ESCAPE_REGEX = lit(r"([.^$*+?{}\[\]\\|()])")
+    ESCAPE_REPLACE = lit(r"\\\1")
+    ESCAPE = lit(" ")
+    STR_AGG = lit("string_agg")
+    DAY = lit("day")
+    MONTH = lit("month")
+    ZERO = lit("0")
 
 
 @dataclass(slots=True)
@@ -78,6 +98,170 @@ class SqlExprStringNameSpace(StringFns[SqlExpr]):
         """
         return self._new(func("concat", self.inner(), *args))
 
+    def to_titlecase(self) -> SqlExpr:
+        """Convert to title case."""
+        return (
+            self.lower()
+            .re.extract_all(Lit.TITLECASE)
+            .list.eval(
+                element()
+                .list.extract(1)
+                .str.upper()
+                .str.concat(element().str.substring(2))
+            )
+            .list.aggregate(Lit.STR_AGG, Lit.EMPTY_STR)
+        )
+
+    def escape_regex(self) -> SqlExpr:
+        """Escape regex metacharacters without escaping plain spaces."""
+        return self.inner().re.replace(
+            Lit.ESCAPE_REGEX, Lit.ESCAPE_REPLACE, Lit.G_PARAM
+        )
+
+    def find(self, pattern: IntoExprColumn, *, literal: bool = False) -> SqlExpr:
+        """Return the first match offset as a zero-based index."""
+        match literal:
+            case True:
+                return self.strpos(pattern).pipe(
+                    lambda pos: when(pos.eq(0)).then(Lit.NONE).otherwise(pos.sub(1))
+                )
+            case False:
+                return (
+                    self.inner()
+                    .re.extract(pattern, 0)
+                    .pipe(
+                        lambda matched: (
+                            when(matched.eq(Lit.EMPTY_STR))
+                            .then(Lit.NONE)
+                            .otherwise(self.strpos(matched).sub(1))
+                        )
+                    )
+                )
+
+    def join(
+        self, delimiter: IntoExprColumn = Lit.EMPTY_STR, *, ignore_nulls: bool = True
+    ) -> SqlExpr:
+        """Vertically concatenate string values into a single string."""
+        aggregated = self.agg(delimiter)
+        match ignore_nulls:
+            case True:
+                return aggregated
+            case False:
+                return (
+                    when(self.inner().is_null().any())
+                    .then(Lit.NONE)
+                    .otherwise(aggregated)
+                )
+
+    def count_matches(
+        self, pattern: IntoExprColumn, *, literal: bool = False
+    ) -> SqlExpr:
+        """Count pattern matches."""
+        pattern_expr = into_expr(pattern)
+        match literal:
+            case False:
+                return self.inner().re.extract_all(pattern_expr).list.len()
+            case True:
+                return (
+                    self.length()
+                    .sub(self.replace(pattern_expr, Lit.EMPTY_STR).str.length())
+                    .truediv(pattern_expr.str.length())
+                )
+
+    def strip_prefix(self, prefix: IntoExpr) -> SqlExpr:
+        """Strip prefix from string."""
+        match prefix:
+            case str() as prefix_str:
+                return self.inner().re.replace(
+                    lit(f"^{re.escape(prefix_str)}"), Lit.EMPTY_STR
+                )
+            case _:
+                return (
+                    into_expr(prefix)
+                    .pipe(
+                        lambda prefix: when(
+                            self.inner().str.starts_with(prefix),
+                        ).then(self.substring(prefix.str.length().add(1)))
+                    )
+                    .otherwise(self.inner())
+                )
+
+    def strip_suffix(self, suffix: IntoExpr) -> SqlExpr:
+        """Strip suffix from string."""
+        match suffix:
+            case str() as suffix_str:
+                return self.inner().re.replace(
+                    lit(f"{re.escape(suffix_str)}$"), Lit.EMPTY_STR
+                )
+            case _:
+                return into_expr(suffix).pipe(
+                    lambda expr: (
+                        when(self.inner().str.ends_with(expr))
+                        .then(self.substring(1, self.length().sub(expr.str.length())))
+                        .otherwise(self.inner())
+                    )
+                )
+
+    def replace_all(
+        self, pattern: IntoExprColumn, value: IntoExprColumn, *, literal: bool = False
+    ) -> SqlExpr:
+        """Replace all occurrences."""
+        match literal:
+            case True:
+                return self.replace(pattern, value)
+            case False:
+                return self.inner().re.replace(pattern, value, Lit.G_PARAM)
+
+
+@dataclass(slots=True)
+class SqlExprStructNameSpace(StructFns[SqlExpr]):
+    """Struct function namespace for SQL expressions."""
+
+
+@dataclass(slots=True)
+class SqlExprDateTimeNameSpace(DateTimeFns[SqlExpr]):
+    """Datetime function namespace for SQL expressions."""
+
+    def trunc(self, precision: IntoExprColumn) -> SqlExpr:
+        """Truncate to specified precision.
+
+        **SQL name**: *date_trunc*
+
+        Args:
+            precision (IntoExprColumn): `VARCHAR` expression
+
+        Examples:
+            date_trunc('hour', TIMESTAMPTZ '1992-09-20 20:38:40')
+
+        Returns:
+            T
+        """
+        return self._new(func("date_trunc", precision, self.inner()))
+
+    def month_start(self) -> SqlExpr:
+        """Get the first day of the month."""
+        return self.trunc(Lit.MONTH).add(self.inner().sub(self.trunc(Lit.DAY)))
+
+    def month_end(self) -> SqlExpr:
+        """Get the last day of the month."""
+        return self.last_day().add(self.inner().sub(self.trunc(Lit.DAY)))
+
+    def to_datetime(self, format: IntoExprColumn | None = None) -> SqlExpr:  # noqa: A002
+        """Parse string values as datetime."""
+        match format:
+            case None:
+                return self.inner().cast("timestamp")
+            case _:
+                return self.inner().str.strptime(format).cast("timestamp")
+
+    def to_time(self, format: IntoExprColumn | None = None) -> SqlExpr:  # noqa: A002
+        """Parse string values as time."""
+        match format:
+            case None:
+                return self.inner().cast("time")
+            case _:
+                return self.inner().str.strptime(format).cast("time")
+
 
 @dataclass(slots=True)
 class SqlExprListNameSpace(ListFns[SqlExpr]):
@@ -87,7 +271,7 @@ class SqlExprListNameSpace(ListFns[SqlExpr]):
         """Run an expression against each array element."""
         from ._funcs import fn_once
 
-        return self._new(self.transform(fn_once(expr.inner())).inner())
+        return self.transform(fn_once(expr.inner()))
 
     def std(self, ddof: int = 1) -> SqlExpr:
         """Compute the standard deviation of the lists in the column."""
@@ -127,31 +311,18 @@ class SqlExprListNameSpace(ListFns[SqlExpr]):
 
         return self._new(func("list_filter", self.inner(), fn_once(lambda_arg)))
 
-
-@dataclass(slots=True)
-class SqlExprStructNameSpace(StructFns[SqlExpr]):
-    """Struct function namespace for SQL expressions."""
-
-
-@dataclass(slots=True)
-class SqlExprDateTimeNameSpace(DateTimeFns[SqlExpr]):
-    """Datetime function namespace for SQL expressions."""
-
-    def trunc(self, precision: IntoExprColumn) -> SqlExpr:
-        """Truncate to specified precision.
-
-        **SQL name**: *date_trunc*
-
-        Args:
-            precision (IntoExprColumn): `VARCHAR` expression
-
-        Examples:
-            date_trunc('hour', TIMESTAMPTZ '1992-09-20 20:38:40')
-
-        Returns:
-            T
-        """
-        return self._new(func("date_trunc", precision, self.inner()))
+    def join(self, separator: IntoExprColumn, *, ignore_nulls: bool = True) -> SqlExpr:
+        """Join string values in each list with a separator."""
+        joined = self.aggregate(Lit.STR_AGG, separator)
+        match ignore_nulls:
+            case True:
+                return coalesce(joined, Lit.EMPTY_STR)
+            case False:
+                return (
+                    when(self.filter(element().is_null()).list.length().gt(0))
+                    .then(Lit.NONE)
+                    .otherwise(coalesce(joined, Lit.EMPTY_STR))
+                )
 
 
 @dataclass(slots=True)
@@ -162,7 +333,7 @@ class SqlExprArrayNameSpace(ArrayFns[SqlExpr]):
         """Run an expression against each array element."""
         from ._funcs import fn_once
 
-        return self._new(self.transform(fn_once(expr.inner())).inner())
+        return self.transform(fn_once(expr.inner()))
 
     def filter(self, lambda_arg: IntoExprColumn) -> SqlExpr:
         """Constructs a list from those elements of the input `list` for which the `lambda` function returns `true`.
@@ -185,6 +356,19 @@ class SqlExprArrayNameSpace(ArrayFns[SqlExpr]):
         from ._funcs import fn_once
 
         return self._new(func("array_filter", self.inner(), fn_once(lambda_arg)))
+
+    def join(self, separator: IntoExprColumn, *, ignore_nulls: bool = True) -> SqlExpr:
+        """Join string values in each array with a separator."""
+        joined = self.aggregate(Lit.STR_AGG, separator)
+        match ignore_nulls:
+            case True:
+                return coalesce(joined, Lit.EMPTY_STR)
+            case False:
+                return (
+                    when(self.filter(element().is_null()).arr.length().gt(0))
+                    .then(Lit.NONE)
+                    .otherwise(coalesce(joined, Lit.EMPTY_STR))
+                )
 
 
 @dataclass(slots=True)

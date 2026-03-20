@@ -105,9 +105,9 @@ class NameSpaceHandler[T: DuckHandler]:
     def _new(self, expr: duckdb.Expression) -> T:
         return self._parent.__class__(expr)
 
-    def inner(self) -> duckdb.Expression:
+    def inner(self) -> T:
         """Unwrap the underlying expression."""
-        return self._parent.inner()
+        return self._parent
 
 
 def func(name: str, *args: IntoExpr) -> duckdb.Expression:
