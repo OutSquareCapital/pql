@@ -277,9 +277,15 @@ class LazyFrame(sql.CoreHandler[sql.Frame]):
             case _:
                 return self.slice(-n)
 
-    def drop(self, *columns: str) -> Self:
+    def drop(
+        self, columns: TryIter[IntoExprColumn] = None, *more_columns: IntoExprColumn
+    ) -> Self:
         """Drop columns from the frame."""
-        return self.inner().select(sql.all(exclude=columns)).pipe(self._new)
+        return (
+            self.inner()
+            .select(sql.all(exclude=try_chain(columns, more_columns)))
+            .pipe(self._new)
+        )
 
     def drop_nulls(self, subset: TryIter[str] = None) -> Self:
         """Drop rows that contain null values."""
@@ -608,7 +614,7 @@ class LazyFrame(sql.CoreHandler[sql.Frame]):
         by_keys = JoinKeys.from_by(
             try_seq(by), try_seq(by_left), try_seq(by_right)
         ).unwrap()
-        drop_keys = by_keys.right.iter().collect(pc.SetMut)
+        drop_keys = pc.SetMut(by_keys.right)
         _ = on_opt.map(lambda _: drop_keys.add(on_keys.right))
         builder = JoinBuilder(suffix, self.columns, drop_keys)
 
@@ -858,3 +864,21 @@ class LazyFrame(sql.CoreHandler[sql.Frame]):
     def sink_ndjson(self, path: str | Path) -> None:
         """Write to newline-delimited JSON file."""
         self.inner().pl(lazy=True).sink_ndjson(path)
+
+    def reverse(self) -> Self:
+        """Reverse the order of rows."""
+        return (
+            self.with_row_index(name=Marker.TEMP, order_by=self.columns)
+            .sort(Marker.TEMP, descending=True)
+            .drop(Marker.TEMP)
+        )
+
+    def drop_nans(self, subset: TryIter[str] = None) -> Self:
+        """Drop rows that contain NaN values."""
+        return (
+            pc.Option(subset)
+            .map(try_iter)
+            .unwrap_or_else(self.columns.iter)
+            .map(lambda name: sql.col(name).is_nan().not_())
+            .into(self._filter)
+        )

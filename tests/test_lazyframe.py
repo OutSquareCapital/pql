@@ -560,14 +560,10 @@ def test_hash_seed42() -> None:
     )
 
 
-def test_drop_nulls(sample_df: pl.DataFrame) -> None:
+@pytest.mark.parametrize("subset", [None, "value"])
+def test_drop_nulls(sample_df: pl.DataFrame, subset: list[str]) -> None:
     assert_lf_eq_pl(
-        pql.LazyFrame(sample_df).drop_nulls(),
-        sample_df.lazy().drop_nulls(),
-    )
-    assert_lf_eq_pl(
-        pql.LazyFrame(sample_df).drop_nulls("value"),
-        sample_df.lazy().drop_nulls("value"),
+        pql.LazyFrame(sample_df).drop_nulls(subset), sample_df.lazy().drop_nulls(subset)
     )
 
 
@@ -686,6 +682,23 @@ def test_join_asof_on_without_by() -> None:
             pql.LazyFrame(right), on="t", strategy="backward"
         ),
         left.lazy().join_asof(right.lazy(), on="t", strategy="backward"),
+    )
+
+
+def test_reverse(sample_df: pl.DataFrame) -> None:
+    assert_lf_eq_pl(pql.LazyFrame(sample_df).reverse(), sample_df.lazy().reverse())
+
+
+@pytest.mark.parametrize("subset", [["a"], ["b"], ["a", "b"]])
+def test_drop_nans(subset: list[str]) -> None:
+    df = pl.DataFrame(
+        {
+            "a": [1.0, float("nan"), 3.0, 4.0],
+            "b": [float("nan"), 2.0, 3.0, 4.0],
+        }
+    )
+    assert_lf_eq_pl(
+        pql.LazyFrame(df).drop_nans(subset=subset), df.lazy().drop_nans(subset=subset)
     )
 
 
