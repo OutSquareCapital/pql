@@ -24,12 +24,7 @@ from ._datatypes import (
     StructType,
     UnionType,
 )
-from ._expr import (
-    SqlExpr,
-    SqlExprArrayNameSpace,
-    SqlExprDateTimeNameSpace,
-    SqlExprListNameSpace,
-)
+from ._expr import SqlExpr
 from ._frame import Frame
 from ._funcs import (
     all,
@@ -68,9 +63,6 @@ __all__ = [
     "ScalarType",
     "SortClause",
     "SqlExpr",
-    "SqlExprArrayNameSpace",
-    "SqlExprDateTimeNameSpace",
-    "SqlExprListNameSpace",
     "SqlType",
     "StructType",
     "Then",

@@ -1,32 +1,18 @@
 from __future__ import annotations
 
 from collections.abc import Iterable
-from dataclasses import dataclass
-from datetime import date, datetime
 from typing import TYPE_CHECKING, ClassVar, Self
 
 import pyochain as pc
 
 from pql.sql.typing import IntoExprColumn
 
-from ._code_gen import (
-    ArrayFns,
-    DateTimeFns,
-    EnumFns,
-    Expression,
-    Fns,
-    GeoSpatialFns,
-    JsonFns,
-    ListFns,
-    MapFns,
-    RegexFns,
-    StringFns,
-    StructFns,
-)
+from ._code_gen import Expression, Fns
 from ._core import func
 from ._window import FrameBound, OverBuilder, get_order, get_partition, make_spec
 
 if TYPE_CHECKING:
+    from . import namespaces as nm
     from .typing import (
         ClosedInterval,
         FrameMode,
@@ -57,53 +43,73 @@ class SqlExpr(Expression, Fns):
                 return expr.over(frame_end=pc.Some(0))
 
     @property
-    def arr(self) -> SqlExprArrayNameSpace:
+    def arr(self) -> nm.SqlExprArrayNameSpace:
         """Access array functions."""
+        from .namespaces import SqlExprArrayNameSpace
+
         return SqlExprArrayNameSpace(self)
 
     @property
-    def str(self) -> SqlExprStringNameSpace:
+    def str(self) -> nm.SqlExprStringNameSpace:
         """Access string functions."""
+        from .namespaces import SqlExprStringNameSpace
+
         return SqlExprStringNameSpace(self)
 
     @property
-    def list(self) -> SqlExprListNameSpace:
+    def list(self) -> nm.SqlExprListNameSpace:
         """Access list functions."""
+        from .namespaces import SqlExprListNameSpace
+
         return SqlExprListNameSpace(self)
 
     @property
-    def struct(self) -> SqlExprStructNameSpace:
+    def struct(self) -> nm.SqlExprStructNameSpace:
         """Access struct functions."""
+        from .namespaces import SqlExprStructNameSpace
+
         return SqlExprStructNameSpace(self)
 
     @property
-    def dt(self) -> SqlExprDateTimeNameSpace:
+    def dt(self) -> nm.SqlExprDateTimeNameSpace:
         """Access datetime functions."""
+        from .namespaces import SqlExprDateTimeNameSpace
+
         return SqlExprDateTimeNameSpace(self)
 
     @property
-    def json(self) -> SqlExprJsonNameSpace:
+    def json(self) -> nm.SqlExprJsonNameSpace:
         """Access JSON functions."""
+        from .namespaces import SqlExprJsonNameSpace
+
         return SqlExprJsonNameSpace(self)
 
     @property
-    def re(self) -> SqlExprRegexNameSpace:
+    def re(self) -> nm.SqlExprRegexNameSpace:
         """Access regex functions."""
+        from .namespaces import SqlExprRegexNameSpace
+
         return SqlExprRegexNameSpace(self)
 
     @property
-    def map(self) -> SqlExprMapNameSpace:
+    def map(self) -> nm.SqlExprMapNameSpace:
         """Access map functions."""
+        from .namespaces import SqlExprMapNameSpace
+
         return SqlExprMapNameSpace(self)
 
     @property
-    def enum(self) -> SqlExprEnumNameSpace:
+    def enum(self) -> nm.SqlExprEnumNameSpace:
         """Access enum functions."""
+        from .namespaces import SqlExprEnumNameSpace
+
         return SqlExprEnumNameSpace(self)
 
     @property
-    def geo(self) -> SqlExprGeoSpatialNameSpace:
+    def geo(self) -> nm.SqlExprGeoSpatialNameSpace:
         """Access geospatial functions."""
+        from .namespaces import SqlExprGeoSpatialNameSpace
+
         return SqlExprGeoSpatialNameSpace(self)
 
     def cum_count(self, *, reverse: bool = False) -> Self:
@@ -508,188 +514,3 @@ class SqlExpr(Expression, Fns):
                 fn_nulls_last=nulls_last,
             )
         )
-
-
-@dataclass(slots=True)
-class SqlExprStringNameSpace(StringFns[SqlExpr]):
-    """String function namespace for SQL expressions."""
-
-    def strftime(self, format_arg: IntoExprColumn | date | datetime | str) -> SqlExpr:
-        """Converts a `date` to a string according to the format string.
-
-        **SQL name**: *strftime*
-
-        Args:
-            format_arg (IntoExprColumn | date | datetime | str): `DATE | TIMESTAMP | TIMESTAMP_NS | VARCHAR` expression
-
-        Returns:
-            SqlExpr
-        """
-        return self._new(func("strftime", self.inner(), format_arg))
-
-    def strptime(self, format_arg: IntoExprColumn | list[str]) -> SqlExpr:
-        """Converts the `string` text to timestamp according to the format string.
-
-        Throws an error on failure.
-
-        To return `NULL` on failure, use try_strptime.
-
-        **SQL name**: *strptime*
-
-        Args:
-            format_arg (IntoExprColumn | list[str]): `VARCHAR | VARCHAR[]` expression
-
-        Returns:
-            SqlExpr
-        """
-        return self._new(func("strptime", self.inner(), format_arg))
-
-    def concat(self, *args: IntoExpr) -> SqlExpr:
-        """Concatenates multiple strings or lists.
-
-        `NULL` inputs are skipped.
-
-        See also operator `||`.
-
-        **SQL name**: *concat*
-
-        Args:
-            *args (IntoExpr): `ANY` expression
-
-        Returns:
-            SqlExpr
-        """
-        return self._new(func("concat", self.inner(), *args))
-
-
-@dataclass(slots=True)
-class SqlExprListNameSpace(ListFns[SqlExpr]):
-    """List function namespace for SQL expressions."""
-
-    def eval(self, expr: SqlExpr) -> SqlExpr:
-        """Run an expression against each array element."""
-        from ._funcs import fn_once
-
-        return self._new(self.transform(fn_once(expr.inner())).inner())
-
-    def std(self, ddof: int = 1) -> SqlExpr:
-        """Compute the standard deviation of the lists in the column."""
-        match ddof:
-            case 0:
-                return self.stddev_pop()
-            case _:
-                return self.stddev_samp()
-
-    def var(self, ddof: int = 1) -> SqlExpr:
-        """Compute the variance of the lists in the column."""
-        match ddof:
-            case 0:
-                return self.var_pop()
-            case _:
-                return self.var_samp()
-
-    def filter(self, lambda_arg: IntoExprColumn) -> SqlExpr:
-        """Constructs a list from those elements of the input `list` for which the `lambda` function returns `true`.
-
-        DuckDB must be able to cast the `lambda` function's return type to `BOOL`.
-
-        The return type of `list_filter` is the same as the input list's.
-
-        **SQL name**: *filter*
-
-        Args:
-            lambda_arg (IntoExprColumn): `LAMBDA` expression
-
-        Examples:
-            filter([3, 4, 5], lambda x : x > 4)
-
-        Returns:
-            T
-        """
-        from ._funcs import fn_once
-
-        return self._new(func("list_filter", self.inner(), fn_once(lambda_arg)))
-
-
-@dataclass(slots=True)
-class SqlExprStructNameSpace(StructFns[SqlExpr]):
-    """Struct function namespace for SQL expressions."""
-
-
-@dataclass(slots=True)
-class SqlExprDateTimeNameSpace(DateTimeFns[SqlExpr]):
-    """Datetime function namespace for SQL expressions."""
-
-    def trunc(self, precision: IntoExprColumn) -> SqlExpr:
-        """Truncate to specified precision.
-
-        **SQL name**: *date_trunc*
-
-        Args:
-            precision (IntoExprColumn): `VARCHAR` expression
-
-        Examples:
-            date_trunc('hour', TIMESTAMPTZ '1992-09-20 20:38:40')
-
-        Returns:
-            T
-        """
-        return self._new(func("date_trunc", precision, self.inner()))
-
-
-@dataclass(slots=True)
-class SqlExprArrayNameSpace(ArrayFns[SqlExpr]):
-    """Array function namespace for SQL expressions."""
-
-    def eval(self, expr: SqlExpr) -> SqlExpr:
-        """Run an expression against each array element."""
-        from ._funcs import fn_once
-
-        return self._new(self.transform(fn_once(expr.inner())).inner())
-
-    def filter(self, lambda_arg: IntoExprColumn) -> SqlExpr:
-        """Constructs a list from those elements of the input `list` for which the `lambda` function returns `true`.
-
-        DuckDB must be able to cast the `lambda` function's return type to `BOOL`.
-
-        The return type of `list_filter` is the same as the input list's.
-
-        **SQL name**: *filter*
-
-        Args:
-            lambda_arg (IntoExprColumn): `LAMBDA` expression
-
-        Examples:
-            filter([3, 4, 5], lambda x : x > 4)
-
-        Returns:
-            T
-        """
-        from ._funcs import fn_once
-
-        return self._new(func("array_filter", self.inner(), fn_once(lambda_arg)))
-
-
-@dataclass(slots=True)
-class SqlExprJsonNameSpace(JsonFns[SqlExpr]):
-    """JSON function namespace for SQL expressions."""
-
-
-@dataclass(slots=True)
-class SqlExprRegexNameSpace(RegexFns[SqlExpr]):
-    """Regex function namespace for SQL expressions."""
-
-
-@dataclass(slots=True)
-class SqlExprMapNameSpace(MapFns[SqlExpr]):
-    """Map function namespace for SQL expressions."""
-
-
-@dataclass(slots=True)
-class SqlExprEnumNameSpace(EnumFns[SqlExpr]):
-    """Enum function namespace for SQL expressions."""
-
-
-@dataclass(slots=True)
-class SqlExprGeoSpatialNameSpace(GeoSpatialFns[SqlExpr]):
-    """Geospatial function namespace for SQL expressions."""

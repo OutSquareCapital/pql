@@ -13,6 +13,7 @@ from . import _datatypes as dt, sql  # pyright: ignore[reportPrivateUsage]
 from ._expr import Expr
 from ._meta import ExprPlan
 from ._schema import Schema
+from .sql import namespaces as nm
 
 if TYPE_CHECKING:
     from ._typing import EpochTimeUnit, TimeUnit, TransferEncoding
@@ -378,7 +379,7 @@ class ExprStringNameSpace(ExprNameSpaceBase):
 
 
 @dataclass(slots=True)
-class _VecNameSpace[T: sql.SqlExprListNameSpace | sql.SqlExprArrayNameSpace](
+class _VecNameSpace[T: nm.SqlExprListNameSpace | nm.SqlExprArrayNameSpace](
     ExprNameSpaceBase, ABC
 ):
     """Common list/array operations namespace."""
@@ -474,12 +475,12 @@ class _VecNameSpace[T: sql.SqlExprListNameSpace | sql.SqlExprArrayNameSpace](
 
 
 @dataclass(slots=True)
-class ExprArrayNameSpace(_VecNameSpace[sql.SqlExprArrayNameSpace]):
+class ExprArrayNameSpace(_VecNameSpace[nm.SqlExprArrayNameSpace]):
     """Array operations namespace (equivalent to pl.Expr.array)."""
 
     @property
     @override
-    def _vec(self) -> sql.SqlExprArrayNameSpace:
+    def _vec(self) -> nm.SqlExprArrayNameSpace:
         return self.inner().inner().arr
 
     def n_unique(self) -> Expr:
@@ -513,12 +514,12 @@ class ExprArrayNameSpace(_VecNameSpace[sql.SqlExprArrayNameSpace]):
 
 
 @dataclass(slots=True)
-class ExprListNameSpace(_VecNameSpace[sql.SqlExprListNameSpace]):
+class ExprListNameSpace(_VecNameSpace[nm.SqlExprListNameSpace]):
     """List operations namespace (equivalent to pl.Expr.list)."""
 
     @property
     @override
-    def _vec(self) -> sql.SqlExprListNameSpace:
+    def _vec(self) -> nm.SqlExprListNameSpace:
         return self.inner().inner().list
 
     def n_unique(self) -> Expr:
