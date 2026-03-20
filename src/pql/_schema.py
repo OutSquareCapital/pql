@@ -14,6 +14,6 @@ class Schema(pc.Dict[str, DataType]):
     @classmethod
     def from_frame(cls, frame: sql.Frame) -> Self:
         dtypes = frame.dtypes.iter().map(
-            lambda d: DataType.__from_sql__(sql.parse_dtype(d))
+            lambda d: DataType.__from_sql__(sql.DType.parse(d))
         )
         return cls(frame.columns.iter().zip(dtypes, strict=True))
