@@ -138,13 +138,13 @@ def _exprs() -> tuple[pql.Expr, ...]:
     )
 
 
-def test_create_schema(sample_data: pql.LazyFrame) -> pql.Schema:
+def _create_schema(sample_data: pql.LazyFrame) -> pql.Schema:
     return sample_data.select(_exprs()).schema
 
 
 @pytest.fixture(scope="session")
 def cast_schema(sample_data: pql.LazyFrame) -> pql.Schema:
-    return test_create_schema(sample_data)
+    return _create_schema(sample_data)
 
 
 def test_geometry(cast_schema: pc.Dict[str, pql.DataType]) -> None:
