@@ -1,5 +1,6 @@
 from collections.abc import Callable, Iterable
 from types import TracebackType
+from typing import NamedTuple
 
 import narwhals as nw
 import polars as pl
@@ -9,6 +10,19 @@ from polars.testing import assert_frame_equal
 import pql
 
 from ._data import sample_df
+
+type PlFn = Callable[..., pl.Expr]
+type PqlFn = Callable[..., pql.Expr]
+
+
+class Fns(NamedTuple):
+    """Tuple used for parametrized tests."""
+
+    pql_fn: PqlFn
+    pl_fn: PlFn
+
+    def call(self, *args: object, **kwargs: object) -> tuple[pql.Expr, pl.Expr]:
+        return self.pql_fn(*args, **kwargs), self.pl_fn(*args, **kwargs)
 
 
 def _capture[T](

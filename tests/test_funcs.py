@@ -4,11 +4,7 @@ import pytest
 
 import pql
 
-from ._utils import assert_eq, assert_eq_pl, assert_lf_eq_pl
-
-
-def test_all_fn() -> None:
-    assert_eq(pql.all(), nw.all())
+from ._utils import Fns, assert_eq, assert_eq_pl, assert_lf_eq_pl
 
 
 def test_all_add() -> None:
@@ -27,27 +23,29 @@ def test_all_chained() -> None:
     )
 
 
-def test_len_fn() -> None:
-    assert_eq(pql.len(), nw.len())
-
-
 _MULTI_FNS = [
-    "sum",
-    "mean",
-    "median",
-    "min",
-    "max",
-    "sum_horizontal",
-    "min_horizontal",
-    "max_horizontal",
-    "mean_horizontal",
-    "coalesce",
+    Fns(pql.sum, pl.sum),
+    Fns(pql.mean, pl.mean),
+    Fns(pql.median, pl.median),
+    Fns(pql.min, pl.min),
+    Fns(pql.max, pl.max),
+    Fns(pql.sum_horizontal, pl.sum_horizontal),
+    Fns(pql.min_horizontal, pl.min_horizontal),
+    Fns(pql.max_horizontal, pl.max_horizontal),
+    Fns(pql.mean_horizontal, pl.mean_horizontal),
+    Fns(pql.coalesce, pl.coalesce),
 ]
+_SIMPLE_FNS = [Fns(pql.all, pl.all), Fns(pql.len, pl.len)]
 
 
-@pytest.mark.parametrize("fn", _MULTI_FNS)
-def test_multi_col(fn: str) -> None:
-    assert_eq(getattr(pql, fn)("x", "n"), getattr(nw, fn)("x", "n"))  # pyright: ignore[reportAny]
+@pytest.mark.parametrize("fns", _SIMPLE_FNS)
+def test_simple_fn(fns: Fns) -> None:
+    assert_eq_pl(*fns.call())
+
+
+@pytest.mark.parametrize("fns", _MULTI_FNS)
+def test_multi_col(fns: Fns) -> None:
+    assert_eq_pl(*fns.call("x", "n"))
 
 
 def test_all_horizontal() -> None:
