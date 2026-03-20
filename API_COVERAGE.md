@@ -9,8 +9,8 @@ Each summary cell is relative to Polars.
 
 | Class               | Coverage                                                                                     | Implemented | Matched | Missing | Mismatched | Extra |
 | ------------------- | -------------------------------------------------------------------------------------------- | ----------- | ------- | ------- | ---------- | ----- |
-| LazyFrame           | <span style="color: #f39c12;">███</span><span style="color: #bdc3c7;">░░░░░░░</span> (36.2%) | 80          | 29      | 28      | 23         | 4     |
-| Expr                | <span style="color: #f39c12;">████</span><span style="color: #bdc3c7;">░░░░░░</span> (41.6%) | 214         | 89      | 94      | 31         | 1     |
+| LazyFrame           | <span style="color: #f39c12;">███</span><span style="color: #bdc3c7;">░░░░░░░</span> (37.5%) | 80          | 30      | 26      | 24         | 4     |
+| Expr                | <span style="color: #f39c12;">████</span><span style="color: #bdc3c7;">░░░░░░</span> (42.1%) | 214         | 90      | 93      | 31         | 1     |
 | LazyGroupBy         | <span style="color: #27ae60;">██████</span><span style="color: #bdc3c7;">░░░░</span> (62.5%) | 16          | 10      | 4       | 2          | 0     |
 | ExprStrNameSpace    | <span style="color: #e74c3c;">██</span><span style="color: #bdc3c7;">░░░░░░░░</span> (27.7%) | 47          | 13      | 10      | 24         | 2     |
 | ExprListNameSpace   | <span style="color: #f39c12;">████</span><span style="color: #bdc3c7;">░░░░░░</span> (46.5%) | 43          | 20      | 20      | 3          | 2     |
@@ -25,7 +25,7 @@ Each summary cell is relative to Polars.
 
 ## LazyFrame
 
-### [x] Missing Methods (28)
+### [x] Missing Methods (26)
 
 - `collect_async`
   - **Polars**: (gevent: bool, engine: EngineType, optimizations: QueryOptFlags) -> Awaitable[DataFrame] | _GeventDataFrameResult[DataFrame]
@@ -33,8 +33,6 @@ Each summary cell is relative to Polars.
   - **Polars**: (chunk_size: int | None, maintain_order: bool, lazy: bool, engine: EngineType, optimizations: QueryOptFlags) -> Iterator[DataFrame]
 - `deserialize`
   - **Polars**: (source: str | bytes | Path | IOBase, format: SerializationFormat) -> LazyFrame
-- `drop_nans`
-  - **Polars**: (subset: ColumnNameOrSelector | Collection[ColumnNameOrSelector] | None) -> LazyFrame
 - `dtypes`
   - **Polars**: () -> list[DataType]
 - `group_by_dynamic`
@@ -59,8 +57,6 @@ Each summary cell is relative to Polars.
   - **Polars**: (context: ComputeContext | None, plan_type: PlanTypePreference, n_retries: int, engine: Engine, scaling_mode: ScalingMode) -> LazyFrameRemote
 - `remove`
   - **Polars**: (*predicates: IntoExprColumn | Iterable[IntoExprColumn] | bool | list[bool] | np.ndarray[Any, Any], **constraints: Any) -> LazyFrame
-- `reverse`
-  - **Polars**: () -> LazyFrame
 - `rolling`
   - **Polars**: (index_column: IntoExpr, period: str | timedelta, offset: str | timedelta | None, closed: ClosedInterval, group_by: IntoExpr | Iterable[IntoExpr] | None) -> LazyGroupBy
 - `serialize`
@@ -84,7 +80,7 @@ Each summary cell is relative to Polars.
 - `update`
   - **Polars**: (other: LazyFrame, on: str | Sequence[str] | None, how: Literal['left', 'inner', 'full'], left_on: str | Sequence[str] | None, right_on: str | Sequence[str] | None, include_nulls: bool, maintain_order: MaintainOrderJoin | None) -> LazyFrame
 
-### [!] Signature Mismatches (23)
+### [!] Signature Mismatches (24)
 
 - `cast`
   - **Polars**: (`dtypes: Mapping[ColumnNameOrSelector | PolarsDataType, PolarsDataType | PythonDataType] | PolarsDataType | pl.DataTypeExpr | Schema`, `strict: bool`) -> LazyFrame
@@ -97,7 +93,10 @@ Each summary cell is relative to Polars.
   - **pql**: () -> Self
 - `drop`
   - **Polars**: (`*columns: ColumnNameOrSelector | Iterable[ColumnNameOrSelector]`, `strict: bool`) -> LazyFrame
-  - **pql**: (`*columns: str`) -> Self
+  - **pql**: (`columns: TryIter[IntoExprColumn]`, `*more_columns: IntoExprColumn`) -> Self
+- `drop_nans`
+  - **Polars**: (`subset: ColumnNameOrSelector | Collection[ColumnNameOrSelector] | None`) -> LazyFrame
+  - **pql**: (`subset: TryIter[str]`) -> Self
 - `drop_nulls`
   - **Polars**: (`subset: ColumnNameOrSelector | Collection[ColumnNameOrSelector] | None`) -> LazyFrame
   - **pql**: (`subset: TryIter[str]`) -> Self
@@ -165,7 +164,7 @@ Each summary cell is relative to Polars.
 
 ## Expr
 
-### [x] Missing Methods (94)
+### [x] Missing Methods (93)
 
 - `agg_groups`
   - **Polars**: () -> Expr
@@ -175,8 +174,6 @@ Each summary cell is relative to Polars.
   - **Polars**: () -> Expr
 - `arg_min`
   - **Polars**: () -> Expr
-- `arg_sort`
-  - **Polars**: (descending: bool, nulls_last: bool) -> Expr
 - `arg_true`
   - **Polars**: () -> Expr
 - `arg_unique`
