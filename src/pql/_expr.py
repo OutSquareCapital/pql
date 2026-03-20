@@ -779,3 +779,9 @@ class Expr(sql.CoreHandler[sql.SqlExpr]):
     def is_last_distinct(self) -> Self:
         """Check if value is last occurrence."""
         return self._new(self.inner().is_last_distinct())
+
+    def arg_sort(self, *, descending: bool = False, nulls_last: bool = False) -> Self:
+        """Get the indices that would sort this expression."""
+        return self._as_window(
+            self.inner().arg_sort(descending=descending, nulls_last=nulls_last)
+        )

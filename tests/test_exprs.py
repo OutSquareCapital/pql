@@ -10,6 +10,8 @@ from pql import _typing as t
 
 from ._utils import assert_eq, assert_eq_pl, on_simple_fn
 
+desc_param = pytest.mark.parametrize("descending", [True, False])
+
 
 def test_rand() -> None:
     assert_eq((True & pql.col("a").alias("r")), (True & nw.col("a")).alias("r"))
@@ -215,7 +217,7 @@ def test_col_getattr() -> None:
     assert_eq_pl(pql.col.a, pl.col.a)
 
 
-@pytest.mark.parametrize("mode", ["half_to_even", "half_away_from_zero"])
+@pytest.mark.parametrize("mode", pql.sql.typing.RoundMode.__args__)
 def test_round(mode: pql.sql.typing.RoundMode) -> None:
     assert_eq_pl(
         pql.col("float_vals").round(2, mode=mode),
@@ -310,7 +312,7 @@ def test_pct_change(n: int) -> None:
     assert_eq_pl(pql.col("x").pct_change(n), pl.col("x").pct_change(n))
 
 
-@pytest.mark.parametrize("closed", ["both", "left", "right", "none"])
+@pytest.mark.parametrize("closed", pql.sql.typing.ClosedInterval.__args__)
 def test_is_between(closed: pql.sql.typing.ClosedInterval) -> None:
     assert_eq_pl(
         pql.col("x").is_between(2, 10, closed=closed),
@@ -432,8 +434,11 @@ def test_clip(lower_bound: int | None, upper_bound: int | None) -> None:
     )
 
 
+bias_arg = pytest.mark.parametrize("bias", [True, False])
+
+
 @pytest.mark.parametrize("fisher", [True, False])
-@pytest.mark.parametrize("bias", [True, False])
+@bias_arg
 def test_kurtosis(fisher: bool, bias: bool) -> None:
     assert_eq_pl(
         pql.col("x").kurtosis(fisher=fisher, bias=bias),
@@ -441,7 +446,7 @@ def test_kurtosis(fisher: bool, bias: bool) -> None:
     )
 
 
-@pytest.mark.parametrize("bias", [True, False])
+@bias_arg
 def test_skew(bias: bool) -> None:
     assert_eq_pl(pql.col("x").skew(bias=bias), pl.col("x").skew(bias=bias))
 
@@ -457,12 +462,12 @@ def test_quantile() -> None:
     )
 
 
-@pytest.mark.parametrize("desc", [True, False])
+@desc_param
 @pytest.mark.parametrize("order_by", ["n", None])
-def test_over(order_by: str | None, desc: bool) -> None:
+def test_over(order_by: str | None, descending: bool) -> None:
     assert_eq_pl(
-        pql.col("x").sum().over("a", order_by=order_by, descending=desc),
-        pl.col("x").sum().over("a", order_by=order_by, descending=desc),
+        pql.col("x").sum().over("a", order_by=order_by, descending=descending),
+        pl.col("x").sum().over("a", order_by=order_by, descending=descending),
     )
 
 
@@ -480,9 +485,7 @@ def test_over_with_nulls_last(*, nulls_last: bool) -> None:
     )
 
 
-@pytest.mark.parametrize(
-    "strategy", ["forward", "backward", "min", "max", "mean", "zero", "one"]
-)
+@pytest.mark.parametrize("strategy", t.FillNullStrategy.__args__)
 def test_fill_null(strategy: t.FillNullStrategy) -> None:
     assert_eq_pl(pql.col("age").fill_null(0), pl.col("age").fill_null(0))
     assert_eq_pl(
@@ -551,13 +554,13 @@ def test_any() -> None:
     assert_eq_pl(pql.col("x").gt(10).any(), pl.col("x").gt(10).any())
 
 
-@pytest.mark.parametrize("method", ["average", "min", "max", "dense", "ordinal"])
-def test_rank(method: t.RankMethod) -> None:
-    assert_eq_pl(pql.col("x").rank(method), pl.col("x").rank(method))
+@desc_param
+@pytest.mark.parametrize("method", t.RankMethod.__args__)
+def test_rank(method: t.RankMethod, descending: bool) -> None:
     assert_eq_pl(
-        pql.col("x").rank(method="ordinal"), pl.col("x").rank(method="ordinal")
+        pql.col("x").rank(method, descending=descending),
+        pl.col("x").rank(method, descending=descending),
     )
-    assert_eq_pl(pql.col("x").rank(descending=True), pl.col("x").rank(descending=True))
 
 
 def test_cum_count() -> None:
@@ -587,3 +590,12 @@ def test_cum_min() -> None:
 def test_cum_max() -> None:
     assert_eq_pl(pql.col("x").cum_max(), pl.col("x").cum_max())
     assert_eq_pl(pql.col("x").cum_max(reverse=True), pl.col("x").cum_max(reverse=True))
+
+
+@desc_param
+@pytest.mark.parametrize("nulls_last", [True, False])
+def test_arg_sort(descending: bool, nulls_last: bool) -> None:
+    assert_eq_pl(
+        pql.col("x").arg_sort(descending=descending, nulls_last=nulls_last),
+        pl.col("x").arg_sort(descending=descending, nulls_last=nulls_last),
+    )

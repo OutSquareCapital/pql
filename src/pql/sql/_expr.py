@@ -275,6 +275,14 @@ class SqlExpr(Expression, Fns):
 
         return self._new(all().count().over(pc.Some(self)).eq(1).inner())
 
+    def arg_sort(self, *, descending: bool = False, nulls_last: bool = False) -> Self:
+        """Return indices that would sort the expression."""
+        return (
+            self.row_number()
+            .over(order_by=pc.Some(self), descending=descending, nulls_last=nulls_last)
+            .sub(1)
+        )
+
     def forward_fill(self) -> Self:
         """Fill null values with the last non-null value."""
         return self.last_value().over(frame_end=pc.Some(0), ignore_nulls=True)
