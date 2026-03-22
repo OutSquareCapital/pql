@@ -1047,7 +1047,7 @@ class Fns(DuckHandler):
         """
         return self._new(func("encode", self.inner()))
 
-    def entropy(self) -> Self:
+    def entropy_shannon(self) -> Self:
         """Returns the log-2 entropy of count input-values.
 
         **SQL name**: *entropy*
