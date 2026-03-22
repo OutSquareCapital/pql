@@ -7,9 +7,9 @@ from enum import IntEnum, StrEnum, auto
 from functools import partial
 from typing import TYPE_CHECKING, NamedTuple, Self, override
 
+import duckdb
 import narwhals as nw
 import pyochain as pc
-from duckdb import ColumnExpression, SQLExpression
 
 from . import sql
 from ._schema import Schema
@@ -45,9 +45,9 @@ class Marker(StrEnum):
 
     @classmethod
     def replace_col(cls, template: sql.SqlExpr, column_name: str) -> sql.SqlExpr:
-        col_expr = str(ColumnExpression(column_name))
+        col_expr = str(duckdb.ColumnExpression(column_name))
         raw_str = template.pipe(str).replace(cls.MULTI, col_expr)
-        return sql.SqlExpr(SQLExpression(raw_str))
+        return sql.SqlExpr(duckdb.SQLExpression(raw_str))
 
     @classmethod
     def drop_marker(cls, result: IntoFrameT, cols: Collection[str]) -> IntoFrameT:

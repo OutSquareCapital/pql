@@ -6,8 +6,8 @@ from enum import auto
 from functools import partial
 from typing import TYPE_CHECKING, Literal, NamedTuple, Self, TypedDict, Unpack
 
+import duckdb
 import pyochain as pc
-from duckdb import Expression, SQLExpression
 from sqlglot import exp, parse_one  # pyright: ignore[reportUnknownVariableType]
 
 from .utils import TryIter, UpperStrEnum, try_iter
@@ -116,7 +116,7 @@ class OverBuilder:
     expr: exp.Expr
 
     @classmethod
-    def from_expr(cls, expr: Expression) -> Self:
+    def from_expr(cls, expr: duckdb.Expression) -> Self:
         return cls(parse_duckdb(expr.get_name()))
 
     def handle_nulls(self, *, ignore_nulls: bool) -> Self:
@@ -184,12 +184,12 @@ class OverBuilder:
             case _:
                 return self.__class__(_inject_into_existing(self.expr, kwargs))
 
-    def build(self) -> Expression:
-        return SQLExpression(self.expr.sql(dialect="duckdb"))
+    def build(self) -> duckdb.Expression:
+        return duckdb.SQLExpression(self.expr.sql(dialect="duckdb"))
 
     def build_fn(
         self, *, ignore_nulls: bool = False, **kwargs: Unpack[FnArgs]
-    ) -> Expression:
+    ) -> duckdb.Expression:
         return (
             self.handle_fn_order_by(**kwargs)
             .handle_nulls(ignore_nulls=ignore_nulls)
@@ -197,7 +197,9 @@ class OverBuilder:
         )
 
 
-def rolling_agg(expr: Expression, order_by: str, spec: BoundsValues) -> Expression:
+def rolling_agg(
+    expr: duckdb.Expression, order_by: str, spec: BoundsValues
+) -> duckdb.Expression:
     """Build a window expression with a prebuilt spec. Used by rolling aggregations."""
     return (
         OverBuilder.from_expr(expr)
