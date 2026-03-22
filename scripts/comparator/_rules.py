@@ -2,10 +2,12 @@ from enum import StrEnum, auto
 
 import pyochain as pc
 
-from .._utils import Pql
+from .._utils import Builtins, CollectionsABC, DuckDB, Pql, Pyochain
+
+type ContainerType = CollectionsABC | Builtins | Pyochain
 
 
-def _args(*args: str) -> pc.Set[str]:
+def _set[T](*args: T) -> pc.Set[T]:
     return pc.Set(args)
 
 
@@ -25,7 +27,7 @@ type IgnoredMembers = pc.Dict[Pql, pc.Set[str]]
 
 IGNORED_MEMBERS: IgnoredMembers = pc.Dict(
     {
-        Pql.MODULE_FUNCTIONS: _args(
+        Pql.MODULE_FUNCTIONS: _set(
             "show_versions",
             "col",
             "Utf8",
@@ -55,43 +57,43 @@ IGNORED_MEMBERS: IgnoredMembers = pc.Dict(
             "disable_string_cache",
             "Categories",
         ),
-        Pql.LAZY_FRAME: _args("cache", "clear", "with_columns_seq", "select_seq"),
-        Pql.SELECTORS: _args("Selector", "categorical"),
+        Pql.LAZY_FRAME: _set("cache", "clear", "with_columns_seq", "select_seq"),
+        Pql.SELECTORS: _set("Selector", "categorical"),
     }
 )
 
 IGNORED_PARAMS: IgnoredParams = pc.Dict(
     {
         Pql.LAZY_FRAME: pc.Dict.from_kwargs(
-            sort=_args("maintain_order", _Arg.MULTITHREADED),
-            join=_args(_Arg.ALLOW_PARALLEL, _Arg.FORCE_PARALLEL),
-            join_asof=_args(_Arg.ALLOW_PARALLEL, _Arg.FORCE_PARALLEL),
-            collect=_args("backend", "kwargs"),
-            quantile=_args(_Arg.INTERPOLATION),
-            select=_args(_Arg.MORE_EXPRS),
-            filter=_args(_Arg.MORE_PREDICATES),
-            with_columns=_args(_Arg.MORE_EXPRS),
+            sort=_set("maintain_order", _Arg.MULTITHREADED),
+            join=_set(_Arg.ALLOW_PARALLEL, _Arg.FORCE_PARALLEL),
+            join_asof=_set(_Arg.ALLOW_PARALLEL, _Arg.FORCE_PARALLEL),
+            collect=_set("backend", "kwargs"),
+            quantile=_set(_Arg.INTERPOLATION),
+            select=_set(_Arg.MORE_EXPRS),
+            filter=_set(_Arg.MORE_PREDICATES),
+            with_columns=_set(_Arg.MORE_EXPRS),
         ),
         Pql.EXPR: pc.Dict.from_kwargs(
-            sort_by=_args(_Arg.MULTITHREADED), quantile=_args(_Arg.INTERPOLATION)
+            sort_by=_set(_Arg.MULTITHREADED), quantile=_set(_Arg.INTERPOLATION)
         ),
         Pql.EXPR_STRUCT_NAME_SPACE: pc.Dict.from_kwargs(
-            with_fields=_args(_Arg.MORE_EXPRS)
+            with_fields=_set(_Arg.MORE_EXPRS)
         ),
-        Pql.EXPR_LIST_NAME_SPACE: pc.Dict.from_kwargs(eval=_args(_Arg.PARALLEL)),
-        Pql.EXPR_ARR_NAME_SPACE: pc.Dict.from_kwargs(eval=_args(_Arg.PARALLEL)),
+        Pql.EXPR_LIST_NAME_SPACE: pc.Dict.from_kwargs(eval=_set(_Arg.PARALLEL)),
+        Pql.EXPR_ARR_NAME_SPACE: pc.Dict.from_kwargs(eval=_set(_Arg.PARALLEL)),
         Pql.LAZY_GROUP_BY: pc.Dict.from_kwargs(
-            agg=_args("more_aggs"),
-            quantile=_args(_Arg.INTERPOLATION),
+            agg=_set("more_aggs"),
+            quantile=_set(_Arg.INTERPOLATION),
         ),
         Pql.MODULE_FUNCTIONS: pc.Dict.from_kwargs(
-            all_horizontal=_args(_Arg.MORE_EXPRS),
-            any_horizontal=_args(_Arg.MORE_EXPRS),
-            max_horizontal=_args(_Arg.MORE_EXPRS),
-            mean_horizontal=_args(_Arg.MORE_EXPRS),
-            min_horizontal=_args(_Arg.MORE_EXPRS),
-            sum_horizontal=_args(_Arg.MORE_EXPRS),
-            when=_args(_Arg.MORE_PREDICATES),
+            all_horizontal=_set(_Arg.MORE_EXPRS),
+            any_horizontal=_set(_Arg.MORE_EXPRS),
+            max_horizontal=_set(_Arg.MORE_EXPRS),
+            mean_horizontal=_set(_Arg.MORE_EXPRS),
+            min_horizontal=_set(_Arg.MORE_EXPRS),
+            sum_horizontal=_set(_Arg.MORE_EXPRS),
+            when=_set(_Arg.MORE_PREDICATES),
         ),
     }
 )
@@ -104,3 +106,50 @@ class Status(StrEnum):
     SIGNATURE_MISMATCH = auto()
     MATCH = auto()
     EXTRA = auto()
+
+
+_SEQUENCE_TYPES: pc.Set[ContainerType] = _set(
+    CollectionsABC.SEQUENCE, Builtins.LIST, Builtins.TUPLE, Pyochain.SEQ, Pyochain.VEC
+)
+_COLLECTION_TYPES: pc.Set[ContainerType] = _set(
+    CollectionsABC.COLLECTION, Builtins.SET, Builtins.FROZENSET, *_SEQUENCE_TYPES
+)
+_ITERABLE_TYPES: pc.Set[ContainerType] = _set(
+    CollectionsABC.ITERABLE, *_COLLECTION_TYPES
+)
+CONTAINER_SUPERTYPES: pc.Dict[CollectionsABC, pc.Set[ContainerType]] = pc.Dict(
+    {
+        CollectionsABC.ITERABLE: _ITERABLE_TYPES,
+        CollectionsABC.COLLECTION: _COLLECTION_TYPES,
+        CollectionsABC.SEQUENCE: _SEQUENCE_TYPES,
+    }
+)
+
+_INTO_EXPR_COL_TYPES: pc.Set[str] = _set(
+    Pql.INTO_EXPR_COLUMN,
+    "ColumnNameOrSelector",
+    Builtins.STR,
+    Pql.EXPR,
+    Pql.SQLEXPR,
+    Pql.DUCK_HANDLER,
+)
+
+TYPE_SUPERTYPES: pc.Dict[str, pc.Set[str]] = pc.Dict(
+    {
+        Pql.INTO_EXPR: _set(
+            Pql.INTO_EXPR,
+            "ColumnNameOrSelector",
+            Builtins.INT,
+            Builtins.FLOAT,
+            Builtins.BOOL,
+            Builtins.BYTES,
+            Builtins.BYTEARRAY,
+            Builtins.MEMORYVIEW,
+            DuckDB.EXPRESSION,
+            Pql.PYTHON_LITERAL,
+            *_INTO_EXPR_COL_TYPES,
+        ),
+        Pql.INTO_EXPR_COLUMN: _INTO_EXPR_COL_TYPES,
+        "ColumnNameOrSelector": _set("ColumnNameOrSelector", *_INTO_EXPR_COL_TYPES),
+    }
+)

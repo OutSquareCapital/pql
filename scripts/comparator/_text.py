@@ -94,7 +94,7 @@ class ClassComparison:
             polars_methods.union(pql_methods)
             .iter()
             .map(
-                lambda name: ComparisonResult.from_method(
+                lambda name: ComparisonResult(
                     self.polars_cls, self.pql_cls, name, self.name
                 )
             )

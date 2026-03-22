@@ -6,8 +6,8 @@ from typing import Self
 
 import pyochain as pc
 
-from .._utils import Builtins, Pql, Typing, get_attr
-from ._parse import extract_last_name, normalize_annotation
+from .._utils import Builtins, Pql, get_attr
+from ._parse import annotations_compatible, extract_last_name
 from ._rules import IGNORED_PARAMS, Status
 
 type MapInfo = pc.Dict[str, ParamInfo]
@@ -16,11 +16,7 @@ type MapInfo = pc.Dict[str, ParamInfo]
 def annotations_differ(pl_param: ParamInfo, pql_param: ParamInfo) -> bool:
     match (pl_param.annotation, pql_param.annotation):
         case (pc.Some(pl_ann), pc.Some(pql_ann)):
-            normalized_pl = normalize_annotation(pl_ann)
-            normalized_pql = normalize_annotation(pql_ann)
-            if normalized_pl == Typing.ANY:
-                return False
-            return normalized_pl != normalized_pql
+            return not annotations_compatible(pl_ann, pql_ann)
         case _:
             return False
 
@@ -179,11 +175,23 @@ def _mismatch_against(target: MapInfo, other: MapInfo, ignored: pc.Set[str]) -> 
 
 
 def _without_ignored_params(mapping: MapInfo, ignored: pc.Set[str]) -> MapInfo:
+    def _get_fn(current: pc.Dict[str, ParamInfo], param: ParamInfo) -> ParamInfo:
+        key = (
+            param.name.removeprefix("more_")
+            if param.is_var_positional and param.name.startswith("more_")
+            else param.name
+        )
+        return current.setdefault(key, param)
+
     return (
         mapping.items()
         .iter()
         .filter_star(lambda k, _v: not ignored.contains(k))
-        .collect(pc.Dict)
+        .map_star(lambda _name, param: param)
+        .fold(
+            pc.Dict[str, ParamInfo].new(),
+            lambda acc, param: acc.inspect(_get_fn, param),
+        )
     )
 
 
@@ -195,7 +203,7 @@ def ignored_params_for(class_name: Pql, method_name: str) -> pc.Set[str]:
     )
 
 
-@dataclass(slots=True)
+@dataclass(slots=True, init=False)
 class ComparisonResult:
     """Result of comparing a single method."""
 
@@ -203,25 +211,22 @@ class ComparisonResult:
     classification: Status
     infos: ComparisonInfos
 
-    @classmethod
-    def from_method(
-        cls,
+    def __init__(
+        self,
         polars_cls: object,
         pql_cls: object,
         method_name: str,
         class_name: Pql,
-    ) -> Self:
+    ) -> None:
         """Compare a single method between Polars and pql."""
         infos = ComparisonInfos(
             polars=_get_method_info(polars_cls, method_name),
             pql_info=_get_method_info(pql_cls, method_name),
             ignored_params=ignored_params_for(class_name, method_name),
         )
-        return cls(
-            method_name=method_name,
-            classification=infos.to_status(),
-            infos=infos,
-        )
+        self.method_name = method_name
+        self.classification = infos.to_status()
+        self.infos = infos
 
     def to_format(self, *, status: Status) -> pc.Iter[str]:
         """Format a single comparison result as markdown lines."""

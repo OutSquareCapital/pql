@@ -4,7 +4,8 @@ from typing import override
 
 import pyochain as pc
 
-from .._utils import Builtins, Pql, Typing
+from .._utils import Builtins, CollectionsABC, Pql, Pyochain, Typing
+from ._rules import CONTAINER_SUPERTYPES, TYPE_SUPERTYPES, ContainerType
 
 GENERIC_SYMBOL_PATTERN = re.compile(r"^[A-Z][A-Z0-9_]*$")
 
@@ -101,9 +102,7 @@ class _UnionCanonicalizer(ast.NodeTransformer):
                             return pc.Iter.once(node)
 
                 members_as_text = _union_members(node).map(ast.unparse).collect()
-                has_float = members_as_text.iter().any(
-                    lambda text: text == Builtins.FLOAT
-                )
+                has_float = members_as_text.any(lambda text: text == Builtins.FLOAT)
 
                 return (
                     members_as_text.iter()
@@ -117,33 +116,177 @@ class _UnionCanonicalizer(ast.NodeTransformer):
                 return rewritten
 
 
-def _parse_annotation(annotation: str) -> pc.Option[ast.Expression]:
-    try:
-        return pc.Some(ast.parse(annotation, mode="eval"))
-    except SyntaxError:
-        return pc.NONE
-
-
-def _normalize(parsed: ast.Expression) -> str:
-    return ast.unparse(
-        ast.fix_missing_locations(  # pyright: ignore[reportAny]
-            _UnionCanonicalizer().visit(  # pyright: ignore[reportAny]
-                _GenericCanonicalizer().visit(_AliasExpander().visit(parsed))  # pyright: ignore[reportAny]
-            )
-        )
-    )
-
-
 def normalize_annotation(annotation: str) -> str:
 
     return extract_last_name(
         SELF_PATTERN.sub(
             "__SELF__",
             extract_last_name(
-                _parse_annotation(annotation).map(_normalize).unwrap_or(annotation)
+                ast.unparse(_normalize_expr(ast.parse(annotation, mode="eval")))
             ),
         )
     )
+
+
+def annotations_compatible(reference_ann: str, target_ann: str) -> bool:
+    normalized_reference = normalize_annotation(reference_ann)
+    normalized_target = normalize_annotation(target_ann)
+    match (
+        normalized_reference in {Typing.ANY, normalized_target}
+        or normalized_target == Typing.ANY
+    ):
+        case True:
+            return True
+        case False:
+            return _annotation_accepts(
+                _normalize_expr(ast.parse(normalized_target, mode="eval")),
+                _normalize_expr(ast.parse(normalized_reference, mode="eval")),
+            )
+
+
+def _normalize_expr(parsed: ast.Expression) -> ast.expr:
+    return ast.fix_missing_locations(  # pyright: ignore[reportAny]
+        _UnionCanonicalizer().visit(  # pyright: ignore[reportAny]
+            _GenericCanonicalizer().visit(_AliasExpander().visit(parsed))  # pyright: ignore[reportAny]
+        )
+    ).body
+
+
+def _annotation_accepts(target: ast.expr, reference: ast.expr) -> bool:
+    target_members = _union_members(target).collect()
+    return _union_members(reference).all(
+        lambda reference_member: target_members.any(
+            lambda target_member: _member_accepts(target_member, reference_member)
+        )
+    )
+
+
+def _union_members(reference: ast.expr) -> pc.Iter[ast.expr]:
+    match reference:
+        case ast.BinOp(left=left, op=ast.BitOr(), right=right):
+            return _union_members(left).chain(_union_members(right))
+        case _:
+            return pc.Iter.once(reference)
+
+
+def _member_accepts(target: ast.expr, reference: ast.expr) -> bool:
+    if ast.unparse(target) == ast.unparse(reference):
+        return True
+    match (target, reference):
+        case (ast.Subscript(), ast.Subscript()):
+            return _generic_accepts(target, reference)
+        case _:
+            return (
+                _type_name(target)
+                .and_then(
+                    lambda target_name: _type_name(reference).map(
+                        lambda reference_name: _type_accepts(
+                            target_name, reference_name
+                        )
+                    )
+                )
+                .unwrap_or(default=False)
+            )
+
+
+def _into_seq_args(target: ast.expr) -> pc.Seq[ast.expr]:
+    match target:
+        case ast.Tuple():
+            return pc.Seq(target.elts)
+        case _:
+            return pc.Seq((target,))
+
+
+def _generic_accepts(target: ast.Subscript, reference: ast.Subscript) -> bool:
+    return (
+        _type_name(target.value)
+        .and_then(
+            lambda target_base: _type_name(reference.value).map(
+                lambda reference_base: _generic_base_accepts(
+                    target_base,  # pyright: ignore[reportArgumentType]
+                    _into_seq_args(target.slice),
+                    reference_base,  # pyright: ignore[reportArgumentType]
+                    _into_seq_args(reference.slice),
+                )
+            )
+        )
+        .unwrap_or(default=False)
+    )
+
+
+def _generic_base_accepts(
+    target_base: CollectionsABC,
+    target_args: pc.Seq[ast.expr],
+    reference_base: ContainerType,
+    reference_args: pc.Seq[ast.expr],
+) -> bool:
+    return (
+        _collection_item_type(target_base, target_args)
+        .and_then(
+            lambda target_item: _collection_item_type(
+                reference_base, reference_args
+            ).map(
+                lambda reference_item: (
+                    CONTAINER_SUPERTYPES.get_item(target_base)
+                    .map(lambda accepted: accepted.contains(reference_base))
+                    .unwrap_or(default=False)
+                    and _annotation_accepts(target_item, reference_item)
+                )
+            )
+        )
+        .unwrap_or(
+            target_base == reference_base
+            and target_args.length() == reference_args.length()
+            and target_args.iter()
+            .zip(reference_args)
+            .map_star(_annotation_accepts)
+            .all(bool)
+        )
+    )
+
+
+def _collection_item_type(base: str, args: pc.Seq[ast.expr]) -> pc.Option[ast.expr]:
+    match (base, args.length()):
+        case (
+            CollectionsABC.ITERABLE
+            | CollectionsABC.COLLECTION
+            | CollectionsABC.SEQUENCE
+            | Builtins.LIST
+            | Builtins.SET
+            | Builtins.FROZENSET
+            | Pyochain.SEQ
+            | Pyochain.VEC,
+            1,
+        ):
+            return pc.Some(args.first())
+        case (Builtins.TUPLE, 1):
+            return pc.Some(args.first())
+        case (Builtins.TUPLE, 2):
+            match args[1]:
+                case ast.Constant() as constant if constant.value is Ellipsis:
+                    return pc.Some(args.first())
+                case _:
+                    return pc.NONE
+        case _:
+            return pc.NONE
+
+
+def _type_name(node: ast.expr) -> pc.Option[str]:
+    match node:
+        case ast.Name(id=name):
+            return pc.Some(name)
+        case ast.Attribute(attr=name):
+            return pc.Some(name)
+        case ast.Constant(value=None):
+            return pc.Some(Builtins.NONE)
+        case _:
+            return pc.NONE
+
+
+def _type_accepts(target_name: str, reference_name: str) -> bool:
+    return target_name in (reference_name, Typing.ANY) or TYPE_SUPERTYPES.get_item(
+        target_name
+    ).map(lambda accepted: accepted.contains(reference_name)).unwrap_or(default=False)
 
 
 def extract_last_name(annotation: str) -> str:

@@ -111,6 +111,8 @@ class Pyochain(KwordEnum):
 class Builtins(KwordEnum):
     NONE = "None"
     LIST = list.__name__
+    SET = set.__name__
+    FROZENSET = frozenset.__name__
     TUPLE = tuple.__name__
     DICT = dict.__name__
     PROPERTY = property.__name__
@@ -163,5 +165,7 @@ class CollectionsABC(KwordEnum):
         return "collections.abc"
 
     ITERABLE = collections_abc.Iterable.__name__
+    SEQUENCE = collections_abc.Sequence.__name__
+    COLLECTION = collections_abc.Collection.__name__
     CALLABLE = collections_abc.Callable.__name__
     MAPPING = collections_abc.Mapping.__name__
