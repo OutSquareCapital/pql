@@ -223,7 +223,7 @@ def contains(*substring: str) -> Selector:
     """Select columns whose names contain any of the given substrings."""
     subs = pc.Seq(substring)
     return Selector.__from_resolver__(
-        Resolver.name(lambda name: subs.iter().any(lambda s: s in name))
+        Resolver.name(lambda name: subs.any(lambda s: s in name))
     )
 
 
