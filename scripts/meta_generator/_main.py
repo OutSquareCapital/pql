@@ -104,7 +104,7 @@ def {self.final_name}({self._signature()}) -> duckdb.DuckDBPyRelation:
     Returns:
         duckdb.DuckDBPyRelation
     """
-    return _meta("{self.name}"{self._body_args()})'''
+    return duckdb.table_function("{self.name}"{self._body_args()})'''
 
 
 def run_pipeline(caller: Path, source: Path) -> str:
@@ -124,7 +124,7 @@ def run_pipeline(caller: Path, source: Path) -> str:
 
 def _build_file(fns: pc.Seq[MetaFnInfo], caller: Path) -> str:
     body = fns.iter().map(MetaFnInfo.build).join("\n\n\n")
-    return f"{_header(caller)}\n\n{_META_HELPER}\n\n\n{body}\n"
+    return f"{_header(caller)}\n\n\n{body}\n"
 
 
 def _query(lf: pl.LazyFrame) -> pl.LazyFrame:
@@ -175,13 +175,6 @@ def _to_infos(df: pl.DataFrame) -> pc.Seq[MetaFnInfo]:
         .pipe(lambda df: pc.Iter[MetaFnInfo](df.to_series()))
         .collect()
     )
-
-
-_META_HELPER = '''
-def _meta(name: str, *args: object) -> duckdb.DuckDBPyRelation:
-    """Call a DuckDB table function and wrap result in Relation."""
-    params = list(filter(lambda a: a is not None, args))
-    return duckdb.table_function(name, params or None)'''
 
 
 def _header(caller: Path) -> str:
