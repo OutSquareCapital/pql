@@ -13,11 +13,14 @@ from rich.console import Console
 from rich.syntax import Syntax
 from sqlparse.lexer import Lexer
 
+from . import meta
+
 if TYPE_CHECKING:
     from pygments.token import (
         _TokenType as TokenType,  # pyright: ignore[reportPrivateUsage]
     )
 
+    from ._frame import LazyFrame
     from ._typing import Themes
 
 CONSOLE = Console()
@@ -33,18 +36,9 @@ DUCK_PYGMENT_MAP = pc.Dict.from_ref(
 )
 
 
-def _get_names(fn: str, col_name: str) -> pc.Set[str]:
-    from ._creation import from_table_function
+def _get_names(lf: LazyFrame, col_name: str) -> pc.Set[str]:
 
-    return (
-        from_table_function(fn)
-        .inner()
-        .select(col_name)
-        .fetchall()
-        .iter()
-        .flatten()
-        .collect(pc.Set)
-    )
+    return lf.inner().select(col_name).fetchall().iter().flatten().collect(pc.Set)
 
 
 type ProcessedToken = tuple[int, TokenType, str]
@@ -83,13 +77,12 @@ class DuckDbSqlLexer(SqlLexer):
 def _get_kwords():  # noqa: ANN202
     from sqlparse.tokens import Keyword
 
-    from ._creation import from_table_function
     from .sql import col, lit, when
 
     name = col("keyword_name")
 
     return (
-        from_table_function("duckdb_keywords")
+        meta.keywords()
         .inner()
         .select(
             when(col("keyword_category").is_in(lit("reserved"), lit("unreserved")))
@@ -104,10 +97,12 @@ def _get_kwords():  # noqa: ANN202
     )
 
 
-DTYPES = _get_names("duckdb_types", "type_name").union(
-    _get_names("duckdb_types", "logical_type")
+DTYPES = (
+    meta.types()
+    .pipe(_get_names, "type_name")
+    .union(meta.types().pipe(_get_names, "logical_type"))
 )
-FUNCTIONS = _get_names("duckdb_functions", "function_name")
+FUNCTIONS = meta.functions().pipe(_get_names, "function_name")
 
 SYNTAX = partial(Syntax, lexer=DuckDbSqlLexer(), background_color="default")
 
