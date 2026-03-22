@@ -142,7 +142,7 @@ class SqlExpr(Expression, Fns):
         strategy: pc.Option[FillNullStrategy],
         limit: pc.Option[int],
     ) -> Self:
-        def _get_strat() -> pc.Result[SqlExpr | Self, ValueError]:
+        def _get_strat() -> pc.Result[SqlExpr | Self, ValueError]:  # noqa: PLR0911
             from ._funcs import coalesce
 
             match (value, strategy, limit):
