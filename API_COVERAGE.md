@@ -10,7 +10,7 @@ Each summary cell is relative to Polars.
 | Class               | Coverage                                                                                     | Implemented | Matched | Missing | Mismatched | Extra |
 | ------------------- | -------------------------------------------------------------------------------------------- | ----------- | ------- | ------- | ---------- | ----- |
 | LazyFrame           | <span style="color: #f39c12;">███</span><span style="color: #bdc3c7;">░░░░░░░</span> (37.5%) | 80          | 30      | 26      | 24         | 4     |
-| Expr                | <span style="color: #f39c12;">████</span><span style="color: #bdc3c7;">░░░░░░</span> (42.1%) | 214         | 90      | 93      | 31         | 1     |
+| Expr                | <span style="color: #f39c12;">████</span><span style="color: #bdc3c7;">░░░░░░</span> (43.0%) | 214         | 92      | 90      | 32         | 1     |
 | LazyGroupBy         | <span style="color: #27ae60;">██████</span><span style="color: #bdc3c7;">░░░░</span> (62.5%) | 16          | 10      | 4       | 2          | 0     |
 | ExprStrNameSpace    | <span style="color: #e74c3c;">██</span><span style="color: #bdc3c7;">░░░░░░░░</span> (29.8%) | 47          | 14      | 10      | 23         | 2     |
 | ExprListNameSpace   | <span style="color: #f39c12;">████</span><span style="color: #bdc3c7;">░░░░░░</span> (46.5%) | 43          | 20      | 20      | 3          | 2     |
@@ -164,7 +164,7 @@ Each summary cell is relative to Polars.
 
 ## Expr
 
-### [x] Missing Methods (93)
+### [x] Missing Methods (90)
 
 - `agg_groups`
   - **Polars**: () -> Expr
@@ -204,14 +204,10 @@ Each summary cell is relative to Polars.
   - **Polars**: (breaks: Sequence[float], labels: Sequence[str_] | None, left_closed: bool, include_breaks: bool) -> Expr
 - `deserialize`
   - **Polars**: (source: str_ | Path | IOBase | bytes, format: SerializationFormat) -> Expr
-- `dot`
-  - **Polars**: (other: Expr | str_) -> Expr
 - `drop_nans`
   - **Polars**: () -> Expr
 - `drop_nulls`
   - **Polars**: () -> Expr
-- `entropy`
-  - **Polars**: (base: float, normalize: bool) -> Expr
 - `eq_missing`
   - **Polars**: (other: Any) -> Expr
 - `ewm_mean`
@@ -344,8 +340,6 @@ Each summary cell is relative to Polars.
   - **Polars**: (k: int | IntoExprColumn) -> Expr
 - `top_k_by`
   - **Polars**: (by: IntoExpr | Iterable[IntoExpr], k: int | IntoExprColumn, reverse: bool | Sequence[bool]) -> Expr
-- `truncate`
-  - **Polars**: (decimals: int) -> Expr
 - `unique_counts`
   - **Polars**: () -> Expr
 - `upper_bound`
@@ -353,7 +347,7 @@ Each summary cell is relative to Polars.
 - `value_counts`
   - **Polars**: (sort: bool, parallel: bool, name: str_ | None, normalize: bool) -> Expr
 
-### [!] Signature Mismatches (31)
+### [!] Signature Mismatches (32)
 
 - `alias`
   - **Polars**: (`name: str_`) -> Expr
@@ -373,6 +367,9 @@ Each summary cell is relative to Polars.
 - `diff`
   - **Polars**: (`n: int | IntoExpr`, `null_behavior: NullBehavior`) -> Expr
   - **pql**: () -> Self
+- `dot`
+  - **Polars**: (`other: Expr | str_`) -> Expr
+  - **pql**: (`other: IntoExpr`) -> Self
 - `fill_nan`
   - **Polars**: (`value: int | float | Expr | None`) -> Expr
   - **pql**: (`value: float | IntoExprColumn | None`) -> Self

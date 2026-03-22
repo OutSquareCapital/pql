@@ -374,6 +374,10 @@ class Expr(sql.CoreHandler[sql.SqlExpr]):
         """Compute the product."""
         return self._as_scalar(self.inner().product())
 
+    def dot(self, other: IntoExpr) -> Self:
+        """Compute the dot product with another expression."""
+        return self._as_scalar(self.inner().dot(other))
+
     def max_by(self, by: IntoExpr) -> Self:
         """Return the value corresponding to the maximum of another expression."""
         return self._as_scalar(self.inner().max_by(by))
@@ -508,6 +512,12 @@ class Expr(sql.CoreHandler[sql.SqlExpr]):
     def skew(self, *, bias: bool = True) -> Self:
         return self._as_scalar(self.inner().skew(bias=bias))
 
+    def entropy(
+        self, base: float = 2.718281828459045, *, normalize: bool = True
+    ) -> Self:
+        """Compute the entropy."""
+        return self._as_scalar(self.inner().entropy(base=base, normalize=normalize))
+
     def quantile(self, quantile: float, *, interpolation: bool = True) -> Self:
         return self._as_scalar(
             self.inner().quantile(quantile, interpolation=interpolation)
@@ -627,6 +637,10 @@ class Expr(sql.CoreHandler[sql.SqlExpr]):
     def round(self, decimals: int = 0, *, mode: RoundMode = "half_to_even") -> Self:
         """Round to given number of decimal places."""
         return self._new(self.inner().round(decimals, mode=mode))
+
+    def truncate(self, decimals: int = 0) -> Self:
+        """Truncate numeric value to given number of decimal places."""
+        return self._new(self.inner().trunc(decimals))
 
     def sqrt(self) -> Self:
         """Compute the square root."""

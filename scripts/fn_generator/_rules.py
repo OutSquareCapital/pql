@@ -32,6 +32,7 @@ RENAME_RULES = pc.Dict.from_ref(
         "bool_and": "all",
         "bool_or": "any",
         "round": "round_from_zero",  # allow to expose round as parametrizable method
+        "entropy": "entropy_shannon",  # allow to use entropy for polars aligned version
     }
 )
 """Explicit SQL function name -> generated Python method name mapping."""

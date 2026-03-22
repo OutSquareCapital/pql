@@ -599,3 +599,27 @@ def test_arg_sort(descending: bool, nulls_last: bool) -> None:
         pql.col("x").arg_sort(descending=descending, nulls_last=nulls_last),
         pl.col("x").arg_sort(descending=descending, nulls_last=nulls_last),
     )
+
+
+@pytest.mark.parametrize("decimals", [0, 1, 2])
+def test_truncate(decimals: int) -> None:
+    assert_eq_pl(
+        pql.col("float_vals").truncate(decimals),
+        pl.col("float_vals").truncate(decimals),
+    )
+
+
+def test_dot() -> None:
+    assert_eq_pl(
+        pql.col("x").dot("age"),
+        pl.col("x").dot("age"),
+    )
+
+
+@pytest.mark.parametrize("base", [1, 2, 3])
+@pytest.mark.parametrize("normalize", [True, False])
+def test_entropy(base: int, *, normalize: bool) -> None:
+    assert_eq_pl(
+        pql.col("x").abs().cast(pql.Float64()).entropy(base=base, normalize=normalize),
+        pl.col("x").abs().cast(pl.Float64).entropy(base=base, normalize=normalize),
+    )

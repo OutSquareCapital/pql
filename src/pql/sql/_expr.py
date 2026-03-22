@@ -373,6 +373,25 @@ class SqlExpr(Expression, Fns):
 
         return self._new(when(self.is_nan()).then(value).otherwise(self).inner())
 
+    def dot(self, other: IntoExpr) -> Self:
+        """Compute the dot product with another expression."""
+        return self._new(self.mul(other).sum().inner())
+
+    def entropy(
+        self, base: float = 2.718281828459045, *, normalize: bool = True
+    ) -> Self:
+        """Compute the entropy."""
+        from ._funcs import lit
+
+        match normalize:
+            case True:
+                expr = (
+                    self.sum().ln().sub(self.mul(self.ln()).sum().truediv(self.sum()))
+                )
+            case False:
+                expr = self.mul(self.ln().neg()).sum()
+        return expr.truediv(lit(base).ln())
+
     def log(self, x: IntoExprColumn | float | None = None) -> Self:
         """Computes the logarithm of x to base b.
 
