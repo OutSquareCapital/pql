@@ -8,7 +8,6 @@ from typing import NamedTuple, Self
 import pyochain as pc
 
 from .._utils import Builtins, CollectionsABC, DuckDB, Pql, Pyochain, Typing
-from ._rules import dunder_operator_alias
 from ._target import ReturnMeta, Targets, TargetSpec
 
 ARG = "arg"
@@ -182,44 +181,6 @@ class MethodInfo:
                 return ast_signature.render(
                     self.doc, self._build_return_expr(meta.wrapper)
                 )
-
-    def generate_methods(self) -> pc.Iter[str]:
-        generated = self.generate_method()
-        return self._build_operator_alias().map_or(
-            pc.Iter.once(generated), lambda alias: pc.Iter((generated, alias))
-        )
-
-    def _build_operator_alias(self) -> pc.Option[str]:
-        meta = self._meta()
-        if self.target != Targets.EXPRESSION or self.is_overload or self.is_property:
-            return pc.NONE
-        return dunder_operator_alias(self.name).map(
-            lambda alias_name: AstSignature(
-                alias_name,
-                self._build_ast_signature(meta.return_annotation).args,
-                _to_expr(meta.return_annotation),
-            ).render("", self._operator_alias_call())
-        )
-
-    def _operator_alias_call(self) -> ast.expr:
-        pos_args = (
-            self.params.iter()
-            .filter(lambda p: not p.is_kw_only)
-            .map(lambda p: Node.ref(p.name).node)
-        )
-        keywords = (
-            self.params.iter()
-            .filter(lambda p: p.is_kw_only)
-            .map(lambda p: ast.keyword(arg=p.name, value=Node.ref(p.name).node))
-            .collect(list)
-        )
-        call_args = self.vararg.map_or(
-            pos_args.collect(list),
-            lambda vararg: pos_args.insert(Node.ref(vararg.name).starred()).collect(
-                list
-            ),
-        )
-        return Node.ref(Builtins.SELF).attr(self.name).call_kw(call_args, keywords).node
 
     def _build_ast_signature(self, return_annotation: str) -> AstSignature:
         def _param_arg(p: ParamInfo) -> ast.arg:

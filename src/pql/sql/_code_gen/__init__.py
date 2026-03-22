@@ -1,5 +1,5 @@
 from . import meta as meta
-from ._core import Expression, Relation
+from ._core import Relation
 from ._fns import (
     ArrayFns,
     DateTimeFns,
@@ -18,7 +18,6 @@ __all__ = [
     "ArrayFns",
     "DateTimeFns",
     "EnumFns",
-    "Expression",
     "Fns",
     "GeoSpatialFns",
     "JsonFns",

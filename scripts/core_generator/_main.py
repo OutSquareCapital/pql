@@ -55,7 +55,7 @@ def _generate_target(stub_path: Path, target: TargetSpec) -> str:
             stub_path.with_name(target.stub_file_name), target.stub_class, target
         )
         .into(_resolve_overloads)
-        .flat_map(lambda m: m.generate_methods())
+        .map(lambda m: m.generate_method())
         .into(
             lambda methods: (
                 f"{class_def(target.wrapper_class, target.wrapper_base, target.stub_class)}{methods.join(chr(10) * 2)}"

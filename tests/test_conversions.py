@@ -135,23 +135,10 @@ def test_from_numpy_4d(orient: pql.sql.typing.Orientation) -> None:
     )
 
 
-def test_from_expr() -> None:
-    expr = duckdb.ConstantExpression(42)
-    rel = duckdb.values(expr)
-    assert_eq(pql.LazyFrame(expr).collect(), rel.pl())
-
-
 def test_from_pql_expr() -> None:
     expr = duckdb.ConstantExpression(42)
     rel = duckdb.values(expr)
     assert_eq(pql.LazyFrame(pql.lit(42).inner()).collect(), rel.pl())
-
-
-def test_from_tup_of_exprs() -> None:
-    exprs = pc.Iter(range(10)).map(duckdb.ConstantExpression).collect()
-    rel = duckdb.values(exprs.into(tuple))
-    assert_eq(pql.LazyFrame(exprs).collect(), rel.pl())
-    assert_eq(pql.from_records(exprs).collect(), rel.pl())
 
 
 def test_from_seq_of_dicts() -> None:

@@ -7,8 +7,9 @@ from typing import TYPE_CHECKING, Any, cast
 import duckdb
 import narwhals as nw
 import pyochain as pc
+from sqlglot import exp
 
-from ._funcs import lit, unnest
+from ._funcs import unnest
 from .typing import FrameLike, NPArrayLike
 
 if TYPE_CHECKING:
@@ -31,11 +32,11 @@ def _named(j: object) -> str:
 
 
 def _to_expr(k: str, v: PythonLiteral) -> duckdb.Expression:
-    return lit(v).alias(k).inner()
+    return duckdb.ConstantExpression(v).alias(k)
 
 
 def _unnest(k: str) -> duckdb.Expression:
-    return unnest(k).alias(k).inner()
+    return unnest(k).alias(k).into_duckdb()
 
 
 def into_relation(  # noqa: PLR0911
@@ -49,10 +50,10 @@ def into_relation(  # noqa: PLR0911
             return data
         case Frame():
             return data.inner()
-        case duckdb.Expression():
-            return duckdb.values(data)
+        case exp.Expr():
+            return duckdb.values(DuckHandler(data).into_duckdb())
         case DuckHandler():
-            return duckdb.values(data.inner())
+            return duckdb.values(data.into_duckdb())
         case Mapping():
             return from_dict(data)
         case NPArrayLike():
@@ -93,6 +94,8 @@ def from_dicts(data: Sequence[Mapping[str, PythonLiteral]]) -> duckdb.DuckDBPyRe
 
 
 def from_records(data: SeqIntoVals) -> duckdb.DuckDBPyRelation:
+    from ._core import DuckHandler
+
     match data[0]:
         case Mapping():
             vals = cast(Sequence[Mapping[str, Any]], data)  # pyright: ignore[reportExplicitAny]
@@ -105,9 +108,12 @@ def from_records(data: SeqIntoVals) -> duckdb.DuckDBPyRelation:
                 .map_star(lambda k, v: (_named(k), v))
                 .into(from_dict)
             )
-        case duckdb.Expression():
-            vals = cast(Sequence[duckdb.Expression], data)
-            return duckdb.values(tuple(vals))
+        case exp.Expr():
+            vals = cast(Sequence[exp.Expr], data)
+
+            return duckdb.values(
+                pc.Iter(vals).map(lambda e: DuckHandler(e).into_duckdb()).collect(tuple)
+            )
         case _:
             return duckdb.values(_to_expr(COL0, tuple(data))).select(_unnest(COL0))
 

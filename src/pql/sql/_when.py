@@ -4,9 +4,9 @@ from dataclasses import dataclass
 from functools import partial
 from typing import TYPE_CHECKING
 
-import duckdb
+from sqlglot import exp
 
-from ._core import into_duckdb
+from ._core import into_glot
 from ._expr import SqlExpr
 from ._funcs import reduce
 from .utils import try_chain
@@ -28,7 +28,9 @@ class When:
 
     def then(self, value: IntoExpr) -> Then:
         """Attach the value for the initial WHEN condition."""
-        return Then(duckdb.CaseExpression(into_duckdb(self._when), into_duckdb(value)))
+        return Then(
+            exp.Case(ifs=[exp.If(this=into_glot(self._when), true=into_glot(value))])
+        )
 
 
 @dataclass(slots=True)
@@ -39,7 +41,9 @@ class Then(SqlExpr):
         return ChainedWhen(self, _red_fn(try_chain(predicates, more_predicates)))
 
     def otherwise(self, statement: IntoExpr) -> SqlExpr:
-        return SqlExpr(self.inner().otherwise(into_duckdb(statement)))
+        case = self.inner().copy()
+        case.set("default", into_glot(statement))
+        return SqlExpr(case)
 
 
 @dataclass(slots=True)
@@ -48,11 +52,11 @@ class ChainedWhen:
     _predicate: IntoExpr
 
     def then(self, statement: IntoExpr) -> ChainedThen:
-        return ChainedThen(
-            self._chained_when.inner().when(
-                into_duckdb(self._predicate), into_duckdb(statement)
-            )
+        case = self._chained_when.inner().copy()
+        case.append(
+            "ifs", exp.If(this=into_glot(self._predicate), true=into_glot(statement))
         )
+        return ChainedThen(case)
 
 
 @dataclass(slots=True)
@@ -63,4 +67,6 @@ class ChainedThen(SqlExpr):
         return ChainedWhen(self, _red_fn(try_chain(predicates, more_predicates)))
 
     def otherwise(self, statement: IntoExpr) -> SqlExpr:
-        return SqlExpr(self.inner().otherwise(into_duckdb(statement)))
+        case = self.inner().copy()
+        case.set("default", into_glot(statement))
+        return SqlExpr(case)

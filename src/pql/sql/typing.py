@@ -5,9 +5,9 @@ from __future__ import annotations
 from collections.abc import Iterable, Iterator, Mapping, Sequence
 from typing import TYPE_CHECKING, Any, Literal, Protocol, Self, runtime_checkable
 
-import duckdb
 from narwhals._native import NativeFrame
 from narwhals.typing import IntoFrame
+from sqlglot import exp
 
 if TYPE_CHECKING:
     from _duckdb._typing import (  # pyright: ignore[reportMissingModuleSource]
@@ -83,9 +83,9 @@ type SeqLiteral[T: NonNestedLiteral] = list[T] | tuple[T, ...]
 type PythonLiteral = DuckPyLit
 type NestedLiteral = DuckNestedLit
 """Python literal types (can convert into a `lit` expression)."""
-type ExprIntoVals = DuckHandler | duckdb.Expression
+type ExprIntoVals = DuckHandler | exp.Expr
 type SeqIntoVals = (
-    Sequence[duckdb.Expression]
+    Sequence[exp.Expr]
     | Sequence[Mapping[str, PythonLiteral]]
     | Sequence[PythonLiteral]
     | AnyArray
@@ -97,7 +97,7 @@ type IntoRel = IntoFrame | IntoValues
 """"Types that can be converted into a relation (either a frame or values)."""
 type IntoExprColumn = str | ExprLike
 """Inputs that can convert into a `col` expression."""
-type IntoExpr = PythonLiteral | IntoExprColumn | duckdb.Expression
+type IntoExpr = PythonLiteral | IntoExprColumn | exp.Expr
 """Inputs that can convert into an expression (either a `lit` or a `col`)."""
 type IntoDuckExpr = DuckIntoExpr
 type IntoDuckExprCol = DuckIntoExprColumn

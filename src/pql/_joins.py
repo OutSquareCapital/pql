@@ -14,8 +14,8 @@ if TYPE_CHECKING:
     from ._typing import JoinKeysRes, JoinStrategy
 type OptSeq = pc.Option[pc.Seq[str]]
 
-_RHS = partial(sql.col, "rhs")
-_LHS = partial(sql.col, "lhs")
+_RHS = partial(sql.col, table="rhs")
+_LHS = partial(sql.col, table="lhs")
 
 
 @dataclass(slots=True)

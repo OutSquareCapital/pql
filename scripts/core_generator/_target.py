@@ -5,7 +5,7 @@ from typing import NamedTuple, cast, final
 import duckdb
 import pyochain as pc
 
-from .._utils import Builtins, DuckDB, Dunders, Pql, Pyochain, Typing
+from .._utils import Builtins, DuckDB, Pql, Pyochain, Typing
 from ._rules import PYTYPING_REWRITES
 
 
@@ -115,18 +115,6 @@ class Targets:
         wrapped_return_type=DuckDB.RELATION,
     )
 
-    EXPRESSION = TargetSpec(
-        stub_file_name="_expression.pyi",
-        stub_class=DuckDB.EXPRESSION,
-        wrapper_class=DuckDB.EXPRESSION,
-        wrapper_base=Pql.DUCK_HANDLER,
-        wrapped_return_type=DuckDB.EXPRESSION,
-        skip_methods=pc.Set({Dunders.INIT, "when", "otherwise"}),
-        method_renames=pc.Dict.from_kwargs(
-            isnull="is_null", isin="is_in", isnotin="is_not_in", isnotnull="is_not_null"
-        ),
-    )
-
     @classmethod
     def into_iter(cls) -> pc.Iter[TargetSpec]:
-        return pc.Iter((cls.RELATION, cls.EXPRESSION))
+        return pc.Iter((cls.RELATION,))

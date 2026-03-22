@@ -2,17 +2,22 @@ from __future__ import annotations
 
 from collections.abc import Callable, Iterable
 from functools import cache
-from typing import TYPE_CHECKING, ClassVar, Self
+from typing import TYPE_CHECKING, ClassVar, Self, override
 
 import pyochain as pc
+from sqlglot import exp
 
 from pql.sql.typing import IntoExprColumn
 
-from ._code_gen import Expression, Fns
-from ._core import func
+from ._code_gen import Fns
+from ._core import func, into_glot
 from ._window import FrameBound, OverBuilder, get_order, get_partition, make_spec
 
 if TYPE_CHECKING:
+    from _duckdb._typing import (  # pyright: ignore[reportMissingModuleSource]
+        IntoPyType,
+    )
+
     from . import namespaces as nm
     from .typing import (
         ClosedInterval,
@@ -48,10 +53,249 @@ def _fill_strategy() -> pc.Dict[FillNullStrategy, Callable[[SqlExpr], SqlExpr]]:
 """Computation strategies for `fill_null` when ."""
 
 
-class SqlExpr(Expression, Fns):
-    """A wrapper around duckdb.Expression that provides operator overloading and SQL function methods."""
+class SqlExpr(Fns):  # noqa: PLW1641
+    """A wrapper around sqlglot.exp.Expr that provides operator overloading and SQL function methods."""
 
     __slots__: ClassVar[Iterable[str]] = ()
+
+    def _binop[T: exp.Binary](self, cls: type[T], other: IntoExpr) -> Self:
+        return self._new(cls(this=self.inner(), expression=into_glot(other)))
+
+    def _rbinop[T: exp.Binary](self, cls: type[T], other: IntoExpr) -> Self:
+        return self._new(cls(this=into_glot(other), expression=self.inner()))
+
+    def __add__(self, other: IntoExpr) -> Self:
+        return self._binop(exp.Add, other)
+
+    def add(self, other: IntoExpr) -> Self:
+        return self.__add__(other)
+
+    def __and__(self, other: IntoExpr) -> Self:
+        return self._binop(exp.And, other)
+
+    def and_(self, other: IntoExpr) -> Self:
+        return self.__and__(other)
+
+    def __truediv__(self, other: IntoExpr) -> Self:
+        return self._binop(exp.Div, other)
+
+    def truediv(self, other: IntoExpr) -> Self:
+        return self.__truediv__(other)
+
+    def __div__(self, other: IntoExpr) -> Self:
+        return self._binop(exp.Div, other)
+
+    def div(self, other: IntoExpr) -> Self:
+        return self.__div__(other)
+
+    @override
+    def __eq__(self, other: IntoExpr) -> Self:  # pyright: ignore[reportIncompatibleMethodOverride]
+        return self._binop(exp.EQ, other)
+
+    def eq(self, other: IntoExpr) -> Self:
+        return self.__eq__(other)
+
+    def __floordiv__(self, other: IntoExpr) -> Self:
+        return self._binop(exp.IntDiv, other)
+
+    def floordiv(self, other: IntoExpr) -> Self:
+        return self.__floordiv__(other)
+
+    def __ge__(self, other: IntoExpr) -> Self:
+        return self._binop(exp.GTE, other)
+
+    def ge(self, other: IntoExpr) -> Self:
+        return self.__ge__(other)
+
+    def __gt__(self, other: IntoExpr) -> Self:
+        return self._binop(exp.GT, other)
+
+    def gt(self, other: IntoExpr) -> Self:
+        return self.__gt__(other)
+
+    def __invert__(self) -> Self:
+        return self._new(exp.Not(this=self.inner()))
+
+    def not_(self) -> Self:
+        return self.__invert__()
+
+    def __le__(self, other: IntoExpr) -> Self:
+        return self._binop(exp.LTE, other)
+
+    def le(self, other: IntoExpr) -> Self:
+        return self.__le__(other)
+
+    def __lt__(self, other: IntoExpr) -> Self:
+        return self._binop(exp.LT, other)
+
+    def lt(self, other: IntoExpr) -> Self:
+        return self.__lt__(other)
+
+    def __mod__(self, other: IntoExpr) -> Self:
+        return self._binop(exp.Mod, other)
+
+    def mod(self, other: IntoExpr) -> Self:
+        return self.__mod__(other)
+
+    def __mul__(self, other: IntoExpr) -> Self:
+        return self._binop(exp.Mul, other)
+
+    def mul(self, other: IntoExpr) -> Self:
+        return self.__mul__(other)
+
+    @override
+    def __ne__(self, other: IntoExpr) -> Self:  # pyright: ignore[reportIncompatibleMethodOverride]
+        return self._binop(exp.NEQ, other)
+
+    def ne(self, other: IntoExpr) -> Self:
+        return self.__ne__(other)
+
+    def __neg__(self) -> Self:
+        return self._new(exp.Neg(this=self.inner()))
+
+    def neg(self) -> Self:
+        return self.__neg__()
+
+    def __or__(self, other: IntoExpr) -> Self:
+        return self._binop(exp.Or, other)
+
+    def or_(self, other: IntoExpr) -> Self:
+        return self.__or__(other)
+
+    def __pow__(self, other: IntoExpr) -> Self:
+        return self._binop(exp.Pow, other)
+
+    def pow(self, other: IntoExpr) -> Self:
+        return self.__pow__(other)
+
+    def __radd__(self, other: IntoExpr) -> Self:
+        return self._rbinop(exp.Add, other)
+
+    def radd(self, other: IntoExpr) -> Self:
+        return self.__radd__(other)
+
+    def __rand__(self, other: IntoExpr) -> Self:
+        return self._rbinop(exp.And, other)
+
+    def rand(self, other: IntoExpr) -> Self:
+        return self.__rand__(other)
+
+    def __rdiv__(self, other: IntoExpr) -> Self:
+        return self._rbinop(exp.Div, other)
+
+    def rdiv(self, other: IntoExpr) -> Self:
+        return self.__rdiv__(other)
+
+    def __rfloordiv__(self, other: IntoExpr) -> Self:
+        return self._rbinop(exp.IntDiv, other)
+
+    def rfloordiv(self, other: IntoExpr) -> Self:
+        return self.__rfloordiv__(other)
+
+    def __rmod__(self, other: IntoExpr) -> Self:
+        return self._rbinop(exp.Mod, other)
+
+    def rmod(self, other: IntoExpr) -> Self:
+        return self.__rmod__(other)
+
+    def __rmul__(self, other: IntoExpr) -> Self:
+        return self._rbinop(exp.Mul, other)
+
+    def rmul(self, other: IntoExpr) -> Self:
+        return self.__rmul__(other)
+
+    def __ror__(self, other: IntoExpr) -> Self:
+        return self._rbinop(exp.Or, other)
+
+    def ror(self, other: IntoExpr) -> Self:
+        return self.__ror__(other)
+
+    def __rpow__(self, other: IntoExpr) -> Self:
+        return self._rbinop(exp.Pow, other)
+
+    def rpow(self, other: IntoExpr) -> Self:
+        return self.__rpow__(other)
+
+    def __rsub__(self, other: IntoExpr) -> Self:
+        return self._rbinop(exp.Sub, other)
+
+    def rsub(self, other: IntoExpr) -> Self:
+        return self.__rsub__(other)
+
+    def __rtruediv__(self, other: IntoExpr) -> Self:
+        return self._rbinop(exp.Div, other)
+
+    def rtruediv(self, other: IntoExpr) -> Self:
+        return self.__rtruediv__(other)
+
+    def __sub__(self, other: IntoExpr) -> Self:
+        return self._binop(exp.Sub, other)
+
+    def sub(self, other: IntoExpr) -> Self:
+        return self.__sub__(other)
+
+    def alias(self, name: str) -> Self:
+        return self._new(exp.Alias(this=self.inner(), alias=exp.to_identifier(name)))
+
+    def asc(self) -> Self:
+        return self._new(exp.Ordered(this=self.inner(), desc=False))
+
+    def between(self, lower: IntoExpr, upper: IntoExpr) -> Self:
+        return self._new(
+            exp.Between(this=self.inner(), low=into_glot(lower), high=into_glot(upper))
+        )
+
+    def cast(self, dtype: IntoPyType) -> Self:
+        return self._new(
+            exp.Cast(
+                this=self.inner(),
+                to=exp.DataType.build(str(dtype), dialect="duckdb"),  # pyright: ignore[reportUnknownMemberType]
+            )
+        )
+
+    def collate(self, collation: str) -> Self:
+        return self._new(
+            exp.Collate(this=self.inner(), expression=exp.to_identifier(collation))
+        )
+
+    def desc(self) -> Self:
+        return self._new(exp.Ordered(this=self.inner(), desc=True))
+
+    def get_name(self) -> str:
+        return self.inner().output_name or str(self.inner())
+
+    def is_in(self, *args: IntoExpr) -> Self:
+        return self._new(
+            exp.In(
+                this=self.inner(),
+                expressions=pc.Iter(args).map(into_glot).collect(),
+            )
+        )
+
+    def is_not_in(self, *args: IntoExpr) -> Self:
+        return self._new(
+            exp.Not(
+                this=exp.In(
+                    this=self.inner(),
+                    expressions=pc.Iter(args).map(into_glot).collect(),
+                )
+            )
+        )
+
+    def is_not_null(self) -> Self:
+        return self._new(exp.Not(this=exp.Is(this=self.inner(), expression=exp.Null())))
+
+    def is_null(self) -> Self:
+        return self._new(exp.Is(this=self.inner(), expression=exp.Null()))
+
+    def nulls_first(self) -> Self:
+        return self._new(exp.Ordered(this=self.inner(), nulls_first=True))
+
+    def nulls_last(self) -> Self:
+        return self._new(exp.Ordered(this=self.inner(), nulls_first=False))
+
+    def show(self) -> None:
+        print(self.inner().sql(dialect="duckdb"))
 
     def to_sql(self) -> str:
         """Serialize expression to a SQL fragment, including AS alias when needed."""
@@ -468,7 +712,7 @@ class SqlExpr(Expression, Fns):
             exclude=exclude,
         )
         return self.__class__(
-            OverBuilder.from_expr(self.inner())
+            OverBuilder(self.inner())
             .handle_nulls(ignore_nulls=ignore_nulls)
             .handle_distinct(distinct=distinct)
             .handle_fn_order_by(
@@ -519,7 +763,7 @@ class SqlExpr(Expression, Fns):
             Self
         """
         return self._new(
-            OverBuilder.from_expr(func("cume_dist")).build_fn(
+            OverBuilder(func("cume_dist")).build_fn(
                 fn_order_by=pc.Option(order_by),
                 ignore_nulls=ignore_nulls,
                 fn_descending=descending,
@@ -543,7 +787,7 @@ class SqlExpr(Expression, Fns):
             Self
         """
         return self._new(
-            OverBuilder.from_expr(func("percent_rank")).build_fn(
+            OverBuilder(func("percent_rank")).build_fn(
                 fn_order_by=pc.Option(order_by),
                 ignore_nulls=ignore_nulls,
                 fn_descending=descending,
@@ -567,7 +811,7 @@ class SqlExpr(Expression, Fns):
             Self
         """
         return self._new(
-            OverBuilder.from_expr(func("rank")).build_fn(
+            OverBuilder(func("rank")).build_fn(
                 fn_order_by=pc.Option(order_by),
                 ignore_nulls=ignore_nulls,
                 fn_descending=descending,
@@ -591,7 +835,7 @@ class SqlExpr(Expression, Fns):
             Self
         """
         return self._new(
-            OverBuilder.from_expr(func("row_number")).build_fn(
+            OverBuilder(func("row_number")).build_fn(
                 fn_order_by=pc.Option(order_by),
                 ignore_nulls=ignore_nulls,
                 fn_descending=descending,

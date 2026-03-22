@@ -6,10 +6,10 @@ from enum import auto
 from functools import partial
 from typing import TYPE_CHECKING, Literal, NamedTuple, Self, TypedDict, Unpack
 
-import duckdb
 import pyochain as pc
-from sqlglot import exp, parse_one  # pyright: ignore[reportUnknownVariableType]
+from sqlglot import exp
 
+from ._core import into_glot
 from .utils import TryIter, UpperStrEnum, try_iter
 
 if TYPE_CHECKING:
@@ -17,8 +17,6 @@ if TYPE_CHECKING:
 
 
 type FrameBound = int | Bounds | str
-
-parse_duckdb = partial(parse_one, dialect="duckdb")
 
 
 class NullsClause(UpperStrEnum):
@@ -81,9 +79,7 @@ def get_order(
 def get_partition(
     partition_by: pc.Option[TryIter[IntoExprColumn]],
 ) -> pc.Option[pc.Seq[exp.Expr]]:
-    return partition_by.map(try_iter).map(
-        lambda cols: cols.map(lambda c: parse_duckdb(str(c))).collect()
-    )
+    return partition_by.map(try_iter).map(lambda cols: cols.map(into_glot).collect())
 
 
 def _ordered(
@@ -104,7 +100,7 @@ def _ordered(
         )
         .map_star(
             lambda item, desc, nl: exp.Ordered(
-                this=parse_duckdb(str(item)), desc=desc, nulls_first=not nl
+                this=into_glot(item), desc=desc, nulls_first=not nl
             )
         )
         .collect()
@@ -114,10 +110,6 @@ def _ordered(
 @dataclass(slots=True)
 class OverBuilder:
     expr: exp.Expr
-
-    @classmethod
-    def from_expr(cls, expr: duckdb.Expression) -> Self:
-        return cls(parse_duckdb(expr.get_name()))
 
     def handle_nulls(self, *, ignore_nulls: bool) -> Self:
         match ignore_nulls:
@@ -167,10 +159,7 @@ class OverBuilder:
         return (
             filter_cond.map(
                 lambda c: exp.Filter(
-                    this=self.expr,
-                    expression=exp.Where(
-                        this=parse_duckdb(str(c)),
-                    ),
+                    this=self.expr, expression=exp.Where(this=into_glot(c))
                 )
             )
             .map(self.__class__)
@@ -184,12 +173,12 @@ class OverBuilder:
             case _:
                 return self.__class__(_inject_into_existing(self.expr, kwargs))
 
-    def build(self) -> duckdb.Expression:
-        return duckdb.SQLExpression(self.expr.sql(dialect="duckdb"))
+    def build(self) -> exp.Expr:
+        return self.expr
 
     def build_fn(
         self, *, ignore_nulls: bool = False, **kwargs: Unpack[FnArgs]
-    ) -> duckdb.Expression:
+    ) -> exp.Expr:
         return (
             self.handle_fn_order_by(**kwargs)
             .handle_nulls(ignore_nulls=ignore_nulls)
@@ -197,12 +186,10 @@ class OverBuilder:
         )
 
 
-def rolling_agg(
-    expr: duckdb.Expression, order_by: str, spec: BoundsValues
-) -> duckdb.Expression:
+def rolling_agg(expr: exp.Expr, order_by: str, spec: BoundsValues) -> exp.Expr:
     """Build a window expression with a prebuilt spec. Used by rolling aggregations."""
     return (
-        OverBuilder.from_expr(expr)
+        OverBuilder(expr)
         .handle_clauses(
             partition_by=pc.NONE,
             order=get_order(pc.Some(order_by), descending=False, nulls_last=False),

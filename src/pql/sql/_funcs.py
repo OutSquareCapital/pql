@@ -1,11 +1,10 @@
 from collections.abc import Callable, Iterable
-from functools import partial
 from typing import final
 
-import duckdb
 import pyochain as pc
+from sqlglot import exp
 
-from ._core import DuckHandler, func, into_duckdb
+from ._core import DuckHandler, func, into_glot
 from ._expr import SqlExpr
 from .typing import IntoExpr, IntoExprColumn, PythonLiteral
 from .utils import TryIter, try_chain, try_iter
@@ -66,11 +65,11 @@ def unnest(
 class Col:
     __slots__ = ()
 
-    def __call__(self, *names: str) -> SqlExpr:
-        return SqlExpr(duckdb.ColumnExpression(*names))
+    def __call__(self, name: str, table: str | None = None) -> SqlExpr:
+        return SqlExpr(exp.column(name, table=table))
 
-    def __getattr__(self, name: str) -> SqlExpr:
-        return self(name)
+    def __getattr__(self, name: str, table: str | None = None) -> SqlExpr:
+        return self(name, table=table)
 
 
 col = Col()
@@ -79,7 +78,7 @@ col = Col()
 ELEM_NAME = "element"
 
 ELEMENT = col(ELEM_NAME)
-LAMBDA_EXPR = partial(duckdb.LambdaExpression, ELEM_NAME)
+_ELEM_ID = exp.to_identifier(ELEM_NAME)
 
 
 def element() -> SqlExpr:
@@ -87,28 +86,27 @@ def element() -> SqlExpr:
 
 
 def fn_once(rhs: IntoExpr) -> SqlExpr:
-    return SqlExpr(LAMBDA_EXPR(into_duckdb(rhs)))
+    return SqlExpr(exp.Lambda(this=into_glot(rhs), expressions=[_ELEM_ID]))
 
 
 def all(exclude: TryIter[IntoExprColumn] = None) -> SqlExpr:
     return (
         pc.Option(exclude)
-        .map(lambda x: try_iter(x).map(into_duckdb))
-        .map(lambda exc: SqlExpr(duckdb.StarExpression(exclude=exc)))
-        .unwrap_or_else(lambda: SqlExpr(duckdb.StarExpression()))
+        .map(lambda x: try_iter(x).map(into_glot).collect())
+        .map(lambda exc: SqlExpr(exp.Star(except_=exc)))
+        .unwrap_or_else(lambda: SqlExpr(exp.Star()))
     )
 
 
 def lit(value: PythonLiteral) -> SqlExpr:
     """Create a literal expression."""
-    return SqlExpr(duckdb.ConstantExpression(value))
+    return SqlExpr(exp.convert(value))
 
 
 def coalesce(exprs: TryIter[IntoExpr], *more_exprs: IntoExpr) -> SqlExpr:
     """Create a COALESCE expression."""
-    return SqlExpr(
-        duckdb.CoalesceOperator(*try_chain(exprs, more_exprs).map(into_duckdb))
-    )
+    exprs = try_chain(exprs, more_exprs).map(into_glot)
+    return SqlExpr(exp.Coalesce(this=exprs.first(), expressions=exprs.collect()))
 
 
 _HORIZONTAL_ERR = "At least one expression is required."
@@ -183,7 +181,7 @@ def into_expr(value: IntoExpr, *, as_col: bool = False) -> SqlExpr:
         as_col (bool): Whether to treat `str` values as column names (default: `False`).
 
     Returns:
-        SqlExpr: The resulting DuckDB wrapper Expression.
+        SqlExpr
     """
     from .._expr import Expr
 
@@ -194,9 +192,9 @@ def into_expr(value: IntoExpr, *, as_col: bool = False) -> SqlExpr:
             return SqlExpr(value.inner())
         case Expr():
             return value.inner()
-        case duckdb.Expression():
-            return SqlExpr(value)
         case str() if as_col:
             return col(value)
+        case exp.Expr():
+            return SqlExpr(value)
         case _:
             return lit(value)

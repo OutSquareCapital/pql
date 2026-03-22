@@ -271,7 +271,7 @@ class SqlExprListNameSpace(ListFns[SqlExpr]):
         """Run an expression against each array element."""
         from ._funcs import fn_once
 
-        return self.transform(fn_once(expr.inner()))
+        return self.transform(fn_once(expr))
 
     def std(self, ddof: int = 1) -> SqlExpr:
         """Compute the standard deviation of the lists in the column."""
@@ -341,7 +341,7 @@ class SqlExprArrayNameSpace(ArrayFns[SqlExpr]):
         """Run an expression against each array element."""
         from ._funcs import fn_once
 
-        return self.transform(fn_once(expr.inner()))
+        return self.transform(fn_once(expr))
 
     def filter(self, lambda_arg: IntoExprColumn) -> SqlExpr:
         """Constructs a list from those elements of the input `list` for which the `lambda` function returns `true`.

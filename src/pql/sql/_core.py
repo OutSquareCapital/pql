@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING, Concatenate, Self, overload, override
 
 import duckdb
 import pyochain as pc
+from sqlglot import exp
 
 if TYPE_CHECKING:
     from .typing import (
@@ -67,8 +68,12 @@ class CoreHandler[T]:
 
 
 @dataclass(slots=True, repr=False)
-class DuckHandler(CoreHandler[duckdb.Expression]):
+class DuckHandler(CoreHandler[exp.Expr]):
     """A wrapper for DuckDB expressions."""
+
+    def into_duckdb(self) -> duckdb.Expression:
+        """Convert the inner expression to a DuckDB expression."""
+        return duckdb.SQLExpression(self.inner().sql(dialect="duckdb"))
 
 
 def into_duckdb_mapping(value: Mapping[str, IntoExpr]) -> pc.Dict[str, IntoDuckExpr]:
@@ -89,9 +94,11 @@ def into_duckdb(value: IntoExpr | IntoExprColumn) -> IntoDuckExpr | IntoDuckExpr
 
     match value:
         case DuckHandler():
-            return value.inner()
+            return value.into_duckdb()
         case Expr():
-            return value.inner().inner()
+            return value.inner().into_duckdb()
+        case exp.Expr():
+            return DuckHandler(value).into_duckdb()
         case _:
             return value
 
@@ -102,7 +109,7 @@ class NameSpaceHandler[T: DuckHandler]:
 
     _parent: T
 
-    def _new(self, expr: duckdb.Expression) -> T:
+    def _new(self, expr: exp.Expr) -> T:
         return self._parent.__class__(expr)
 
     def inner(self) -> T:
@@ -110,11 +117,24 @@ class NameSpaceHandler[T: DuckHandler]:
         return self._parent
 
 
-def func(name: str, *args: IntoExpr) -> duckdb.Expression:
+def into_glot(value: IntoExpr) -> exp.Expr:
+    """Convert an IntoExpr value into a sqlglot expression node."""
+    from .._expr import Expr
+
+    match value:
+        case DuckHandler():
+            return value.inner()
+        case Expr():
+            return value.inner().inner()
+        case exp.Expr():
+            return value
+        case str():
+            return exp.column(value)
+        case _:
+            return exp.convert(value)
+
+
+def func(name: str, *args: IntoExpr) -> exp.Expr:
     """Create a SQL function expression."""
-    return (
-        pc.Iter(args)
-        .filter_map(pc.Option)
-        .map(into_duckdb)
-        .into(lambda cleaned: duckdb.FunctionExpression(name, *cleaned))
-    )
+    arguments = pc.Iter(args).filter_map(pc.Option).map(into_glot).collect(list)
+    return exp.Anonymous(this=name, expressions=arguments)

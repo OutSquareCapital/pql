@@ -7,9 +7,9 @@ from enum import IntEnum, StrEnum, auto
 from functools import partial
 from typing import TYPE_CHECKING, NamedTuple, Self, override
 
-import duckdb
 import narwhals as nw
 import pyochain as pc
+from sqlglot import exp
 
 from . import sql
 from ._schema import Schema
@@ -45,9 +45,16 @@ class Marker(StrEnum):
 
     @classmethod
     def replace_col(cls, template: sql.SqlExpr, column_name: str) -> sql.SqlExpr:
-        col_expr = sql.col(column_name).pipe(str)
-        raw_str = template.pipe(str).replace(cls.MULTI, col_expr)
-        return sql.SqlExpr(duckdb.SQLExpression(raw_str))
+        target = exp.column(column_name)
+
+        def _replacer(node: exp.Expr) -> exp.Expr:
+            match node:
+                case exp.Column() if node.name == cls.MULTI:
+                    return target
+                case _:
+                    return node
+
+        return sql.SqlExpr(template.inner().transform(_replacer))  # pyright: ignore[reportUnknownMemberType, reportAny]
 
     @classmethod
     def drop_marker(cls, result: IntoFrameT, cols: Collection[str]) -> IntoFrameT:
@@ -207,7 +214,7 @@ class ExprPlan:
                     return expr.meta.resolve(expr.inner(), schema, alias_override)
                 case _:
                     resolved = sql.into_expr(val, as_col=True)
-                    output_name = alias_override.unwrap_or(resolved.inner().get_name())
+                    output_name = alias_override.unwrap_or(resolved.get_name())
                     return ResolvedExpr(
                         resolved, output_name, kind=ExprKind.ROW
                     ).into_iter()

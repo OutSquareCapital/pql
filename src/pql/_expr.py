@@ -1,5 +1,3 @@
-"""Expression wrapper providing Polars-like API over DuckDB native expressions."""
-
 from __future__ import annotations
 
 from collections.abc import Callable
@@ -37,8 +35,6 @@ _NONE = sql.lit(None)
 
 @dataclass(slots=True, init=False)
 class Expr(sql.CoreHandler[sql.SqlExpr]):
-    """Expression wrapper providing Polars-like API over DuckDB expressions."""
-
     _inner: sql.SqlExpr
     meta: ExprMeta
 
