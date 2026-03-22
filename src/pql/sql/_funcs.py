@@ -25,7 +25,7 @@ def reduce(
 
 def row_number() -> SqlExpr:
     """Create a ROW_NUMBER() expression."""
-    return SqlExpr(duckdb.FunctionExpression("row_number"))
+    return SqlExpr(func("row_number"))
 
 
 def unnest(
@@ -62,9 +62,23 @@ def unnest(
     return SqlExpr(func("unnest", col, depth, rec))
 
 
+@final
+class Col:
+    __slots__ = ()
+
+    def __call__(self, *names: str) -> SqlExpr:
+        return SqlExpr(duckdb.ColumnExpression(*names))
+
+    def __getattr__(self, name: str) -> SqlExpr:
+        return self(name)
+
+
+col = Col()
+
+
 ELEM_NAME = "element"
 
-ELEMENT = SqlExpr(duckdb.ColumnExpression(ELEM_NAME))
+ELEMENT = col(ELEM_NAME)
 LAMBDA_EXPR = partial(duckdb.LambdaExpression, ELEM_NAME)
 
 
@@ -83,20 +97,6 @@ def all(exclude: TryIter[IntoExprColumn] = None) -> SqlExpr:
         .map(lambda exc: SqlExpr(duckdb.StarExpression(exclude=exc)))
         .unwrap_or_else(lambda: SqlExpr(duckdb.StarExpression()))
     )
-
-
-@final
-class Col:
-    __slots__ = ()
-
-    def __call__(self, *names: str) -> SqlExpr:
-        return SqlExpr(duckdb.ColumnExpression(*names))
-
-    def __getattr__(self, name: str) -> SqlExpr:
-        return self(name)
-
-
-col = Col()
 
 
 def lit(value: PythonLiteral) -> SqlExpr:

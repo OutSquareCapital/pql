@@ -1,22 +1,27 @@
+from __future__ import annotations
+
 from collections.abc import Callable, Mapping, Sequence
 from functools import partial
-from typing import Any, cast
+from typing import TYPE_CHECKING, Any, cast
 
 import duckdb
 import narwhals as nw
 import pyochain as pc
-from narwhals.typing import IntoFrame
 
-from .typing import (
-    AnyArray,
-    FrameLike,
-    IntoDict,
-    IntoRel,
-    NPArrayLike,
-    Orientation,
-    PythonLiteral,
-    SeqIntoVals,
-)
+from ._funcs import lit, unnest
+from .typing import FrameLike, NPArrayLike
+
+if TYPE_CHECKING:
+    from narwhals.typing import IntoFrame
+
+    from .typing import (
+        AnyArray,
+        IntoDict,
+        IntoRel,
+        Orientation,
+        PythonLiteral,
+        SeqIntoVals,
+    )
 
 COL0 = "column_0"
 
@@ -26,11 +31,11 @@ def _named(j: object) -> str:
 
 
 def _to_expr(k: str, v: PythonLiteral) -> duckdb.Expression:
-    return duckdb.ConstantExpression(v).alias(k)
+    return lit(v).alias(k).inner()
 
 
 def _unnest(k: str) -> duckdb.Expression:
-    return duckdb.FunctionExpression("unnest", duckdb.ColumnExpression(k)).alias(k)
+    return unnest(k).alias(k).inner()
 
 
 def into_relation(  # noqa: PLR0911

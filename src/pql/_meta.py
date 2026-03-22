@@ -45,7 +45,7 @@ class Marker(StrEnum):
 
     @classmethod
     def replace_col(cls, template: sql.SqlExpr, column_name: str) -> sql.SqlExpr:
-        col_expr = str(duckdb.ColumnExpression(column_name))
+        col_expr = sql.col(column_name).pipe(str)
         raw_str = template.pipe(str).replace(cls.MULTI, col_expr)
         return sql.SqlExpr(duckdb.SQLExpression(raw_str))
 
