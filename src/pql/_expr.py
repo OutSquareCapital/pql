@@ -10,7 +10,6 @@ from typing import TYPE_CHECKING, Self, override
 import pyochain as pc
 
 from . import sql
-from ._computations import fill_nulls
 from ._meta import ExprKind, ExprMeta, Marker
 from .sql.utils import TryIter, try_chain, try_iter
 
@@ -24,8 +23,14 @@ if TYPE_CHECKING:
         ExprStringNameSpace,
         ExprStructNameSpace,
     )
-    from ._typing import FillNullStrategy, RankMethod
-    from .sql.typing import ClosedInterval, IntoExpr, IntoExprColumn, RoundMode
+    from ._typing import RankMethod
+    from .sql.typing import (
+        ClosedInterval,
+        FillNullStrategy,
+        IntoExpr,
+        IntoExprColumn,
+        RoundMode,
+    )
 
 _NONE = sql.lit(None)
 
@@ -747,9 +752,8 @@ class Expr(sql.CoreHandler[sql.SqlExpr]):
     ) -> Self:
         return (
             self.inner()
-            .pipe(fill_nulls, pc.Option(value), pc.Option(strategy), pc.Option(limit))
-            .map(self._new)
-            .unwrap()
+            .fill_nulls(pc.Option(value), pc.Option(strategy), pc.Option(limit))
+            .pipe(self._new)
         )
 
     def hash(self, seed: int = 0) -> Self:

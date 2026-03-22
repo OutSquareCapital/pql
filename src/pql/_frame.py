@@ -30,13 +30,13 @@ if TYPE_CHECKING:
     from ._parser import ParsedQuery
     from ._typing import (
         AsofJoinStrategy,
-        FillNullStrategy,
         GroupByClause,
         JoinStrategy,
         PivotAgg,
         UniqueKeepStrategy,
     )
     from .sql.typing import (
+        FillNullStrategy,
         IntoExpr,
         IntoExprColumn,
         IntoRel,

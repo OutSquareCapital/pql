@@ -427,11 +427,8 @@ def test_fill_null_with_value(sample_df: pl.DataFrame) -> None:
     )
 
 
-@pytest.mark.parametrize(
-    "strategy",
-    ["forward", "backward", "min", "max", "mean", "zero", "one"],
-)
-def test_fill_null_with_strategy(strategy: t.FillNullStrategy) -> None:
+@pytest.mark.parametrize("strategy", pql.sql.typing.FillNullStrategy.__args__)
+def test_fill_null_with_strategy(strategy: pql.sql.typing.FillNullStrategy) -> None:
     df = pl.DataFrame({"a": [1.0, None, None, 4.0, None]})
     assert_lf_eq_pl(
         pql.LazyFrame(df).fill_null(strategy=strategy),
@@ -443,7 +440,9 @@ def test_fill_null_with_strategy(strategy: t.FillNullStrategy) -> None:
     "strategy",
     ["forward", "backward"],
 )
-def test_fill_null_with_strategy_limit(strategy: t.FillNullStrategy) -> None:
+def test_fill_null_with_strategy_limit(
+    strategy: pql.sql.typing.FillNullStrategy,
+) -> None:
     df = pl.DataFrame({"a": [1, None, None, 4, None]})
     assert_lf_eq_pl(
         pql.LazyFrame(df).fill_null(strategy=strategy, limit=1),
@@ -459,7 +458,7 @@ def test_fill_null_with_value_limit_error() -> None:
 
 @pytest.mark.parametrize("strategy", ["min", "max", "mean", "zero", "one"])
 def test_fill_null_with_non_directional_strategy_limit_error(
-    strategy: t.FillNullStrategy,
+    strategy: pql.sql.typing.FillNullStrategy,
 ) -> None:
     df = pl.DataFrame({"a": [1.0, None, None, 4.0]})
     with pytest.raises(ValueError, match="can only specify `limit`"):

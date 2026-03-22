@@ -145,3 +145,4 @@ ClosedInterval = Literal["both", "left", "right", "none"]
 
 TimeUnit = Literal["ms", "us", "ns"]
 EpochTimeUnit = Literal["ms", "us", "ns", "s", "d"]
+FillNullStrategy = Literal["forward", "backward", "min", "max", "mean", "zero", "one"]

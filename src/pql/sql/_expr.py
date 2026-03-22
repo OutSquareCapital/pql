@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from collections.abc import Iterable
+from collections.abc import Callable, Iterable
+from functools import cache
 from typing import TYPE_CHECKING, ClassVar, Self
 
 import pyochain as pc
@@ -15,6 +16,7 @@ if TYPE_CHECKING:
     from . import namespaces as nm
     from .typing import (
         ClosedInterval,
+        FillNullStrategy,
         FrameMode,
         IntoExpr,
         IntoExprColumn,
@@ -22,6 +24,28 @@ if TYPE_CHECKING:
         WindowExclude,
     )
     from .utils import TryIter
+
+
+@cache
+def _fill_strategy() -> pc.Dict[FillNullStrategy, Callable[[SqlExpr], SqlExpr]]:
+    from ._funcs import coalesce
+
+    return pc.Dict.from_ref(
+        {
+            "forward": lambda expr: expr.last_value().over(
+                frame_end=pc.Some(0), ignore_nulls=True
+            ),
+            "backward": lambda expr: expr.any_value().over(frame_start=pc.Some(0)),
+            "min": lambda expr: coalesce(expr, expr.min().over()),
+            "max": lambda expr: coalesce(expr, expr.max().over()),
+            "mean": lambda expr: coalesce(expr, expr.mean().over()),
+            "zero": lambda expr: coalesce(expr, 0),
+            "one": lambda expr: coalesce(expr, 1),
+        }
+    )
+
+
+"""Computation strategies for `fill_null` when ."""
 
 
 class SqlExpr(Expression, Fns):
@@ -111,6 +135,47 @@ class SqlExpr(Expression, Fns):
         from .namespaces import SqlExprGeoSpatialNameSpace
 
         return SqlExprGeoSpatialNameSpace(self)
+
+    def fill_nulls(
+        self,
+        value: pc.Option[IntoExpr],
+        strategy: pc.Option[FillNullStrategy],
+        limit: pc.Option[int],
+    ) -> Self:
+        def _get_strat() -> pc.Result[SqlExpr | Self, ValueError]:
+            from ._funcs import coalesce
+
+            match (value, strategy, limit):
+                case (pc.Some(_), pc.Some(_), _):
+                    msg = "cannot specify both `value` and `strategy`"
+                    return pc.Err(ValueError(msg))
+                case (_, _, pc.Some(lim)) if lim < 0:
+                    msg = "Can't process negative `limit` value for fill_null"
+                    return pc.Err(ValueError(msg))
+                case (
+                    _,
+                    pc.Some("forward") | pc.Some("backward") as strat,
+                    pc.Some(lim),
+                ):
+                    iterator = pc.Iter(range(1, lim + 1))
+                    match strat.value:
+                        case "forward":
+                            exprs: pc.Iter[SqlExpr] = iterator.map(self.shift)
+                        case _:
+                            exprs = iterator.map(lambda offset: self.shift(-offset))
+                    return pc.Ok(exprs.insert(self).reduce(coalesce))
+                case (_, _, pc.Some(_)):
+                    msg = "can only specify `limit` when strategy is set to 'backward' or 'forward'"
+                    return pc.Err(ValueError(msg))
+                case (pc.Some(val), pc.NONE, pc.NONE):
+                    return pc.Ok(coalesce(self.inner(), val))
+                case (_, pc.Some(strat), pc.NONE):
+                    return pc.Ok(self.pipe(_fill_strategy()[strat]))
+                case _:
+                    msg = "must specify either a fill `value` or `strategy`"
+                    return pc.Err(ValueError(msg))
+
+        return _get_strat().map(lambda e: self._new(e.inner())).unwrap()
 
     def cum_count(self, *, reverse: bool = False) -> Self:
         """Cumulative non-null count."""
