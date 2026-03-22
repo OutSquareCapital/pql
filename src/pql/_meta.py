@@ -38,6 +38,8 @@ class Marker(StrEnum):
     """Marker for expressions that resolve to multiple columns, used as a placeholder in templates."""
     TEMP = "__pql_temp__"
 
+    IDX = "__pql_idx__"
+
     def to_expr(self) -> sql.SqlExpr:
         return sql.col(self.value)
 
