@@ -324,6 +324,14 @@ class SqlExprListNameSpace(ListFns[SqlExpr]):
                     .otherwise(coalesce(joined, Lit.EMPTY_STR))
                 )
 
+    def n_unique(self) -> SqlExpr:
+        """Return the number of unique values in each array."""
+        return self.distinct().list.length()
+
+    def count_matches(self, elem: IntoExpr) -> SqlExpr:
+        """Count matches in each array."""
+        return self.filter(element().eq(elem)).arr.length()
+
 
 @dataclass(slots=True)
 class SqlExprArrayNameSpace(ArrayFns[SqlExpr]):
@@ -369,6 +377,14 @@ class SqlExprArrayNameSpace(ArrayFns[SqlExpr]):
                     .then(Lit.NONE)
                     .otherwise(coalesce(joined, Lit.EMPTY_STR))
                 )
+
+    def n_unique(self) -> SqlExpr:
+        """Return the number of unique values in each array."""
+        return self.distinct().arr.length()
+
+    def count_matches(self, elem: IntoExpr) -> SqlExpr:
+        """Count matches in each array."""
+        return self.filter(element().eq(elem)).arr.length()
 
 
 @dataclass(slots=True)

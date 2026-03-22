@@ -346,6 +346,12 @@ class _VecNameSpace[T: nm.SqlExprListNameSpace | nm.SqlExprArrayNameSpace](
     def join(self, separator: IntoExprColumn, *, ignore_nulls: bool = True) -> Expr:
         return self._new(self._vec.join(separator, ignore_nulls=ignore_nulls))
 
+    def n_unique(self) -> Expr:
+        return self._new(self._vec.n_unique())
+
+    def count_matches(self, element: IntoExpr) -> Expr:
+        return self._new(self._vec.count_matches(element))
+
 
 @dataclass(slots=True)
 class ExprArrayNameSpace(_VecNameSpace[nm.SqlExprArrayNameSpace]):
@@ -356,16 +362,6 @@ class ExprArrayNameSpace(_VecNameSpace[nm.SqlExprArrayNameSpace]):
     def _vec(self) -> nm.SqlExprArrayNameSpace:
         return self.inner().inner().arr
 
-    def n_unique(self) -> Expr:
-        """Return the number of unique values in each array."""
-        return self._new(self.inner().inner().arr.distinct().arr.length())
-
-    def count_matches(self, element: IntoExpr) -> Expr:
-        """Count matches in each array."""
-        return self._new(
-            self.inner().inner().arr.filter(sql.element().eq(element)).arr.length()
-        )
-
 
 @dataclass(slots=True)
 class ExprListNameSpace(_VecNameSpace[nm.SqlExprListNameSpace]):
@@ -375,16 +371,6 @@ class ExprListNameSpace(_VecNameSpace[nm.SqlExprListNameSpace]):
     @override
     def _vec(self) -> nm.SqlExprListNameSpace:
         return self.inner().inner().list
-
-    def n_unique(self) -> Expr:
-        """Return the number of unique values in each list."""
-        return self._new(self.inner().inner().list.distinct().list.length())
-
-    def count_matches(self, element: IntoExpr) -> Expr:
-        """Count matches in each list."""
-        return self._new(
-            self.inner().inner().list.filter(sql.element().eq(element)).list.length()
-        )
 
 
 @dataclass(slots=True)
