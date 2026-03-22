@@ -16,13 +16,13 @@ def _meta(name: str, *args: object) -> duckdb.DuckDBPyRelation:
     return duckdb.table_function(name, params or None)
 
 
-def approx_database_count(*args: str) -> duckdb.DuckDBPyRelation:
+def approx_database_count(*args: object) -> duckdb.DuckDBPyRelation:
     """SQL duckdb_approx_database_count table function.
 
     **SQL name**: *duckdb_approx_database_count*
 
     Args:
-        *args (str): Variable arguments
+        *args (object): Variable arguments
 
     Returns:
         duckdb.DuckDBPyRelation
@@ -30,13 +30,13 @@ def approx_database_count(*args: str) -> duckdb.DuckDBPyRelation:
     return _meta("duckdb_approx_database_count", *args)
 
 
-def columns(*args: str) -> duckdb.DuckDBPyRelation:
+def columns(*args: object) -> duckdb.DuckDBPyRelation:
     """SQL duckdb_columns table function.
 
     **SQL name**: *duckdb_columns*
 
     Args:
-        *args (str): Variable arguments
+        *args (object): Variable arguments
 
     Returns:
         duckdb.DuckDBPyRelation
@@ -44,13 +44,13 @@ def columns(*args: str) -> duckdb.DuckDBPyRelation:
     return _meta("duckdb_columns", *args)
 
 
-def connection_count(*args: str) -> duckdb.DuckDBPyRelation:
+def connection_count(*args: object) -> duckdb.DuckDBPyRelation:
     """SQL duckdb_connection_count table function.
 
     **SQL name**: *duckdb_connection_count*
 
     Args:
-        *args (str): Variable arguments
+        *args (object): Variable arguments
 
     Returns:
         duckdb.DuckDBPyRelation
@@ -58,13 +58,13 @@ def connection_count(*args: str) -> duckdb.DuckDBPyRelation:
     return _meta("duckdb_connection_count", *args)
 
 
-def constraints(*args: str) -> duckdb.DuckDBPyRelation:
+def constraints(*args: object) -> duckdb.DuckDBPyRelation:
     """SQL duckdb_constraints table function.
 
     **SQL name**: *duckdb_constraints*
 
     Args:
-        *args (str): Variable arguments
+        *args (object): Variable arguments
 
     Returns:
         duckdb.DuckDBPyRelation
@@ -72,13 +72,13 @@ def constraints(*args: str) -> duckdb.DuckDBPyRelation:
     return _meta("duckdb_constraints", *args)
 
 
-def coordinate_systems(*args: str) -> duckdb.DuckDBPyRelation:
+def coordinate_systems(*args: object) -> duckdb.DuckDBPyRelation:
     """SQL duckdb_coordinate_systems table function.
 
     **SQL name**: *duckdb_coordinate_systems*
 
     Args:
-        *args (str): Variable arguments
+        *args (object): Variable arguments
 
     Returns:
         duckdb.DuckDBPyRelation
@@ -86,13 +86,13 @@ def coordinate_systems(*args: str) -> duckdb.DuckDBPyRelation:
     return _meta("duckdb_coordinate_systems", *args)
 
 
-def databases(*args: str) -> duckdb.DuckDBPyRelation:
+def databases(*args: object) -> duckdb.DuckDBPyRelation:
     """SQL duckdb_databases table function.
 
     **SQL name**: *duckdb_databases*
 
     Args:
-        *args (str): Variable arguments
+        *args (object): Variable arguments
 
     Returns:
         duckdb.DuckDBPyRelation
@@ -100,13 +100,13 @@ def databases(*args: str) -> duckdb.DuckDBPyRelation:
     return _meta("duckdb_databases", *args)
 
 
-def dependencies(*args: str) -> duckdb.DuckDBPyRelation:
+def dependencies(*args: object) -> duckdb.DuckDBPyRelation:
     """SQL duckdb_dependencies table function.
 
     **SQL name**: *duckdb_dependencies*
 
     Args:
-        *args (str): Variable arguments
+        *args (object): Variable arguments
 
     Returns:
         duckdb.DuckDBPyRelation
@@ -114,13 +114,13 @@ def dependencies(*args: str) -> duckdb.DuckDBPyRelation:
     return _meta("duckdb_dependencies", *args)
 
 
-def extensions(*args: str) -> duckdb.DuckDBPyRelation:
+def extensions(*args: object) -> duckdb.DuckDBPyRelation:
     """SQL duckdb_extensions table function.
 
     **SQL name**: *duckdb_extensions*
 
     Args:
-        *args (str): Variable arguments
+        *args (object): Variable arguments
 
     Returns:
         duckdb.DuckDBPyRelation
@@ -128,13 +128,13 @@ def extensions(*args: str) -> duckdb.DuckDBPyRelation:
     return _meta("duckdb_extensions", *args)
 
 
-def external_file_cache(*args: str) -> duckdb.DuckDBPyRelation:
+def external_file_cache(*args: object) -> duckdb.DuckDBPyRelation:
     """SQL duckdb_external_file_cache table function.
 
     **SQL name**: *duckdb_external_file_cache*
 
     Args:
-        *args (str): Variable arguments
+        *args (object): Variable arguments
 
     Returns:
         duckdb.DuckDBPyRelation
@@ -142,13 +142,13 @@ def external_file_cache(*args: str) -> duckdb.DuckDBPyRelation:
     return _meta("duckdb_external_file_cache", *args)
 
 
-def functions(*args: str) -> duckdb.DuckDBPyRelation:
+def functions(*args: object) -> duckdb.DuckDBPyRelation:
     """SQL duckdb_functions table function.
 
     **SQL name**: *duckdb_functions*
 
     Args:
-        *args (str): Variable arguments
+        *args (object): Variable arguments
 
     Returns:
         duckdb.DuckDBPyRelation
@@ -156,13 +156,13 @@ def functions(*args: str) -> duckdb.DuckDBPyRelation:
     return _meta("duckdb_functions", *args)
 
 
-def indexes(*args: str) -> duckdb.DuckDBPyRelation:
+def indexes(*args: object) -> duckdb.DuckDBPyRelation:
     """SQL duckdb_indexes table function.
 
     **SQL name**: *duckdb_indexes*
 
     Args:
-        *args (str): Variable arguments
+        *args (object): Variable arguments
 
     Returns:
         duckdb.DuckDBPyRelation
@@ -170,13 +170,13 @@ def indexes(*args: str) -> duckdb.DuckDBPyRelation:
     return _meta("duckdb_indexes", *args)
 
 
-def keywords(*args: str) -> duckdb.DuckDBPyRelation:
+def keywords(*args: object) -> duckdb.DuckDBPyRelation:
     """SQL duckdb_keywords table function.
 
     **SQL name**: *duckdb_keywords*
 
     Args:
-        *args (str): Variable arguments
+        *args (object): Variable arguments
 
     Returns:
         duckdb.DuckDBPyRelation
@@ -184,13 +184,13 @@ def keywords(*args: str) -> duckdb.DuckDBPyRelation:
     return _meta("duckdb_keywords", *args)
 
 
-def log_contexts(*args: str) -> duckdb.DuckDBPyRelation:
+def log_contexts(*args: object) -> duckdb.DuckDBPyRelation:
     """SQL duckdb_log_contexts table function.
 
     **SQL name**: *duckdb_log_contexts*
 
     Args:
-        *args (str): Variable arguments
+        *args (object): Variable arguments
 
     Returns:
         duckdb.DuckDBPyRelation
@@ -198,14 +198,16 @@ def log_contexts(*args: str) -> duckdb.DuckDBPyRelation:
     return _meta("duckdb_log_contexts", *args)
 
 
-def logs(denormalized_table: bool | None = None, *args: str) -> duckdb.DuckDBPyRelation:
+def logs(
+    denormalized_table: bool | None = None, *args: object
+) -> duckdb.DuckDBPyRelation:
     """SQL duckdb_logs table function.
 
     **SQL name**: *duckdb_logs*
 
     Args:
         denormalized_table (bool | None): Parameter
-        *args (str): Variable arguments
+        *args (object): Variable arguments
 
     Returns:
         duckdb.DuckDBPyRelation
@@ -213,13 +215,13 @@ def logs(denormalized_table: bool | None = None, *args: str) -> duckdb.DuckDBPyR
     return _meta("duckdb_logs", denormalized_table, *args)
 
 
-def memory(*args: str) -> duckdb.DuckDBPyRelation:
+def memory(*args: object) -> duckdb.DuckDBPyRelation:
     """SQL duckdb_memory table function.
 
     **SQL name**: *duckdb_memory*
 
     Args:
-        *args (str): Variable arguments
+        *args (object): Variable arguments
 
     Returns:
         duckdb.DuckDBPyRelation
@@ -227,13 +229,13 @@ def memory(*args: str) -> duckdb.DuckDBPyRelation:
     return _meta("duckdb_memory", *args)
 
 
-def optimizers(*args: str) -> duckdb.DuckDBPyRelation:
+def optimizers(*args: object) -> duckdb.DuckDBPyRelation:
     """SQL duckdb_optimizers table function.
 
     **SQL name**: *duckdb_optimizers*
 
     Args:
-        *args (str): Variable arguments
+        *args (object): Variable arguments
 
     Returns:
         duckdb.DuckDBPyRelation
@@ -241,13 +243,13 @@ def optimizers(*args: str) -> duckdb.DuckDBPyRelation:
     return _meta("duckdb_optimizers", *args)
 
 
-def prepared_statements(*args: str) -> duckdb.DuckDBPyRelation:
+def prepared_statements(*args: object) -> duckdb.DuckDBPyRelation:
     """SQL duckdb_prepared_statements table function.
 
     **SQL name**: *duckdb_prepared_statements*
 
     Args:
-        *args (str): Variable arguments
+        *args (object): Variable arguments
 
     Returns:
         duckdb.DuckDBPyRelation
@@ -255,13 +257,13 @@ def prepared_statements(*args: str) -> duckdb.DuckDBPyRelation:
     return _meta("duckdb_prepared_statements", *args)
 
 
-def schemas(*args: str) -> duckdb.DuckDBPyRelation:
+def schemas(*args: object) -> duckdb.DuckDBPyRelation:
     """SQL duckdb_schemas table function.
 
     **SQL name**: *duckdb_schemas*
 
     Args:
-        *args (str): Variable arguments
+        *args (object): Variable arguments
 
     Returns:
         duckdb.DuckDBPyRelation
@@ -269,13 +271,13 @@ def schemas(*args: str) -> duckdb.DuckDBPyRelation:
     return _meta("duckdb_schemas", *args)
 
 
-def secret_types(*args: str) -> duckdb.DuckDBPyRelation:
+def secret_types(*args: object) -> duckdb.DuckDBPyRelation:
     """SQL duckdb_secret_types table function.
 
     **SQL name**: *duckdb_secret_types*
 
     Args:
-        *args (str): Variable arguments
+        *args (object): Variable arguments
 
     Returns:
         duckdb.DuckDBPyRelation
@@ -283,14 +285,14 @@ def secret_types(*args: str) -> duckdb.DuckDBPyRelation:
     return _meta("duckdb_secret_types", *args)
 
 
-def secrets(redact: bool | None = None, *args: str) -> duckdb.DuckDBPyRelation:
+def secrets(redact: bool | None = None, *args: object) -> duckdb.DuckDBPyRelation:
     """SQL duckdb_secrets table function.
 
     **SQL name**: *duckdb_secrets*
 
     Args:
         redact (bool | None): Parameter
-        *args (str): Variable arguments
+        *args (object): Variable arguments
 
     Returns:
         duckdb.DuckDBPyRelation
@@ -298,13 +300,13 @@ def secrets(redact: bool | None = None, *args: str) -> duckdb.DuckDBPyRelation:
     return _meta("duckdb_secrets", redact, *args)
 
 
-def sequences(*args: str) -> duckdb.DuckDBPyRelation:
+def sequences(*args: object) -> duckdb.DuckDBPyRelation:
     """SQL duckdb_sequences table function.
 
     **SQL name**: *duckdb_sequences*
 
     Args:
-        *args (str): Variable arguments
+        *args (object): Variable arguments
 
     Returns:
         duckdb.DuckDBPyRelation
@@ -312,13 +314,13 @@ def sequences(*args: str) -> duckdb.DuckDBPyRelation:
     return _meta("duckdb_sequences", *args)
 
 
-def settings(*args: str) -> duckdb.DuckDBPyRelation:
+def settings(*args: object) -> duckdb.DuckDBPyRelation:
     """SQL duckdb_settings table function.
 
     **SQL name**: *duckdb_settings*
 
     Args:
-        *args (str): Variable arguments
+        *args (object): Variable arguments
 
     Returns:
         duckdb.DuckDBPyRelation
@@ -326,13 +328,13 @@ def settings(*args: str) -> duckdb.DuckDBPyRelation:
     return _meta("duckdb_settings", *args)
 
 
-def tables(*args: str) -> duckdb.DuckDBPyRelation:
+def tables(*args: object) -> duckdb.DuckDBPyRelation:
     """SQL duckdb_tables table function.
 
     **SQL name**: *duckdb_tables*
 
     Args:
-        *args (str): Variable arguments
+        *args (object): Variable arguments
 
     Returns:
         duckdb.DuckDBPyRelation
@@ -340,13 +342,13 @@ def tables(*args: str) -> duckdb.DuckDBPyRelation:
     return _meta("duckdb_tables", *args)
 
 
-def temporary_files(*args: str) -> duckdb.DuckDBPyRelation:
+def temporary_files(*args: object) -> duckdb.DuckDBPyRelation:
     """SQL duckdb_temporary_files table function.
 
     **SQL name**: *duckdb_temporary_files*
 
     Args:
-        *args (str): Variable arguments
+        *args (object): Variable arguments
 
     Returns:
         duckdb.DuckDBPyRelation
@@ -354,13 +356,13 @@ def temporary_files(*args: str) -> duckdb.DuckDBPyRelation:
     return _meta("duckdb_temporary_files", *args)
 
 
-def types(*args: str) -> duckdb.DuckDBPyRelation:
+def types(*args: object) -> duckdb.DuckDBPyRelation:
     """SQL duckdb_types table function.
 
     **SQL name**: *duckdb_types*
 
     Args:
-        *args (str): Variable arguments
+        *args (object): Variable arguments
 
     Returns:
         duckdb.DuckDBPyRelation
@@ -368,13 +370,13 @@ def types(*args: str) -> duckdb.DuckDBPyRelation:
     return _meta("duckdb_types", *args)
 
 
-def variables(*args: str) -> duckdb.DuckDBPyRelation:
+def variables(*args: object) -> duckdb.DuckDBPyRelation:
     """SQL duckdb_variables table function.
 
     **SQL name**: *duckdb_variables*
 
     Args:
-        *args (str): Variable arguments
+        *args (object): Variable arguments
 
     Returns:
         duckdb.DuckDBPyRelation
@@ -382,13 +384,13 @@ def variables(*args: str) -> duckdb.DuckDBPyRelation:
     return _meta("duckdb_variables", *args)
 
 
-def views(*args: str) -> duckdb.DuckDBPyRelation:
+def views(*args: object) -> duckdb.DuckDBPyRelation:
     """SQL duckdb_views table function.
 
     **SQL name**: *duckdb_views*
 
     Args:
-        *args (str): Variable arguments
+        *args (object): Variable arguments
 
     Returns:
         duckdb.DuckDBPyRelation

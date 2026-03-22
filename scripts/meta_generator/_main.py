@@ -156,12 +156,12 @@ def _query(lf: pl.LazyFrame) -> pl.LazyFrame:
                 pl.element()
                 .fill_null(DuckDbTypes.ANY)
                 .cast(pl.String)
-                .replace_strict(CONVERTER, default="str", return_dtype=pl.String)
+                .replace_strict(CONVERTER, default="object", return_dtype=pl.String)
             )
             .alias("py_types"),
             pl.col("varargs")
             .cast(pl.String)
-            .replace_strict(CONVERTER, default="str", return_dtype=pl.String)
+            .replace_strict(CONVERTER, default="object", return_dtype=pl.String)
             .alias("varargs_type"),
         )
         .unique(subset=fn_name, keep="first")
