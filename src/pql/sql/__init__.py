@@ -3,6 +3,7 @@
 from duckdb import table as from_table, table_function as from_table_function
 
 from . import typing, utils
+from ._code_gen import meta
 from ._core import CoreHandler
 from ._creation import (
     from_df,
@@ -87,6 +88,7 @@ __all__ = [
     "lit",
     "max_horizontal",
     "mean_horizontal",
+    "meta",
     "min_horizontal",
     "reduce",
     "rolling_agg",

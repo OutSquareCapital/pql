@@ -1,3 +1,4 @@
+from . import meta as meta
 from ._core import Expression, Relation
 from ._fns import (
     ArrayFns,
@@ -27,4 +28,5 @@ __all__ = [
     "Relation",
     "StringFns",
     "StructFns",
+    "meta",
 ]

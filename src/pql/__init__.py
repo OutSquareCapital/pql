@@ -1,6 +1,6 @@
 """PQL - Polars Query Language over DuckDB."""
 
-from . import selectors, sql
+from . import meta, selectors, sql
 from ._creation import (
     from_df,
     from_dict,
@@ -130,6 +130,7 @@ __all__ = [
     "mean",
     "mean_horizontal",
     "median",
+    "meta",
     "min",
     "min_horizontal",
     "selectors",

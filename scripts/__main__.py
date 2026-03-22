@@ -18,6 +18,7 @@ CODE_GEN = PQL.joinpath("sql", "_code_gen")
 
 FNS_OUTPUT = CODE_GEN.joinpath("_fns.py")
 REL_OUTPUT = CODE_GEN.joinpath("_core.py")
+META_OUTPUT = CODE_GEN.joinpath("meta.py")
 
 DATA_PATH = Path("scripts", "fn_generator", "functions.parquet")
 STUB_PATH = Path(".venv", "Lib", "site-packages", "_duckdb-stubs", "__init__.pyi")
@@ -95,6 +96,26 @@ def fns_to_parquet(path: InputPath = DATA_PATH) -> None:
     get_data(path)
 
     console.print(f"Fetched function metadata and stored at {path}")
+
+
+@app.command()
+def gen_meta(
+    data_path: InputPath = DATA_PATH,
+    output: OutputPath = META_OUTPUT,
+    *,
+    check_only: CheckArg = False,
+) -> None:
+    """Generate DuckDB meta table functions (duckdb_* module-level functions)."""
+    from .meta_generator import run_pipeline
+
+    console.print("Generating meta table functions...")
+    content = run_pipeline(SELF_PATH, data_path)
+
+    output.parent.mkdir(parents=True, exist_ok=True)
+    res = output.write_text(content, encoding="utf-8")
+    console.print(Text("Generated file at ").append(output.as_posix(), style="cyan"))
+    _run_ruff(check_only=check_only, dest=output)
+    console.print(f"Done with exit code {res}!", style="bold green")
 
 
 @app.command()
