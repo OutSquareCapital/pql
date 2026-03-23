@@ -6,9 +6,8 @@ from collections.abc import Callable, Iterable, Mapping, Sequence
 from dataclasses import dataclass
 from functools import partial
 from pathlib import Path
-from typing import TYPE_CHECKING, Self
+from typing import TYPE_CHECKING, Any, Self
 
-import duckdb
 import pyochain as pc
 
 from . import sql
@@ -19,6 +18,7 @@ from ._schema import Schema
 from .sql.utils import TryIter, TrySeq, check_by_arg, try_chain, try_iter, try_seq
 
 if TYPE_CHECKING:
+    import duckdb
     import polars as pl
     from _duckdb import ExplainType
     from _duckdb._enums import (  # pyright: ignore[reportMissingModuleSource]
@@ -83,7 +83,7 @@ class LazyFrame(sql.CoreHandler[sql.Frame]):
         )
 
     def _collect(self) -> duckdb.DuckDBPyRelation:
-        return self._factory().query("", self.inner().inner().sql("duckdb"))
+        return self._factory().query("", self.inner().sql_query())
 
     def lazy(self) -> pl.LazyFrame:
         """Get a Polars LazyFrame."""
@@ -93,7 +93,7 @@ class LazyFrame(sql.CoreHandler[sql.Frame]):
         """Execute the query and return a Polars DataFrame."""
         return self._collect().pl().pipe(Marker.drop_marker, self.columns)
 
-    def fetch_all(self):
+    def fetch_all(self) -> pc.Vec[tuple[Any, ...]]:  # pyright: ignore[reportExplicitAny]
         return pc.Vec.from_ref(self._collect().fetchall())
 
     def select(
