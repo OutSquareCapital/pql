@@ -106,7 +106,7 @@ def lit(value: PythonLiteral) -> SqlExpr:
 def coalesce(exprs: TryIter[IntoExpr], *more_exprs: IntoExpr) -> SqlExpr:
     """Create a COALESCE expression."""
     exprs = try_chain(exprs, more_exprs).map(into_glot)
-    return SqlExpr(exp.Coalesce(this=exprs.first(), expressions=exprs.collect()))
+    return SqlExpr(exp.Coalesce(this=exprs.first(), expressions=exprs.collect(list)))
 
 
 _HORIZONTAL_ERR = "At least one expression is required."
