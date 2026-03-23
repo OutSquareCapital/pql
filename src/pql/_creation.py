@@ -20,32 +20,32 @@ if TYPE_CHECKING:
 
 
 def from_query(query: str, **relations: IntoRel) -> LazyFrame:
-    return LazyFrame(sql.from_query(query, **relations))
+    return LazyFrame(sql.Relation.from_query(query, **relations))
 
 
 def from_table(table: str) -> LazyFrame:
-    return LazyFrame(sql.from_table(table))
+    return LazyFrame(sql.Relation.from_table(table))
 
 
 def from_table_function(function: str) -> LazyFrame:
-    return LazyFrame(sql.from_table_function(function))
+    return LazyFrame(sql.Relation.from_table_function(function))
 
 
 def from_df(df: IntoFrame) -> LazyFrame:
-    return LazyFrame(sql.from_df(df))
+    return LazyFrame(sql.Relation.from_df(df))
 
 
 def from_numpy(arr: AnyArray, orient: Orientation = "col") -> LazyFrame:
-    return LazyFrame(sql.from_numpy(arr, orient=orient))
+    return LazyFrame(sql.Relation.from_numpy(arr, orient=orient))
 
 
 def from_dict(mapping: IntoDict[str, PythonLiteral]) -> LazyFrame:
-    return LazyFrame(sql.from_dict(mapping))
+    return LazyFrame(sql.Relation.from_dict(mapping))
 
 
 def from_dicts(data: Sequence[Mapping[str, PythonLiteral]]) -> LazyFrame:
-    return LazyFrame(sql.from_dicts(data))
+    return LazyFrame(sql.Relation.from_dicts(data))
 
 
 def from_records(data: SeqIntoVals) -> LazyFrame:
-    return LazyFrame(sql.from_records(data))
+    return LazyFrame(sql.Relation.from_records(data))

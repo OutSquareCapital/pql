@@ -6,11 +6,13 @@ from collections.abc import Callable, Iterable, Mapping, Sequence
 from dataclasses import dataclass
 from functools import partial
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Self
+from typing import TYPE_CHECKING, Any, Self, override
 
 import pyochain as pc
+from sqlglot import exp
 
 from . import sql
+from ._datatypes import DataType
 from ._funcs import col
 from ._joins import JoinBuilder, JoinKeys
 from ._meta import ExprPlan, Marker
@@ -24,8 +26,8 @@ if TYPE_CHECKING:
     from _duckdb._enums import (  # pyright: ignore[reportMissingModuleSource]
         ExplainTypeLiteral,
     )
+    from pyochain.traits import PyoIterable, PyoKeysView, PyoValuesView
 
-    from ._datatypes import DataType
     from ._expr import Expr
     from ._groupby import LazyGroupBy
     from ._parser import ParsedQuery
@@ -42,6 +44,7 @@ if TYPE_CHECKING:
     )
 
 MAX_I64 = 9_223_372_036_854_775_807
+ROOT_RELATION_ALIAS = "self"
 PIVOT_AGG: dict[PivotAgg, Callable[[sql.SqlExpr], sql.SqlExpr]] = {
     "min": sql.SqlExpr.min,
     "max": sql.SqlExpr.max,
@@ -56,34 +59,37 @@ PIVOT_AGG: dict[PivotAgg, Callable[[sql.SqlExpr], sql.SqlExpr]] = {
 
 
 @dataclass(slots=True, init=False, repr=False)
-class LazyFrame(sql.CoreHandler[sql.Frame]):
+class LazyFrame(sql.CoreHandler[exp.Select]):
     """LazyFrame providing Polars-like API over DuckDB relations."""
 
-    _inner: sql.Frame
-    _factory: Callable[[], duckdb.DuckDBPyRelation]
-    _cached_schema: pc.Option[Schema]
+    _inner: exp.Select
+    _rel: sql.Relation
 
     def __init__(self, data: IntoRel, orient: Orientation = "col") -> None:
-        self._cached_schema = pc.NONE
-        self._factory = partial(sql.into_relation, data, orient)
-        self._inner = sql.Frame()
+        self._rel = sql.into_relation(data, orient)
+        self._inner = exp.select("*", dialect="duckdb").from_(ROOT_RELATION_ALIAS)  # pyright: ignore[reportUnknownMemberType]
+
+    @override
+    def _new(self, value: exp.Select) -> Self:
+        new = self.__class__.__new__(self.__class__)
+        new._inner = value
+        new._rel = self._rel
+        return new
 
     def _iter_slct(self, func: Callable[[str], sql.SqlExpr]) -> Self:
-        return (
-            self.columns.iter()
-            .map(func)
-            .into(lambda exprs: self.inner().select(exprs).pipe(self._new))
-        )
+        return self.columns.iter().map(func).into(self.select)
 
     def _iter_agg(self, func: Callable[[sql.SqlExpr], sql.SqlExpr]) -> Self:
         return (
             self.columns.iter()
             .map(lambda c: func(sql.col(c)).alias(c))
-            .into(lambda exprs: self.inner().aggregate(exprs).pipe(self._new))
+            .into(self.aggregate)
         )
 
     def _collect(self) -> duckdb.DuckDBPyRelation:
-        return self._factory().query("", self.inner().sql_query())
+        return self._rel.rel.query(
+            ROOT_RELATION_ALIAS, self.inner().sql(dialect="duckdb")
+        )
 
     def lazy(self) -> pl.LazyFrame:
         """Get a Polars LazyFrame."""
@@ -100,20 +106,22 @@ class LazyFrame(sql.CoreHandler[sql.Frame]):
         self, exprs: TryIter[IntoExpr], *more_exprs: IntoExpr, **named_exprs: IntoExpr
     ) -> Self:
         """Select columns or expressions."""
-        return (
+        cols = (
             self.schema.into(ExprPlan, exprs, more_exprs, named_exprs)
-            .select_context(self.inner())
-            .pipe(self._new)
+            .aliased_sql()
+            .map(lambda e: e.inner())
         )
+        qry = self.inner().select(*cols, append=False, dialect="duckdb")  # pyright: ignore[reportUnknownMemberType]
+        return self._new(qry)
 
     def with_columns(
         self, exprs: TryIter[IntoExpr], *more_exprs: IntoExpr, **named_exprs: IntoExpr
     ) -> Self:
         """Add or replace columns."""
-        return (
-            self.schema.into(ExprPlan, exprs, more_exprs, named_exprs)
-            .with_columns_context(self.inner())
-            .pipe(self._new)
+        return self._new(
+            self.schema.into(
+                ExprPlan, exprs, more_exprs, named_exprs
+            ).with_columns_context(self)
         )
 
     def filter(
@@ -123,7 +131,7 @@ class LazyFrame(sql.CoreHandler[sql.Frame]):
         **constraints: IntoExpr,
     ) -> Self:
         """Filter rows based on predicates and equality constraints."""
-        return (
+        conditions = (
             try_chain(predicates, more_predicates)
             .map(lambda value: sql.into_expr(value, as_col=True))
             .chain(
@@ -135,8 +143,26 @@ class LazyFrame(sql.CoreHandler[sql.Frame]):
                 )
                 .unwrap_or_else(pc.Iter[sql.SqlExpr].new)
             )
-            .into(self.filter)
+            .map(lambda e: sql.into_expr(e, as_col=True).inner())
         )
+        qry = self.inner().where(*conditions, dialect="duckdb")  # pyright: ignore[reportUnknownMemberType]
+        return self._new(qry)
+
+    def aggregate(self, aggr_expr: Iterable[IntoExpr], group_expr: str = "") -> Self:
+        aggs = pc.Iter(aggr_expr).map(lambda e: sql.into_expr(e, as_col=True).inner())
+        sub = exp.Subquery(this=self.inner())
+        qry = exp.select(*aggs, dialect="duckdb").from_(sub)  # pyright: ignore[reportUnknownMemberType]
+        return self._new(
+            qry.group_by(group_expr, dialect="duckdb") if group_expr else qry  # pyright: ignore[reportUnknownMemberType]
+        )
+
+    def distinct(self) -> Self:
+        qry = self.inner().distinct()
+        return self._new(qry)
+
+    def union(self, other: Self) -> Self:
+        qry = exp.select(self.inner().union(other.inner(), dialect="duckdb"))  # pyright: ignore[reportUnknownMemberType]
+        return self._new(qry)
 
     def group_by(
         self,
@@ -179,10 +205,9 @@ class LazyFrame(sql.CoreHandler[sql.Frame]):
         **named_exprs: IntoExpr,
     ) -> Self:
         """Aggregate with GROUP BY ALL — DuckDB auto-detects grouping keys."""
-        return (
-            self.schema.into(ExprPlan, exprs, more_exprs, named_exprs)
-            .group_by_all_context(self.inner())
-            .pipe(self._new)
+        return self.aggregate(
+            self.schema.into(ExprPlan, exprs, more_exprs, named_exprs).aliased_sql(),
+            "ALL",
         )
 
     def sort(
@@ -193,7 +218,7 @@ class LazyFrame(sql.CoreHandler[sql.Frame]):
         nulls_last: TrySeq[bool] = False,
     ) -> Self:
         """Sort by columns."""
-        return (
+        by = (
             try_chain(by, more_by)
             .map(lambda v: sql.into_expr(v, as_col=True))
             .collect()
@@ -203,14 +228,19 @@ class LazyFrame(sql.CoreHandler[sql.Frame]):
                     check_by_arg(sort_exprs, "nulls_last", arg=nulls_last).unwrap(),
                 )
             )
-            .map_star(lambda expr, desc, nls: expr.set_order(desc=desc, nulls_last=nls))
-            .into(lambda x: self.inner().sort(x))
-            .pipe(self._new)
+            .map_star(
+                lambda expr, desc, nls: expr.set_order(
+                    desc=desc, nulls_last=nls
+                ).inner()
+            )
         )
+        qry = self.inner().order_by(*by, dialect="duckdb")  # pyright: ignore[reportUnknownMemberType]
+        return self._new(qry)
 
-    def limit(self, n: int) -> Self:
+    def limit(self, n: int, offset: int | None = None) -> Self:
         """Limit the number of rows."""
-        return self.inner().limit(n).pipe(self._new)
+        qry = self.inner().limit(n, dialect="duckdb", offset=offset)  # pyright: ignore[reportUnknownMemberType]
+        return self._new(qry)
 
     def head(self, n: int = 5) -> Self:
         """Get the first n rows."""
@@ -236,11 +266,7 @@ class LazyFrame(sql.CoreHandler[sql.Frame]):
                     msg = f"negative slice lengths ({length}) are invalid for LazyFrame"
                     return pc.Err(ValueError(msg))
                 case (len_val, offset) if offset >= 0:
-                    return pc.Ok(
-                        self.inner()
-                        .limit(len_val.unwrap_or(MAX_I64), offset=offset)
-                        .pipe(self._new)
-                    )
+                    return pc.Ok(self.limit(len_val.unwrap_or(MAX_I64), offset=offset))
                 case (pc.Some(0), _):
                     return pc.Ok(self.limit(0))
                 case (pc.Some(length), offset):
@@ -279,11 +305,7 @@ class LazyFrame(sql.CoreHandler[sql.Frame]):
         self, columns: TryIter[IntoExprColumn] = None, *more_columns: IntoExprColumn
     ) -> Self:
         """Drop columns from the frame."""
-        return (
-            self.inner()
-            .select((sql.all(exclude=try_chain(columns, more_columns)),))
-            .pipe(self._new)
-        )
+        return self.select(sql.all(exclude=try_chain(columns, more_columns)))
 
     def drop_nulls(self, subset: TryIter[str] = None) -> Self:
         """Drop rows that contain null values."""
@@ -355,15 +377,11 @@ class LazyFrame(sql.CoreHandler[sql.Frame]):
             .and_(target.len().gt(0))
             .pipe(
                 lambda cond: (
-                    self.inner()
-                    .filter((cond,))
+                    self.filter(cond)
                     .select(_proj(unnest=True))
-                    .union(
-                        self.inner().filter((cond.not_(),)).select(_proj(unnest=False))
-                    )
+                    .union(self.filter(cond.not_()).select(_proj(unnest=False)))
                 )
             )
-            .pipe(self._new)
         )
 
     def rename(self, mapping: Mapping[str, str]) -> Self:
@@ -384,7 +402,7 @@ class LazyFrame(sql.CoreHandler[sql.Frame]):
         """
         from ._parser import ParsedQuery
 
-        return ParsedQuery(self.inner().sql_query())
+        return ParsedQuery(self.inner().sql(dialect="duckdb"))
 
     def explain(self, kind: ExplainType | ExplainTypeLiteral = "standard") -> str:
         return self._collect().explain(kind)
@@ -402,7 +420,7 @@ class LazyFrame(sql.CoreHandler[sql.Frame]):
                     .insert(sql.all(exclude=unnest_cols))
                 )
             )
-            .into(lambda exprs: self.inner().select(exprs).pipe(self._new))
+            .into(self.select)
         )
 
     def first(self) -> Self:
@@ -416,10 +434,6 @@ class LazyFrame(sql.CoreHandler[sql.Frame]):
     def count(self) -> Self:
         """Return the count of each column."""
         return self._iter_agg(sql.SqlExpr.count)
-
-    def describe(self) -> Self:
-        """Return descriptive statistics."""
-        return self.inner().describe().pipe(self._new)
 
     def sum(self) -> Self:
         """Aggregate the sum of each column."""
@@ -501,24 +515,25 @@ class LazyFrame(sql.CoreHandler[sql.Frame]):
         )
 
     @property
-    def columns(self) -> pc.Vec[str]:
+    def columns(self) -> PyoKeysView[str]:
         """Get column names."""
-        return self.inner().columns
+        return self.schema.keys()
+
+    @property
+    def dtypes(self) -> PyoValuesView[DataType]:
+        """Get column data types."""
+        return self.schema.values()
 
     @property
     def width(self) -> int:
         """Get number of columns."""
-        return self.columns.length()
+        return self.schema.length()
 
     @property
     def schema(self) -> Schema:
-        match self._cached_schema:
-            case pc.Some(schma):
-                return schma
-            case _:
-                schma = self.inner().pipe(Schema.from_frame)
-                self._cached_schema = pc.Some(schma)
-                return schma
+        raw_schema = sql.Relation.from_relation(self._collect()).schema
+        dtypes = raw_schema.values().iter().map(DataType.__from_sql__)
+        return Schema(raw_schema.keys().iter().zip(dtypes, strict=True))
 
     def collect_schema(self) -> Schema:
         """Collect the schema (same as schema property for lazy)."""
@@ -559,32 +574,27 @@ class LazyFrame(sql.CoreHandler[sql.Frame]):
                 case "semi" | "anti":
                     return ("lhs.*",)
 
-        return (
-            self.inner()
-            .join(
-                other.inner(),
-                condition=join_keys.left.iter()
-                .zip(join_keys.right)
-                .map_star(builder.equals)
-                .reduce(sql.SqlExpr.and_),
-                how=how,
-            )
-            .select(_cols_how())
-            .pipe(self._new)
+        qry = self.inner().join(  # pyright: ignore[reportUnknownMemberType]
+            other.inner(),
+            using=join_keys.left.iter()
+            .zip(join_keys.right)
+            .map_star(builder.equals)
+            .reduce(sql.SqlExpr.and_)
+            .inner(),
+            join_type=how,
+            dialect="duckdb",
         )
+        return self._new(qry).select(_cols_how())
 
     def join_cross(self, other: Self, *, suffix: str = "_right") -> Self:
         """Join with another LazyFrame."""
         builder = JoinBuilder(suffix, self.columns, other.columns)
-        return (
-            self.inner()
-            .cross(other.inner())
-            .select(
-                builder.left.iter()
-                .map(builder.lhs)
-                .chain(builder.right.iter().map(builder.for_outer))
-            )
-            .pipe(self._new)
+
+        qry = self.inner().join(other.inner(), join_type="cross", dialect="duckdb")  # pyright: ignore[reportUnknownMemberType]
+        return self._new(qry).select(
+            builder.left.iter()
+            .map(builder.lhs)
+            .chain(builder.right.iter().map(builder.for_outer))
         )
 
     def join_asof(  # noqa: PLR0913
@@ -631,14 +641,16 @@ class LazyFrame(sql.CoreHandler[sql.Frame]):
             builder.left.iter()
             .map(builder.lhs)
             .chain(other.columns.iter().filter_map(builder.for_inner_left))
-            .map(sql.SqlExpr.to_sql)
+        )
+        qry = (
+            self.select(selected)
+            .inner()
+            .join(  # pyright: ignore[reportUnknownMemberType]
+                other.inner(), on=by_cond.inner(), join_type="asof left"
+            )
         )
 
-        return (
-            self.inner()
-            .join_asof(other.inner(), by_cond, selected, "left")
-            .pipe(self._new)
-        )
+        return self._new(qry)
 
     def unique(
         self,
@@ -742,20 +754,48 @@ class LazyFrame(sql.CoreHandler[sql.Frame]):
         multi = val_cols.length() > 1
         agg = PIVOT_AGG[aggregate_function]
 
-        def _aliased(col: str) -> str:
+        def _aliased(col: str) -> exp.Expr:
             expr = sql.col(col).pipe(agg)
-            return expr.alias(col).to_sql() if multi else expr.get_name()
+            return expr.alias(col).inner() if multi else expr.inner()
 
-        def _pivoted(lf: sql.Frame) -> sql.Frame:
-            return lf.pivot(
-                on_cols,
-                val_cols.iter().map(_aliased),
-                idx_cols,
-                pc.Some(on_columns),
-                idx_cols if maintain_order else None,
-            )
+        def _pivoted() -> Self:
 
-        def _handle_multi(lf: sql.Frame) -> sql.Frame:
+            def _on_exprs(on_iter: pc.Seq[str]) -> PyoIterable[exp.Expr]:
+                converted = pc.Iter(on_columns).map(exp.convert).collect()
+                expr = exp.In(this=on_iter.first(), expressions=converted)
+                return pc.Iter.once(expr)
+
+            def _group() -> exp.Group | None:
+                group = idx_cols.then(
+                    lambda cols: exp.Group(expressions=cols.into(list))
+                )
+                return group.unwrap() if group.is_some() else None
+
+            def _pivot() -> exp.Pivot:
+                return exp.Pivot(
+                    this=self.inner(),
+                    expressions=try_iter(on).collect().into(_on_exprs),
+                    using=val_cols.iter().map(_aliased),
+                    group=_group(),
+                )
+
+            def _select_ordered(cols: Iterable[str]) -> exp.Select:
+                return (
+                    exp.select("*")  # pyright: ignore[reportUnknownMemberType]
+                    .from_(exp.Subquery(this=_pivot()))
+                    .order_by(*cols)
+                )
+
+            def _qry() -> exp.Select:
+                match maintain_order:
+                    case True:
+                        return _select_ordered(idx_cols)
+                    case False:
+                        return exp.select(_pivot(), dialect="duckdb")  # pyright: ignore[reportUnknownMemberType]
+
+            return self._new(_qry())
+
+        def _handle_multi(lf: LazyFrame) -> LazyFrame:
             match multi:
                 case True:
 
@@ -777,7 +817,7 @@ class LazyFrame(sql.CoreHandler[sql.Frame]):
                 case False:
                     return lf
 
-        return self.inner().pipe(_pivoted).pipe(_handle_multi).pipe(self._new)
+        return self._new(_pivoted().pipe(_handle_multi).inner())
 
     def unpivot(
         self,
@@ -785,26 +825,43 @@ class LazyFrame(sql.CoreHandler[sql.Frame]):
         index: TryIter[str] = None,
         variable_name: str = "variable",
         value_name: str = "value",
+        order_by: TryIter[str] = None,
     ) -> Self:
         """Unpivot from wide to long format."""
-        return (
-            self.inner().unpivot(on, index, variable_name, value_name).pipe(self._new)
+        index_cols = try_iter(index).collect(dict.fromkeys)
+        unpivot_cols = (
+            try_iter(on)
+            .then_some()
+            .unwrap_or_else(
+                lambda: self.columns.iter().filter(lambda name: name not in index_cols)
+            )
         )
+
+        def _unpivot() -> exp.Pivot:
+            return exp.Pivot(
+                this=self.inner(),
+                expressions=unpivot_cols,
+                unpivot=True,
+                into=exp.UnpivotColumns(this=variable_name, expressions=(value_name,)),
+            )
+
+        def _select() -> exp.Select:
+            sub_qry = exp.Subquery(this=_unpivot())
+            return exp.select(*index_cols, variable_name, value_name).from_(sub_qry)  # pyright: ignore[reportUnknownMemberType]
+
+        qry = (
+            try_iter(order_by)
+            .then(lambda cols: _select().order_by(*cols))  # pyright: ignore[reportUnknownMemberType]
+            .unwrap_or_else(_select)
+        )
+
+        return self._new(qry)
 
     def with_row_index(self, name: str, *, order_by: TrySeq[str]) -> Self:
         """Insert row index based on order_by."""
-        return (
-            self.inner()
-            .select(
-                (
-                    sql.row_number()
-                    .over(order_by=pc.Some(order_by))
-                    .sub(1)
-                    .alias(name),
-                    sql.all(),
-                )
-            )
-            .pipe(self._new)
+        return self.select(
+            sql.row_number().over(order_by=pc.Some(order_by)).sub(1).alias(name),
+            sql.all(),
         )
 
     def top_k(

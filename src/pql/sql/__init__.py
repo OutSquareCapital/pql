@@ -1,19 +1,9 @@
 """SQL expression functions and converters."""
 
-from duckdb import table as from_table, table_function as from_table_function
-
 from . import typing, utils
 from ._code_gen import meta
 from ._core import CoreHandler
-from ._creation import (
-    from_df,
-    from_dict,
-    from_dicts,
-    from_numpy,
-    from_query,
-    from_records,
-    into_relation,
-)
+from ._creation import Relation, into_relation
 from ._datatypes import (
     ArrayType,
     DecimalType,
@@ -27,7 +17,6 @@ from ._datatypes import (
     UnionType,
 )
 from ._expr import SqlExpr
-from ._frame import Frame
 from ._funcs import (
     all,
     all_horizontal,
@@ -58,10 +47,10 @@ __all__ = [
     "DType",
     "DecimalType",
     "EnumType",
-    "Frame",
     "ListType",
     "MapType",
     "NullsClause",
+    "Relation",
     "ScalarType",
     "SortClause",
     "SqlExpr",
@@ -77,14 +66,6 @@ __all__ = [
     "col",
     "element",
     "fn_once",
-    "from_df",
-    "from_dict",
-    "from_dicts",
-    "from_numpy",
-    "from_query",
-    "from_records",
-    "from_table",
-    "from_table_function",
     "into_expr",
     "into_relation",
     "lit",

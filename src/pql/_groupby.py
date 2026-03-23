@@ -35,8 +35,10 @@ class LazyGroupBy:
             .collect(Schema)
         )
         self._aggregator = partial(
-            self._frame.inner().aggregate,
-            group_expr.unwrap_or_else(lambda: keys.iter().map(str).join(", ")),
+            self._frame.aggregate,
+            group_expr=group_expr.unwrap_or_else(
+                lambda: keys.iter().map(str).join(", ")
+            ),
         )
 
     def _agg_columns(self, func: Callable[[Expr], Expr]) -> LazyFrame:
@@ -87,8 +89,6 @@ class LazyGroupBy:
         *more_aggs: IntoExpr,
         **named_aggs: IntoExpr,
     ) -> LazyFrame:
-        return (
-            self._agg_schema.into(ExprPlan, aggs, more_aggs, named_aggs)
-            .agg_context(self._keys, self._aggregator)
-            .pipe(self._frame.__class__)
+        return self._agg_schema.into(ExprPlan, aggs, more_aggs, named_aggs).agg_context(
+            self._keys, self._aggregator
         )

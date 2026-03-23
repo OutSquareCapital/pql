@@ -1,6 +1,6 @@
 """Helpers for iterating over arguments that may or may not be iterables."""
 
-from collections.abc import Iterable, Sequence
+from collections.abc import Iterable, KeysView, Sequence
 from enum import StrEnum
 from typing import Any, override
 
@@ -10,7 +10,7 @@ from .typing import NonNestedLiteral
 
 type TryIter[T] = Iterable[T] | T | None
 """Represent a value that may or may not be an `Iterable`."""
-type TrySeq[T] = Sequence[T] | T | None
+type TrySeq[T] = KeysView[T] | Sequence[T] | T | None
 """Represent a value that may or may not be a `Sequence`."""
 
 
