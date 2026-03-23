@@ -35,10 +35,13 @@ class Frame(CoreHandler[exp.Select]):
         )
         return self._new(qry)
 
-    def aggregate(self, aggregations: Iterable[IntoExpr]) -> Self:
-        aggs = pc.Iter(aggregations).map(lambda e: into_expr(e, as_col=True).inner())
-        qry = self.inner().group_by(*aggs, dialect="duckdb")  # pyright: ignore[reportUnknownMemberType]
-        return self._new(qry)
+    def aggregate(self, aggr_expr: Iterable[IntoExpr], group_expr: str = "") -> Self:
+        aggs = pc.Iter(aggr_expr).map(lambda e: into_expr(e, as_col=True).inner())
+        sub = exp.Subquery(this=self.inner())
+        qry = exp.select(*aggs, dialect="duckdb").from_(sub)  # pyright: ignore[reportUnknownMemberType]
+        return self._new(
+            qry.group_by(group_expr, dialect="duckdb") if group_expr else qry  # pyright: ignore[reportUnknownMemberType]
+        )
 
     def limit(self, n: int, offset: int | None = None) -> Self:
         qry = self.inner().limit(n, offset=offset, dialect="duckdb")  # pyright: ignore[reportUnknownMemberType]
