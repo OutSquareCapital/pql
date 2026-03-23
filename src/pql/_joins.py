@@ -11,7 +11,8 @@ from . import sql
 if TYPE_CHECKING:
     from pyochain.traits import PyoCollection
 
-    from ._typing import JoinKeysRes, JoinStrategy
+    from ._typing import JoinKeysRes
+    from .sql.typing import JoinStrategy
 type OptSeq = pc.Option[pc.Seq[str]]
 
 _RHS = partial(sql.col, table="rhs")

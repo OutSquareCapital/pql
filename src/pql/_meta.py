@@ -66,14 +66,14 @@ class Marker(StrEnum):
 
     @classmethod
     def empty_frame(cls) -> sql.Frame:
-        return sql.Frame({cls.EMPTY: ()})
+        return sql.Frame()
 
     @classmethod
     def windowed(cls, lf: sql.Frame, cols: PyoIterable[ResolvedExpr]) -> sql.Frame:
         match cols.any(lambda p: cls.TEMP in str(p.expr)):
             case True:
                 return lf.select(
-                    sql.row_number().over().sub(1).alias(cls.TEMP), sql.all()
+                    (sql.row_number().over().sub(1).alias(cls.TEMP), sql.all())
                 )
             case False:
                 return lf
@@ -238,16 +238,14 @@ class ExprPlan:
             match projs.all(lambda r: r.kind == ExprKind.UNIQUE):
                 case True:
                     return self.aliased_sql().into(
-                        lambda exprs: lf.select(*exprs).distinct()
+                        lambda exprs: lf.select(exprs).distinct()
                     )
                 case False:
                     match projs.all(lambda r: r.kind == ExprKind.SCALAR):
                         case True:
                             return self.aliased_sql().into(lf.aggregate)
                         case False:
-                            return self.aliased_sql().into(
-                                lambda exprs: lf.select(*exprs)
-                            )
+                            return self.aliased_sql().into(lf.select)
 
         return self.projections.then(
             lambda projs: _non_empty_slct(projs, Marker.windowed(lf, projs))
@@ -259,7 +257,7 @@ class ExprPlan:
                 case True:
                     return self.resolve().into(lf.aggregate)
                 case False:
-                    return self.resolve().into(lambda exprs: lf.select(*exprs))
+                    return self.resolve().into(lf.select)
 
         return Marker.windowed(lf, self.projections).pipe(_resolve)
 

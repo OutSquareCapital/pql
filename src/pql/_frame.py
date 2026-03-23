@@ -8,6 +8,7 @@ from functools import partial
 from pathlib import Path
 from typing import TYPE_CHECKING, Self
 
+import duckdb
 import pyochain as pc
 
 from . import sql
@@ -28,18 +29,13 @@ if TYPE_CHECKING:
     from ._expr import Expr
     from ._groupby import LazyGroupBy
     from ._parser import ParsedQuery
-    from ._typing import (
-        AsofJoinStrategy,
-        GroupByClause,
-        JoinStrategy,
-        PivotAgg,
-        UniqueKeepStrategy,
-    )
+    from ._typing import AsofJoinStrategy, GroupByClause, PivotAgg, UniqueKeepStrategy
     from .sql.typing import (
         FillNullStrategy,
         IntoExpr,
         IntoExprColumn,
         IntoRel,
+        JoinStrategy,
         Orientation,
         ParquetCompression,
         PythonLiteral,
@@ -64,26 +60,19 @@ class LazyFrame(sql.CoreHandler[sql.Frame]):
     """LazyFrame providing Polars-like API over DuckDB relations."""
 
     _inner: sql.Frame
+    _factory: Callable[[], duckdb.DuckDBPyRelation]
     _cached_schema: pc.Option[Schema]
 
     def __init__(self, data: IntoRel, orient: Orientation = "col") -> None:
         self._cached_schema = pc.NONE
-        self._inner = sql.Frame(data, orient)
-
-    def _filter(
-        self, preds: Iterable[IntoExprColumn], *more_preds: IntoExprColumn
-    ) -> Self:
-        return self._new(
-            try_chain(preds, more_preds)
-            .into(sql.reduce, sql.SqlExpr.and_)
-            .pipe(self.inner().filter)
-        )
+        self._factory = partial(sql.into_relation, data, orient)
+        self._inner = sql.Frame()
 
     def _iter_slct(self, func: Callable[[str], sql.SqlExpr]) -> Self:
         return (
             self.columns.iter()
             .map(func)
-            .into(lambda exprs: self.inner().select(*exprs).pipe(self._new))
+            .into(lambda exprs: self.inner().select(exprs).pipe(self._new))
         )
 
     def _iter_agg(self, func: Callable[[sql.SqlExpr], sql.SqlExpr]) -> Self:
@@ -93,13 +82,19 @@ class LazyFrame(sql.CoreHandler[sql.Frame]):
             .into(lambda exprs: self.inner().aggregate(exprs).pipe(self._new))
         )
 
+    def _collect(self) -> duckdb.DuckDBPyRelation:
+        return self._factory().query("", self.inner().inner().sql("duckdb"))
+
     def lazy(self) -> pl.LazyFrame:
         """Get a Polars LazyFrame."""
-        return self.inner().pl(lazy=True).pipe(Marker.drop_marker, self.columns)
+        return self._collect().pl(lazy=True).pipe(Marker.drop_marker, self.columns)
 
     def collect(self) -> pl.DataFrame:
         """Execute the query and return a Polars DataFrame."""
-        return self.inner().pl().pipe(Marker.drop_marker, self.columns)
+        return self._collect().pl().pipe(Marker.drop_marker, self.columns)
+
+    def fetch_all(self):
+        return pc.Vec.from_ref(self._collect().fetchall())
 
     def select(
         self, exprs: TryIter[IntoExpr], *more_exprs: IntoExpr, **named_exprs: IntoExpr
@@ -140,7 +135,7 @@ class LazyFrame(sql.CoreHandler[sql.Frame]):
                 )
                 .unwrap_or_else(pc.Iter[sql.SqlExpr].new)
             )
-            .into(self._filter)
+            .into(self.filter)
         )
 
     def group_by(
@@ -159,7 +154,7 @@ class LazyFrame(sql.CoreHandler[sql.Frame]):
             .collect()
         )
         grouped_frame = (
-            key_exprs.iter().map(lambda key: key.is_not_null()).into(self._filter)
+            key_exprs.iter().map(lambda key: key.is_not_null()).into(self.filter)
             if drop_null_keys
             else self
         )
@@ -209,7 +204,7 @@ class LazyFrame(sql.CoreHandler[sql.Frame]):
                 )
             )
             .map_star(lambda expr, desc, nls: expr.set_order(desc=desc, nulls_last=nls))
-            .into(lambda x: self.inner().sort(*x))
+            .into(lambda x: self.inner().sort(x))
             .pipe(self._new)
         )
 
@@ -286,7 +281,7 @@ class LazyFrame(sql.CoreHandler[sql.Frame]):
         """Drop columns from the frame."""
         return (
             self.inner()
-            .select(sql.all(exclude=try_chain(columns, more_columns)))
+            .select((sql.all(exclude=try_chain(columns, more_columns)),))
             .pipe(self._new)
         )
 
@@ -297,7 +292,7 @@ class LazyFrame(sql.CoreHandler[sql.Frame]):
             .map(try_iter)
             .unwrap_or_else(self.columns.iter)
             .map(lambda name: sql.col(name).is_not_null())
-            .into(self._filter)
+            .into(self.filter)
         )
 
     def explode(
@@ -361,10 +356,10 @@ class LazyFrame(sql.CoreHandler[sql.Frame]):
             .pipe(
                 lambda cond: (
                     self.inner()
-                    .filter(cond)
-                    .select(*_proj(unnest=True))
+                    .filter((cond,))
+                    .select(_proj(unnest=True))
                     .union(
-                        self.inner().filter(cond.not_()).select(*_proj(unnest=False))
+                        self.inner().filter((cond.not_(),)).select(_proj(unnest=False))
                     )
                 )
             )
@@ -392,7 +387,7 @@ class LazyFrame(sql.CoreHandler[sql.Frame]):
         return ParsedQuery(self.inner().sql_query())
 
     def explain(self, kind: ExplainType | ExplainTypeLiteral = "standard") -> str:
-        return self.inner().explain(kind)
+        return self._collect().explain(kind)
 
     def unnest(
         self, columns: TryIter[IntoExprColumn], *more_columns: IntoExprColumn
@@ -407,7 +402,7 @@ class LazyFrame(sql.CoreHandler[sql.Frame]):
                     .insert(sql.all(exclude=unnest_cols))
                 )
             )
-            .into(lambda exprs: self.inner().select(*exprs).pipe(self._new))
+            .into(lambda exprs: self.inner().select(exprs).pipe(self._new))
         )
 
     def first(self) -> Self:
@@ -566,17 +561,15 @@ class LazyFrame(sql.CoreHandler[sql.Frame]):
 
         return (
             self.inner()
-            .set_alias("lhs")
             .join(
-                other.inner().set_alias("rhs"),
+                other.inner(),
                 condition=join_keys.left.iter()
                 .zip(join_keys.right)
                 .map_star(builder.equals)
                 .reduce(sql.SqlExpr.and_),
                 how=how,
             )
-            .select(*_cols_how())
-            .set_alias(self.inner().alias)
+            .select(_cols_how())
             .pipe(self._new)
         )
 
@@ -585,14 +578,12 @@ class LazyFrame(sql.CoreHandler[sql.Frame]):
         builder = JoinBuilder(suffix, self.columns, other.columns)
         return (
             self.inner()
-            .set_alias("lhs")
-            .cross(other.inner().set_alias("rhs"))
+            .cross(other.inner())
             .select(
-                *builder.left.iter()
+                builder.left.iter()
                 .map(builder.lhs)
                 .chain(builder.right.iter().map(builder.for_outer))
             )
-            .set_alias(self.inner().alias)
             .pipe(self._new)
         )
 
@@ -782,7 +773,7 @@ class LazyFrame(sql.CoreHandler[sql.Frame]):
                         .map(sql.col)
                         .chain(val_cols.iter().flat_map(_rename_col))
                     )
-                    return lf.select(*cols)
+                    return lf.select(cols)
                 case False:
                     return lf
 
@@ -805,8 +796,13 @@ class LazyFrame(sql.CoreHandler[sql.Frame]):
         return (
             self.inner()
             .select(
-                sql.row_number().over(order_by=pc.Some(order_by)).sub(1).alias(name),
-                sql.all(),
+                (
+                    sql.row_number()
+                    .over(order_by=pc.Some(order_by))
+                    .sub(1)
+                    .alias(name),
+                    sql.all(),
+                )
             )
             .pipe(self._new)
         )
@@ -856,17 +852,17 @@ class LazyFrame(sql.CoreHandler[sql.Frame]):
         self, path: str | Path, *, compression: ParquetCompression = "zstd"
     ) -> None:
         """Write to Parquet file."""
-        self.inner().write_parquet(str(path), compression=compression)
+        self._collect().write_parquet(str(path), compression=compression)
 
     def sink_csv(
         self, path: str | Path, *, separator: str = ",", include_header: bool = True
     ) -> None:
         """Write to CSV file."""
-        self.inner().write_csv(str(path), sep=separator, header=include_header)
+        self._collect().write_csv(str(path), sep=separator, header=include_header)
 
     def sink_ndjson(self, path: str | Path) -> None:
         """Write to newline-delimited JSON file."""
-        self.inner().pl(lazy=True).sink_ndjson(path)
+        self._collect().pl(lazy=True).sink_ndjson(path)
 
     def reverse(self) -> Self:
         """Reverse the order of rows."""
@@ -883,5 +879,5 @@ class LazyFrame(sql.CoreHandler[sql.Frame]):
             .map(try_iter)
             .unwrap_or_else(self.columns.iter)
             .map(lambda name: sql.col(name).is_nan().not_())
-            .into(self._filter)
+            .into(self.filter)
         )

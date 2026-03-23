@@ -16,7 +16,7 @@ def _check_slots(obj: object) -> pc.Result[None, str]:
 _OBJS = [
     pql.col(""),
     pql.sql.col(""),
-    pql.sql.Frame({"a": [1]}),
+    pql.sql.Frame(),
     pql.LazyFrame({"a": [1]}),
     pql.when(1),
     pql.when(1).then(2),

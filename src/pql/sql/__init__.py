@@ -12,6 +12,7 @@ from ._creation import (
     from_numpy,
     from_query,
     from_records,
+    into_relation,
 )
 from ._datatypes import (
     ArrayType,
@@ -85,6 +86,7 @@ __all__ = [
     "from_table",
     "from_table_function",
     "into_expr",
+    "into_relation",
     "lit",
     "max_horizontal",
     "mean_horizontal",

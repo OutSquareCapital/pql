@@ -6,44 +6,61 @@ from typing import TYPE_CHECKING, ClassVar, Literal, Self
 import pyochain as pc
 from sqlglot import exp
 
-from ._code_gen import Relation
-from ._creation import from_query, into_relation
+from ._core import CoreHandler
 from ._funcs import into_expr
 from .utils import TryIter, try_iter
 
 if TYPE_CHECKING:
-    from duckdb import DuckDBPyRelation
     from pyochain.traits import PyoIterable
 
-    from .typing import IntoExpr, IntoRel, Orientation, PythonLiteral
+    from .typing import IntoExpr, JoinStrategy, PythonLiteral
 
 
-class Frame(Relation):
-    _inner: DuckDBPyRelation
+class Frame(CoreHandler[exp.Select]):
+    _inner: exp.Select
     __slots__: ClassVar[Iterable[str]] = ("_inner",)
 
-    def __init__(self, data: IntoRel, orient: Orientation = "col") -> None:
-        self._inner = into_relation(data, orient=orient)
+    def __init__(self, expr: exp.Select | None = None) -> None:
+        self._inner = expr or exp.select(dialect="duckdb")  # pyright: ignore[reportUnknownMemberType]
 
-    def _from_sql_expr(self, expr: exp.Expr, **kwargs: IntoRel) -> Self:
-        qry = from_query(expr.sql(dialect="duckdb"), **kwargs)
-        return self.__class__(qry)
+    def select(self, columns: Iterable[IntoExpr]) -> Self:
+        cols = pc.Iter(columns).map(lambda e: into_expr(e, as_col=True).inner())
+        qry = self.inner().select(*cols, dialect="duckdb")  # pyright: ignore[reportUnknownMemberType]
+        return self._new(qry)
+
+    def filter(self, conditions: Iterable[IntoExpr]) -> Self:
+        qry = self.inner().where(  # pyright: ignore[reportUnknownMemberType]
+            *pc.Iter(conditions).map(lambda e: into_expr(e, as_col=True).inner()),
+            dialect="duckdb",
+        )
+        return self._new(qry)
+
+    def aggregate(self, aggregations: Iterable[IntoExpr]) -> Self:
+        aggs = pc.Iter(aggregations).map(lambda e: into_expr(e, as_col=True).inner())
+        qry = self.inner().group_by(*aggs, dialect="duckdb")  # pyright: ignore[reportUnknownMemberType]
+        return self._new(qry)
+
+    def limit(self, n: int, offset: int | None = None) -> Self:
+        qry = self.inner().limit(n, offset=offset, dialect="duckdb")  # pyright: ignore[reportUnknownMemberType]
+        return self._new(qry)
 
     def join_asof(
         self,
-        other: IntoRel,
+        other: Self,
         condition: IntoExpr,
         select_cols: PyoIterable[str],
         how: Literal["left", "inner"],
     ) -> Self:
         join_type = "asof left" if how == "left" else "asof"
         qry = (
-            exp.select(*select_cols)  # pyright: ignore[reportUnknownMemberType]
-            .from_("lhs")
-            .join("rhs", on=into_expr(condition).to_sql(), join_type=join_type)
+            self.select(select_cols)
+            .inner()
+            .join(  # pyright: ignore[reportUnknownMemberType]
+                other.inner(), on=into_expr(condition).to_sql(), join_type=join_type
+            )
         )
 
-        return self._from_sql_expr(qry, lhs=self.inner(), rhs=other)
+        return self._new(qry)
 
     def pivot(
         self,
@@ -69,15 +86,15 @@ class Frame(Relation):
             )
             return group.unwrap() if group.is_some() else None
 
-        def _pivot() -> exp.Expr:
+        def _pivot() -> exp.Pivot:
             return exp.Pivot(
-                this=exp.to_table("rel"),  # pyright: ignore[reportUnknownMemberType]
+                this=self.inner(),
                 expressions=try_iter(on).collect().into(_on_exprs),
                 using=try_iter(using),
                 group=_group(),
             )
 
-        def _select_ordered(cols: Iterable[str]) -> exp.Expr:
+        def _select_ordered(cols: Iterable[str]) -> exp.Select:
             return (
                 exp.select("*")  # pyright: ignore[reportUnknownMemberType]
                 .from_(exp.Subquery(this=_pivot()))
@@ -86,7 +103,7 @@ class Frame(Relation):
 
         qry = try_iter(order_by).collect().then(_select_ordered).unwrap_or_else(_pivot)
 
-        return self._from_sql_expr(qry, rel=self.inner())
+        return self._new(qry)
 
     def unpivot(
         self,
@@ -108,7 +125,7 @@ class Frame(Relation):
 
         def _unpivot() -> exp.Pivot:
             return exp.Pivot(
-                this=exp.to_table("rel"),  # pyright: ignore[reportUnknownMemberType]
+                this=self.inner(),
                 expressions=unpivot_cols,
                 unpivot=True,
                 into=exp.UnpivotColumns(this=variable_name, expressions=(value_name,)),
@@ -124,4 +141,43 @@ class Frame(Relation):
             .unwrap_or_else(_select)
         )
 
-        return self._from_sql_expr(qry, rel=self.inner())
+        return self._new(qry)
+
+    def distinct(self) -> Self:
+        qry = self.inner().distinct()
+        return self._new(qry)
+
+    def union(self, other: Self) -> Self:
+        qry = self.inner().union(other.inner(), dialect="duckdb")  # pyright: ignore[reportUnknownMemberType]
+        return self._new(qry)
+
+    def join(
+        self,
+        other: Self,
+        on: IntoExpr = None,
+        condition: IntoExpr = None,
+        how: JoinStrategy = "inner",
+    ) -> Self:
+        qry = self.inner().join(  # pyright: ignore[reportUnknownMemberType]
+            other.inner(),
+            using=into_expr(condition).inner() or None,
+            on=into_expr(on).inner() or None,
+            join_type=how,
+            dialect="duckdb",
+        )
+        return self._new(qry)
+
+    def cross(self, other: Self) -> Self:
+        qry = self.inner().join(other.inner(), join_type="cross", dialect="duckdb")  # pyright: ignore[reportUnknownMemberType]
+        return self._new(qry)
+
+    def sort(self, by: Iterable[IntoExpr]) -> Self:
+        qry = self.inner().order_by(  # pyright: ignore[reportUnknownMemberType]
+            *pc.Iter(by).map(lambda e: into_expr(e, as_col=True).inner()),
+            dialect="duckdb",
+        )
+        return self._new(qry)
+
+    def sql_query(self) -> str:
+        """Return the SQL query string for the current frame."""
+        return self.inner().sql(dialect="duckdb")

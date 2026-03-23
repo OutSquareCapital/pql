@@ -4,7 +4,6 @@ import pyochain as pc
 
 if TYPE_CHECKING:
     from ._joins import JoinKeys
-JoinStrategy = Literal["inner", "left", "right", "outer", "semi", "anti"]
 AsofJoinStrategy = Literal["backward", "forward"]
 UniqueKeepStrategy = Literal["any", "none", "first", "last"]
 type TransferEncoding = Literal["hex", "base64"]

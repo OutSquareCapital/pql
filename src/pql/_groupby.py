@@ -36,9 +36,7 @@ class LazyGroupBy:
         )
         self._aggregator = partial(
             self._frame.inner().aggregate,
-            group_expr=group_expr.unwrap_or_else(
-                lambda: keys.iter().map(str).join(", ")
-            ),
+            group_expr.unwrap_or_else(lambda: keys.iter().map(str).join(", ")),
         )
 
     def _agg_columns(self, func: Callable[[Expr], Expr]) -> LazyFrame:
